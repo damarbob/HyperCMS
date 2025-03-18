@@ -1,0 +1,16 @@
+<?php
+
+namespace App\Models;
+
+use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Model;
+
+class EntryDataModel extends Model
+{
+    protected $table = 'entry_data';           // The table name
+    protected $primaryKey = 'id';          // Primary key of the table
+    protected $allowedFields = ['entry_id', 'name', 'fields', 'creator_id', 'deleter_id', 'created_at', 'updated_at', 'deleted_at']; // Fields that can be inserted/updated
+    protected $returnType = 'array';       // Return results as arrays
+    protected $useTimestamps = true;
+    protected $useSoftDeletes = true;
+}

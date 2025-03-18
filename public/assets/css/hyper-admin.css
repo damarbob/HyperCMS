@@ -1,0 +1,51 @@
+/* Overrides */
+:root {
+  --bulma-primary-h: 66deg;
+  --bulma-primary-s: 70%;
+  --bulma-primary-l: 54%;
+  --bulma-link-h: 122deg;
+  --bulma-link-s: 39%;
+  --bulma-link-l: 49%;
+  --bulma-danger-h: 10deg;
+}
+
+/* Dark mode adjustments using prefers-color-scheme */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bulma-shadow: 0 0 1em -0.125em hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.5), 0 0px 0 1px hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.1);
+  }
+}
+
+:root {
+    --hyper-radius-multiplier: 3;
+    --bulma-radius-small: calc(0.25rem * var(--hyper-radius-multiplier));
+    --bulma-radius: calc(0.375rem * var(--hyper-radius-multiplier));
+    --bulma-radius-medium: calc(0.5em * var(--hyper-radius-multiplier));
+    --bulma-radius-large: calc(0.75rem * var(--hyper-radius-multiplier));
+    --bulma-radius-rounded: 9999px;
+    --swal2-border-radius: calc(var(--bulma-radius-small) * var(--hyper-radius-multiplier)) !important;
+}
+
+div.dt-button-collection .dt-button {
+  border-radius: var(--bulma-radius) !important;
+}
+
+table.dataTable.fixedHeader-floating,
+table.dataTable.fixedHeader-locked {
+  background-color: var(--bulma-table-background-color) !important;
+}
+
+.tox .tox-statusbar__branding {
+  /* Hilangkan branding di statusbar tinyMCE */
+  display: none;
+}
+
+.truncate-two-lines {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;      /* Limit to 2 lines */
+  line-clamp: 2;              /* Standard property for compatibility */
+  -webkit-box-orient: vertical; 
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
