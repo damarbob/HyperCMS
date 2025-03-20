@@ -79,5 +79,7 @@ abstract class BaseController extends Controller
         $this->data['lang'] = service('request')->getLocale();
         $this->data['uri'] = $request->getUri() . '/';
         $this->data['uriSegments'] = $request->getUri()->getSegments();
+
+        $this->data['models'] = $this->modelsModel->get()->get()->getResultArray();
     }
 }

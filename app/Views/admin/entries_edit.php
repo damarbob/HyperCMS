@@ -24,7 +24,7 @@ $fieldsError = validation_show_error('fields');
     </div>
 </div>
 
-<?php if (false): ?>
+<?php if (ENVIRONMENT == 'development'): ?>
     <div class="block">
         <form method="POST" action="<?= base_url('admin/entries/' . $entry['id']) ?>">
             <div class="field">

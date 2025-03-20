@@ -12,7 +12,7 @@ class Entries extends BaseController
         // $this->modelsModel->test();
 
         $this->data['title'] = lang('Admin.entries');
-        $this->data['models'] = $this->modelsModel->get()->get()->getResultArray(); // Get all models
+        // $this->data['models'] = $this->modelsModel->get()->get()->getResultArray(); // Get all models (already did in the BaseController)
 
         return view('admin/entries', $this->data);
     }
