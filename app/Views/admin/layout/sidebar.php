@@ -33,6 +33,23 @@
                 </a>
             </li>
         </ul>
+        <?php if ($models) : ?>
+            <p class="menu-label">
+                <?= lang("Admin.models") ?>
+            </p>
+            <ul class="menu-list">
+                <?php foreach ($models as $model) : ?>
+                    <li>
+                        <a href="<?= base_url('admin/model?id=' . $model['id']) ?>">
+                            <span class="icon">
+                                <i class=" fa-solid fa-box-open"></i>
+                            </span>
+                            <?= $model['name'] ?>
+                        </a>
+                    </li>
+                <?php endforeach; ?>
+            </ul>
+        <?php endif; ?>
         <p class="menu-label">
             <?= lang("Admin.others") ?>
         </p>

@@ -14,6 +14,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->addRedirect('/', 'admin/dashboard', 301);
     $routes->get('dashboard', 'Dashboard');
     $routes->get('editor', 'Editor');
+    $routes->get('model', 'Model');
     $routes->resource('models', [
         'websafe' => 1,
         'placeholder' => '(:num)',
@@ -39,6 +40,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
     $routes->group('test', static function ($routes) {
         $routes->post('models/dt', 'Models');
         $routes->post('entries/dt', 'Entries');
+        $routes->post('model/dt', 'Model');
         $routes->post('entries/create/(:num)', 'Entries::create/$1');
         $routes->post('entries/save/(:segment)', 'Entries::save/$1');
     });

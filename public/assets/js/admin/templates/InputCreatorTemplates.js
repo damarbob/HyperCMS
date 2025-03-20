@@ -9,103 +9,259 @@ const {div, input, label, textarea, select, option, small, fragment} = van.tags;
 --------------------------------------------------------------------------- */
 const defaultTemplates = {
     text: ({ id, nama, tipe, required, value, keterangan }) => {
-        return div({ class: `form-floating ${keterangan ? "mb-4" : "mb-3"}` },
-            input({ type: tipe, id, name: id, value: value || "", class: "form-control", required }),
-            label({ class: "form-label", for: id }, nama),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = `form-floating ${keterangan ? "mb-4" : "mb-3"}`;
+
+        container.innerHTML = `
+            <input
+                type="${tipe}"
+                id="${id}"
+                name="${id}"
+                value="${value || ""}"
+                class="form-control"
+                ${required ? "required" : ""}
+            />
+            <label class="form-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     datetime: ({ id, nama, tipe, required, value, keterangan }) => {
-        return div({ class: `form-outline ${keterangan ? "mb-4" : "mb-3"}` },
-            input({ type: tipe, id, name: id, value: value || "", class: "form-control form-control-lg", required }),
-            label({ class: "form-label", for: id }, nama),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = `form-outline ${keterangan ? "mb-4" : "mb-3"}`;
+
+        container.innerHTML = `
+            <input
+                type="${tipe}"
+                id="${id}"
+                name="${id}"
+                value="${value || ""}"
+                class="form-control form-control-lg"
+                ${required ? "required" : ""}
+            />
+            <label class="form-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     color: ({ id, nama, tipe, required, value, keterangan }) => {
-        return div({ class: keterangan ? "mb-4" : "mb-3" },
-            label({ class: "form-label", for: id }, nama),
-            input({ type: tipe, id, name: id, value: value || "", class: "form-control form-control-color", title: nama, required }),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = keterangan ? "mb-4" : "mb-3";
+
+        container.innerHTML = `
+            <label class="form-label" for="${id}">${nama}</label>
+            <input
+                type="${tipe}"
+                id="${id}"
+                name="${id}"
+                value="${value || "#000000"}"
+                class="form-control form-control-color"
+                title="${nama}"
+                ${required ? "required" : ""}
+            />
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     textarea: ({ id, nama, required, value, keterangan }) => {
-        return div({ class: `form-floating ${keterangan ? "mb-4" : "mb-3"}` },
-            textarea({ id, name: id, class: "form-control", required }, value || ""),
-            label({ class: "form-label", for: id }, nama),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = `form-floating ${keterangan ? "mb-4" : "mb-3"}`;
+
+        container.innerHTML = `
+            <textarea
+                id="${id}"
+                name="${id}"
+                class="form-control"
+                ${required ? "required" : ""}
+            >${value || ""}</textarea>
+            <label class="form-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     editor: ({ id, nama, value, keterangan }) => {
-        return div({ class: keterangan ? "mb-4" : "mb-3" },
-            textarea({ id, name: id, class: "form-control hyper-rich-text-editor" }, value || ""),
-            label({ class: "form-label", for: id }, nama),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = keterangan ? "mb-4" : "mb-3";
+
+        container.innerHTML = `
+            <textarea
+                id="${id}"
+                name="${id}"
+                class="form-control hyper-rich-text-editor"
+            >${value || ""}</textarea>
+            <label class="form-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     checkbox: ({ id, nama, required, checked, keterangan }) => {
-        return div({ class: `form-check ${keterangan ? "mb-4" : "mb-3"}` },
-            input({ type: "checkbox", id, name: id, class: "form-check-input", required, checked }),
-            label({ class: "form-check-label", for: id }, nama),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+        container.className = `form-check ${keterangan ? "mb-4" : "mb-3"}`;
+
+        container.innerHTML = `
+            <input
+                type="checkbox"
+                id="${id}"
+                name="${id}"
+                class="form-check-input"
+                ${required ? "required" : ""}
+                ${checked ? "checked" : ""}
+            />
+            <label class="form-check-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
-    checkboxes: ({ id, options, required }) => {
-        if (!options || !Array.isArray(options)) return "";
-        return options?.map(option =>
-            div({ class: "form-check mb-3" },
-                input({ type: "checkbox", id: `${id}_${option.value}`, name: `${id}[]`, value: option.value, class: "form-check-input", required, checked: option.checked }),
-                label({ class: "form-check-label", for: `${id}_${option.value}` }, option.label || option.value)
+    checkboxes: ({ id, options, required, keterangan }) => {
+        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+
+        const container = document.createElement("div");
+        container.className = 'mb-3';
+
+        const checkboxesHTML = options
+            .map(
+                (option) => `
+                <div class="form-check">
+                    <input
+                        type="checkbox"
+                        id="${id}_${option.value}"
+                        name="${id}[]"
+                        value="${option.value}"
+                        class="form-check-input"
+                        ${required ? "required" : ""}
+                        ${option.checked ? "checked" : ""}
+                    />
+                    <label class="form-check-label" for="${id}_${option.value}">${option.label || option.value}</label>
+                </div>
+            `
             )
-        );
+            .join("");
+
+            
+        container.innerHTML = checkboxesHTML;
+
+        if (keterangan) {
+            container.insertAdjacentHTML('beforeend', `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>`);
+        }
+          
+        return container;
     },
 
     radio: ({ id, options, required }) => {
-        if (!options || !Array.isArray(options)) return "";
-        return options?.map(option =>
-            div({ class: "form-check mb-3" },
-                input({ type: "radio", id: `${id}_${option.value}`, name: id, value: option.value, class: "form-check-input", required, checked: option.checked }),
-                label({ class: "form-check-label", for: `${id}_${option.value}` }, option.label || option.value)
+        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+
+        const container = document.createElement("div");
+
+        const radiosHTML = options
+            .map(
+                (option) => `
+                <div class="form-check mb-3">
+                    <input
+                        type="radio"
+                        id="${id}_${option.value}"
+                        name="${id}"
+                        value="${option.value}"
+                        class="form-check-input"
+                        ${required ? "required" : ""}
+                        ${option.checked ? "checked" : ""}
+                    />
+                    <label class="form-check-label" for="${id}_${option.value}">${option.label || option.value}</label>
+                </div>
+            `
             )
-        );
+            .join("");
+
+        container.innerHTML = radiosHTML;
+        return container;
     },
 
     range: ({ id, nama, required, value, options, keterangan }) => {
-        return fragment(
-            label({ class: "form-label", for: id }, nama),
-            div({ class: "range mb-3" },
-                input({ type: "range", id, name: id, value: value || "", class: "form-range", min: options?.[0]?.min, max: options?.[0]?.max, required })
-            ),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
+        const container = document.createElement("div");
+
+        container.innerHTML = `
+            <label class="form-label" for="${id}">${nama}</label>
+            <div class="range mb-3">
+                <input
+                    type="range"
+                    id="${id}"
+                    name="${id}"
+                    value="${value || ""}"
+                    class="form-range"
+                    min="${options?.[0]?.min || 0}"
+                    max="${options?.[0]?.max || 100}"
+                    ${required ? "required" : ""}
+                />
+            </div>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
     },
 
     file: ({ id, nama, required, tipe, keterangan }) => {
-        return div({ class: "form-floating mb-3", id: `${id}_parent` },
-            input({ type: "file", id, name: tipe === "file-multiple" ? `${id}[]` : id, class: "form-control", multiple: tipe === "file-multiple", required }),
-            label({ class: "form-label", for: id }, nama),
-            input({ type: "hidden", id: `${id}_old`, name: id }),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan))),
-            div({ class: "d-flex flex-wrap gap-2 pt-2 pb-2 ", id: `${id}_formHelper` }),
-        );
+        const container = document.createElement("div");
+        container.className = "form-floating mb-3";
+        container.id = `${id}_parent`;
+
+        container.innerHTML = `
+            <input
+                type="file"
+                id="${id}"
+                name="${tipe === "file-multiple" ? `${id}[]` : id}"
+                class="form-control"
+                ${tipe === "file-multiple" ? "multiple" : ""}
+                ${required ? "required" : ""}
+            />
+            <label class="form-label" for="${id}">${nama}</label>
+            <input type="hidden" id="${id}_old" name="${id}" />
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            <div class="d-flex flex-wrap gap-2 pt-2 pb-2" id="${id}_formHelper"></div>
+        `;
+
+        return container;
     },
 
     select: ({ id, nama, required, value, options, keterangan }) => {
-        if (!options || !Array.isArray(options)) return "";
-        return div({ class: "mb-3" },
-            label({ class: "form-label", for: id }, nama),
-            select({ id, name: id, class: "form-select", required },
-                options.map(item => option({ value: item.value, selected: value && item.value == value }, item.label))
-            ),
-            keterangan && div({ class: "form-helper" }, small(replaceEnvironmentSyntax(keterangan)))
-        );
-    }
+        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+
+        const container = document.createElement("div");
+        container.className = "mb-3";
+
+        const optionsHTML = options
+            .map(
+                (item) => `
+                <option
+                    value="${item.value}"
+                    ${value && item.value == value ? "selected" : ""}
+                >
+                    ${item.label}
+                </option>
+            `
+            )
+            .join("");
+
+        container.innerHTML = `
+            <label class="form-label" for="${id}">${nama}</label>
+            <select id="${id}" name="${id}" class="form-select" ${required ? "required" : ""}>
+                ${optionsHTML}
+            </select>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
+    },
 };
 
 let template = defaultTemplates;

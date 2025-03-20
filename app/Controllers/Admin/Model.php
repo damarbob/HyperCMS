@@ -1,0 +1,77 @@
+<?php
+
+namespace App\Controllers\Admin;
+
+use App\Controllers\BaseController;
+
+class Model extends BaseController
+{
+    public function index(): string
+    {
+        $id = $this->request->getGet('id');
+
+        $models = $this->modelsModel->get()
+            ->where('id', $id)
+            ->get()
+            ->getResult();
+
+        // dd($models[0]);
+
+        if (count($models) > 0) {
+
+            $model = $models[0];
+
+            $fields = [];
+            $invisibleFields = [
+                (object)[
+                    'title' => lang('Admin.id'),
+                    'id' => 'id',
+                ],
+                (object)[
+                    'title' => lang('Admin.model'),
+                    'id' => 'model_name',
+                ],
+            ];
+
+            foreach (json_decode($model->fields) as $field) {
+                // @TODO: Translate field names to English
+                $field->content->type = $field->type;
+                array_push($fields, $field->content);
+            }
+
+            // Put mandatory fields (edited_by and date_modified)
+            array_push($fields, (object) [
+                'id' => 'edited_by',
+                'nama' => lang('Admin.editedBy'),
+                'tipe' => 'text',
+            ]);
+            array_push($fields, (object) [
+                'id' => 'date_modified',
+                'nama' => lang('Admin.dateModified'),
+                'tipe' => 'datetime-local',
+            ]);
+
+            // List fields with date type
+            $date_field_ids = [];
+            foreach ($fields as $i => $field) {
+                if ($field->tipe == 'datetime-local') {
+                    $date_field_ids[] = $i + 2; // @IMPORTANT: +2 because of the invisible id and model_name fields
+                }
+            }
+
+            $this->data['date_field_ids'] = json_encode($date_field_ids);
+            $this->data['fields'] = $fields;
+            $this->data['invisible_fields'] = $invisibleFields;
+
+            $this->data['title'] = $model->name; // Set the title if model is not empty
+
+            // d($this->data['date_field_ids']);
+            // dd($this->data['fields']);
+        }
+
+        $this->data['id'] = $id;
+
+        // Display the admin dashboard view
+        return view('admin/model', $this->data);
+    }
+}
