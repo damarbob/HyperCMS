@@ -107,9 +107,13 @@
                 if (data.success) {
                     // If successful
                     Swal.fire("<?= lang('Admin.success') ?>", data.message, "success"); // Show success message
-                    setTimeout(() => {
-                        window.location.reload();
-                    }, 1000);
+
+                    // Redirect the page after 1 second if redirect url exists
+                    if (data.redirect) {
+                        setTimeout(() => {
+                            window.location.href = data.redirect;
+                        }, 1000);
+                    }
                 } else {
                     // If error
                     Swal.fire("<?= lang('Admin.error') ?>", data.message, "error"); // Show error message

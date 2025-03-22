@@ -4,6 +4,7 @@ namespace App\Database\Seeds;
 
 use CodeIgniter\Database\Seeder;
 use Faker\Factory;
+use Faker\Generator;
 
 class EntryDataSeeder extends Seeder
 {
@@ -19,8 +20,12 @@ class EntryDataSeeder extends Seeder
             $modelData = $this->db->table('model_data')
                 ->where('model_id', $entry['model_id'])
                 ->where('deleted_at', null)
+                ->orderBy('id', 'DESC') // Get the latest data
+                ->limit(1)
                 ->get()
                 ->getRowArray();
+
+            echo 'Generating entry ' . $modelData['name'] . PHP_EOL;
 
             $fields = json_decode($modelData['fields'], true);
             $entryFields = $this->generateEntryFields($fields, $faker);
@@ -45,6 +50,9 @@ class EntryDataSeeder extends Seeder
 
         foreach ($fields as $field) {
             $content = $field['content'];
+
+            echo 'Generating field value for "' . $content['nama'] . '" with type "' . $content['tipe'] . '"' . PHP_EOL;
+
             $entryFields[] = [
                 'id' => $content['id'],
                 'value' => $this->generateFieldValue($content['tipe'], $faker),
@@ -54,13 +62,21 @@ class EntryDataSeeder extends Seeder
         return $entryFields;
     }
 
-    private function generateFieldValue($type, $faker)
+    private function generateFieldValue($type, Generator $faker)
     {
         switch ($type) {
             case 'text':
                 return $faker->sentence;
+            case 'number':
+                return $faker->randomNumber(2);
+            case 'email':
+                return $faker->email;
+            case 'password':
+                return $faker->password;
             case 'editor':
                 return $faker->paragraph;
+            case 'code':
+                return $faker->randomHtml();
             case 'checkbox':
                 return $faker->randomElement(['on', 'off']);
             case 'radio':
