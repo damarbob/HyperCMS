@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\BaseController;
+use App\Constants\ModelStaticFields;
 
 class Model extends BaseController
 {
@@ -39,14 +40,14 @@ class Model extends BaseController
                 array_push($fields, $field->content);
             }
 
-            // Put mandatory fields (edited_by and date_modified)
+            // Put mandatory fields (edited_by and date_modified
             array_push($fields, (object) [
-                'id' => 'edited_by',
+                'id' => ModelStaticFields::EDITED_BY,
                 'nama' => lang('Admin.editedBy'),
                 'tipe' => 'text',
             ]);
             array_push($fields, (object) [
-                'id' => 'date_modified',
+                'id' => ModelStaticFields::DATE_MODIFIED,
                 'nama' => lang('Admin.dateModified'),
                 'tipe' => 'datetime-local',
             ]);

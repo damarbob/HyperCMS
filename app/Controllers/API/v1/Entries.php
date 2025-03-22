@@ -128,7 +128,7 @@ class Entries extends ApiController
 
         // Attempt entry data insertion.
         if ($entryDataModel->insert($data)) {
-            $response = ['success' => true, 'message' => lang('Admin.successfullySaved')];
+            $response = ['success' => true, 'message' => lang('Admin.successfullySaved'), 'redirect' => base_url("admin/model?id=$model_id")];
         } else {
             $response = ['success' => false, 'message' => lang('Admin.failedToSave')];
         }

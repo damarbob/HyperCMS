@@ -144,6 +144,14 @@ export default class InputCreator {
                     keterangan,
                 });
                 break;
+            case "code":
+                field = InputCreatorTemplates.code({
+                    id,
+                    nama,
+                    value,
+                    keterangan,
+                });
+                break;
             case "checkbox":
                 field = InputCreatorTemplates.checkbox({
                     id,

@@ -104,6 +104,23 @@ const defaultTemplates = {
         return container;
     },
 
+    code: ({ id, nama, value, keterangan }) => {
+        const container = document.createElement("div");
+        container.className = keterangan ? "mb-4" : "mb-3";
+
+        container.innerHTML = `
+            <textarea
+                id="${id}"
+                name="${id} hyper-code-editor"
+                class="form-control"
+            >${value || ""}</textarea>
+            <label class="form-label" for="${id}">${nama}</label>
+            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+        `;
+
+        return container;
+    },
+
     checkbox: ({ id, nama, required, checked, keterangan }) => {
         const container = document.createElement("div");
         container.className = `form-check ${keterangan ? "mb-4" : "mb-3"}`;
@@ -283,6 +300,7 @@ export const InputCreatorTemplates = {
     color: (data) => template.color(data),
     textarea: (data) => template.textarea(data),
     editor: (data) => template.editor(data),
+    code: (data) => template.code(data),
     checkbox: (data) => template.checkbox(data),
     checkboxes: (data) => template.checkboxes(data),
     radio: (data) => template.radio(data),

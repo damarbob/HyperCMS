@@ -111,6 +111,26 @@ export const bulmaInputCreatorTemplates = {
         return field;
     },
 
+    code: ({ id, nama, required, value, keterangan }) => {
+        const field = document.createElement("div");
+        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+
+        field.innerHTML = `
+            <label class="label" for="${id}">${nama}</label>
+            <div class="control">
+                <textarea
+                    id="${id}"
+                    name="${id}"
+                    class="textarea hyper-code-editor"
+                    ${required ? "required" : ""}
+                >${value || ""}</textarea>
+            </div>
+            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+        `;
+
+        return field;
+    },
+
     checkbox: ({ id, nama, required, checked, keterangan }) => {
         const field = document.createElement("div");
         field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
