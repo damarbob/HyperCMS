@@ -20,7 +20,7 @@ class EntriesModel extends Model
      * @return BaseBuilder
      * @throws \Exception if the SQL file is not found.
      */
-    public function get(): BaseBuilder
+    public function getCustomBuilder(): BaseBuilder
     {
         // Define the path to your SQL file.
         $filepath = APPPATH . 'Queries/EntriesModelGet.sql';

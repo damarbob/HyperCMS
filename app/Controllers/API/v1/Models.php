@@ -22,7 +22,7 @@ class Models extends ApiController
         $columns = $data['columns'];
 
         $model = new ModelsModel();
-        $modelBuilder = $model->get();
+        $modelBuilder = $model->getCustomBuilder();
 
         // 1. Get the total count with no filtering.
         $totalRecords = $modelBuilder->countAllResults(false);

@@ -23,7 +23,7 @@ class Model extends ApiController
         $columns = $data['columns'];
 
         $modelsModel = new ModelsModel();
-        $model = $modelsModel->get()->where('id', $data['id'])->get()->getRow();
+        $model = $modelsModel->getCustomBuilder()->where('id', $data['id'])->get()->getRow();
 
         // @WARNING: Assuming model is found
         // @IMPORTANT: Change the 'content' key if fields structure changed
@@ -43,7 +43,7 @@ class Model extends ApiController
         log_message('debug', 'numeric fields: ' . json_encode($numericFields));
 
         $entriesModelBuilder = new EntriesModel();
-        $entriesModelBuilder = $entriesModelBuilder->get();
+        $entriesModelBuilder = $entriesModelBuilder->getCustomBuilder();
 
         // Get the total count with no filtering.
         $totalRecords = $entriesModelBuilder->countAllResults(false);
