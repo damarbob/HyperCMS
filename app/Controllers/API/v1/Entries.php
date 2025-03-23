@@ -25,7 +25,7 @@ class Entries extends ApiController
         $columns = $data['columns'];
 
         $model = new EntriesModel();
-        $modelBuilder = $model->get();
+        $modelBuilder = $model->getCustomBuilder();
 
         // Filter by model_id if provided:
         if (!empty($data['model_id'])) {
@@ -93,7 +93,7 @@ class Entries extends ApiController
         $metaJson = $this->request->getPost('fields');
 
         // Get the model
-        $model = $modelsModel->get()->where('id', $model_id)->limit(1)->get()->getResultArray();
+        $model = $modelsModel->getCustomBuilder()->where('id', $model_id)->limit(1)->get()->getResultArray();
 
         // return $this->response->setJSON(['success' => false, 'message' => json_encode($model)]);
 

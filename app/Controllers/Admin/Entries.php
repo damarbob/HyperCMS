@@ -21,7 +21,7 @@ class Entries extends BaseController
     {
 
         $modelId = $this->request->getGet('model_id');
-        $modelBuilder = $this->modelsModel->get();
+        $modelBuilder = $this->modelsModel->getCustomBuilder();
         $modelResult = $modelBuilder->where('id', $modelId)->limit(1)->get()->getResultArray();
 
         // Check if the model exists
@@ -41,7 +41,7 @@ class Entries extends BaseController
     {
 
         $modelName = $this->request->getGet('model_name');
-        $modelBuilder = $this->modelsModel->get();
+        $modelBuilder = $this->modelsModel->getCustomBuilder();
         $modelResult = $modelBuilder->where('name', $modelName)->limit(1)->get()->getResultArray();
 
         // Check if the model exists
@@ -52,7 +52,7 @@ class Entries extends BaseController
 
         $this->data['model'] = $model;
 
-        $builder = $this->entriesModel->get();
+        $builder = $this->entriesModel->getCustomBuilder();
         $entriesResult = $builder->where('id', $id)->limit(1)->get()->getResultArray();
 
         // Check if the model exists

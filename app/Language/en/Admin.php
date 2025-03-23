@@ -74,4 +74,6 @@ return [
     // Editor
     'editor' => 'Editor',
 
+    'noEntryFound' => 'No entry found',
+
 ];

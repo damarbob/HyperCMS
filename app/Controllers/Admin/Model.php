@@ -11,7 +11,7 @@ class Model extends BaseController
     {
         $id = $this->request->getGet('id');
 
-        $models = $this->modelsModel->get()
+        $models = $this->modelsModel->getCustomBuilder()
             ->where('id', $id)
             ->get()
             ->getResult();

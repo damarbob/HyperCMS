@@ -29,7 +29,7 @@ class Models extends BaseController
 
         $this->data['title'] = lang('Admin.editModel');
 
-        $modelBuilder = $this->modelsModel->get();
+        $modelBuilder = $this->modelsModel->getCustomBuilder();
         $this->data['model'] = $modelBuilder->where('id', $id)->limit(1)->get()->getResultArray()[0];
 
         return view('admin/models_edit', $this->data);
@@ -86,7 +86,7 @@ class Models extends BaseController
 
         $data = $this->request->getPost(array_keys($rules));
 
-        $modelBuilder = $this->modelsModel->get();
+        $modelBuilder = $this->modelsModel->getCustomBuilder();
         $oldModel = $modelBuilder->where('id', $id)->limit(1)->get()->getResultArray()[0];
 
         // If user tries to change the name, prevent duplicate entry

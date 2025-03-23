@@ -80,6 +80,6 @@ abstract class BaseController extends Controller
         $this->data['uri'] = $request->getUri() . '/';
         $this->data['uriSegments'] = $request->getUri()->getSegments();
 
-        $this->data['models'] = $this->modelsModel->get()->get()->getResultArray();
+        $this->data['models'] = $this->modelsModel->getCustomBuilder()->get()->getResultArray();
     }
 }
