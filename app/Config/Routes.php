@@ -8,7 +8,13 @@ use CodeIgniter\Router\RouteCollection;
 // $routes->get('/', 'Home::index');
 $routes->addRedirect('/', 'admin', 301);
 
-service('auth')->routes($routes);
+service('auth')->routes($routes, ['except' => ['login', 'register']]);
+$routes->group('', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
+    $routes->get('login', 'LoginController::loginView');
+    $routes->post('login', 'LoginController::loginAction');
+    $routes->get('register', 'RegisterController::registerView');
+    $routes->post('register', 'RegisterController::registerAction');
+});
 
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static function ($routes) {
     $routes->addRedirect('/', 'admin/dashboard', 301);
