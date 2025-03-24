@@ -12,29 +12,10 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
     <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous"> -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg==" crossorigin="anonymous" referrerpolicy="no-referrer" />
-    
-
-    <!-- Flatpickr CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
-    <link rel="stylesheet"
-        media="(prefers-color-scheme: dark)"
-        href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
-
 
     <!-- Style overrides -->
     <link rel="stylesheet" href="<?= base_url('assets/css/hyper-admin.css') ?>">
     <style>
-        @font-face {
-            font-family: 'codicon';
-            src: url('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/base/browser/ui/codiconLabel/codicon/codicon.ttf') format('truetype');
-        }
-
-        /* Optional: Make the sidebar sticky as you scroll */
-        .sidebar {
-            position: sticky;
-            top: 1rem;
-        }
-
         /* Hide nested submenus by default */
         .menu-list li ul {
             display: none;
@@ -82,16 +63,14 @@
     <!-- Main Content Section -->
     <section class="section">
         <div class="container is-fluid">
-            <div class="columns">
-                <?= $this->include("admin/layout/sidebar") ?>
-                <!-- Main Content Column -->
-                <div class="column" style="overflow: auto;">
-                    <?= $this->include("admin/layout/navbar") ?>
-                    <div class="column">
-                        <?= $this->renderSection('content') ?>
-                    </div>
-                </div>
-            </div>
+            <!-- <div class="columns"> -->
+            <!-- Main Content Column -->
+            <!-- <div class="column" style="overflow: auto;"> -->
+            <!-- <div class="column"> -->
+            <?= $this->renderSection('content') ?>
+            <!-- </div> -->
+            <!-- </div> -->
+            <!-- </div> -->
         </div>
     </section>
 
@@ -190,58 +169,6 @@
                 if (event.key === "Escape") {
                     closeAllModals();
                 }
-            });
-        });
-    </script>
-
-    <!-- JavaScript for toggling states -->
-    <script>
-        document.addEventListener('DOMContentLoaded', () => {
-            // 1. Navbar burger toggle (for mobile devices)
-            const navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger'));
-            if (navbarBurgers.length > 0) {
-                navbarBurgers.forEach(burger => {
-                    burger.addEventListener('click', () => {
-                        const targetId = burger.dataset.target;
-                        const targetElem = document.getElementById(targetId);
-                        burger.classList.toggle('is-active');
-                        targetElem.classList.toggle('is-active');
-                    });
-                });
-            }
-
-            // 2. Sidebar toggle button
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.querySelector('.sidebar');
-            if (sidebarToggle && sidebar) {
-                sidebarToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('is-hidden');
-                });
-            }
-
-            // 3. Submenu toggle: When a link with class "has-submenu" is clicked,
-            // toggle the "is-active" state of its parent list item.
-            const submenuLinks = document.querySelectorAll('.menu-list li > a.has-submenu');
-            submenuLinks.forEach(link => {
-                link.addEventListener('click', (e) => {
-                    e.preventDefault(); // Prevent the default hyperlink behavior
-                    link.parentElement.classList.toggle('is-active');
-                });
-            });
-        });
-    </script>
-
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-    <script>
-        // Wait for the DOM to load
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize Flatpickr on all datetime-local inputs automatically
-            flatpickr("input[type='datetime-local']", {
-                enableTime: true,
-                dateFormat: "Y-m-d H:i",
-                time_24hr: true,
-                // Optionally, add any additional Flatpickr options here
             });
         });
     </script>

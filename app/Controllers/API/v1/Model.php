@@ -30,6 +30,7 @@ class Model extends ApiController
         $modelFields = json_decode($model->fields);
         $dateFields = [];
         $numericFields = [];
+        $codeFields = [];
 
         foreach ($modelFields as $field) {
             // log_message('debug', 'field: ' . json_encode($field->content));
@@ -37,10 +38,13 @@ class Model extends ApiController
                 $dateFields[] = $field->content->id;
             } elseif ($field->content->tipe == 'number') {
                 $numericFields[] = $field->content->id;
+            } elseif ($field->content->tipe == 'code') {
+                $codeFields[] = $field->content->id;
             }
         }
-        log_message('debug', 'date fields: ' . json_encode($dateFields));
-        log_message('debug', 'numeric fields: ' . json_encode($numericFields));
+        log_message('debug', 'code fields: ' . json_encode($codeFields));
+        // log_message('debug', 'date fields: ' . json_encode($dateFields));
+        // log_message('debug', 'numeric fields: ' . json_encode($numericFields));
 
         $entriesModelBuilder = new EntriesModel();
         $entriesModelBuilder = $entriesModelBuilder->getCustomBuilder();
@@ -74,17 +78,17 @@ class Model extends ApiController
                 $entriesModelBuilder->orderBy($orderColumn, $orderDir);
             } else {
                 if (in_array($orderColumn, $dateFields)) {
-                    log_message('debug', 'order column (date) is: ' . $orderColumn);
+                    // log_message('debug', 'order column (date) is: ' . $orderColumn);
                     // Build dynamic ordering expression for date fields:
                     $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
                     $entriesModelBuilder->orderBy($orderExpr, $orderDir, false);
                 } elseif (in_array($orderColumn, $numericFields)) {
-                    log_message('debug', 'order column (numeric) is: ' . $orderColumn);
+                    // log_message('debug', 'order column (numeric) is: ' . $orderColumn);
                     // For numeric fields, cast as decimal.
                     $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
                     $entriesModelBuilder->orderBy($orderExpr, $orderDir, false);
                 } else {
-                    log_message('debug', 'order column (string) is: ' . $orderColumn);
+                    // log_message('debug', 'order column (string) is: ' . $orderColumn);
                     // For regular text, remove HTML tags as before.
                     $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
                     $entriesModelBuilder->orderBy($orderExpr, $orderDir, false);
@@ -119,6 +123,18 @@ class Model extends ApiController
                 // Optionally, remove the original JSON column
                 unset($row['fields']);
             }
+        }
+
+        // HTML escaping for fields with type code
+        foreach ($data as $i => $item) {
+            // Iterate through code fields
+            foreach ($codeFields as $x) {
+                // If the field exists, escape the html
+                if (isset($item[$x])) {
+                    $data[$i][$x] = htmlspecialchars($item[$x]);
+                }
+            }
+            // log_message('debug', json_encode($item));
         }
 
         // 6. Prepare and output the JSON response.

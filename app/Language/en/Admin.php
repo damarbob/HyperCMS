@@ -4,6 +4,8 @@ return [
     'appName' => 'HyperCMS',
     'appVersion' => '1.0',
 
+    'n/a' => 'N/A',
+
     'success' => 'Success',
     'error' => 'Error',
 
@@ -73,6 +75,7 @@ return [
 
     // Editor
     'editor' => 'Editor',
+    'editor-x' => 'Editor {x}',
 
     'noEntryFound' => 'No entry found',
 
