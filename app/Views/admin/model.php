@@ -41,6 +41,7 @@
             <?php foreach ($invisible_fields as $field): ?> {
                     title: "<?= $field->title ?>",
                     data: "<?= $field->id ?>",
+                    defaultContent: "<?= lang('Admin.n/a') ?>", // If data not found, show n/a instead
                     visible: false, // Do not display this column
                     searchable: false, // Optional: remove from search if not needed
                     orderable: false, // Optional: disable sorting on this column
@@ -50,6 +51,7 @@
             <?php foreach ($fields as $field): ?> {
                     title: "<?= $field->nama ?>",
                     data: "<?= $field->id ?>",
+                    defaultContent: "<?= lang('Admin.n/a') ?>", // If data not found, show n/a instead
                     orderSequence: ["asc", "desc"],
                 },
             <?php endforeach; ?>
