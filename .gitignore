@@ -122,5 +122,8 @@ nb-configuration.xml
 # Visual Studio Code
 .vscode/
 
+# Project IDX
+.idx/
+
 /results/
 /phpunit*.xml
