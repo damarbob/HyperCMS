@@ -22,7 +22,7 @@ class Editor extends BaseController
         }
 
         // Map entry fields for easier access, e.g., hyper_component_elements, hyper_css, etc.
-        $mappedEntryFields = (object) array_column(json_decode($entry->fields), 'value', 'id');
+        $mappedEntryFields = array_column(json_decode($entry->fields), 'value', 'id');
 
         $this->data['entry'] = $entry;
         $this->data['mapped_entry_fields'] = $mappedEntryFields;
@@ -43,7 +43,7 @@ class Editor extends BaseController
             }
         }
 
-        $this->data['title'] = lang('Admin.editor-x', ['x' => (isset($mappedEntryFields->hyper_title) ? $mappedEntryFields->hyper_title : 'Untitled')]);
+        $this->data['title'] = lang('Admin.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
         $this->data['test_components'] = $testComponents;
 
         return view('admin/editor', $this->data);
