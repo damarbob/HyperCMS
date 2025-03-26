@@ -69,7 +69,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'session' => ['except' => ['/', 'login*', 'register', 'auth/a/*', 'logout', 'api/*']], // @TODO: remove 'api/*'
+            'session' => ['except' => ['/', 'p/*', 'login*', 'register', 'auth/a/*', 'logout', 'api/*']], // @TODO: remove 'api/*' if done testing on POSTMAN
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',

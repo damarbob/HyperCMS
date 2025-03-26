@@ -7,7 +7,7 @@
     const metaInputCreator = new InputCreator(container);
 
     // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
-    metaInputCreator.create(<?= $model['fields'] ?>);
+    metaInputCreator.create(<?= $processed_model_fields ?>);
 
     const inputPopulator = new InputPopulator(container);
     inputPopulator.populate(<?= isset($entry) ? $entry['fields'] : '' ?>);

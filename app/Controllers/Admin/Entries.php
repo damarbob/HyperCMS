@@ -2,11 +2,27 @@
 
 namespace App\Controllers\Admin;
 
+use CodeIgniter\HTTP\RequestInterface;
+use CodeIgniter\HTTP\ResponseInterface;
 use App\Controllers\BaseController;
+use App\Libraries\SyntaxProcessor;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use Psr\Log\LoggerInterface;
 
 class Entries extends BaseController
 {
+
+    protected SyntaxProcessor $syntaxProcessor;
+
+    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    {
+        // Do Not Edit This Line
+        parent::initController($request, $response, $logger);
+
+        $this->syntaxProcessor = new SyntaxProcessor();
+
+    }
+    
     public function index(): string
     {
         // $this->modelsModel->test();
@@ -32,6 +48,9 @@ class Entries extends BaseController
 
         $this->data['model'] = $model;
 
+        // Process data syntax on model fields
+        $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
+
         $this->data['title'] = lang('Admin.newxEntry', ['x' => $model['name']]);
 
         return view('admin/entries_new', $this->data);
@@ -51,6 +70,9 @@ class Entries extends BaseController
         $model = $modelResult[0];
 
         $this->data['model'] = $model;
+
+        // Process data syntax on model fields
+        $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
 
         $builder = $this->entriesModel->getCustomBuilder();
         $entriesResult = $builder->where('id', $id)->limit(1)->get()->getResultArray();

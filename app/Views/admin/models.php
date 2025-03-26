@@ -167,6 +167,7 @@
         columns: [{
                 title: "<?= lang("Admin.id") ?>",
                 data: "id",
+                visible: false,
                 orderSequence: ["asc", "desc"],
             },
             {
@@ -311,6 +312,12 @@
         responsive: true, // Make the table responsive on various devices
         select: true, // Allow row selection
     };
+
+    // Order descending by date_modified (last column). Assuming last column is always 'date_modified' column.
+    // @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
+    options.order = [
+        [options.columns.length - 1, "desc"]
+    ];
 
     // Add language option only when locale is not 'en'
     if (lang !== 'en') {

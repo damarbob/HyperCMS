@@ -148,6 +148,7 @@
         columns: [{
                 title: "<?= lang("Admin.id") ?>",
                 data: "id",
+                visible: false,
                 orderSequence: ["asc", "desc"],
             },
             {
@@ -277,6 +278,11 @@
         responsive: true,
         select: true,
     };
+
+    // Order descending by date_modified (last column). Assuming last column is always 'date_modified' column.
+    options.order = [
+        [options.columns.length - 1, "desc"]
+    ];
 
     if (lang !== 'en') {
         var languageUrl;

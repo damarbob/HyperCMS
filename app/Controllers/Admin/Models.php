@@ -118,7 +118,8 @@ class Models extends BaseController
             return redirect()->back()->withInput()->with('error', $e->getMessage());
         }
 
-        return redirect('admin/models')->with('success', lang('Admin.modelxSuccessfullySaved', ['x' => $data['name']]));
+        // Redirect back to the edit page
+        return redirect()->to("admin/models/$id/edit")->with('success', lang('Admin.modelxSuccessfullySaved', ['x' => $data['name']]));
     }
 
     public function delete($id)

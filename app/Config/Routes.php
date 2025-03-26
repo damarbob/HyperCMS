@@ -5,8 +5,12 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-// $routes->get('/', 'Home::index');
-$routes->addRedirect('/', 'admin', 301);
+$routes->get('/', 'Frontend');
+
+$routes->group('p', static function ($routes) {
+    $routes->addRedirect('/', 'p/home', 301);
+    $routes->get('(:any)', 'Frontend::index/$1');
+});
 
 service('auth')->routes($routes, ['except' => ['login', 'register']]);
 $routes->group('', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
