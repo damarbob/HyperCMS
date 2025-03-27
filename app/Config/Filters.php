@@ -69,7 +69,6 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'session' => ['except' => ['/', 'p/*', 'login*', 'register', 'auth/a/*', 'logout', 'api/*']], // @TODO: remove 'api/*' if done testing on POSTMAN
             // 'honeypot',
             // 'csrf',
             // 'invalidchars',
@@ -104,5 +103,21 @@ class Filters extends BaseFilters
      *
      * @var array<string, array<string, list<string>>>
      */
-    public array $filters = [];
+    public array $filters = [
+        'session' => [
+            'before' => [
+                'admin/*'
+            ]
+        ]
+    ];
+
+    public function __construct()
+    {
+        parent::__construct();
+
+        // Only add 'api/*' if we're in the production environment.
+        if (ENVIRONMENT === 'production') {
+            $this->filters['session']['before'][] = 'api/*';
+        }
+    }
 }

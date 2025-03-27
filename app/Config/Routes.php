@@ -7,16 +7,14 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Frontend');
 
-$routes->group('p', static function ($routes) {
-    $routes->addRedirect('/', 'p/home', 301);
-    $routes->get('(:any)', 'Frontend::index/$1');
-});
+// @IMPORTANT: Ensure restricted routes are updated in the regex negative lookahead paths list to prevent them from being treated as dynamic pages.
+$routes->get('^(?!auth|api|admin)(.*)$', 'Frontend::index/$1');
 
-service('auth')->routes($routes, ['except' => ['login', 'register']]);
-$routes->group('', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
-    $routes->get('login', 'LoginController::loginView');
+$routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
+    service('auth')->routes($routes, ['except' => ['login', 'register']]);
+    $routes->get('login', 'LoginController::loginView', ['as' => 'login']);
     $routes->post('login', 'LoginController::loginAction');
-    $routes->get('register', 'RegisterController::registerView');
+    $routes->get('register', 'RegisterController::registerView', ['as' => 'register']);
     $routes->post('register', 'RegisterController::registerAction');
 });
 
