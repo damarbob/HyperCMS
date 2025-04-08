@@ -127,3 +127,8 @@ nb-configuration.xml
 
 /results/
 /phpunit*.xml
+
+#-------------------------
+# HyperCMS
+#-------------------------
+**/.hyper-dev/
