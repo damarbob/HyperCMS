@@ -105,6 +105,11 @@ export default class InputCreator {
     let field = document.createElement("div");
 
     switch (type) {
+      case "hidden":
+        field = InputCreatorTemplates.hidden({
+          id,
+        });
+        break;
       case "text":
       case "email":
       case "password":

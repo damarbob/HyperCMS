@@ -20,20 +20,18 @@ $fieldsError = validation_show_error('fields');
     </div>
 <?php endif; ?>
 <div class="block">
-    <div class="box">
-        <form id="hyper-form" action="<?= base_url('api/test/entries/save/' . $entry['id']) ?>" method="POST" enctype="multipart/form-data">
-            <div id="hyper-fields-container" class="field">
+    <form id="hyper-form" action="<?= base_url('api/test/entries/save/' . $entry['id']) ?>" method="POST" enctype="multipart/form-data">
+        <div id="hyper-fields-container" class="field">
+        </div>
+        <div class="field is-grouped">
+            <div class="control is-flex-grow-1">
+                <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
             </div>
-            <div class="field is-grouped">
-                <div class="control is-flex-grow-1">
-                    <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
-                </div>
-                <div class="control">
-                    <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>
-                </div>
+            <div class="control">
+                <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>
             </div>
-        </form>
-    </div>
+        </div>
+    </form>
 </div>
 
 <?php if (ENVIRONMENT == 'development'): ?>

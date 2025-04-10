@@ -1,15 +1,14 @@
 <!-- Modal for File Manager -->
-<div id="fileManagerModal" class="modal">
+<div id="fileManagerModal" class="modal is-large">
     <div class="modal-background"></div>
-    <div class="modal-card" style="width: 80%; max-width: 800px;">
-        <header class="modal-card-head">
-            <p class="modal-card-title">Select File</p>
-            <button class="delete" aria-label="close" id="closeFileManagerModal"></button>
-        </header>
-        <section class="modal-card-body" style="padding: 0;">
-            <iframe id="fileManagerIframe" data-src="<?= base_url('admin/file-manager') ?>" frameborder="0" style="width: 100%; height: 500px;"></iframe>
-        </section>
+    <div class="modal-content">
+        <div class="card">
+            <div class="card-content" style="--bulma-card-content-padding: 8px;">
+                <iframe id="fileManagerIframe" data-src="<?= base_url('admin/file-manager') ?>" frameborder="0" style="width: 100%; height: 500px;"></iframe>
+            </div>
+        </div>
     </div>
+    <button class="modal-close is-large" aria-label="close"></button>
 </div>
 
 <script type="module" src="<?= base_url('assets/js/admin/use-case/Form.js') ?>"></script>
@@ -25,8 +24,7 @@
             // Wait for document to be fully loaded
             document.addEventListener("DOMContentLoaded", function() {
 
-                // Retrieve the input element using the field ID. May return null if the element corresponds to multiple inputs.
-                // @IMPORTANT: fieldId might not directly match the input ID for multiple input types, such as checkboxes, radio buttons, select fields, etc.
+                // Retrieve the input element using the field ID.
                 const input = document.getElementById(fieldId);
 
                 if (!input) {
@@ -36,14 +34,24 @@
                     return;
                 }
 
-                // Initialize TinyMCE if it contains class 'hyper-rich-text-field'
+                // Initialize TinyMCE if element has class 'hyper-rich-text-field'
                 if (input.classList.contains('hyper-rich-text-field')) {
-                    // Initialize TinyMCE for the new input
                     initializeTinyMCE(fieldId);
                 } else if (input.type === 'url' && input.classList.contains('hyper-file-browse-field')) {
                     console.log('Found file browse field:', fieldId);
 
-                    input.addEventListener('click', function() {
+                    // Create a new "Browse file" button with Bulma styling and a FA icon.
+                    const browseBtn = document.createElement('button');
+                    browseBtn.type = 'button';
+                    browseBtn.className = 'button mt-2'; // Adjust classes as needed.
+                    browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang('ADmin.fileManager') ?></span>';
+
+                    // Append the button immediately after the input element.
+                    input.insertAdjacentElement('afterend', browseBtn);
+
+                    // Attach an event listener to the "Browse file" button.
+                    browseBtn.addEventListener('click', function() {
+                        // Open the file manager modal.
                         openModal(document.getElementById('fileManagerModal'));
 
                         // Lazy load the iframe source if it hasn't been loaded already.
@@ -53,23 +61,24 @@
                         }
                     });
 
+                    // Listen for messages from the file manager. (Note: if you have multiple file
+                    // inputs on the same page, consider attaching this listener only once globally.)
                     window.addEventListener('message', function(event) {
-                        // Optionally, you can check event.origin for extra security
-
+                        // Optionally validate the event.origin for improved security.
                         if (event.data && event.data.mceAction === 'filesSelected') {
-                            const selectedFiles = event.data.data; // This should be an array of URLs
+                            const selectedFiles = event.data.data; // Array of URL strings.
                             if (selectedFiles.length > 0) {
-                                // Set the first selected file URL
+                                // Insert the first selected file URL into the input.
                                 input.value = `<?= base_url('api/file-server/serve/') ?>${encodeURIComponent(hexEncode(selectedFiles[0]))}`;
                             }
-                            // Close the modal after a file has been selected
+                            // Close the modal after processing the selection.
                             closeModal(document.getElementById('fileManagerModal'));
                         }
                     });
-
                 }
             });
         },
+
     });
 
     // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
