@@ -97,6 +97,7 @@ export default class InputPopulator {
       case "email":
       case "password":
       case "number":
+      case "url":
       case "color":
       case "range":
       case "datetime-local":
@@ -135,8 +136,7 @@ export default class InputPopulator {
     }
 
     const filesInputOld = this.container.querySelector(`#${id}_old`);
-    const filesFormHelper = this.container.querySelector(`#${id}_formHelper`);
-    // console.log(filesFormHelper);
+    const filesFormHelper = this.container.querySelector(`#${id}_form-helper`);
     const filesInputParent = this.container.querySelector(`#${id}_parent`);
 
     if (filesInputOld && filesFormHelper && filesInputParent) {
@@ -145,13 +145,6 @@ export default class InputPopulator {
 
       // Insert file link HTML from our template.
       value.forEach((fileUrl) => {
-        // filesFormHelper.insertAdjacentHTML(
-        //     "beforeend",
-        //     InputPopulatorTemplates.fileLink({
-        //         url: config.baseUrl + fileUrl,
-        //         filename: (fileUrl)
-        //     })
-        // )
         filesFormHelper.append(
           InputPopulatorTemplates.fileLink({
             url: config.baseUrl + fileUrl,
@@ -164,15 +157,15 @@ export default class InputPopulator {
       // filesInputParent.insertAdjacentHTML("beforeend", InputPopulatorTemplates.deleteFile({id}));
       filesInputParent.append(InputPopulatorTemplates.deleteFile({ id }));
 
-      const buttonHapusFile = this.container.querySelector(
-        `#${id}_buttonHapusFile`
+      const buttonDeleteFile = this.container.querySelector(
+        `#${id}_button-delete-file`
       );
-      buttonHapusFile &&
-        buttonHapusFile.addEventListener("click", () =>
+      buttonDeleteFile &&
+        buttonDeleteFile.addEventListener("click", () =>
           this.confirmDeleteFile(
             filesInputOld,
             filesFormHelper,
-            buttonHapusFile
+            buttonDeleteFile
           )
         );
     }
@@ -184,17 +177,15 @@ export default class InputPopulator {
    *
    * @param {HTMLInputElement} filesInputOld - The hidden input storing file URLs.
    * @param {HTMLElement} filesFormHelper - The container displaying file links.
-   * @param {HTMLElement} buttonHapusFile - The delete button.
+   * @param {HTMLElement} buttonDeleteFile - The delete button.
    */
-  confirmDeleteFile(filesInputOld, filesFormHelper, buttonHapusFile) {
+  confirmDeleteFile(filesInputOld, filesFormHelper, buttonDeleteFile) {
     const text = "Deleted item cannot be recovered. Are you sure?";
 
     if (this.confirmDialog(text)) {
       filesInputOld.value = "";
-      // filesFormHelper.style.display = "none";
-      // buttonHapusFile.style.display = "none";
       filesFormHelper.remove();
-      buttonHapusFile.remove();
+      buttonDeleteFile.remove();
     }
   }
 

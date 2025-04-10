@@ -1,131 +1,118 @@
 // InputTemplates.js
-import van from "https://cdn.jsdelivr.net/gh/vanjs-org/van/public/van-1.5.3.min.js"
-import {replaceEnvironmentSyntax} from "../use-case/EnvironmentSyntaxParser.js";
-
-const {div, input, label, textarea, select, option, small, fragment} = van.tags;
+import { replaceEnvironmentSyntax } from "../use-case/EnvironmentSyntaxParser.js";
 
 /* ---------------------------------------------------------------------------
    Define the default (current) template set based on Bootstrap 5.
 --------------------------------------------------------------------------- */
 const defaultTemplates = {
-    text: ({ id, nama, tipe, required, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = `form-floating ${keterangan ? "mb-4" : "mb-3"}`;
+  text: ({ id, label, type, required, value, helper, className }) => {
+    const container = document.createElement("div");
+    container.className = `form-floating ${helper ? "mb-4" : "mb-3"}`;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <input
-                type="${tipe}"
+                type="${type}"
                 id="${id}"
                 name="${id}"
                 value="${value || ""}"
-                class="form-control"
+                class="form-control ${className}"
                 ${required ? "required" : ""}
             />
-            <label class="form-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            <label class="form-label" for="${id}">${label}</label>
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    datetime: ({ id, nama, tipe, required, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = `form-outline ${keterangan ? "mb-4" : "mb-3"}`;
+  datetime: ({ id, label, type, required, value, helper }) => {
+    const container = document.createElement("div");
+    container.className = `form-outline ${helper ? "mb-4" : "mb-3"}`;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <input
-                type="${tipe}"
+                type="${type}"
                 id="${id}"
                 name="${id}"
                 value="${value || ""}"
                 class="form-control form-control-lg"
                 ${required ? "required" : ""}
             />
-            <label class="form-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            <label class="form-label" for="${id}">${label}</label>
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    color: ({ id, nama, tipe, required, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = keterangan ? "mb-4" : "mb-3";
+  color: ({ id, label, type, required, value, helper }) => {
+    const container = document.createElement("div");
+    container.className = helper ? "mb-4" : "mb-3";
 
-        container.innerHTML = `
-            <label class="form-label" for="${id}">${nama}</label>
+    container.innerHTML = `
+            <label class="form-label" for="${id}">${label}</label>
             <input
-                type="${tipe}"
+                type="${type}"
                 id="${id}"
                 name="${id}"
                 value="${value || "#000000"}"
                 class="form-control form-control-color"
-                title="${nama}"
+                title="${label}"
                 ${required ? "required" : ""}
             />
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    textarea: ({ id, nama, required, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = `form-floating ${keterangan ? "mb-4" : "mb-3"}`;
+  textarea: ({ id, label, required, value, helper, className }) => {
+    const container = document.createElement("div");
+    container.className = `form-floating ${helper ? "mb-4" : "mb-3"}`;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <textarea
                 id="${id}"
                 name="${id}"
-                class="form-control"
+                class="form-control ${className}"
                 ${required ? "required" : ""}
             >${value || ""}</textarea>
-            <label class="form-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            <label class="form-label" for="${id}">${label}</label>
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    editor: ({ id, nama, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = keterangan ? "mb-4" : "mb-3";
+  checkbox: ({ id, label, required, checked, helper }) => {
+    const container = document.createElement("div");
+    container.className = `form-check ${helper ? "mb-4" : "mb-3"}`;
 
-        container.innerHTML = `
-            <textarea
-                id="${id}"
-                name="${id}"
-                class="form-control hyper-rich-text-editor"
-            >${value || ""}</textarea>
-            <label class="form-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
-        `;
-
-        return container;
-    },
-
-    code: ({ id, nama, value, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = keterangan ? "mb-4" : "mb-3";
-
-        container.innerHTML = `
-            <textarea
-                id="${id}"
-                name="${id} hyper-code-editor"
-                class="form-control"
-            >${value || ""}</textarea>
-            <label class="form-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
-        `;
-
-        return container;
-    },
-
-    checkbox: ({ id, nama, required, checked, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = `form-check ${keterangan ? "mb-4" : "mb-3"}`;
-
-        container.innerHTML = `
+    container.innerHTML = `
             <input
                 type="checkbox"
                 id="${id}"
@@ -134,22 +121,29 @@ const defaultTemplates = {
                 ${required ? "required" : ""}
                 ${checked ? "checked" : ""}
             />
-            <label class="form-check-label" for="${id}">${nama}</label>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            <label class="form-check-label" for="${id}">${label}</label>
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    checkboxes: ({ id, options, required, keterangan }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+  checkboxes: ({ id, options, required, helper }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const container = document.createElement("div");
-        container.className = 'mb-3';
+    const container = document.createElement("div");
+    container.className = "mb-3";
 
-        const checkboxesHTML = options
-            .map(
-                (option) => `
+    const checkboxesHTML = options
+      .map(
+        (option) => `
                 <div class="form-check">
                     <input
                         type="checkbox"
@@ -160,30 +154,37 @@ const defaultTemplates = {
                         ${required ? "required" : ""}
                         ${option.checked ? "checked" : ""}
                     />
-                    <label class="form-check-label" for="${id}_${option.value}">${option.label || option.value}</label>
+                    <label class="form-check-label" for="${id}_${
+          option.value
+        }">${option.label || option.value}</label>
                 </div>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-            
-        container.innerHTML = checkboxesHTML;
+    container.innerHTML = checkboxesHTML;
 
-        if (keterangan) {
-            container.insertAdjacentHTML('beforeend', `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>`);
-        }
-          
-        return container;
-    },
+    if (helper) {
+      container.insertAdjacentHTML(
+        "beforeend",
+        `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+          helper
+        )}</small></div>`
+      );
+    }
 
-    radio: ({ id, options, required }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+    return container;
+  },
 
-        const container = document.createElement("div");
+  radio: ({ id, options, required }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const radiosHTML = options
-            .map(
-                (option) => `
+    const container = document.createElement("div");
+
+    const radiosHTML = options
+      .map(
+        (option) => `
                 <div class="form-check mb-3">
                     <input
                         type="radio"
@@ -194,21 +195,23 @@ const defaultTemplates = {
                         ${required ? "required" : ""}
                         ${option.checked ? "checked" : ""}
                     />
-                    <label class="form-check-label" for="${id}_${option.value}">${option.label || option.value}</label>
+                    <label class="form-check-label" for="${id}_${
+          option.value
+        }">${option.label || option.value}</label>
                 </div>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-        container.innerHTML = radiosHTML;
-        return container;
-    },
+    container.innerHTML = radiosHTML;
+    return container;
+  },
 
-    range: ({ id, nama, required, value, options, keterangan }) => {
-        const container = document.createElement("div");
+  range: ({ id, label, required, value, options, helper }) => {
+    const container = document.createElement("div");
 
-        container.innerHTML = `
-            <label class="form-label" for="${id}">${nama}</label>
+    container.innerHTML = `
+            <label class="form-label" for="${id}">${label}</label>
             <div class="range mb-3">
                 <input
                     type="range"
@@ -221,44 +224,57 @@ const defaultTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    file: ({ id, nama, required, tipe, keterangan }) => {
-        const container = document.createElement("div");
-        container.className = "form-floating mb-3";
-        container.id = `${id}_parent`;
+  file: ({ id, label, required, helper, multiple }) => {
+    const container = document.createElement("div");
+    container.className = "form-floating mb-3";
+    container.id = `${id}_parent`;
 
-        container.innerHTML = `
+    container.innerHTML = `
             <input
                 type="file"
                 id="${id}"
-                name="${tipe === "file-multiple" ? `${id}[]` : id}"
+                name="${multiple ? `${id}[]` : id}"
                 class="form-control"
-                ${tipe === "file-multiple" ? "multiple" : ""}
+                ${multiple ? "multiple" : ""}
                 ${required ? "required" : ""}
             />
-            <label class="form-label" for="${id}">${nama}</label>
+            <label class="form-label" for="${id}">${label}</label>
             <input type="hidden" id="${id}_old" name="${id}" />
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
-            <div class="d-flex flex-wrap gap-2 pt-2 pb-2" id="${id}_formHelper"></div>
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
+            <div class="d-flex flex-wrap gap-2 pt-2 pb-2" id="${id}_form-helper"></div>
         `;
 
-        return container;
-    },
+    return container;
+  },
 
-    select: ({ id, nama, required, value, options, keterangan }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+  select: ({ id, label, required, value, options, helper }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const container = document.createElement("div");
-        container.className = "mb-3";
+    const container = document.createElement("div");
+    container.className = "mb-3";
 
-        const optionsHTML = options
-            .map(
-                (item) => `
+    const optionsHTML = options
+      .map(
+        (item) => `
                 <option
                     value="${item.value}"
                     ${value && item.value == value ? "selected" : ""}
@@ -266,46 +282,53 @@ const defaultTemplates = {
                     ${item.label}
                 </option>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-        container.innerHTML = `
-            <label class="form-label" for="${id}">${nama}</label>
-            <select id="${id}" name="${id}" class="form-select" ${required ? "required" : ""}>
+    container.innerHTML = `
+            <label class="form-label" for="${id}">${label}</label>
+            <select id="${id}" name="${id}" class="form-select" ${
+      required ? "required" : ""
+    }>
                 ${optionsHTML}
             </select>
-            ${keterangan ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(keterangan)}</small></div>` : ""}
+            ${
+              helper
+                ? `<div class="form-helper"><small>${replaceEnvironmentSyntax(
+                    helper
+                  )}</small></div>`
+                : ""
+            }
         `;
 
-        return container;
-    },
+    return container;
+  },
 };
 
 let template = defaultTemplates;
 
 /**
  * Sets the current template framework.
- * @param {{text: function({id: *, nama: *, tipe: *, required: *, value: *, keterangan: *}): *, datetime: function({id: *, nama: *, tipe: *, required: *, value: *, keterangan: *}): *, color: function({id: *, nama: *, tipe: *, required: *, value: *, keterangan: *}): *, textarea: function({id: *, nama: *, required: *, value: *, keterangan: *}): *, checkbox: function({id: *, nama: *, required: *, checked: *, keterangan: *}): *, radio: function({id: *, options: *, required: *}): (string|*), range: function({id: *, nama: *, required: *, value: *, options: *, keterangan: *}): *, file: function({id: *, nama: *, required: *, tipe: *, keterangan: *}): *, select: function({id: *, nama: *, required: *, value: *, options: *, keterangan: *}): (string|*)}} jsonTemplate - the JSON template
  */
 const setTemplate = (jsonTemplate) => {
-    template = jsonTemplate;
+  template = jsonTemplate;
 };
 
 /* ---------------------------------------------------------------------------
    Export the unified InputTemplates API.
 --------------------------------------------------------------------------- */
 export const InputCreatorTemplates = {
-    text: (data) => template.text(data),
-    datetime: (data) => template.datetime(data),
-    color: (data) => template.color(data),
-    textarea: (data) => template.textarea(data),
-    editor: (data) => template.editor(data),
-    code: (data) => template.code(data),
-    checkbox: (data) => template.checkbox(data),
-    checkboxes: (data) => template.checkboxes(data),
-    radio: (data) => template.radio(data),
-    range: (data) => template.range(data),
-    file: (data) => template.file(data),
-    select: (data) => template.select(data),
-    setTemplate,
+  text: (data) => template.text(data),
+  datetime: (data) => template.datetime(data),
+  color: (data) => template.color(data),
+  textarea: (data) => template.textarea(data),
+  editor: (data) => template.editor(data),
+  code: (data) => template.code(data),
+  checkbox: (data) => template.checkbox(data),
+  checkboxes: (data) => template.checkboxes(data),
+  radio: (data) => template.radio(data),
+  range: (data) => template.range(data),
+  file: (data) => template.file(data),
+  select: (data) => template.select(data),
+  setTemplate,
 };

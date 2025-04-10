@@ -1,3 +1,7 @@
+<?php
+
+use Config\Hyper;
+?>
 <!DOCTYPE html>
 <html>
 <!-- data-theme="light" -->
@@ -6,7 +10,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title><?= isset($title) ? $title : lang('Admin.appName') ?></title>
+    <title><?= isset($title) ? $title : (new Hyper)->appName ?></title>
 
     <!-- Styles & icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@1.0.2/css/bulma.min.css">
@@ -63,14 +67,7 @@
     <!-- Main Content Section -->
     <section class="section">
         <div class="container is-fluid">
-            <!-- <div class="columns"> -->
-            <!-- Main Content Column -->
-            <!-- <div class="column" style="overflow: auto;"> -->
-            <!-- <div class="column"> -->
             <?= $this->renderSection('content') ?>
-            <!-- </div> -->
-            <!-- </div> -->
-            <!-- </div> -->
         </div>
     </section>
 

@@ -1,9 +1,13 @@
+<?php
+
+use Config\Hyper;
+?>
 <?= $this->extend('auth/layout/page') ?>
 
 <?= $this->section('content') ?>
 <!-- App Name / Title -->
 <div class="block">
-    <h1 class="title has-text-centered"><?= lang('Admin.appName') ?></h1>
+    <h1 class="title has-text-centered"><?= (new Hyper)->appName ?></h1>
 </div>
 
 <!-- Registration Card -->

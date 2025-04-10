@@ -1,8 +1,12 @@
+<?php
+
+use Config\Hyper;
+?>
 <?= $this->extend('auth/layout/page') ?>
 
 <?= $this->section('content') ?>
 <div class="block">
-    <h1 class="title has-text-centered"><?= lang('Admin.appName') ?></h1>
+    <h1 class="title has-text-centered"><?= (new Hyper)->appName ?></h1>
 </div>
 <div class="block">
     <!-- Use columns to center the card -->

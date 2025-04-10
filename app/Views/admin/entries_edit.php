@@ -7,6 +7,18 @@ $fieldsError = validation_show_error('fields');
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('content') ?>
+<?php if ($is_editor_eligible): ?>
+    <div class="block is-flex is-justify-content-end">
+        <a href="<?= base_url('admin/editor?entry_id=' . $entry['id']) ?>" class="button is-primary" target="_blank">
+            <span class="icon is-small">
+                <i class="fa-solid fa-swatchbook"></i>
+            </span>
+            <span>
+                <?= lang('Admin.openWithEditor') ?>
+            </span>
+        </a>
+    </div>
+<?php endif; ?>
 <div class="block">
     <div class="box">
         <form id="hyper-form" action="<?= base_url('api/test/entries/save/' . $entry['id']) ?>" method="POST" enctype="multipart/form-data">
@@ -27,6 +39,7 @@ $fieldsError = validation_show_error('fields');
 <?php if (ENVIRONMENT == 'development'): ?>
     <div class="block">
         <form method="POST" action="<?= base_url('admin/entries/' . $entry['id']) ?>">
+            <?= csrf_field() ?>
             <div class="field">
                 <label class="label"><?= lang('Admin.fields') ?></label>
                 <div class="control">

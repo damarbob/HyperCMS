@@ -69,8 +69,8 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            'csrf' => ['except' => ['api/*']],
             // 'honeypot',
-            // 'csrf',
             // 'invalidchars',
         ],
         'after' => [
@@ -114,10 +114,5 @@ class Filters extends BaseFilters
     public function __construct()
     {
         parent::__construct();
-
-        // Only add 'api/*' if we're in the production environment.
-        if (ENVIRONMENT === 'production') {
-            $this->filters['session']['before'][] = 'api/*';
-        }
     }
 }

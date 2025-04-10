@@ -3,6 +3,17 @@
 <?= $this->section('content') ?>
 <table id="hyperTable" class="table is-striped" style="width:100%">
 </table>
+
+<!-- Code modal -->
+<div id="codeModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card">
+        <section class="modal-card-body">
+            <textarea id="codeModalTextarea" class="textarea" style="min-height: 512px; height: 100%;"></textarea>
+        </section>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
+</div>
 <?= $this->endSection() ?>
 
 <?= $this->section('head') ?>
@@ -21,6 +32,22 @@
 
 <?= $this->section('scripts') ?>
 <script type="text/javascript">
+    function openCodeModal(buttonEl) {
+        // Retrieve the code from the button's data-code attribute
+        const code = buttonEl.getAttribute('data-code');
+        // Set the code in the modal's textarea
+        const textarea = document.getElementById('codeModalTextarea');
+        if (textarea) {
+            textarea.value = unescape(code);
+        }
+        // Get the modal element (you can also pass this in if desired)
+        const modal = document.getElementById('codeModal');
+        // Now open the modal using your openModal function (make sure it's defined)
+        openModal(modal);
+    }
+</script>
+
+<script type="text/javascript">
     var lang = '<?= $lang ?>';
     var options = {
         processing: true,
@@ -28,8 +55,8 @@
 
         // Configure the AJAX endpoint and method.
         ajax: {
-            url: "<?= base_url('/api/test/model/dt') ?>", // Your CI4 API endpoint that returns JSON, @TODO: remove test
-            type: "POST", // Often POST is used for server side processing
+            url: "<?= base_url('/api/test/model/dt') ?>", // @TODO: remove test
+            type: "POST",
             data: function(d) {
                 d.id = <?= $id ?>;
             }
@@ -49,10 +76,27 @@
                 },
             <?php endforeach; ?>
             <?php foreach ($fields as $field): ?> {
-                    title: "<?= $field->nama ?>",
+                    title: "<?= $field->label ?>",
                     data: "<?= $field->id ?>",
                     defaultContent: "<?= lang('Admin.n/a') ?>", // If data not found, show n/a instead
                     orderSequence: ["asc", "desc"],
+                    render: function(data, type, row, meta) {
+                        const fieldType = '<?= $field->type ?>';
+                        const fieldClassName = <?= isset($field->className) ? "'" . $field->className . "'" : 'null' ?>;
+                        if (type === 'display') {
+                            if (data) {
+                                if (fieldType === 'textarea' && typeof fieldClassName === 'string' && fieldClassName.includes('hyper-code-field')) {
+                                    // Return escaped data for display
+                                    return `<button class="button is-primary is-small" data-code="${escape(data)}" onclick="openCodeModal(this)"><span class="icon"><i class="fa-solid fa-code"></i></span></button>`;
+                                } else {
+                                    return data;
+                                }
+                            } else if (data === '') {
+                                return '<?= lang('Admin.(empty)') ?>';
+                            }
+                        }
+                        return data;
+                    }
                 },
             <?php endforeach; ?>
         ],
@@ -72,12 +116,18 @@
                             window.location.href = '<?= base_url("admin/entries/new?model_id=$id") ?>';
                         }
                     },
-                    "colvis", // Column visibility button
+                    {
+                        extend: "colvis", // Column visibility button
+                        text: '<i class="fa-solid fa-table mr-2"></i><?= lang('Admin.data') ?>',
+                    },
                     {
                         extend: "excelHtml5", // Export to Excel using HTML5 features
-                        title: "Models Export",
+                        text: '<i class="fa-solid fa-download mr-2"></i><?= lang('Admin.excel') ?>',
                     },
-                    "print", // Print button
+                    {
+                        extend: "print", // Print button
+                        text: '<i class="fa-solid fa-print mr-2"></i><?= lang('Admin.print') ?>',
+                    },
                 ],
             },
             topEnd: {

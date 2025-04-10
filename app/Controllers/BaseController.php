@@ -11,6 +11,7 @@ use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use Config\Hyper;
 use Psr\Log\LoggerInterface;
 
 /**
@@ -75,7 +76,7 @@ abstract class BaseController extends Controller
         $this->entryDataModel = new EntryDataModel();
 
         // Preinit data
-        $this->data['title'] = lang('Admin.appName');
+        $this->data['title'] = (new Hyper)->appName;
         $this->data['lang'] = service('request')->getLocale();
         $this->data['uri'] = $request->getUri() . '/';
         $this->data['uriSegments'] = $request->getUri()->getSegments();

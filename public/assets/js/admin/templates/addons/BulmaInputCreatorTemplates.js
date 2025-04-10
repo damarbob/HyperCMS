@@ -4,15 +4,37 @@ import {replaceEnvironmentSyntax} from "../../use-case/EnvironmentSyntaxParser.j
    Define Bulma-based template set.
 --------------------------------------------------------------------------- */
 export const bulmaInputCreatorTemplates = {
-    text: ({ id, nama, tipe, required, value, keterangan }) => {
+    text: ({ id, label, type, required, value, helper, className }) => {
         const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
-                    type="${tipe}"
+                    type="${type}"
+                    id="${id}"
+                    name="${id}"
+                    class="input ${className}"
+                    value="${value || ""}"
+                    ${required ? "required" : ""}
+                />
+            </div>
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+        `;
+
+        return field;
+    },
+
+    datetime: ({ id, label, type, required, value, helper }) => {
+        const field = document.createElement("div");
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+
+        field.innerHTML = `
+            <label class="label" for="${id}">${label}</label>
+            <div class="control">
+                <input
+                    type="${type}"
                     id="${id}"
                     name="${id}"
                     class="input"
@@ -20,120 +42,58 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    datetime: ({ id, nama, tipe, required, value, keterangan }) => {
+    color: ({ id, label, type, required, value, helper }) => {
         const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
-                    type="${tipe}"
+                    type="${type}"
                     id="${id}"
                     name="${id}"
                     class="input"
-                    value="${value || ""}"
-                    ${required ? "required" : ""}
-                />
-            </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
-        `;
-
-        return field;
-    },
-
-    color: ({ id, nama, tipe, required, value, keterangan }) => {
-        const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
-
-        field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
-            <div class="control">
-                <input
-                    type="${tipe}"
-                    id="${id}"
-                    name="${id}"
-                    class="input"
-                    title="${nama}"
+                    title="${label}"
                     value="${value || "#000000"}"
                     ${required ? "required" : ""}
                 />
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    textarea: ({ id, nama, required, value, keterangan }) => {
+    textarea: ({ id, label, required, value, helper, className }) => {
         const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <textarea
                     id="${id}"
                     name="${id}"
-                    class="textarea"
+                    class="textarea ${className}"
                     ${required ? "required" : ""}
                 >${value || ""}</textarea>
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    editor: ({ id, nama, required, value, keterangan }) => {
+    checkbox: ({ id, label, required, checked, helper }) => {
         const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
-
-        field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
-            <div class="control">
-                <textarea
-                    id="${id}"
-                    name="${id}"
-                    class="textarea hyper-rich-text-editor"
-                    ${required ? "required" : ""}
-                >${value || ""}</textarea>
-            </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
-        `;
-
-        return field;
-    },
-
-    code: ({ id, nama, required, value, keterangan }) => {
-        const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
-
-        field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
-            <div class="control">
-                <textarea
-                    id="${id}"
-                    name="${id}"
-                    class="textarea hyper-code-editor"
-                    ${required ? "required" : ""}
-                >${value || ""}</textarea>
-            </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
-        `;
-
-        return field;
-    },
-
-    checkbox: ({ id, nama, required, checked, keterangan }) => {
-        const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
         field.innerHTML = `
             <div class="control">
@@ -145,16 +105,16 @@ export const bulmaInputCreatorTemplates = {
                         ${required ? "required" : ""}
                         ${checked ? "checked" : ""}
                     />
-                    ${nama}
+                    ${label}
                 </label>
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    checkboxes: ({ id, options, required, keterangan }) => {
+    checkboxes: ({ id, options, required, helper }) => {
         if (!options || !Array.isArray(options)) return document.createDocumentFragment();
 
         const field = document.createElement("div");
@@ -182,13 +142,13 @@ export const bulmaInputCreatorTemplates = {
             <div class="checkboxes">
                 ${checkboxesHTML}
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    radio: ({ id, options, required, keterangan }) => {
+    radio: ({ id, options, required, helper }) => {
         if (!options || !Array.isArray(options)) return document.createDocumentFragment();
 
         const field = document.createElement("div");
@@ -216,18 +176,18 @@ export const bulmaInputCreatorTemplates = {
             <div class="radios">
                 ${radiosHTML}
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    range: ({ id, nama, required, value, options, keterangan }) => {
+    range: ({ id, label, required, value, options, helper }) => {
         const field = document.createElement("div");
-        field.className = `field ${keterangan ? "mb-4" : "mb-3"}`;
+        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
                     type="range"
@@ -240,27 +200,27 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;
     },
 
-    file: ({ id, nama, required, tipe, keterangan }) => {
+    file: ({ id, label, required, helper, multiple }) => {
         const field = document.createElement("div");
         field.id = `${id}_parent`;
         field.className = "field";
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="file has-name is-fullwidth">
                 <label class="file-label">
                     <input
                         class="file-input"
                         type="file"
                         id="${id}"
-                        name="${tipe === "file-multiple" ? `${id}[]` : id}"
-                        ${tipe === "file-multiple" ? "multiple" : ""}
+                        name="${multiple ? `${id}[]` : id}"
+                        ${multiple ? "multiple" : ""}
                         ${required ? "required" : ""}
                     />
                     <input type="hidden" id="${id}_old" name="${id}" />
@@ -271,14 +231,14 @@ export const bulmaInputCreatorTemplates = {
                     <span class="file-name"></span>
                 </label>
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
-            <div class="is-flex is-flex-wrap-wrap mb-2" id="${id}_formHelper" style="gap: 0.5rem;"></div>
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            <div class="is-flex is-flex-wrap-wrap mb-2" id="${id}_form-helper" style="gap: 0.5rem;"></div>
         `;
 
         return field;
     },
 
-    select: ({ id, nama, required, value, options, keterangan }) => {
+    select: ({ id, label, required, value, options, helper }) => {
         if (!options || !Array.isArray(options)) return document.createDocumentFragment();
 
         const field = document.createElement("div");
@@ -298,7 +258,7 @@ export const bulmaInputCreatorTemplates = {
             .join("");
 
         field.innerHTML = `
-            <label class="label" for="${id}">${nama}</label>
+            <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <div class="select">
                     <select id="${id}" name="${id}" ${required ? "required" : ""}>
@@ -306,7 +266,7 @@ export const bulmaInputCreatorTemplates = {
                     </select>
                 </div>
             </div>
-            ${keterangan ? `<p class="help">${replaceEnvironmentSyntax(keterangan)}</p>` : ""}
+            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
         `;
 
         return field;

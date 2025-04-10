@@ -20,9 +20,8 @@ class Entries extends BaseController
         parent::initController($request, $response, $logger);
 
         $this->syntaxProcessor = new SyntaxProcessor();
-
     }
-    
+
     public function index(): string
     {
         // $this->modelsModel->test();
@@ -51,7 +50,7 @@ class Entries extends BaseController
         // Process data syntax on model fields
         $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
 
-        $this->data['title'] = lang('Admin.newxEntry', ['x' => $model['name']]);
+        $this->data['title'] = lang('Admin.newx', ['x' => $model['name']]);
 
         return view('admin/entries_new', $this->data);
     }
@@ -60,6 +59,9 @@ class Entries extends BaseController
     {
 
         $modelName = $this->request->getGet('model_name');
+
+        /* Model */
+
         $modelBuilder = $this->modelsModel->getCustomBuilder();
         $modelResult = $modelBuilder->where('name', $modelName)->limit(1)->get()->getResultArray();
 
@@ -67,17 +69,42 @@ class Entries extends BaseController
         if (!$modelResult)
             return redirect('admin/entries')->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelName]));
 
-        $model = $modelResult[0];
+        $model = $modelResult[0]; // Assign the model
+
+        // Editor eligibility check
+        // Decode the JSON string
+        $fields = json_decode($model['fields'], true);
+
+        // Build a mapping: key -> content array
+        $fieldsById = [];
+        foreach ($fields as $element) {
+            if (isset($element['id'])) {
+                $fieldId = $element['id'];
+                $fieldsById[$fieldId] = $element;
+            }
+        }
+
+        // Now check our required fields
+        $hasHtml  = isset($fieldsById['hyper_html']) && $fieldsById['hyper_html']['className'] === 'hyper-code-field';
+        $hasCss  = isset($fieldsById['hyper_css']) && $fieldsById['hyper_css']['className'] === 'hyper-code-field';
+        $hasComponentElements  = isset($fieldsById['hyper_component_elements']) && $fieldsById['hyper_component_elements']['className'] === 'hyper-code-field';
+        $hasPageProjectData  = isset($fieldsById['hyper_page_project_data']) && $fieldsById['hyper_page_project_data']['className'] === 'hyper-code-field';
+        // End of editor eligibility check
 
         $this->data['model'] = $model;
+        $this->data['is_editor_eligible'] = $hasHtml && $hasCss && $hasComponentElements && $hasPageProjectData;
 
         // Process data syntax on model fields
         $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
 
+        /* End of model */
+
+        /* Entry */
+
         $builder = $this->entriesModel->getCustomBuilder();
         $entriesResult = $builder->where('id', $id)->limit(1)->get()->getResultArray();
 
-        // Check if the model exists
+        // Check if the entry exists
         if (!$entriesResult)
             return redirect('admin/entries')->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $id]));
 
@@ -85,9 +112,9 @@ class Entries extends BaseController
 
         $this->data['entry'] = $entry;
 
-        $this->data['title'] = lang('Admin.editxEntry', ['x' => $entry['model_name']]);
+        /* End of entry */
 
-        // dd($entriesResult[0]);
+        $this->data['title'] = lang('Admin.editx', ['x' => $entry['model_name']]);
 
         return view('admin/entries_edit', $this->data);
     }
@@ -133,8 +160,6 @@ class Entries extends BaseController
 
     public function update($id)
     {
-
-        dd($this->request->getPost());
 
         $rules = [
             'fields' => 'required',

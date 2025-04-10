@@ -74,8 +74,9 @@ class Auth extends ShieldAuth
      * to apply any logic you may need.
      */
     public array $redirects = [
-        'register'          => '/',
-        'login'             => '/',
+        // @IMPORTANT: Update production redirects if dashboard is finished
+        'register'          => (ENVIRONMENT === 'development') ? '/admin/dashboard' : '/admin/models',
+        'login'             => (ENVIRONMENT === 'development') ? '/admin/dashboard' : '/admin/models',
         'logout'            => 'login',
         'force_reset'       => '/',
         'permission_denied' => '/',
