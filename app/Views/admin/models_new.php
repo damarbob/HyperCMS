@@ -8,6 +8,7 @@ $fieldsError = validation_show_error('fields');
 
 <?= $this->section('content') ?>
 <form id="formNewModel" method="POST" action="<?= base_url('admin/models') ?>">
+    <?= csrf_field() ?>
     <div class="field">
         <div class="control has-icons-right">
             <input class="input <?= ($nameError) ? 'is-danger' : '' ?>" type="text" placeholder="Name" name="name" value="<?= old('name') ?>" />
@@ -43,9 +44,16 @@ $fieldsError = validation_show_error('fields');
 
     const myEditor = new MonacoEditorWrapper({
         editorContainerId: "monaco",
-        fieldsId: "fields",
-        formId: "formNewModel",
+        textareaId: "fields",
         language: "json",
+        onSave: function(editor) {
+            const form = document.getElementById('formNewModel');
+            if (form) {
+                form.submit();
+            } else {
+                console.warn("Form id is not assigned to the editor");
+            }
+        },
     });
 </script>
 <?= $this->endSection() ?>

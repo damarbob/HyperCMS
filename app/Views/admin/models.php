@@ -176,62 +176,94 @@
                 orderSequence: ["asc", "desc"],
             },
             {
-                title: "<?= lang("Admin.fields") ?>",
+                title: "<?= lang('Admin.fields') ?>",
                 data: "fields",
                 orderSequence: ["asc", "desc"],
                 render: (data) => {
-                    // JSON.stringify(data, null, 2)
-                    // (Paste the code from above here)
+                    // Parse the data if it's a string
                     if (typeof data === "string") {
                         try {
                             data = JSON.parse(data);
                         } catch (err) {
-                            return data;
+                            return '<span class="tag is-light">Invalid JSON</span>';
                         }
                     }
+
+                    // Return if data is not an object/array
                     if (typeof data !== "object" || data === null) {
                         return data;
                     }
-                    var tagClasses = ['is-primary', 'is-link', 'is-info', 'is-success'];
-                    var output = "";
-                    var i = 0;
-                    var threshold = 30;
-                    for (var key in data) {
-                        if (data.hasOwnProperty(key)) {
-                            var value = data[key];
-                            if (typeof value === "object") {
-                                value = JSON.stringify(value);
-                            } else {
-                                value = String(value);
+
+                    // Define color classes for tags
+                    const tagClasses = ['is-primary', 'is-link', 'is-info', 'is-success', 'is-warning', 'is-danger'];
+                    let output = '<div class="tags are-small" style="margin-bottom: 0;">';
+                    let index = 0;
+
+                    // Process each field
+                    if (Array.isArray(data)) {
+                        data.forEach((field) => {
+                            if (field && typeof field === 'object') {
+                                const tagClass = tagClasses[index % tagClasses.length];
+                                const fieldLabel = field.label || field.id || `Field ${index}`;
+                                const fieldType = field.type ? `Type: ${field.type}` : '';
+                                const fieldHelper = field.helper ? `Help: ${field.helper}` : '';
+
+                                // Create tooltip content
+                                const tooltipContent = `
+                                    <div class="content" style="text-align: left; max-width: 300px;">
+                                        <p><strong>${fieldLabel}</strong></p>
+                                        ${fieldType ? `<p>${fieldType}</p>` : ''}
+                                        ${fieldHelper ? `<p>${fieldHelper}</p>` : ''}
+                                        ${field.className ? `<p>Class: ${field.className}</p>` : ''}
+                                    </div>
+                                `;
+
+                                // Create the tag with tooltip attributes
+                                output += `
+                                    <span class="tag ${tagClass} field-tag" 
+                                        data-tippy-content="${tooltipContent.replace(/"/g, '&quot;')}"
+                                        style="margin-right: 5px; margin-bottom: 5px; cursor: help;">
+                                        ${fieldLabel}
+                                    </span>
+                                `;
+                                index++;
                             }
-                            var combined = key + ": " + value;
-                            if (combined.length > threshold) {
-                                combined = combined.substr(0, threshold - 3) + "...";
+                        });
+                    } else {
+                        // Handle object case if needed
+                        for (const key in data) {
+                            if (data.hasOwnProperty(key)) {
+                                const tagClass = tagClasses[index % tagClasses.length];
+                                const value = typeof data[key] === 'object' ?
+                                    JSON.stringify(data[key]) :
+                                    String(data[key]);
+
+                                output += `
+                                    <span class="tag ${tagClass}" 
+                                        style="margin-right: 5px; margin-bottom: 5px;">
+                                        ${key}: ${value.length > 30 ? value.substring(0, 27) + '...' : value}
+                                    </span>
+                                `;
+                                index++;
                             }
-                            var tagClass = tagClasses[i % tagClasses.length];
-                            output += '<span class="tag ' + tagClass + '" style="margin-right: 5px; margin-bottom: 5px;">' + combined + '</span> ';
-                            i++;
                         }
                     }
-                    return output;
-                    // let obj;
-                    // // Ensure the data is an object.
-                    // if (typeof data === "string") {
-                    //     try {
-                    //         obj = JSON.parse(data);
-                    //     } catch (err) {
-                    //         return data;
-                    //     }
-                    // } else if (typeof data === "object" && data !== null) {
-                    //     obj = data;
-                    // } else {
-                    //     return data;
-                    // }
 
-                    // // Render the object as a series of Bulma tags.
-                    // return renderBulmaTagsForObject(obj, {
-                    //     threshold: 30
-                    // });
+                    output += '</div>';
+                    return output;
+                },
+                createdCell: function(cell) {
+                    // Initialize tooltips for this cell
+                    $(cell).find('.field-tag').each(function() {
+                        tippy(this, {
+                            allowHTML: true,
+                            interactive: true,
+                            placement: 'top-start',
+                            theme: 'light',
+                            animation: 'shift-away',
+                            delay: [100, 0],
+                        });
+                    });
                 },
             },
             {
@@ -264,20 +296,28 @@
         // Layout
         layout: {
             topStart: {
-                buttons: [{
-                        className: 'is-primary',
-                        text: '<i class="fa-solid fa-plus mr-2"></i>New',
-                        action: function(e, dt, node, config) {
-                            window.location.href = '<?= $uri . 'new' ?>';
-                        }
-                    },
-                    "colvis", // Column visibility button
-                    {
-                        extend: "excelHtml5", // Export to Excel using HTML5 features
-                        title: "Models Export",
-                    },
-                    "print", // Print button
-                ],
+                buttons: {
+                    buttons: [{
+                            className: 'is-primary',
+                            text: '<i class="fa-solid fa-plus mr-2"></i><?= lang('Admin.new') ?>',
+                            action: function(e, dt, node, config) {
+                                window.location.href = '<?= $uri . 'new' ?>';
+                            }
+                        },
+                        {
+                            extend: "colvis", // Column visibility button
+                            text: '<i class="fa-solid fa-table mr-2"></i><?= lang('Admin.data') ?>',
+                        },
+                        {
+                            extend: "excelHtml5", // Export to Excel using HTML5 features
+                            text: '<i class="fa-solid fa-download mr-2"></i><?= lang('Admin.excel') ?>',
+                        },
+                        {
+                            extend: "print", // Print button
+                            text: '<i class="fa-solid fa-print mr-2"></i><?= lang('Admin.print') ?>',
+                        },
+                    ]
+                },
             },
             topEnd: {
                 pageLength: {

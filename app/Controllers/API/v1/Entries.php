@@ -7,13 +7,11 @@ use App\Models\EntriesModel;
 use App\Models\EntryDataModel;
 use App\Models\ModelsModel;
 use CodeIgniter\HTTP\Files\UploadedFile;
-use CodeIgniter\HTTP\ResponseInterface;
 
 class Entries extends ApiController
 {
     public function index()
     {
-        // dd($this->request->getPost());
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
@@ -21,8 +19,8 @@ class Entries extends ApiController
         $start  = $data['start'];    // Offset]
         $length = $data['length'];   // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'];
-        $columns = $data['columns'];
+        $order  = $data['order'] ?? null;
+        $columns = $data['columns'] ?? null;
 
         $model = new EntriesModel();
         $modelBuilder = $model->getCustomBuilder();
@@ -53,6 +51,9 @@ class Entries extends ApiController
             $orderDir = $order[0]['dir'];
             $orderColumn = $columns[$orderColumnIndex]['data'];
             $modelBuilder->orderBy($orderColumn, $orderDir);
+        } else {
+            // Default ordering by date_modified DESC
+            $modelBuilder->orderBy('date_modified', 'DESC');
         }
 
         // 4. Apply limit for pagination (if length is -1, that means no limit).
@@ -80,7 +81,6 @@ class Entries extends ApiController
      */
     public function create($model_id)
     {
-        // $model_id = 10000;
         // Default failure response.
         $response = ['success' => false, 'message' => lang('Admin.terjadiGalat')];
 
@@ -212,14 +212,15 @@ class Entries extends ApiController
                             $originalName = url_title(pathinfo($file->getClientName(), PATHINFO_FILENAME), '-', false);
                             $randomName   = $file->getRandomName();
 
+                            // @TODO: Make the destination path configurable.
                             // Final destination path (adjust as necessary).
-                            $destination = FCPATH . 'tests/uploads';
+                            $destination = FCPATH . '.hyper-dev/uploads';
 
                             // Move the file.
                             $file->move($destination, $originalName . '-' . $randomName);
 
                             // Record the relative URL.
-                            $fileUrls[$fileInputName][] = "tests/uploads/" . $originalName . '-' . $randomName;
+                            $fileUrls[$fileInputName][] = ".hyper-dev/uploads/" . $originalName . '-' . $randomName;
                         } else {
                             // If the file is invalid, log the error.
                             $log['file_errors'][] = [

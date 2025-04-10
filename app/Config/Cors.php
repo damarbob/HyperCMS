@@ -102,4 +102,16 @@ class Cors extends BaseConfig
          */
         'maxAge' => 7200,
     ];
+
+    function __construct()
+    {
+        parent::__construct();
+
+        // Add your development-specific CORS configurations here, if needed. For example:
+        if (ENVIRONMENT === 'development') {
+            $this->default['allowedOrigins'][] = 'http://localhost:1000';
+        }
+
+        log_message('debug', json_encode($this->default));
+    }
 }

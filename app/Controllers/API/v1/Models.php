@@ -10,16 +10,15 @@ class Models extends ApiController
 {
     public function index()
     {
-        // dd($this->request->getPost());
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
-        $draw   = $data['draw'];
-        $start  = $data['start'];    // Offset]
-        $length = $data['length'];   // Number of records per page
+        $draw   = $data['draw'] ?? 1;
+        $start  = $data['start'] ?? null;    // Offset]
+        $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'];
-        $columns = $data['columns'];
+        $order  = $data['order'] ?? null;
+        $columns = $data['columns'] ?? null;
 
         $model = new ModelsModel();
         $modelBuilder = $model->getCustomBuilder();
@@ -45,6 +44,9 @@ class Models extends ApiController
             $orderDir = $order[0]['dir'];
             $orderColumn = $columns[$orderColumnIndex]['data'];
             $modelBuilder->orderBy($orderColumn, $orderDir);
+        } else {
+            // Default ordering by date_modified DESC
+            $modelBuilder->orderBy('date_modified', 'DESC');
         }
 
         // 4. Apply limit for pagination (if length is -1, that means no limit).
@@ -64,6 +66,5 @@ class Models extends ApiController
         ];
 
         return $this->response->setJSON($output);
-        // return $this->response->setJSON($data('draw'));
     }
 }

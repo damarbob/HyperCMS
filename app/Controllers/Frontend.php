@@ -62,6 +62,7 @@ class Frontend extends BaseController
 
             // Put the page's HTML content based on the hook set
             HyperHooks::getInstance()->register($pageHook, function () use ($pageHtml) {
+                $pageHtml = preg_replace('/<\s*\/?\s*body[^>]*>/i', '', $pageHtml); // Strip body tags from the page HTML
                 return $pageHtml;
             });
 
