@@ -5,6 +5,11 @@ import { replaceEnvironmentSyntax } from "../use-case/EnvironmentSyntaxParser.js
    Define the default (current) template set based on Bootstrap 5.
 --------------------------------------------------------------------------- */
 const defaultTemplates = {
+  hidden: ({ id, value }) => {
+    const container = document.createElement("div");
+    container.innerHTML = `<input type="hidden" id="${id}" name="${id}" value="${value}" />`;
+    return container;
+  },
   text: ({ id, label, type, required, value, helper, className }) => {
     const container = document.createElement("div");
     container.className = `form-floating ${helper ? "mb-4" : "mb-3"}`;
@@ -318,6 +323,7 @@ const setTemplate = (jsonTemplate) => {
    Export the unified InputTemplates API.
 --------------------------------------------------------------------------- */
 export const InputCreatorTemplates = {
+  hidden: (data) => template.hidden?.(data) ?? defaultTemplates.hidden(data),
   text: (data) => template.text(data),
   datetime: (data) => template.datetime(data),
   color: (data) => template.color(data),

@@ -110,8 +110,7 @@ class Cors extends BaseConfig
         // Add your development-specific CORS configurations here, if needed. For example:
         if (ENVIRONMENT === 'development') {
             $this->default['allowedOrigins'][] = 'http://localhost:1000';
+            log_message('debug', json_encode($this->default));
         }
-
-        log_message('debug', json_encode($this->default));
     }
 }

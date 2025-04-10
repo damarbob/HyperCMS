@@ -93,6 +93,7 @@ export default class InputPopulator {
    */
   populateInputElement(element, id, value) {
     switch (element.type) {
+      case "hidden":
       case "text":
       case "email":
       case "password":

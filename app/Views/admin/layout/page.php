@@ -210,14 +210,12 @@ $locale = service('request')->getLocale();
 <body>
     <!-- Main Content Section -->
     <section class="container is-fluid">
-        <div class="">
-            <?= $this->include("admin/layout/sidebar") ?>
-            <!-- Main Content Column -->
-            <div class="content-wrapper">
-                <?= $this->include("admin/layout/navbar") ?>
-                <div class="column">
-                    <?= $this->renderSection('content') ?>
-                </div>
+        <?= $this->include("admin/layout/sidebar") ?>
+        <!-- Main Content Column -->
+        <div class="content-wrapper">
+            <?= $this->include("admin/layout/navbar") ?>
+            <div class="column">
+                <?= $this->renderSection('content') ?>
             </div>
         </div>
     </section>
