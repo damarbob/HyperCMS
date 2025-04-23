@@ -48,8 +48,13 @@ $locale = service('request')->getLocale();
             backdrop-filter: blur(5px);
         }
 
-        .sidebar {
+        /* Transitions */
+        .transition-width {
             transition: width 0.3s ease-out;
+        }
+
+        /* Sidebar */
+        .sidebar {
             width: var(--hyper-sidebar-width);
             position: fixed;
             left: 0;
@@ -129,6 +134,10 @@ $locale = service('request')->getLocale();
             display: none !important;
         }
 
+        .sidebar.is-collapsed .menu-list li ul {
+            display: none !important;
+        }
+
         /* Mobile overrides */
         @media (max-width: 1023px) {
 
@@ -162,6 +171,8 @@ $locale = service('request')->getLocale();
             }
         }
 
+        /* End of sidebar */
+
         /* Hide nested submenus by default */
         .menu-list li ul {
             display: none;
@@ -188,7 +199,7 @@ $locale = service('request')->getLocale();
 
             // Set initial value
             window.isDarkMode = darkModeMediaQuery.matches;
-            <?php if (ENVIRONMENT === 'development'): ?>
+            <?php if (ENVIRONMENT !== 'production'): ?>
                 console.log('Initial Dark Mode:', window.isDarkMode);
             <?php endif; ?>
 
@@ -351,9 +362,28 @@ $locale = service('request')->getLocale();
 
     <!-- JavaScript for toggling states -->
     <script>
+        const navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger'));
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const submenuLinks = document.querySelectorAll('.menu-list li > a.has-submenu');
+
+        // 0. Load saved sidebar state from localStorage (if available)
+        if (sidebar && window.innerWidth >= 1024) {
+            const collapsedState = localStorage.getItem('sidebar-collapsed');
+            // If true, add the is-collapsed class, otherwise remove it.
+            if (collapsedState === 'true') {
+                sidebar.classList.add('is-collapsed');
+            } else {
+                sidebar.classList.remove('is-collapsed');
+            }
+            setTimeout(() => {
+                sidebar.classList.add('transition-width');
+            }, 1); // Add transition after initial load
+        }
+
         document.addEventListener('DOMContentLoaded', () => {
+
             // 1. Navbar burger toggle (for mobile devices)
-            const navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger'));
             if (navbarBurgers.length > 0) {
                 navbarBurgers.forEach(burger => {
                     burger.addEventListener('click', () => {
@@ -365,21 +395,25 @@ $locale = service('request')->getLocale();
                 });
             }
 
-            // 2. Sidebar toggle button
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebar = document.querySelector('.sidebar');
+            // 2. Sidebar toggle button - save state on click
             if (sidebarToggle && sidebar) {
                 sidebarToggle.addEventListener('click', () => {
                     sidebar.classList.toggle('is-collapsed');
+                    // Determine the current state and save it in localStorage
+                    const isCollapsed = sidebar.classList.contains('is-collapsed');
+                    localStorage.setItem('sidebar-collapsed', isCollapsed);
                 });
             }
 
             // 3. Submenu toggle: When a link with class "has-submenu" is clicked,
             // toggle the "is-active" state of its parent list item.
-            const submenuLinks = document.querySelectorAll('.menu-list li > a.has-submenu');
             submenuLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
+                    if (sidebar.classList.contains('is-collapsed')) {
+                        return;
+                    }
                     e.preventDefault(); // Prevent the default hyperlink behavior
+                    link.classList.toggle('is-active');
                     link.parentElement.classList.toggle('is-active');
                 });
             });

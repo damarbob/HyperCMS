@@ -39,8 +39,14 @@ class Model extends BaseController
             ],
         ];
 
-        foreach (json_decode($model->fields) as $field) {
-            array_push($fields, $field);
+        // Check if the model fields are not empty
+        // Then push them to the fields array
+        // To prevent errors when decoding JSON
+        $modelFields = json_decode($model->fields);
+        if (!empty($modelFields)) {
+            foreach ($modelFields as $field) {
+                array_push($fields, $field);
+            }
         }
 
         // Put mandatory fields (edited_by and date_modified

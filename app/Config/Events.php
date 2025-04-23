@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use CodeIgniter\Autoloader\Autoloader;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Exceptions\FrameworkException;
 use CodeIgniter\HotReloader\HotReloader;
@@ -52,4 +53,49 @@ Events::on('pre_system', static function (): void {
             });
         }
     }
+});
+
+/*
+ * --------------------------------------------------------------------
+ * Hyper Modules autoloading on pre_system
+ * --------------------------------------------------------------------
+ * Hyper Modules are loaded on the pre_system event.
+ * This allows for modules to be loaded and hooks to be registered 
+ * before the system starts.
+ * 
+ */
+Events::on('pre_system', function () {
+
+    // Register module namespace to autoload
+    /** @var \CodeIgniter\Autoloader\Autoloader */
+    $autoloader = service('autoloader');
+
+    // Autoload modules
+    $activeModules = config(Hyper::class)->activeModules;
+    log_message('info', 'Active Modules: ' . implode(', ', $activeModules));
+    foreach ($activeModules as $module) {
+
+        $autoloader->addNamespace(
+            $module,
+            MODULES_PATH . "{$module}/"
+        );
+
+        // If the module init exists, load it
+        $initFile = MODULES_PATH . "{$module}/init.php";
+        if (file_exists($initFile)) {
+            require_once $initFile;
+        }
+    }
+
+    log_message('info', 'Namespaces autoloaded: ' . implode(', ', array_keys($autoloader->getNamespace())));
+
+    // Autoload module routes
+    // This is done to allow modules to register their own routes
+    // without having to modify the main routes file.
+    config(Hyper::class)->registerModuleRoutes();
+    log_message('info', 'Module routes registered.');
+
+    // Modules init hook
+    // This is done to allow modules to register their own hooks on pre_system
+    service('hooks')->trigger(hook('Core.modules:init'));
 });

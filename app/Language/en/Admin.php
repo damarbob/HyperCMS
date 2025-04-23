@@ -1,9 +1,6 @@
 <?php
 
 return [
-    'appName' => env('hyper.appName', 'HyperCMS'),
-    'appVersion' => '0.1.0-alpha.8',
-
     'n/a' => 'N/A',
     '(empty)' => '(empty)',
 
@@ -24,6 +21,8 @@ return [
     'models' => 'Models',
     'entries' => 'Entries',
     'settings' => 'Settings',
+
+    'general' => 'General',
 
     'new' => 'New',
     'newx' => 'New {x}',
@@ -46,6 +45,8 @@ return [
 
     // Dashboard
     'welcomex' => 'Welcome, {x}!',
+    'startSomethingBig' => 'Start something <b>big</b> today.',
+    'managexEntries' => 'Manage {x} entries',
 
     // Profile
     'profileUpdatedSuccessfully' => 'Profile updated successfully',
@@ -63,6 +64,14 @@ return [
     'id' => 'ID',
     'name' => 'Name',
     'fields' => 'Fields',
+    'icon' => 'Icon',
+
+    'giveModelName' => 'Give a name to the model (e.g. Notes).',
+    'enterModelFieldsInJsonFormat' => 'Enter the model fields in JSON format.',
+    'xToFormatAndValidateJson' => '{x} to format and validate the JSON.',
+    'xToToggleFullscreenMode' => '{x} to toggle fullscreen mode.',
+    'forCompleteListOfIconsPleaseVisitx' => 'For a complete list of icons, please visit {x}.',
+
     'createdBy' => 'Created by',
     'editedBy' => 'Edited by',
     'createdAt' => 'Created at',
@@ -81,8 +90,11 @@ return [
 
     // Entries
     'newEntry' => 'New entry',
+    'entryHistory' => 'Entry history',
 
     'noModelFoundWithIdx' => 'No model found with id {x}!',
+
+    'noEntryFound' => 'No entry found',
     'noEntryFoundWithIdx' => 'No entry found with id {x}!',
 
     'openWithEditor' => 'Open with Editor',
@@ -156,10 +168,9 @@ return [
     'enterNewFolderName' => 'Enter new folder name',
     'failedToCreateFolder' => 'Failed to create folder',
 
-    // Editor
-    'editor' => 'Editor',
-    'editor-x' => 'Editor {x}',
-
-    'noEntryFound' => 'No entry found',
+    // Settings
+    'datatableEntriesPerPage' => 'Datatable entries per page',
+    'howManyEntriesDisplay' => 'How many entries to display in datatable',
+    'settingsSuccessfullySaved' => 'Settings successfully saved!'
 
 ];

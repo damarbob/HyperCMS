@@ -91,4 +91,17 @@ class Autoload extends AutoloadConfig
      * @var list<string>
      */
     public $helpers = ['auth', 'setting'];
+
+    public function __construct()
+    {
+        // Add any custom autoload settings here
+        $this->psr4 = array_merge($this->psr4, [
+            MODULE_NAMESPACE => MODULES_PATH,
+        ]);
+        $this->helpers[] = 'hyper'; // Load the hook helper
+        // $this->files[] = APPPATH . 'Helpers/hook_helper.php'; // Load the hook helper file
+
+        // Load the default autoload settings
+        parent::__construct();
+    }
 }

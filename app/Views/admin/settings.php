@@ -1,10 +1,51 @@
+<?php
+helper('form');
+
+$context = 'user:' . user_id();
+
+$datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPerPage', $context);
+$datatableEntriesPerPageOptions = [10, 25, 50, 100];
+$datatableEntriesPerPageError = validation_show_error('general_datatable_entries_per_page');
+?>
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('content') ?>
-<h1 class="title">
-    Settings
-</h1>
-<p class="subtitle">
-    This is the <strong>Settings</strong>!
-</p>
+<?= service('hooks')->trigger(hook('Backend.view:settings')) ?>
+<div class="block">
+    <h1 class="title">
+        <?= lang('admin.settings') ?>
+    </h1>
+    <p class="subtitle">
+        <?= lang('admin.general') ?>
+    </p>
+    <form action="<?= base_url('admin/settings/update/1') ?>" method="POST">
+        <?= csrf_field() ?>
+
+        <!-- Primary model selection -->
+        <div class="field">
+            <label class="label"><?= lang('Admin.datatableEntriesPerPage') ?></label>
+            <div class="control">
+                <div class="select">
+                    <select name="general_datatable_entries_per_page" value="<?= $datatableEntriesPerPageValue ?>">
+                        <?php for ($i = 0; $i < count($datatableEntriesPerPageOptions); $i++): ?>
+                            <option value="<?= $datatableEntriesPerPageOptions[$i] ?>" <?= ($datatableEntriesPerPageValue == $datatableEntriesPerPageOptions[$i]) ? 'selected' : '' ?>><?= $datatableEntriesPerPageOptions[$i] ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+            </div>
+            <p class="help"><?= lang('Admin.howManyEntriesDisplay') ?></p>
+            <?php if ($datatableEntriesPerPageError): ?>
+                <p class="help is-danger"><?= $datatableEntriesPerPageError ?></p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Submit button -->
+        <div class="field is-grouped">
+            <div class="control is-flex-grow-1">
+                <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
+            </div>
+        </div>
+
+    </form>
+</div>
 <?= $this->endSection() ?>

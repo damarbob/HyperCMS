@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Services\HyperHooks;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -29,4 +30,15 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+    /**
+     * Returns an instance of the HyperHooks class.
+     */
+    public static function hooks(bool $getShared = true): HyperHooks
+    {
+        if ($getShared) {
+            return static::getSharedInstance('hooks');
+        }
+        return HyperHooks::getInstance();
+    }
 }

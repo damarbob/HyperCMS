@@ -1,3 +1,7 @@
+<?php
+$context = 'user:' . user_id();
+$datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPerPage', $context) ?: 10;
+?>
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('content') ?>
@@ -155,6 +159,10 @@
     var options = {
         processing: true,
         serverSide: true,
+
+        // Page length options taken from settings.
+        // This is the default value for the page length dropdown.
+        pageLength: <?= $datatableEntriesPerPageValue ?>,
 
         // Configure the AJAX endpoint and method.
         ajax: {

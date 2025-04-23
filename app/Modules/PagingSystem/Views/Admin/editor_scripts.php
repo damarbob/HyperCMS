@@ -17,6 +17,8 @@ $editorPlugins = [
 
 $editorPluginsOpts = [];
 
+$selectorManager = [];
+
 // Include override file if available
 $editorScriptsOverrideFile = __DIR__ . '/.hyper-dev/editor_scripts_override.php';
 
@@ -35,7 +37,7 @@ if (file_exists($editorScriptsOverrideFile)) {
     // Use empty array if project data is not set!
     data: <?= json_encode(!empty($mapped_entry_fields['hyper_page_project_data']) ? ($mapped_entry_fields['hyper_page_project_data']) : "[]") ?>
   };
-  const savedComponents = <?= json_encode($mapped_entry_fields['hyper_component_elements'] ?: []) ?>;
+  const savedComponents = <?= json_encode(!empty($mapped_entry_fields['hyper_component_elements']) ? $mapped_entry_fields['hyper_component_elements'] : "[]") ?>;
   const savedCss = <?= json_encode($mapped_entry_fields['hyper_css'] ?: '') ?>;
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -62,6 +64,8 @@ if (file_exists($editorScriptsOverrideFile)) {
           // Will be used to populate scripts from backend
         ],
       },
+      panels: {
+      },
       height: '100vh',
       storageManager: false,
       plugins: <?= json_encode($editorPlugins); ?>,
@@ -74,6 +78,17 @@ if (file_exists($editorScriptsOverrideFile)) {
           `
         }]
       },
+      selectorManager: <?= json_encode($selectorManager); ?>
+    });
+
+    // Adds a new filter built-in style property which can be used 
+    // for CSS properties like filter and backdrop-filter.
+    editor.StyleManager.addProperty('extra', {
+      extend: 'filter'
+    });
+    editor.StyleManager.addProperty('extra', {
+      extend: 'filter',
+      property: 'backdrop-filter'
     });
 
     editor.on('load', function() {

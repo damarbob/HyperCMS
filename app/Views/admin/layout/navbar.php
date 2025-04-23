@@ -19,36 +19,38 @@ helper('type_checking');
             <h1 class="navbar-item">
                 <strong><?= $title ?></strong>
             </h1>
-            <nav class="breadcrumb has-succeeds-separator is-hidden-touch" aria-label="breadcrumbs">
-                <ul>
-                    <?php $link = ''; ?>
-                    <?php for ($i = 0; $i < count($uriSegments); $i++): ?>
-                        <?php
-                        // Append the current segment to the running link.
-                        // Adjust with a trailing slash if needed.
-                        $link .= $uriSegments[$i] . '/';
-                        ?>
-                        <?php if ($i == count($uriSegments) - 1): // The last segment 
-                        ?>
-                            <li class="is-active">
-                                <a href="<?= base_url($link) ?>" aria-current="page">
-                                    <?= isset($title) ? $title : lang("Admin.{$uriSegments[$i]}") ?>
-                                </a>
-                            </li>
-                        <?php else: ?>
-                            <li class="<?= isIntegerString($uriSegments[$i]) ? 'is-active' : '' ?>">
-                                <a href="<?= base_url($link) ?>">
-                                    <?php
-                                    // log_message('info', "Uri segment '$uriSegments[$i]' is integer: " . isIntegerString($uriSegments[$i])) 
-                                    ?>
-                                    <?= isIntegerString($uriSegments[$i]) ? lang("Admin.nox", ['x' => $uriSegments[$i]]) : lang("Admin.{$uriSegments[$i]}") ?>
-                                </a>
-                            </li>
-                        <?php endif; ?>
-                    <?php endfor; ?>
+            <?php if (ENVIRONMENT !== 'production'): ?>
+                <nav class="breadcrumb has-succeeds-separator is-hidden-touch" aria-label="breadcrumbs">
+                    <ul>
+                        <?php $link = ''; ?>
+                        <?php for ($i = 0; $i < count($uriSegments); $i++): ?>
+                            <?php
+                            // Append the current segment to the running link.
+                            // Adjust with a trailing slash if needed.
+                            $link .= $uriSegments[$i] . '/';
+                            ?>
+                            <?php if ($i == count($uriSegments) - 1): // The last segment 
+                            ?>
+                                <li class="is-active">
+                                    <a href="<?= base_url($link) ?>" aria-current="page">
+                                        <?= isset($title) ? $title : lang("Admin." . lcfirst(str_replace('-', '', ucwords($uriSegments[$i], '-')))) ?>
+                                    </a>
+                                </li>
+                            <?php else: ?>
+                                <li class="<?= isIntegerString($uriSegments[$i]) ? 'is-active' : '' ?>">
+                                    <a href="<?= base_url($link) ?>">
+                                        <?php
+                                        // log_message('info', "Uri segment '$uriSegments[$i]' is integer: " . isIntegerString($uriSegments[$i])) 
+                                        ?>
+                                        <?= isIntegerString($uriSegments[$i]) ? lang("Admin.nox", ['x' => $uriSegments[$i]]) : lang("Admin." . lcfirst(str_replace('-', '', ucwords($uriSegments[$i], '-')))) ?>
+                                    </a>
+                                </li>
+                            <?php endif; ?>
+                        <?php endfor; ?>
 
-                </ul>
-            </nav>
+                    </ul>
+                </nav>
+            <?php endif; ?>
         </div>
         <!-- Navbar burger for mobile -->
         <a role="button" class="navbar-burger" aria-label="menu" aria-expanded="false" data-target="navbarMenu">

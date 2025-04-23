@@ -28,7 +28,7 @@
                 const input = document.getElementById(fieldId);
 
                 if (!input) {
-                    <?php if (ENVIRONMENT === 'development'): ?>
+                    <?php if (ENVIRONMENT !== 'production'): ?>
                         console.warn(`Input with ID ${fieldId} not found.`);
                     <?php endif; ?>
                     return;
