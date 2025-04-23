@@ -5,10 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Frontend');
-
-// @IMPORTANT: Ensure restricted routes are updated in the regex negative lookahead paths list to prevent them from being treated as dynamic pages.
-$routes->get('^(?!test|auth|api|admin)(.*)$', 'Frontend::index/$1');
+$routes->get('/', 'Home');
 
 $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
     service('auth')->routes($routes, ['except' => ['login', 'register']]);
@@ -19,14 +16,8 @@ $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function 
 });
 
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static function ($routes) {
-    // @IMPORTANT: Update routes if dashboard is finished
-    if (ENVIRONMENT === 'development') {
-        $routes->addRedirect('/', 'admin/dashboard', 301);
-        $routes->get('dashboard', 'Dashboard');
-    } else {
-        $routes->addRedirect('/', 'admin/models', 301);
-    }
-    $routes->get('editor', 'Editor');
+    $routes->addRedirect('/', 'admin/dashboard', 301);
+    $routes->get('dashboard', 'Dashboard');
     $routes->get('model', 'Model');
     $routes->resource('models', [
         'websafe' => 1,
@@ -39,7 +30,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
     ]);
     $routes->get('file-manager', 'FileManager');
-    $routes->get('settings', 'Settings');
+    $routes->resource('settings', [
+        'websafe' => 1,
+        'only' => ['index', 'update'],
+    ]);
     $routes->resource('profile', [
         'websafe' => 1,
         'only' => ['index', 'update'],

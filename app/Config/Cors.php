@@ -107,8 +107,8 @@ class Cors extends BaseConfig
     {
         parent::__construct();
 
-        // Add your development-specific CORS configurations here, if needed. For example:
-        if (ENVIRONMENT === 'development') {
+        // Add your non-production CORS configurations here, if needed. For example:
+        if (ENVIRONMENT !== 'production') {
             $this->default['allowedOrigins'][] = 'http://localhost:1000';
             log_message('debug', json_encode($this->default));
         }

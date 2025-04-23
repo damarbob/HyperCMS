@@ -5,6 +5,7 @@ namespace App\Controllers\Admin;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Controllers\BaseController;
+use App\Services\HyperHooks;
 use App\Libraries\SyntaxProcessor;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use Psr\Log\LoggerInterface;
@@ -34,6 +35,8 @@ class Entries extends BaseController
 
     public function new()
     {
+        /** @var HyperHooks $hooks */
+        $hooks = service('hooks');
 
         $modelId = $this->request->getGet('model_id');
         $modelBuilder = $this->modelsModel->getCustomBuilder();
@@ -48,15 +51,26 @@ class Entries extends BaseController
         $this->data['model'] = $model;
 
         // Process data syntax on model fields
-        $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
+        $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']);
 
         $this->data['title'] = lang('Admin.newx', ['x' => $model['name']]);
+
+        /* Register views */
+
+        $hooks->register(hook('backend.view:entries:new'), function () use ($model) {
+            return view_cell('EntriesFormCell', ['type' => 'new', 'model' => $model]);
+        });
+
+        /* End of register views */
 
         return view('admin/entries_new', $this->data);
     }
 
     public function edit($id)
     {
+
+        /** @var HyperHooks $hooks */
+        $hooks = service('hooks');
 
         $modelName = $this->request->getGet('model_name');
 
@@ -71,32 +85,6 @@ class Entries extends BaseController
 
         $model = $modelResult[0]; // Assign the model
 
-        // Editor eligibility check
-        // Decode the JSON string
-        $fields = json_decode($model['fields'], true);
-
-        // Build a mapping: key -> content array
-        $fieldsById = [];
-        foreach ($fields as $element) {
-            if (isset($element['id'])) {
-                $fieldId = $element['id'];
-                $fieldsById[$fieldId] = $element;
-            }
-        }
-
-        // Now check our required fields
-        $hasHtml  = isset($fieldsById['hyper_html']) && $fieldsById['hyper_html']['className'] === 'hyper-code-field';
-        $hasCss  = isset($fieldsById['hyper_css']) && $fieldsById['hyper_css']['className'] === 'hyper-code-field';
-        $hasComponentElements  = isset($fieldsById['hyper_component_elements']) && $fieldsById['hyper_component_elements']['className'] === 'hyper-code-field';
-        $hasPageProjectData  = isset($fieldsById['hyper_page_project_data']) && $fieldsById['hyper_page_project_data']['className'] === 'hyper-code-field';
-        // End of editor eligibility check
-
-        $this->data['model'] = $model;
-        $this->data['is_editor_eligible'] = $hasHtml && $hasCss && $hasComponentElements && $hasPageProjectData;
-
-        // Process data syntax on model fields
-        $this->data['processed_model_fields'] = $this->syntaxProcessor->processDataSyntaxV2($model['fields']);
-
         /* End of model */
 
         /* Entry */
@@ -110,11 +98,43 @@ class Entries extends BaseController
 
         $entry = $entriesResult[0];
 
-        $this->data['entry'] = $entry;
-
         /* End of entry */
 
+        /* View data */
+        // View data should be declared before filter hooks to allow modification
+
+        $this->data['model'] = $model;
+
+        // Process data syntax on model fields
+        $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']);
+
+        $this->data['entry'] = $entry;
+
+        // Page title
         $this->data['title'] = lang('Admin.editx', ['x' => $entry['model_name']]);
+
+        /* End of view data */
+
+        /* Hooks */
+
+        // Filtered data
+        // Passes controller data to the hook
+        $this->data = $hooks->filter(hook('backend.controller:entries:edit:data'), $this->data);
+
+        // Hook for entry edit
+        // Passes the model and entry data to the hook
+        $hooks->trigger(hook('backend.controller:entries:edit'), [$this->data]);
+
+        /* End of hooks */
+
+        /* Register views */
+
+        $hooks->register(hook('backend.view:entries:edit'), function () use ($model, $entry) {
+            return view_cell('EntriesFormCell', ['type' => 'edit', 'entry' => $entry])
+                . view_cell('EntriesHistoryCell', ['model' => $model]);
+        });
+
+        /* End of register views */
 
         return view('admin/entries_edit', $this->data);
     }

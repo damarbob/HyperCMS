@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Controllers\Admin;
+namespace Modules\PagingSystem\Controllers\Admin;
 
 use App\Controllers\BaseController;
 
@@ -43,10 +43,9 @@ class Editor extends BaseController
             }
         }
 
-        $this->data['title'] = lang('Admin.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
+        $this->data['title'] = lang('PagingSystem.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
         $this->data['test_components'] = $testComponents;
 
-        return view('admin/editor', $this->data);
+        return view('\Modules\PagingSystem\Views\Admin\editor', $this->data);
     }
-    
 }

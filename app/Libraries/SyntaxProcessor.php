@@ -2,6 +2,7 @@
 
 namespace App\Libraries;
 
+use App\Entities\HyperHook;
 use App\Models\EntriesModel;
 use App\Models\ModelsModel;
 use CodeIgniter\Database\BaseConnection;
@@ -18,7 +19,7 @@ class SyntaxProcessor
     }
 
     // 
-    public function processDataSyntaxV2($content)
+    public function process($content)
     {
         $jsonData = json_decode($content, true);
         if (json_last_error() !== JSON_ERROR_NONE || !$jsonData) {
@@ -35,22 +36,46 @@ class SyntaxProcessor
     {
         if (is_array($data)) {
             foreach ($data as $key => $value) {
+                // Check if the value is an array and contains the data syntax for data fetching
                 if (is_array($value) && isset($value['type']) && $value['type'] === 'data' && isset($value['content'])) {
-                    $data[$key] = $this->fetchDataFromDatabase($value['content']);
+                    // If the content is array, fetch data from the database
+                    if (is_array($value['content'])) {
+                        $data[$key] = $this->fetchDataFromDatabase($value['content']);
+                    }
+                    // If the content is 'hooks', dump the hooks
+                    else if ($value['content'] === 'hooks') {
+                        if (isset($value['group'])) {
+                            $data[$key] = $this->dumpHooks($value['group']);
+                        } else {
+                            // If no group is specified, dump all hooks
+                            $data[$key] = $this->dumpHooks();
+                        }
+                    }
                 } elseif (is_array($value) || is_object($value)) {
                     $data[$key] = $this->processJsonRecursively($value);
                 }
             }
         } elseif (is_object($data)) {
-            foreach ($data as $key => $value) {
-                if (is_object($value) && isset($value->type) && $value->type === 'data' && isset($value->content)) {
-                    $data->$key->content = $this->fetchDataFromDatabase($value->content);
-                } else {
-                    $data->$key = $this->processJsonRecursively($value);
-                }
-            }
         }
         return $data;
+    }
+
+    protected function dumpHooks($group = null)
+    {
+        $hooks = [];
+
+        foreach (dump_hooks($group) as $hookGroup) {
+            foreach ($hookGroup as $hook) {
+                if (!$hook instanceof HyperHook) {
+                    continue; // Skip if not an instance of HyperHook
+                }
+                $hooks[] = [
+                    'value' => $hook->getName(),
+                    'label' => $hook->getLabel(),
+                ];
+            }
+        }
+        return $hooks;
     }
 
     // Function to execute the query and fetch data from the database based on the custom syntax
@@ -111,8 +136,7 @@ class SyntaxProcessor
                         $builder->where($condition);
                     }
                 }
-            }
-            else {
+            } else {
                 // Handle standard where query
                 $builder->where($queryParams['where']);
             }

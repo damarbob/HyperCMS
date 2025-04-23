@@ -1,3 +1,7 @@
+<?php
+$context = 'user:' . user_id();
+$datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPerPage', $context) ?: 10;
+?>
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('content') ?>
@@ -133,6 +137,8 @@
     var options = {
         processing: true,
         serverSide: true,
+
+        pageLength: <?= $datatableEntriesPerPageValue ?>,
 
         ajax: {
             url: "<?= base_url('/api/test/entries/dt') ?>",

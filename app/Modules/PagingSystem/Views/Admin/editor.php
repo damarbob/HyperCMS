@@ -2,6 +2,9 @@
 
 <?= $this->section('head') ?>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.22.5/dist/css/grapes.min.css" integrity="sha256-1I3el0pvNWfTUd1SEXRESKNhHSpnELFugVLiTDt//cY=" crossorigin="anonymous">
+
+<!-- Add gradient  -->
+<link href="https://unpkg.com/grapick/dist/grapick.min.css" rel="stylesheet">
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap');
     /* @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap'); */
@@ -61,5 +64,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<?= $this->include('admin/editor_scripts') ?>
+<?= $this->include('\Modules\PagingSystem\Views\Admin\editor_scripts') ?>
 <?= $this->endSection() ?>

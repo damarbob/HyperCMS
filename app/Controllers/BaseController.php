@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Libraries\SyntaxProcessor;
 use App\Models\EntriesModel;
 use App\Models\EntryDataModel;
 use App\Models\ModelDataModel;
@@ -82,5 +83,27 @@ abstract class BaseController extends Controller
         $this->data['uriSegments'] = $request->getUri()->getSegments();
 
         $this->data['models'] = $this->modelsModel->getCustomBuilder()->get()->getResultArray();
+
+        // log_message('debug', implode(',', $this->data['uriSegments']));
+
+        $syntaxProcessor = new SyntaxProcessor();
+        if (false):
+            log_message('debug', json_encode($syntaxProcessor->process('
+            [
+                {
+                    "type": "data",
+                    "content": "hooks"
+                },
+                {
+                    "type": "data",
+                    "content": {
+                        "table": "entries",
+                        "select": "id as value, fields as label",
+                        "orderby": "id ASC"
+                    }
+                }
+            ]
+            ')));
+        endif;
     }
 }

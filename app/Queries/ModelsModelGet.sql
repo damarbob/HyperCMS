@@ -3,6 +3,7 @@ SELECT
     models.id,
     model_data.name,
     model_data.fields,
+    model_data.icon,
     users.username AS created_by,
     editors.username AS edited_by,
     models.created_at,

@@ -1,18 +1,15 @@
-<?php
-
-use App\Libraries\HyperHooks;
-?>
 <html>
 
 <head>
+    <meta charset="UTF-8">
     <meta name="viewport" content="initial-scale=1, width=device-width" />
-    <?= HyperHooks::getInstance()->trigger('frontend:head') ?>
+    <?= service('hooks')->trigger(hook('frontend.head')) ?>
 </head>
 
 <body>
-    <?= HyperHooks::getInstance()->trigger('frontend:header') ?>
-    <?= HyperHooks::getInstance()->trigger('frontend:body') ?>
-    <?= HyperHooks::getInstance()->trigger('frontend:footer') ?>
+    <?= service('hooks')->trigger(hook('frontend.header')) ?>
+    <?= service('hooks')->trigger(hook('frontend.main')) ?>
+    <?= service('hooks')->trigger(hook('frontend.footer')) ?>
 </body>
 
 </html>

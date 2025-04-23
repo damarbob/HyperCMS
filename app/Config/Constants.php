@@ -77,3 +77,30 @@ defined('EXIT_USER_INPUT')     || define('EXIT_USER_INPUT', 7);     // invalid u
 defined('EXIT_DATABASE')       || define('EXIT_DATABASE', 8);       // database error
 defined('EXIT__AUTO_MIN')      || define('EXIT__AUTO_MIN', 9);      // lowest automatically-assigned error code
 defined('EXIT__AUTO_MAX')      || define('EXIT__AUTO_MAX', 125);    // highest automatically-assigned error code
+
+/*
+ | --------------------------------------------------------------------
+ | Hyper Modules Namespace
+ | --------------------------------------------------------------------
+ |
+ | This defines the default Namespace that is used throughout
+ | CodeIgniter to refer to the Module directory. Change
+ | this constant to change the namespace that all module
+ | classes should use.
+ |
+ | NOTE: changing this will require manually modifying the
+ | existing namespaces of Module\* namespaced-classes.
+ */
+defined('MODULE_NAMESPACE') || define('MODULE_NAMESPACE', 'Modules');
+
+/*
+ | --------------------------------------------------------------------
+ | Hyper Modules Path
+ | --------------------------------------------------------------------
+ |
+ | This defines the default path that is used throughout
+ | CodeIgniter to refer to the Module directory. Change
+ | this constant to change the path that all module
+ | classes should use.
+ */
+defined('MODULES_PATH') || define('MODULES_PATH', APPPATH . 'Modules'. DIRECTORY_SEPARATOR);
