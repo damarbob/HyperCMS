@@ -10,6 +10,7 @@ return [
     'yes' => 'Yes',
     'cancel' => 'Cancel',
     'close' => 'Close',
+    'exit' => 'Exit',
 
     'admin' => 'Admin',
     'general' => 'General',
@@ -30,6 +31,10 @@ return [
     'editx' => 'Edit {x}',
     'delete' => 'Delete',
     'select' => 'Select',
+    'trash' => 'Trash',
+    'restore' => 'Restore',
+    'undo' => 'Undo',
+    'emptyTrash' => 'Empty trash',
 
     'data' => 'Data',
     'excel' => 'Excel',
@@ -38,8 +43,13 @@ return [
     'filter' => 'Filter',
     'search' => 'Search',
 
+    'preview' => 'Preview',
+    'seeMore' => 'See more',
+
     'successfullySaved' => 'Successfully saved',
+    'successfullyRefreshed' => 'Successfully refreshed',
     'failedToSave' => 'Failed to save!',
+    'trashIsEmpty' => 'Trash is empty!',
 
     'nox' => 'No. {x}',
 
@@ -76,11 +86,15 @@ return [
     'editedBy' => 'Edited by',
     'createdAt' => 'Created at',
     'dateModified' => 'Date modified',
+    'dateCreated' => 'Date created',
     'deletedAt' => 'Deleted at',
 
     'modelxSuccessfullyCreated' => 'Model {x} successfully created!',
     'modelxSuccessfullySaved' => 'Model {x} successfully saved!',
     'modelxSuccessfullyDeleted' => 'Model {x} successfully deleted!',
+    'modelsSuccessfullyDeleted' => 'Models successfully deleted!',
+    'modelxSuccessfullyRestored' => 'Model {x} successfully restored!',
+    'modelsSuccessfullyRestored' => 'Models successfully restored!',
 
     'fieldsSyntax' => 'Field syntax',
     'save' => 'Save',
@@ -89,21 +103,37 @@ return [
     'youWillNotBeAbleToRevertThis' => 'You will not be able to revert this!',
 
     // Entries
+    'modelId' => 'Model ID',
     'newEntry' => 'New entry',
+    'entryData' => 'Entry data',
+    'entryxData' => 'Entry {x} data',
     'entryHistory' => 'Entry history',
+    'useData' => 'Use data',
+    'clearHistory' => 'Clear history',
 
     'noModelFoundWithIdx' => 'No model found with id {x}!',
 
     'noEntryFound' => 'No entry found',
     'noEntryFoundWithIdx' => 'No entry found with id {x}!',
 
-    'openWithEditor' => 'Open with Editor',
-
     'entryxSuccessfullyCreated' => 'Entry {x} successfully created!',
     'entryxSuccessfullySaved' => 'Entry {x} successfully saved!',
     'entryxSuccessfullyDeleted' => 'Entry {x} successfully deleted!',
+    'entriesSuccessfullyDeleted' => 'Entries successfully deleted!',
+    'entryxSuccessfullyRestored' => 'Entry {x} successfully restored!',
+    'xentriesSuccessfullyRestored' => '{x} entries successfully restored!',
+    'unableToRestorexEntries' => 'Unable to restore {x} entries. Please ensure that the model is restored first.',
+
+    'noRestorableEntriesFound' => 'No restorable entries were found. Please ensure that the model is restored first.',
 
     'sortByName' => 'Sort by name',
+
+    'invalidJson' => 'Invalid JSON!',
+    'thisActionWillOverwriteCurrentInput' => 'This action will overwrite the current input data with the new data.',
+    'thisActionPermanentlyDeleteAllHistorical' => 'This action will permanently delete all historical records for this entry, retaining only the most recent version.',
+
+    'historySuccessfullyCleared' => 'History successfully cleared',
+    'noHistoryCleared' => 'No history cleared',
 
     // File Manager
     'fileManager' => 'File Manager',
@@ -152,6 +182,8 @@ return [
 
     'noFileOrFolderFound' => 'No file or folder found',
 
+    'searchWithinFolder' => 'Search within folder',
+
     'open' => 'Open',
     'view' => 'View',
     'download' => 'Download',
@@ -171,6 +203,10 @@ return [
     // Settings
     'datatableEntriesPerPage' => 'Datatable entries per page',
     'howManyEntriesDisplay' => 'How many entries to display in datatable',
-    'settingsSuccessfullySaved' => 'Settings successfully saved!'
+    'settingsSuccessfullySaved' => 'Settings successfully saved!',
+
+    // Models Settings
+    'emptyModelsTrash' => 'Empty models trash',
+    'emptyingTheModelsTrashWillPermanentlyDelete' => 'Emptying the models trash will permanently <strong>delete all models contained within</strong>. Please note that this action is irreversible.',
 
 ];

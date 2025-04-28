@@ -6,10 +6,17 @@ use CodeIgniter\Config\BaseConfig;
 
 class Hyper extends BaseConfig
 {
-    public string $appName = 'HyperCMS';
-    public string $appVersion = '0.1.0-alpha.2';
-    public array $activeModules = ['PagingSystem']; // Default modules
-    public bool $safeMode = false; // Disables ALL modules if true
+    public string $appName = 'Hyper CMS';
+    public string $appVersion = '0.1.0-alpha.3';
+
+    // Default modules
+    public array $activeModules = ['PagingSystem'];
+
+    // Development modules
+    public array $activeDevModules = [];
+
+    // Disables ALL modules if true
+    public bool $safeMode = false;
 
     public function __construct()
     {
@@ -53,7 +60,7 @@ class Hyper extends BaseConfig
      */
     protected function loadOverrides(): void
     {
-        // Example: Override active modules from ENV (comma-separated)
+        // Override active modules from ENV (comma-separated)
         if ($envModules = env('HYPER_ACTIVE_MODULES')) {
             $this->activeModules = array_merge(
                 $this->activeModules,
@@ -61,7 +68,15 @@ class Hyper extends BaseConfig
             );
         }
 
-        // Example: Enable safe mode via ENV
+        // Override active development modules from ENV (comma-separated)
+        if ($envModules = env('HYPER_ACTIVE_DEV_MODULES')) {
+            $this->activeDevModules = array_merge(
+                $this->activeDevModules,
+                explode(',', $envModules)
+            );
+        }
+
+        // Enable safe mode via ENV
         $this->safeMode = (bool) env('HYPER_SAFE_MODE', false);
     }
 
@@ -75,6 +90,17 @@ class Hyper extends BaseConfig
             if ($module === '.' || $module === '..') continue;
 
             $routesPath = MODULES_PATH . '/' . $module . '/Config/Routes.php';
+
+            if (file_exists($routesPath)) {
+                // Insert $routesPath at the beginning of the routeFiles array to allow override.
+                array_unshift(config(Routing::class)->routeFiles, $routesPath);
+            }
+        }
+
+        foreach ($this->activeDevModules as $module) {
+            if ($module === '.' || $module === '..') continue;
+
+            $routesPath = MODULES_PATH . '/.hyper-dev/' . $module . '/Config/Routes.php';
 
             if (file_exists($routesPath)) {
                 // Insert $routesPath at the beginning of the routeFiles array to allow override.

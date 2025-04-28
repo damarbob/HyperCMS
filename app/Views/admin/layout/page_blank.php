@@ -38,13 +38,13 @@
 
             // Function to update the window property
             function updateDarkModeStatus(e) {
-                window.isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.isDarkMode);
+                window.hyper_isDarkMode = e.matches;
+                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
             }
 
             // Set initial value
-            window.isDarkMode = darkModeMediaQuery.matches;
-            console.log('Initial Dark Mode:', window.isDarkMode);
+            window.hyper_isDarkMode = darkModeMediaQuery.matches;
+            console.log('Initial Dark Mode:', window.hyper_isDarkMode);
 
             // Listen for changes in the dark mode preference
             if (typeof darkModeMediaQuery.addEventListener === 'function') {
@@ -65,6 +65,9 @@
     <!-- Main Content Section -->
     <?= $this->renderSection('content') ?>
 
+    <!-- Hyper CMS bootstrap JS -->
+    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
+
     <?= $this->renderSection('scripts') ?>
 
     <!-- Dependencies -->
@@ -83,18 +86,8 @@
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    title: "<?= lang("Admin.success") ?>",
-                    text: "<?= session()->getFlashdata('success') ?>",
-                    icon: 'success',
-                    showConfirmButton: false,
-                    confirmButtonColor: "var(--bulma-primary)",
-                    backdrop: false,
-                    position: 'top-end',
-                    theme: window.isDarkMode ? 'dark' : 'light',
-                    toast: true,
-                    timer: 3000,
-                    timerProgressBar: true,
+                window.hyper_swal.success("<?= lang("Admin.success") ?>", {
+                    text: "<?= session()->getFlashdata('success') ?>"
                 });
             });
         </script>
@@ -102,18 +95,11 @@
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    title: "<?= lang("Admin.error") ?>",
+                window.hyper_swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
-                    icon: 'error',
-                    // showConfirmButton: false,
                     confirmButtonColor: "var(--bulma-primary)",
-                    backdrop: false,
-                    position: 'top-end',
-                    theme: window.isDarkMode ? 'dark' : 'light',
-                    toast: true,
-                    // timer: 5000,
-                    // timerProgressBar: true,
+                    showConfirmButton: true,
+                    timer: false,
                 });
             });
         </script>

@@ -11,13 +11,36 @@ $action = $type === 'edit' ? base_url('api/test/entries/save/' . $entry['id']) :
         <div id="hyper-fields-container" class="field">
         </div>
         <div class="field is-grouped">
-            <div class="control is-flex-grow-1">
-                <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
+            <div class="control">
+                <button type="submit" class="button is-primary">
+                    <span class="icon">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    <span>
+                        <?= lang('Admin.save') ?>
+                    </span>
+                </button>
             </div>
+            <?php if ($type === 'edit'): ?>
+                <div class="control is-flex-grow-1">
+                    <button type="button" class="button" onclick="showHistoryModal()" title="<?= lang('Admin.entryHistory') ?>">
+                        <span class="icon">
+                            <i class="fas fa-clock-rotate-left"></i>
+                        </span>
+                    </button>
+                </div>
+            <?php endif; ?>
             <?php if ($type === 'edit'): ?>
                 <!-- Show delete button on edit page -->
                 <div class="control">
-                    <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>
+                    <button type="button" class="button is-link is-danger" onclick="deleteEntry()">
+                        <span class="icon">
+                            <i class="fas fa-trash"></i>
+                        </span>
+                        <span>
+                            <?= lang('Admin.delete') ?>
+                        </span>
+                    </button>
                 </div>
             <?php endif; ?>
         </div>
@@ -29,7 +52,7 @@ $action = $type === 'edit' ? base_url('api/test/entries/save/' . $entry['id']) :
     <?php endif; ?>
 </div>
 
-<?php if (ENVIRONMENT !== 'production' && $type === 'edit'): ?>
+<?php if (ENVIRONMENT === 'testing' && $type === 'edit'): ?>
     <!-- Debugging -->
     <div class="block">
         <form method="POST" action="<?= $action ?>">
@@ -45,7 +68,14 @@ $action = $type === 'edit' ? base_url('api/test/entries/save/' . $entry['id']) :
             </div>
             <div class="field is-grouped">
                 <div class="control is-flex-grow-1">
-                    <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
+                    <button type="submit" class="button is-primary">
+                        <span class="icon">
+                            <i class="fas fa-check"></i>
+                        </span>
+                        <span>
+                            <?= lang('Admin.save') ?>
+                        </span>
+                    </button>
                 </div>
                 <div class="control">
                     <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>

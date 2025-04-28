@@ -15,15 +15,22 @@ class Entries extends ApiController
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
-        $draw   = $data['draw'];
-        $start  = $data['start'];    // Offset]
-        $length = $data['length'];   // Number of records per page
+        $draw   = $data['draw'] ?? 1;;
+        $start  = $data['start'] ?? null;    // Offset]
+        $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
         $order  = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
+        $trash = $data['trash'] ?? false;
 
         $model = new EntriesModel();
-        $modelBuilder = $model->getCustomBuilder();
+
+        // Apply trash filter
+        if (!$trash || $trash == 'false') {
+            $modelBuilder = $model->getCustomBuilder();
+        } else {
+            $modelBuilder = $model->getDeletedCustomBuilder();
+        }
 
         // Filter by model_id if provided:
         if (!empty($data['model_id'])) {
@@ -35,9 +42,9 @@ class Entries extends ApiController
 
         // 2. Apply search filter if provided.
         if (!empty($search)) {
-            $modelBuilder->like('model_name', $search);
-            $modelBuilder->orLike('fields', $search);
-            $modelBuilder->orLike('created_by', $search);
+            $modelBuilder->like('model_name', esc($search));
+            $modelBuilder->orLike('fields', esc($search));
+            $modelBuilder->orLike('created_by', esc($search));
         }
 
         // Count the filtered results.

@@ -3,6 +3,8 @@
 use Config\Hyper;
 
 $locale = service('request')->getLocale();
+
+$content = $this->renderSection('content');
 ?>
 <!DOCTYPE html>
 <html lang="<?= $locale ?>">
@@ -40,12 +42,45 @@ $locale = service('request')->getLocale();
             --hyper-sidebar-width: 16rem;
             --hyper-sidebar-collapsed-width: 4rem;
             --hyper-sidebar-width-mobile: 100vw;
+            --hyper-navbar-height: 80px;
+        }
+
+        html,
+        textarea {
+            scrollbar-color: var(--bulma-primary-10) transparent;
+            scrollbar-width: auto;
         }
 
         /* Overrides */
+        /* Hide html overflow if modal is active */
+        html:has(body .modal.is-active) {
+            overflow-y: hidden;
+        }
+
         .navbar {
             --bulma-navbar-background-color: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-scheme-main-l), 0.5);
             backdrop-filter: blur(5px);
+        }
+
+        .modal {
+            scrollbar-color: var(--bulma-primary-10) transparent;
+            scrollbar-width: thin;
+        }
+
+        .modal-close {
+            background: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-delete-background-l), var(--bulma-delete-background-alpha));
+        }
+
+        .is-fullscreen {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        .is-fullheight {
+            max-height: 100vh;
+            height: 100vh;
         }
 
         /* Transitions */
@@ -193,14 +228,14 @@ $locale = service('request')->getLocale();
 
             // Function to update the window property
             function updateDarkModeStatus(e) {
-                window.isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.isDarkMode);
+                window.hyper_isDarkMode = e.matches;
+                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
             }
 
             // Set initial value
-            window.isDarkMode = darkModeMediaQuery.matches;
+            window.hyper_isDarkMode = darkModeMediaQuery.matches;
             <?php if (ENVIRONMENT !== 'production'): ?>
-                console.log('Initial Dark Mode:', window.isDarkMode);
+                console.log('Initial Dark Mode:', window.hyper_isDarkMode);
             <?php endif; ?>
 
             // Listen for changes in the dark mode preference
@@ -225,12 +260,21 @@ $locale = service('request')->getLocale();
         <!-- Main Content Column -->
         <div class="content-wrapper">
             <?= $this->include("admin/layout/navbar") ?>
-            <div class="column">
-                <?= $this->renderSection('content') ?>
-            </div>
+            <?= $this->renderSection('contentNoWrapper') ?>
+            <?php if (!empty($content)): ?>
+                <div class="column">
+                    <?= $content ?>
+                </div>
+            <?php endif ?>
         </div>
     </section>
 
+    <!-- Hyper CMS bootstrap JS -->
+    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
+
+    <?= $this->renderSection('scripts') ?>
+
+    <!-- Iframe check -->
     <script type="text/javascript">
         const inIframe = window.self !== window.top; // Check if loaded inside an iframe
 
@@ -239,14 +283,24 @@ $locale = service('request')->getLocale();
             document.querySelector('.navbar').classList.add('is-hidden');
             document.querySelector('.sidebar').classList.add('is-hidden');
         }
+
+        // Hide elements that are iframe-specific with is-in-iframe class
+        if (!inIframe) {
+            document.querySelectorAll('.is-in-iframe').forEach(element => {
+                if (!element.classList.contains('is-hidden')) {
+                    element.classList.add('is-hidden');
+                }
+            })
+        } else {
+            document.querySelectorAll('.is-in-iframe').forEach(element => {
+                if (element.classList.contains('is-hidden')) {
+                    element.classList.remove('is-hidden');
+                }
+            })
+        }
     </script>
 
-    <?= $this->renderSection('scripts') ?>
-
     <!-- Dependencies -->
-
-    <!-- Simplebar -->
-    <script src="https://cdn.jsdelivr.net/npm/simplebar@6.3.0/dist/simplebar.min.js"></script>
 
     <!-- Tippy.js -->
     <?php if (ENVIRONMENT !== 'production'): ?>
@@ -274,18 +328,8 @@ $locale = service('request')->getLocale();
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    title: "<?= lang("Admin.success") ?>",
-                    text: "<?= session()->getFlashdata('success') ?>",
-                    icon: 'success',
-                    showConfirmButton: false,
-                    confirmButtonColor: "var(--bulma-primary)",
-                    backdrop: false,
-                    position: 'top-end',
-                    theme: window.isDarkMode ? 'dark' : 'light',
-                    toast: true,
-                    timer: 3000,
-                    timerProgressBar: true,
+                window.hyper_swal.success("<?= lang("Admin.success") ?>", {
+                    text: "<?= session()->getFlashdata('success') ?>"
                 });
             });
         </script>
@@ -293,15 +337,11 @@ $locale = service('request')->getLocale();
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                Swal.fire({
-                    title: "<?= lang("Admin.error") ?>",
+                window.hyper_swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
-                    icon: 'error',
                     confirmButtonColor: "var(--bulma-primary)",
-                    backdrop: false,
-                    position: 'top-end',
-                    theme: window.isDarkMode ? 'dark' : 'light',
-                    toast: true,
+                    showConfirmButton: true,
+                    timer: false,
                 });
             });
         </script>

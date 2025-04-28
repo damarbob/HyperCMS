@@ -9,6 +9,15 @@ $currentRoute = $request->getUri()->getPath();
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('head') ?>
+
+<!-- Datatables -->
+<link href="https://cdn.datatables.net/v/bm/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-colvis-3.2.2/b-html5-3.2.2/b-print-3.2.2/cr-2.0.4/fh-4.0.1/r-3.0.4/sl-3.0.0/datatables.min.css" rel="stylesheet" integrity="sha384-wAbr9qEp5JojSKDr01s3gfk2usG6WR/OfpUIFEliYPzIBy5Jr9WBChdyqfWfbtt6" crossorigin="anonymous">
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/pdfmake.min.js" integrity="sha384-VFQrHzqBh5qiJIU0uGU5CIW3+OWpdGGJM9LBnGbuIH2mkICcFZ7lPd/AAtI7SNf7" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdfmake/0.2.7/vfs_fonts.js" integrity="sha384-/RlQG9uf0M2vcTw3CX7fbqgbj/h8wKxw7C3zu9/GxcBPRKOEcESxaxufwRXqzq6n" crossorigin="anonymous"></script>
+<script src="https://cdn.datatables.net/v/bm/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-colvis-3.2.2/b-html5-3.2.2/b-print-3.2.2/cr-2.0.4/fh-4.0.1/r-3.0.4/sl-3.0.0/datatables.min.js" integrity="sha384-JYvoIYf/4ra9ifw1ESGWSNm3QVSdAuT8OaSDJLTKTkRWntshpsM1beOZKdjAXOAb" crossorigin="anonymous"></script>
+<!-- End of datatables -->
+
 <script>
     function confirmSelectedFiles() {
         const selectedFiles = Array.from(document.querySelectorAll('.file-checkbox:checked'))
@@ -257,27 +266,25 @@ $currentRoute = $request->getUri()->getPath();
     </div>
 
     <!-- File Table -->
-    <div class="table-container">
-        <table class="table is-hoverable is-fullwidth">
-            <thead>
-                <tr>
-                    <th>
-                        <label class="checkbox">
-                            <input id="selectAll" type="checkbox">
-                        </label>
-                    </th>
-                    <th><?= lang('Admin.name') ?></th>
-                    <th><?= lang('Admin.size') ?></th>
-                    <th><?= lang('Admin.permission') ?></th>
-                    <th><?= lang('Admin.dateModified') ?></th>
-                    <th><?= lang('Admin.action') ?></th>
-                </tr>
-            </thead>
-            <tbody id="fileList">
-                <!-- Dynamic File List here -->
-            </tbody>
-        </table>
-    </div>
+    <table id="hyperTable" class="table is-hoverable is-fullwidth">
+        <thead>
+            <tr>
+                <th>
+                    <label class="checkbox">
+                        <input id="selectAll" type="checkbox">
+                    </label>
+                </th>
+                <th><?= lang('Admin.name') ?></th>
+                <th><?= lang('Admin.size') ?></th>
+                <th><?= lang('Admin.permission') ?></th>
+                <th><?= lang('Admin.dateModified') ?></th>
+                <th><?= lang('Admin.action') ?></th>
+            </tr>
+        </thead>
+        <tbody id="fileList">
+            <!-- Dynamic File List here -->
+        </tbody>
+    </table>
 </div>
 
 <!-- Modal -->
@@ -319,22 +326,64 @@ $currentRoute = $request->getUri()->getPath();
 <script>
     // Initialize tooltips
     document.addEventListener('DOMContentLoaded', () => {
-        // Adjust UI
-        const inIframe = window.self !== window.top; // Check if loaded inside an iframe
 
-        // Hide elements that are iframe-specific
-        if (!inIframe) {
-            document.querySelectorAll('.is-in-iframe').forEach(element => {
-                element.classList.add('is-hidden');
-            })
-        }
-        else {
-            document.querySelectorAll('.is-in-iframe').forEach(element => {
-                element.classList.remove('is-hidden');
-            })
-        }
         // Initialize tooltips
         tippy('[data-tippy-content]');
+
+        window.hyper_fileManager_table = new DataTable('#hyperTable', {
+            columnDefs: [{
+                    targets: [2, 3], // Hide size and permission column
+                    visible: false,
+                },
+                {
+                    targets: [4], // Date modified column
+                    type: 'date',
+                },
+                {
+                    targets: [0],
+                    width: "2rem", // Force a narrow fixed width
+                    orderable: false,
+                }
+            ],
+            // Layout
+            layout: {
+                topStart: {
+                    buttons: [{
+                            extend: "colvis", // Column visibility button
+                            text: '<i class="fa-solid fa-table mr-2"></i><?= lang('Admin.data') ?>',
+                        },
+                        {
+                            extend: "excelHtml5", // Export to Excel using HTML5 features
+                            text: '<i class="fa-solid fa-download mr-2"></i><?= lang('Admin.excel') ?>',
+                        },
+                        {
+                            extend: "print", // Print button
+                            text: '<i class="fa-solid fa-print mr-2"></i><?= lang('Admin.print') ?>',
+                        },
+                    ],
+                },
+                topEnd: {
+                    pageLength: {
+                        menu: [10, 25, 50, 100],
+                    },
+                    search: {
+                        placeholder: "<?= lang('Admin.searchWithinFolder') ?>",
+                        text: "_INPUT_",
+                    },
+                },
+                bottomEnd: {
+                    paging: {
+                        numbers: true,
+                    },
+                },
+            },
+            pageLength: 100,
+            // select: true, // Enable row selection (requires DataTables Select extension)
+            colReorder: true, // Allow column reordering
+            fixedHeader: true, // Keep header fixed as you scroll
+            responsive: true, // Make the table responsive on various devices
+
+        });
     });
 </script>
 <script>
@@ -438,21 +487,14 @@ $currentRoute = $request->getUri()->getPath();
             .then(data => {
                 if (data.status) {
                     // Show success toast 
-                    Swal.fire({
-                        icon: "success",
-                        toast: true,
-                        title: `${action.charAt(0).toUpperCase() + action.slice(1)}: <?= lang('Admin.copiedSuccessfullyReadyToPaste') ?>`,
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.success(
+                        `${action.charAt(0).toUpperCase() + action.slice(1)}: <?= lang('Admin.copiedSuccessfullyReadyToPaste') ?>`
+                    );
                 } else {
                     // Show error toast 
-                    Swal.fire({
-                        icon: "error",
-                        toast: true,
-                        title: "<?= lang('Admin.failedToCopy') ?>: " + data.error,
-                        confirmButtonText: "<?= lang('Admin.close') ?>"
-                    });
+                    window.hyper_swal.error("<?= lang('Admin.failedToCopy') ?>: " + data.error, {
+                        showConfirmButton: true,
+                    })
                 }
             })
             .catch(error => console.error("Error setting clipboard:", error));
@@ -472,21 +514,13 @@ $currentRoute = $request->getUri()->getPath();
             .then(data => {
                 if (data.status) {
                     // Show success toast 
-                    Swal.fire({
-                        icon: "success",
-                        toast: true,
-                        title: `<?= lang('Admin.pastedSuccessfully') ?>`,
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.success(`<?= lang('Admin.pastedSuccessfully') ?>`);
                     listFiles(window.currentPath); // Refresh the file list
                 } else if (data.error) {
                     // Show error toast 
-                    Swal.fire({
-                        icon: "error",
-                        toast: true,
-                        title: "<?= lang('Admin.failedToPaste') ?>: " + data.error,
-                        confirmButtonText: "<?= lang('Admin.close') ?>"
+                    window.hyper_swal.error("<?= lang('Admin.failedToPaste') ?>: " + data.error, {
+                        showConfirmButton: true,
+                        timer: false,
                     });
                 }
             })
@@ -726,196 +760,199 @@ $currentRoute = $request->getUri()->getPath();
     function listFiles(path = '') {
         window.currentPath = path; // Update the current path
 
-        /* UI */
-        if (document.getElementById('loaderBody').classList.contains("is-hidden")) {
-            document.getElementById('loaderBody').classList.remove('is-hidden');
+        /* UI: Show loader */
+        const loader = document.getElementById('loaderBody');
+        if (loader.classList.contains("is-hidden")) {
+            loader.classList.remove('is-hidden');
         }
-        /* End of UI */
 
         fetch('<?= base_url('api/file-manager/list-files/') ?>' + encodeURIComponent(hexEncode(path)))
             .then(response => {
                 if (!response.ok) {
-                    // If the response isn't OK, try extracting the JSON error message and throw it.
+                    // If the response isn't OK, extract the JSON error and throw it.
                     return response.json().then(errorData => {
-                        // You can throw the error data (or just the message) here.
                         throw errorData;
                     });
                 }
                 return response.json();
             })
             .then(data => {
-                // console.log(data);
-
-                /* UI */
-                if (!document.getElementById('loaderBody').classList.contains("is-hidden")) {
-                    document.getElementById('loaderBody').classList.add('is-hidden');
+                /* UI: Hide loader */
+                if (!loader.classList.contains("is-hidden")) {
+                    loader.classList.add('is-hidden');
                 }
-                /* End of UI */
 
                 if (data.error) {
-                    throw data; // This will be caught by the catch below
+                    throw data; // Will be caught below.
                 }
 
-                // Sort folders first
+                // Sort folders first:
                 data.sort((a, b) => b.is_dir - a.is_dir);
 
-                // Generate file table with a back button
-                let table = ``;
+                // Prepare an array of rows.
+                // Each row is an array, matching the order of your DataTable's columns:
+                // [checkbox, file name (with icon), file size, permissions, modified date, action buttons]
+                let rows = [];
 
-                // Back button ("..") to go up one level
+                // "Back" button row if in a subfolder (simulate going up one level)
                 if (path) {
                     const upPath = path.split('/').slice(0, -1).join('/');
-                    table += `
-                        <tr>
-                            <td></td>
-                            <td>
-                                <a href="#" class="file-link" data-path="${upPath}" data-type="folder" onclick="event.preventDefault()">
-                                    <span class="mr-2"><i class="fas fa-arrow-left"></i></span>..
-                                </a>
-                            </td>
-                            <td></td>
-                            <td></td>
-                            <td></td>
-                        </tr>`;
+                    rows.push([
+                        "", // No checkbox
+                        `<a href="#" class="file-link" data-path="${upPath}" data-type="folder">
+                        <span class="mr-2"><i class="fas fa-arrow-left"></i></span>..
+                     </a>`,
+                        "", // File size column
+                        "", // Permissions column
+                        "", // Modified date column
+                        "" // No action buttons on the back button row
+                    ]);
                 }
 
-                // If no files/folders are found, add a message
                 if (data.length === 0) {
-                    table += `
-                        <tr>
-                            <td colspan="5" class="text-center"><?= lang('Admin.noFileOrFolderFound') ?></td>
-                        </tr>`;
+                    // Show “no file or folder found” message.
+                    rows.push([
+                        "",
+                        `<span class="text-center" style="display:block;"><?= lang('Admin.noFileOrFolderFound') ?></span>`,
+                        "",
+                        "",
+                        "",
+                        ""
+                    ]);
                 } else {
-                    // Loop through files and folders to display
-                    // Inside .then(data => { /* process data */ })
+                    // Loop through each file/folder and generate a row.
                     data.forEach(file => {
-                        let icon = file.is_dir ? '<i class="fas fa-folder"></i>' : getIconByExtension(file.name.split('.').pop().toLowerCase());
-                        let isDir = file.is_dir ? 'Folder' : 'File';
+                        let icon = file.is_dir ?
+                            '<i class="far fa-folder"></i>' :
+                            getIconByExtension(file.name.split('.').pop().toLowerCase());
                         let dateModified = file.modified_date || '-';
-                        let permissions = file.permissions || '-'; // New permissions field
+                        let permissions = file.permissions || '-';
 
+                        // Build the action buttons depending on file or folder.
                         let actionBtns = file.is_dir ?
-                            `<span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.open') ?>"><button class="button is-primary is-small btn-action" data-action="open" data-path="${file.path}"><i class="fa-solid fa-arrow-right"></i></button></span>` :
-                            `<span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.view') ?>"><button class="button is-secondary is-small btn-action" data-action="view" data-path="${file.path}"><i class="fa-solid fa-eye"></i></button></span>
-                            <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.download') ?>"><button class="button is-secondary is-small btn-action" data-action="download" data-path="${file.path}"><i class="fa-solid fa-download"></i></button></span>`;
+                            `<span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.open') ?>">
+                                <button class="button is-primary is-small btn-action" data-action="open" data-path="${file.path}">
+                                    <i class="fa-solid fa-arrow-right"></i>
+                                </button>
+                           </span>` :
+                            `<span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.view') ?>">
+                                <button class="button is-secondary is-small btn-action" data-action="view" data-path="${file.path}">
+                                    <i class="fa-solid fa-eye"></i>
+                                </button>
+                           </span>
+                           <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.download') ?>">
+                                <button class="button is-secondary is-small btn-action" data-action="download" data-path="${file.path}">
+                                    <i class="fa-solid fa-download"></i>
+                                </button>
+                           </span>`;
 
                         actionBtns += `
-                            <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.copy') ?>"><button class="button is-secondary is-small btn-action" data-action="copy" data-path="${file.path}"><i class="fa-solid fa-copy"></i></button></span>
-                            <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.move') ?>"><button class="button is-secondary is-small btn-action" data-action="move" data-path="${file.path}"><i class="fa-solid fa-scissors"></i></button></span>
-                            <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.rename') ?>"><button class="button is-secondary is-small btn-action" data-action="rename" data-path="${file.path}"><i class="fa-solid fa-i-cursor"></i></button></span>`;
+                        <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.copy') ?>">
+                            <button class="button is-secondary is-small btn-action" data-action="copy" data-path="${file.path}">
+                                <i class="fa-solid fa-copy"></i>
+                            </button>
+                        </span>
+                        <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.move') ?>">
+                            <button class="button is-secondary is-small btn-action" data-action="move" data-path="${file.path}">
+                                <i class="fa-solid fa-scissors"></i>
+                            </button>
+                        </span>
+                        <span class="btn-action-tooltip" data-tippy-content="<?= lang('Admin.rename') ?>">
+                            <button class="button is-secondary is-small btn-action" data-action="rename" data-path="${file.path}">
+                                <i class="fa-solid fa-i-cursor"></i>
+                            </button>
+                        </span>`;
 
-                        // Add row with new permissions column
-                        table += `
-                            <tr>
-                                <td>
-                                    <div>
-                                        <input class="file-checkbox" type="checkbox" data-path="${file.path}" />
-                                    </div>
-                                </td>
-                                <td>
-                                    <a href="#" class="file-link" data-path="${file.path}" data-type="${file.is_dir ? 'folder' : 'file'}" onclick="event.preventDefault()">
-                                        <span class="mr-2">${icon}</span>${file.name} (${isDir})
-                                    </a>
-                                </td>
-                                <td>${file.size}</td>
-                                <td>${permissions}</td> <!-- Permissions column -->
-                                <td>${dateModified}</td>
-                                <td style="white-space: nowrap;">${actionBtns}</td>
-                            </tr>`;
+                        // Push the row into our rows array.
+                        rows.push([
+                            `<div><input class="file-checkbox" type="checkbox" data-path="${file.path}" /></div>`,
+                            `<a href="#" class="file-link" data-path="${file.path}" data-type="${file.is_dir ? 'folder' : 'file'}" onclick="event.preventDefault()">
+                            <span class="mr-2">${icon}</span>${file.name}
+                         </a>`,
+                            file.size,
+                            permissions,
+                            dateModified,
+                            `<div style="white-space: nowrap;">${actionBtns}</div>`
+                        ]);
                     });
-
                 }
 
-                // Replace content of fileList to reset old event listeners
-                const fileListContainer = document.getElementById('fileList');
-                const newContent = document.createElement('tbody');
-                newContent.innerHTML = table;
-                fileListContainer.replaceWith(newContent);
-                newContent.id = 'fileList';
+                // Use the DataTables API to update your table:
+                window.hyper_fileManager_table.clear();
+                window.hyper_fileManager_table.rows.add(rows);
+                window.hyper_fileManager_table.draw();
 
-                // "Select All" checkbox event
+                // Reattach the "Select All" event listener if not already bound.
                 document.getElementById('selectAll').addEventListener('click', function() {
                     const checkboxes = document.querySelectorAll('.file-checkbox');
-                    checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                    checkboxes.forEach(checkbox => (checkbox.checked = this.checked));
                 });
 
-                // Initialize tippy tooltips for .btn-action
+                // Initialize or re-initialize tooltips on the new action buttons.
                 tippy('.btn-action-tooltip');
 
-                // Event listener for actions using delegation
-                newContent.addEventListener('click', function(event) {
-                    const target = event.target.closest('button, a');
+                // Attach event listeners for your action buttons using event delegation.
+                $('#hyperTable tbody').off('click', 'a.file-link').on('click', 'a.file-link', function(event) {
+                    event.preventDefault();
+                    const filePath = this.getAttribute('data-path');
+                    const type = this.getAttribute('data-type');
 
-                    if (!target) return;
+                    if (type === 'folder') {
+                        listFiles(filePath);
+                    } else {
+                        viewFile(filePath);
+                    }
+                });
 
-                    const action = target.getAttribute('data-action');
-                    const path = target.getAttribute('data-path');
-                    const type = target.getAttribute('data-type');
+                // Separate handler for action buttons
+                $('#hyperTable tbody').off('click', '.btn-action').on('click', '.btn-action', function(event) {
+                    event.preventDefault();
+                    event.stopPropagation(); // Prevent bubbling to parent elements
 
-                    if (action) {
-                        if (action === 'open') {
-                            listFiles(path);
-                        } else if (action === 'view') {
-                            viewFile(path);
-                        } else if (action === 'download') {
-                            downloadFile(path);
-                        } else if (action === 'copy') {
-                            addToClipboard(path, 'copy');
-                        } else if (action === 'move') {
-                            addToClipboard(path, 'move');
-                        } else if (action === 'back') {
-                            listFiles(path);
-                        } else if (action === 'rename') {
-                            renameFile(path);
-                        }
-                    } else if (type === 'folder') {
-                        listFiles(path);
-                    } else if (type === 'file') {
-                        viewFile(path);
+                    const action = this.getAttribute('data-action');
+                    const filePath = this.getAttribute('data-path');
+
+                    switch (action) {
+                        case 'open':
+                            listFiles(filePath);
+                            break;
+                        case 'view':
+                            viewFile(filePath);
+                            break;
+                        case 'download':
+                            downloadFile(filePath);
+                            break;
+                        case 'copy':
+                            addToClipboard(filePath, 'copy');
+                            break;
+                        case 'move':
+                            addToClipboard(filePath, 'move');
+                            break;
+                        case 'rename':
+                            renameFile(filePath);
+                            break;
                     }
                 });
             })
             .catch(error => {
-                // console.error(error);
-
-                /* UI */
-                if (!document.getElementById('loaderBody').classList.contains("is-hidden")) {
-                    document.getElementById('loaderBody').classList.add('is-hidden');
+                /* UI: Hide loader */
+                if (!loader.classList.contains("is-hidden")) {
+                    loader.classList.add('is-hidden');
                 }
-                // Show the error message using SweetAlert2 toast
-                Swal.fire({
-                    toast: true,
-                    position: 'top-end',
-                    icon: 'error',
-                    title: error.message || 'An unexpected error occurred',
-                    showConfirmButton: false,
-                    timer: 3000,
-                    timerProgressBar: true,
-                    didOpen: (toast) => {
-                        toast.addEventListener('mouseenter', Swal.stopTimer);
-                        toast.addEventListener('mouseleave', Swal.resumeTimer);
-                    }
+                // Display error using your SweetAlert2 error handler.
+                window.hyper_swal.error(error.message || 'An unexpected error occurred', {
+                    showConfirmButton: true,
+                    timer: false,
                 });
-                /* End of UI */
-
-            });;
+            });
     }
 
     function createFile() {
-        Swal.fire({
-            title: "<?= lang('Admin.enterNewFileNameWithExtension') ?>:",
-            input: "text",
-            inputAttributes: {
-                autocapitalize: "off"
-            },
-            showCancelButton: true,
-            cancelButtonText: "<?= lang('Admin.cancel') ?>",
-            confirmButtonText: "<?= lang('Admin.save') ?>",
-            // confirmButtonColor: "var(--mdb-primary)",
-            showLoaderOnConfirm: true,
+        window.hyper_swal.prompt({
+            title: "<?= lang('Admin.enterNewFileNameWithExtension') ?>",
             preConfirm: (fileName) => {
                 if (!fileName) {
-                    Swal.showValidationMessage("<?= lang('Admin.failedToCreateFile') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
+                    window.hyper_swal.get().showValidationMessage("<?= lang('Admin.failedToCreateFile') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
                     return;
                 }
                 return fetch('<?= base_url('api/file-manager/create-file') ?>', {
@@ -931,43 +968,31 @@ $currentRoute = $request->getUri()->getPath();
                     .then(response => response.json())
                     .then(data => {
                         if (!data.status) {
-                            Swal.showValidationMessage(
+                            window.hyper_swal.get().showValidationMessage(
                                 "<?= lang('Admin.failedToCreateFile') ?>: " + data.error
                             );
                         }
                         return data;
                     })
                     .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
+                        window.hyper_swal.get().showValidationMessage(`Request failed: ${error}`);
                     });
             },
-            allowOutsideClick: () => !Swal.isLoading()
+            allowOutsideClick: () => !window.hyper_swal.get().isLoading()
         }).then((result) => {
             if (result.isConfirmed && result.value.status) {
-                Swal.fire({
-                    icon: 'success',
-                    title: result.value.status
-                });
+                window.hyper_swal.success(result.value.status);
                 listFiles(window.currentPath); // Refresh the list to show the new file
             }
         });
     }
 
     function createFolder() {
-        Swal.fire({
-            title: "<?= lang('Admin.enterNewFolderName') ?>:",
-            input: "text",
-            inputAttributes: {
-                autocapitalize: "off"
-            },
-            showCancelButton: true,
-            cancelButtonText: "<?= lang('Admin.cancel') ?>",
-            confirmButtonText: "<?= lang('Admin.save') ?>",
-            // confirmButtonColor: "var(--mdb-primary)",
-            showLoaderOnConfirm: true,
+        window.hyper_swal.prompt({
+            title: "<?= lang('Admin.enterNewFolderName') ?>",
             preConfirm: (folderName) => {
                 if (!folderName) {
-                    Swal.showValidationMessage("<?= lang('Admin.failedToCreateFolder') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
+                    window.hyper_swal.get().showValidationMessage("<?= lang('Admin.failedToCreateFolder') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
                     return;
                 }
                 return fetch('<?= base_url('api/file-manager/create-folder') ?>', {
@@ -983,23 +1008,20 @@ $currentRoute = $request->getUri()->getPath();
                     .then(response => response.json())
                     .then(data => {
                         if (!data.status) {
-                            Swal.showValidationMessage(
+                            window.hyper_swal.get().showValidationMessage(
                                 "<?= lang('Admin.failedToCreateFolder') ?>: " + data.error
                             );
                         }
                         return data;
                     })
                     .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
+                        window.hyper_swal.get().showValidationMessage(`Request failed: ${error}`);
                     });
             },
-            allowOutsideClick: () => !Swal.isLoading()
+            allowOutsideClick: () => !window.hyper_swal.get().isLoading()
         }).then((result) => {
             if (result.isConfirmed && result.value.status) {
-                Swal.fire({
-                    icon: 'success',
-                    title: result.value.status
-                });
+                window.hyper_swal.success(result.value.status);
                 listFiles(window.currentPath); // Refresh the list to show the new folder
             }
         });
@@ -1009,21 +1031,11 @@ $currentRoute = $request->getUri()->getPath();
         // Extract the filename from oldPath
         const oldFileName = oldPath.split('/').pop();
 
-        Swal.fire({
-            title: "<?= lang('Admin.enterNewFileNameWithExtension') ?>:",
-            input: "text",
-            inputValue: oldFileName, // Set old filename as the default input value
-            inputAttributes: {
-                autocapitalize: "off"
-            },
-            showCancelButton: true,
-            cancelButtonText: "<?= lang('Admin.cancel') ?>",
-            confirmButtonText: "<?= lang('Admin.save') ?>",
-            // confirmButtonColor: "var(--mdb-primary)",
-            showLoaderOnConfirm: true,
+        window.hyper_swal.prompt({
+            title: "<?= lang('Admin.rename') ?>",
             preConfirm: (newName) => {
                 if (!newName) {
-                    Swal.showValidationMessage("<?= lang('Admin.failedToRenameFile') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
+                    window.hyper_swal.get().showValidationMessage("<?= lang('Admin.failedToRenameFile') ?>: <?= lang('Validation.required', ['field' => lang('Admin.name')]) ?>");
                     return;
                 }
                 return fetch('<?= base_url('api/file-manager/rename') ?>', {
@@ -1039,23 +1051,20 @@ $currentRoute = $request->getUri()->getPath();
                     .then(response => response.json())
                     .then(data => {
                         if (!data.status) {
-                            Swal.showValidationMessage(
+                            window.hyper_swal.get().showValidationMessage(
                                 "<?= lang('Admin.failedToRenameFile') ?>: " + data.error
                             );
                         }
                         return data;
                     })
                     .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`);
+                        window.hyper_swal.get().showValidationMessage(`Request failed: ${error}`);
                     });
             },
-            allowOutsideClick: () => !Swal.isLoading()
+            allowOutsideClick: () => !window.hyper_swal.get().isLoading()
         }).then((result) => {
             if (result.isConfirmed && result.value.status) {
-                Swal.fire({
-                    icon: 'success',
-                    title: result.value.status
-                });
+                window.hyper_swal.success(result.value.status);
                 listFiles(window.currentPath); // Refresh the list to show renamed file
             }
         });
@@ -1138,21 +1147,11 @@ $currentRoute = $request->getUri()->getPath();
 
                 if (data.success) {
                     // Show success toast 
-                    Swal.fire({
-                        position: "top",
-                        icon: "success",
-                        toast: true,
-                        title: "<?= lang('Admin.fileSavedSuccessfully') ?>",
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.success("<?= lang('Admin.fileSavedSuccessfully') ?>");
                 } else {
                     // Show error toast 
-                    Swal.fire({
-                        icon: "error",
-                        toast: true,
-                        title: "<?= lang('Admin.failedToSaveFile') ?>: " + data.error,
-                        confirmButtonText: "<?= lang('Admin.close') ?>"
+                    window.hyper_swal.success("<?= lang('Admin.failedToSaveFile') ?>: " + data.error, {
+                        showConfirmButton: true,
                     });
                 }
             });
@@ -1164,25 +1163,11 @@ $currentRoute = $request->getUri()->getPath();
 
         if (selectedFiles.length === 0) {
             // Show error toast 
-            Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "<?= lang('Admin.selectFilesToDelete') ?>",
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            window.hyper_swal.error("<?= lang('Admin.selectFilesToDelete') ?>");
             return;
         }
 
-        Swal.fire({
-            title: '<?= lang('Admin.deleteSelected') ?>',
-            text: '<?= lang('Admin.deletedItemsCannotBeRecovered') ?>',
-            icon: 'warning',
-            showCancelButton: true,
-            confirmButtonColor: 'var(--bulma-primary) !important',
-            confirmButtonText: '<?= lang('Admin.delete') ?>',
-            cancelButtonText: '<?= lang('Admin.cancel') ?>',
-        }).then((result) => {
+        window.hyper_swal.confirm().then((result) => {
             if (result.isConfirmed) {
 
                 // Request item deletion
@@ -1199,21 +1184,13 @@ $currentRoute = $request->getUri()->getPath();
                     .then(data => {
                         if (data.status) {
                             // Show success alert dialog
-                            Swal.fire({
-                                position: "top-end",
-                                icon: "success",
-                                title: "<?= lang('Admin.deletedSuccessfully') ?>",
-                                showConfirmButton: false,
-                                timer: 1500,
-                            });
+                            window.hyper_swal.success("<?= lang('Admin.deletedSuccessfully') ?>");
                             listFiles(window.currentPath); // Refresh file list
                         } else if (data.error) {
                             // Show error alert dialog
-                            Swal.fire({
-                                position: "top-end",
-                                icon: "error",
-                                title: "<?= lang('Admin.failedToDelete') ?>: " + data.error,
-                                confirmButtonText: "<?= lang('Admin.close') ?>",
+                            window.hyper_swal.success("<?= lang('Admin.failedToDelete') ?>: " + data.error, {
+                                showConfirmButton: true,
+                                timer: false,
                             });
                         }
                     })
@@ -1233,13 +1210,7 @@ $currentRoute = $request->getUri()->getPath();
         const selectedFiles = getSelectedFiles();
 
         if (selectedFiles.length === 0) {
-            Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "<?= lang('Admin.selectFileToCompressZIP') ?>",
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            window.hyper_swal.error("<?= lang('Admin.selectFileToCompressZIP') ?>");
             return;
         }
 
@@ -1269,16 +1240,12 @@ $currentRoute = $request->getUri()->getPath();
                 /* End of UI */
 
                 if (data.status) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '<?= lang('Admin.successfullyCompressed') ?>',
+                    window.hyper_swal.success('<?= lang('Admin.successfullyCompressed') ?>', {
                         text: data.archive
                     });
                     listFiles(window.currentPath); // Refresh list to show new zip file
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: '<?= lang('Admin.error') ?>',
+                    window.hyper_swal.error('<?= lang('Admin.error') ?>', {
                         text: "<?= lang('Admin.failedToCompressFile') ?>: " + data.error
                     });
                 }
@@ -1290,13 +1257,7 @@ $currentRoute = $request->getUri()->getPath();
         const selectedFiles = getSelectedFiles();
 
         if (selectedFiles.length !== 1 || !selectedFiles[0].endsWith('.zip')) {
-            Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "<?= lang('Admin.selectZipFileToEctract') ?>",
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            window.hyper_swal.error("<?= lang('Admin.selectZipFileToEctract') ?>");
             return;
         }
 
@@ -1325,19 +1286,10 @@ $currentRoute = $request->getUri()->getPath();
                 /* End of UI */
 
                 if (data.status) {
-                    Swal.fire({
-                        icon: 'success',
-                        title: '<?= lang('Admin.successfullyExtracted') ?>',
-                        toast: true,
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.success('<?= lang('Admin.successfullyExtracted') ?>');
                     listFiles(window.currentPath); // Refresh to show extracted files
                 } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: "<?= lang('Admin.failedToExtractFile') ?>: " + data.error
-                    });
+                    window.hyper_swal.error("<?= lang('Admin.failedToExtractFile') ?>: " + data.error);
                 }
             })
             .catch(error => console.error("Error extracting file:", error));
@@ -1347,13 +1299,7 @@ $currentRoute = $request->getUri()->getPath();
         const selectedFiles = getSelectedFiles();
         if (selectedFiles.length === 0) {
             // Show error toast 
-            Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "<?= lang('Admin.selectFilesToCopy') ?>",
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            window.hyper_swal.error("<?= lang('Admin.selectFilesToCopy') ?>");
             return;
         }
         setClipboard(selectedFiles, 'copy');
@@ -1363,13 +1309,7 @@ $currentRoute = $request->getUri()->getPath();
         const selectedFiles = getSelectedFiles();
         if (selectedFiles.length === 0) {
             // Show error toast 
-            Swal.fire({
-                icon: "error",
-                toast: true,
-                title: "<?= lang('Admin.selectFilesToMove') ?>",
-                showConfirmButton: false,
-                timer: 1500,
-            });
+            window.hyper_swal.error("<?= lang('Admin.selectFilesToMove') ?>");
             return;
         }
         setClipboard(selectedFiles, 'move');
@@ -1390,22 +1330,14 @@ $currentRoute = $request->getUri()->getPath();
             .then(data => {
                 if (data.status) {
                     // Show success toast 
-                    Swal.fire({
-                        icon: "success",
-                        toast: true,
-                        title: `${action.charAt(0).toUpperCase() + action.slice(1)}: <?= lang('Admin.copiedSuccessfullyReadyToPaste') ?>`,
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.success(
+                        `${action.charAt(0).toUpperCase() + action.slice(1)}: <?= lang('Admin.copiedSuccessfullyReadyToPaste') ?>`
+                    );
                 } else {
                     // Show error toast 
-                    Swal.fire({
-                        icon: "error",
-                        toast: true,
-                        title: "<?= lang('Admin.failedToCopy') ?>: " + data.error,
-                        showConfirmButton: false,
-                        timer: 1500,
-                    });
+                    window.hyper_swal.error("<?= lang('Admin.failedToCopy') ?>: " + data.error, {
+                        showConfirmButton: true,
+                    })
                 }
             })
             .catch(error => console.error("Error setting clipboard:", error));

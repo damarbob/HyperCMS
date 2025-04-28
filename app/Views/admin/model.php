@@ -52,7 +52,17 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 </script>
 
 <script type="text/javascript">
-    var lang = '<?= $lang ?>';
+    /* Configs */
+
+    var lang = '<?= $lang ?>'; // Get lang from the backend
+
+    // CSRF
+    var csrfName = '<?= csrf_token() ?>';
+    var csrfHash = '<?= csrf_hash() ?>';
+
+    // States
+    var isTrash = true; // Set to true to show trash entries.
+
     var options = {
         processing: true,
         serverSide: true,
@@ -65,6 +75,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             type: "POST",
             data: function(d) {
                 d.id = <?= $id ?>;
+                d.trash = isTrash;
             }
         },
 
@@ -74,7 +85,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             <?php foreach ($invisible_fields as $field): ?> {
                     title: "<?= $field->title ?>",
                     data: "<?= $field->id ?>",
-                    defaultContent: "<?= lang('Admin.n/a') ?>", // If data not found, show n/a instead
+                    defaultContent: "<span class='tag is-warning'><?= lang('Admin.n/a') ?></span>", // If data not found, show n/a instead
                     visible: false, // Do not display this column
                     searchable: false, // Optional: remove from search if not needed
                     orderable: false, // Optional: disable sorting on this column
@@ -84,21 +95,23 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             <?php foreach ($fields as $field): ?> {
                     title: "<?= $field->label ?>",
                     data: "<?= $field->id ?>",
-                    defaultContent: "<?= lang('Admin.n/a') ?>", // If data not found, show n/a instead
+                    defaultContent: "<span class='tag is-warning'><?= lang('Admin.n/a') ?></span>", // If data not found, show n/a instead
                     orderSequence: ["asc", "desc"],
                     render: function(data, type, row, meta) {
                         const fieldType = '<?= $field->type ?>';
                         const fieldClassName = <?= isset($field->className) ? "'" . $field->className . "'" : 'null' ?>;
+
+                        // Handle data rendering
                         if (type === 'display') {
                             if (data) {
                                 if (fieldType === 'textarea' && typeof fieldClassName === 'string' && fieldClassName.includes('hyper-code-field')) {
                                     // Return escaped data for display
-                                    return `<button class="button is-primary is-small" data-code="${escape(data)}" onclick="openCodeModal(this)"><span class="icon"><i class="fa-solid fa-code"></i></span></button>`;
+                                    return `<button class="button is-small" data-code="${escape(data)}" onclick="openCodeModal(this)"><span class="icon"><i class="fa-solid fa-code"></i></span></button>`;
                                 } else {
                                     return data;
                                 }
                             } else if (data === '') {
-                                return '<?= lang('Admin.(empty)') ?>';
+                                return "<span class='tag'><?= lang('Admin.(empty)') ?></span>";
                             }
                         }
                         return data;
@@ -116,23 +129,137 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         layout: {
             topStart: {
                 buttons: [{
-                        className: 'is-primary',
-                        text: '<i class="fa-solid fa-plus mr-2"></i>New',
+                        text: '<span class="icon"><i class="fa-solid fa-plus"></i></span><span><?= lang('Admin.new') ?></span>',
+                        className: 'is-primary hyper-new',
                         action: function(e, dt, node, config) {
                             window.location.href = '<?= base_url("admin/entries/new?model_id=$id") ?>';
                         }
                     },
                     {
                         extend: "colvis", // Column visibility button
-                        text: '<i class="fa-solid fa-table mr-2"></i><?= lang('Admin.data') ?>',
+                        text: '<i class="fa-solid fa-table"></i>',
+                        titleAttr: '<?= lang('Admin.data') ?>',
                     },
                     {
                         extend: "excelHtml5", // Export to Excel using HTML5 features
-                        text: '<i class="fa-solid fa-download mr-2"></i><?= lang('Admin.excel') ?>',
+                        text: '<i class="fa-solid fa-download"></i>',
+                        titleAttr: '<?= lang('Admin.excel') ?>',
                     },
                     {
                         extend: "print", // Print button
-                        text: '<i class="fa-solid fa-print mr-2"></i><?= lang('Admin.print') ?>',
+                        text: '<i class="fa-solid fa-print"></i>',
+                        titleAttr: '<?= lang('Admin.print') ?>',
+                    },
+                    {
+                        // Refresh button
+                        text: '<i class="fa-solid fa-arrows-rotate"></i>',
+                        titleAttr: '<?= lang('Admin.refresh') ?>',
+                        action: function(e, dt, node, config) {
+                            dt.ajax.reload(function() {
+                                window.hyper_swal.success('<?= lang('Admin.successfullyRefreshed') ?>');
+                            });
+                        }
+                    },
+                    {
+                        // Toggle trash view button
+                        text: '<span class="icon"><i class="fa-solid fa-recycle"></i></span><span><?= lang('Admin.trash') ?></span>',
+                        className: 'is-warning',
+                        action: function(e, dt, node, config) {
+                            toggleTrashView(); // Call the function to toggle trash view
+
+                            if (isTrash) {
+                                $(node).addClass('is-active');
+                                $(node).html('<span class="icon"><i class="fa-solid fa-xmark"></i></span><span><?= lang('Admin.exit') ?></span>');
+                            } else {
+                                $(node).removeClass('is-active');
+                                $(node).html('<span class="icon"><i class="fa-solid fa-recycle"></i></span><span><?= lang('Admin.trash') ?></span>');
+                            }
+                        }
+                    },
+                    {
+                        // Delete button
+                        extend: "selected",
+                        text: '<i class="fa-solid fa-trash"></i>',
+                        titleAttr: '<?= lang('Admin.delete') ?>',
+                        className: 'is-danger hyper-delete',
+                        action: function(e, dt, node, config) {
+                            var selectedRows = dt.rows({
+                                selected: true
+                            }).data().toArray();
+                            if (selectedRows.length > 0) {
+                                // Map the selected rows into an array of IDs
+                                var ids = selectedRows.map(function(row) {
+                                    return row.id;
+                                });
+
+                                console.log('Delete IDs:', ids);
+
+                                // AJAX request to delete entries (POSTing the ids array)
+                                $.ajax({
+                                    url: '<?= base_url('admin/entries/delete') ?>', // Adjust this URL as needed.
+                                    type: 'POST',
+                                    data: {
+                                        ids: ids,
+                                        [csrfName]: csrfHash
+                                    }, // Include CSRF token for security
+                                    dataType: 'json', // Expecting JSON response from the server (if you modify your backend to return JSON)
+                                    success: function(response) {
+                                        // You can perform any action on success here.
+                                        // For example, a success notification and then reload the table.
+                                        alert(response.success || 'Entries deleted successfully.');
+                                        dt.ajax.reload();
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // Handle errors here
+                                        alert('Failed to delete entries: ' + error);
+                                    }
+                                });
+                            } else {
+                                alert('<?= lang('Admin.selectToDelete') ?>');
+                            }
+                        }
+                    },
+                    {
+                        // Restore button
+                        extend: "selected",
+                        text: '<span class="icon"><i class="fa-solid fa-rotate-left"></i></span><span><?= lang('Admin.restore') ?></span>',
+                        className: 'is-success hyper-restore',
+                        action: function(e, dt, node, config) {
+                            var selectedRows = dt.rows({
+                                selected: true
+                            }).data().toArray();
+                            if (selectedRows.length > 0) {
+                                // Map the selected rows into an array of IDs
+                                var ids = selectedRows.map(function(row) {
+                                    return row.id;
+                                });
+
+                                console.log('Restore IDs:', ids);
+
+                                // AJAX request to restore entries (POSTing the ids array)
+                                $.ajax({
+                                    url: '<?= base_url('admin/entries/restore') ?>', // Adjust this URL as needed.
+                                    type: 'POST',
+                                    data: {
+                                        ids: ids,
+                                        [csrfName]: csrfHash
+                                    }, // Include CSRF token for security
+                                    dataType: 'json', // Expecting JSON response from the server (if you modify your backend to return JSON)
+                                    success: function(response) {
+                                        // You can perform any action on success here.
+                                        // For example, a success notification and then reload the table.
+                                        alert(response.success || 'Entries restored successfully.');
+                                        dt.ajax.reload();
+                                    },
+                                    error: function(xhr, status, error) {
+                                        // Handle errors here
+                                        alert('Failed to restore entries: ' + error);
+                                    }
+                                });
+                            } else {
+                                alert('<?= lang('Admin.selectToRestore') ?>');
+                            }
+                        }
                     },
                 ],
             },
@@ -159,7 +286,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                 var id = data.id;
 
                 // Navigate to the Edit page
-                window.location.href = "<?= base_url('admin/entries/') ?>" + id + "/edit?model_name=" + data.model_name;
+                window.location.href = "<?= base_url('admin/entries/') ?>" + id + "/edit";
             });
         },
 
@@ -197,6 +324,36 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             url: languageUrl
         };
     }
+
+    /* End of configs */
+
+    /* Init */
+
     var hyperTable = new DataTable('#hyperTable', options);
+
+    toggleTrashView(); // Initialize the trash view based on the default value
+
+    /* End of init */
+
+    /* Views */
+
+    // Function to toggle the trash view
+    // and update the button visibility accordingly
+    function toggleTrashView() {
+        isTrash = !isTrash; // Toggle the trash view
+        hyperTable.ajax.reload(); // Reload the table data
+
+        if (isTrash) {
+            $('button.hyper-new').hide(250);
+            $('button.hyper-delete').hide(250);
+            $('button.hyper-restore').show(250);
+        } else {
+            $('button.hyper-new').show(250);
+            $('button.hyper-delete').show(250);
+            $('button.hyper-restore').hide(250);;
+        }
+    }
+
+    /* End of views */
 </script>
 <?= $this->endSection() ?>

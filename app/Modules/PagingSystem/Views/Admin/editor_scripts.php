@@ -64,8 +64,7 @@ if (file_exists($editorScriptsOverrideFile)) {
           // Will be used to populate scripts from backend
         ],
       },
-      panels: {
-      },
+      panels: {},
       height: '100vh',
       storageManager: false,
       plugins: <?= json_encode($editorPlugins); ?>,
@@ -137,7 +136,9 @@ if (file_exists($editorScriptsOverrideFile)) {
           .then(response => response.json())
           .then((data) => {
             if (data.success) {
-              Swal.fire("<?= lang('Admin.success') ?>", data.message, "success");
+              window.hyper_swal.success("<?= lang('Admin.success') ?>", {
+                text: data.message
+              });
               if (data.redirect) {
                 setTimeout(() => {
                   window.location.href = data.redirect;
@@ -145,7 +146,9 @@ if (file_exists($editorScriptsOverrideFile)) {
               }
             } else {
               throw new Error(data.message);
-              Swal.fire("<?= lang('Admin.error') ?>", data.message, "error");
+              window.hyper_swal.error("<?= lang('Admin.error') ?>", {
+                text: data.message
+              });
             }
           })
           .then(data => {

@@ -4,7 +4,7 @@
             <i class="fa-solid fa-swatchbook"></i>
         </span>
         <span>
-            <?= lang('Admin.openWithEditor') ?>
+            <?= lang('PagingSystem.openWithEditor') ?>
         </span>
     </a>
 </div>

@@ -48,12 +48,26 @@ $fieldsError = validation_show_error('fields');
     </div>
     <div class="field is-grouped">
         <div class="control is-flex-grow-1">
-            <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
+            <button type="submit" class="button is-primary">
+                <span class="icon">
+                    <i class="fas fa-check"></i>
+                </span>
+                <span>
+                    <?= lang('Admin.save') ?>
+                </span>
+            </button>
         </div>
         <?php if ($action === 'edit'): ?>
             <!-- Show delete button on edit page -->
             <div class="control">
-                <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>
+                <button type="button" class="button is-link is-danger" onclick="deleteModel()">
+                    <span class="icon">
+                        <i class="fas fa-trash"></i>
+                    </span>
+                    <span>
+                        <?= lang('Admin.delete') ?>
+                    </span>
+                </button>
             </div>
         <?php endif; ?>
     </div>
@@ -82,16 +96,10 @@ $fieldsError = validation_show_error('fields');
     }
 
     function deleteModel() {
-        Swal.fire({
+        window.hyper_swal.confirm({
             title: "<?= lang('Admin.areYouSure') ?>",
             text: "<?= lang('Admin.youWillNotBeAbleToRevertThis') ?>",
-            icon: "warning",
-            showCancelButton: true,
             confirmButtonColor: "var(--bulma-danger)",
-            // cancelButtonColor: "#d33",
-            confirmButtonText: "<?= lang('Admin.yes') ?>",
-            cancelButtonText: "<?= lang('Admin.cancel') ?>",
-            theme: window.isDarkMode ? 'dark' : 'light',
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('deleteForm').submit();
