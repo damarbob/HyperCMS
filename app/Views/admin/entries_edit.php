@@ -10,5 +10,5 @@ $hooks = service('hooks');
 <?= $this->endSection() ?>
 
 <?= $this->section('scripts') ?>
-<?= $this->include('admin/entries_scripts') ?>
+<?= $this->include('admin/partials/entries_scripts') ?>
 <?= $this->endSection() ?>

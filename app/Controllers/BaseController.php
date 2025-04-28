@@ -48,6 +48,7 @@ abstract class BaseController extends Controller
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
     // protected $session;
+    protected $hooks;
 
     // Models
     protected ModelsModel $modelsModel;
@@ -70,6 +71,9 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = service('session');
 
+        /** @var \App\Services\HyperHooks */
+        $this->hooks = service('hooks');
+
         // Models
         $this->modelsModel = new ModelsModel();
         $this->modelDataModel = new ModelDataModel();
@@ -84,7 +88,51 @@ abstract class BaseController extends Controller
 
         $this->data['models'] = $this->modelsModel->getCustomBuilder()->get()->getResultArray();
 
-        // log_message('debug', implode(',', $this->data['uriSegments']));
+        /* View data */
+
+        $menu = [
+            [
+                'url'              => base_url('admin/dashboard'),
+                'icon'             => 'fa-solid fa-house',
+                'text'             => lang("Admin.dashboard"),
+                'tooltip_content'    => lang("Admin.dashboard"),
+                'tooltip_placement'  => 'right',
+            ],
+            [
+                'url'              => base_url('admin/models'),
+                'icon'             => 'fa-solid fa-circle-nodes',
+                'text'             => lang("Admin.models"),
+                'tooltip_content'    => lang("Admin.models"),
+                'tooltip_placement'  => 'right',
+            ],
+            [
+                'url'              => base_url('admin/entries'),
+                'icon'             => 'fa-solid fa-table-list',
+                'text'             => lang("Admin.entries"),
+                'tooltip_content'    => lang("Admin.entries"),
+                'tooltip_placement'  => 'right',
+            ],
+            [
+                'url'              => base_url('admin/file-manager'),
+                'icon'             => 'fa-solid fa-folder-closed',
+                'text'             => lang("Admin.fileManager"),
+                'tooltip_content'    => lang("Admin.fileManager"),
+                'tooltip_placement'  => 'right',
+            ]
+        ];
+
+        $additionalMenu = [];
+        $additionalMenu = $this->hooks->filter(hook('Backend.controller:menu:data'), $additionalMenu);
+
+        // dd($additionalMenu);
+
+        $this->data['menu'] = array_merge($menu, $additionalMenu);
+
+        // dd($this->data['menu']);
+
+        /* End of view data */
+
+        /* Testing */
 
         $syntaxProcessor = new SyntaxProcessor();
         if (false):
@@ -93,17 +141,19 @@ abstract class BaseController extends Controller
                 {
                     "type": "data",
                     "content": "hooks"
-                },
-                {
-                    "type": "data",
-                    "content": {
-                        "table": "entries",
-                        "select": "id as value, fields as label",
-                        "orderby": "id ASC"
+                    },
+                    {
+                        "type": "data",
+                        "content": {
+                            "table": "entries",
+                            "select": "id as value, fields as label",
+                            "orderby": "id ASC"
+                            }
                     }
-                }
             ]
             ')));
         endif;
+
+        /* End of testing */
     }
 }

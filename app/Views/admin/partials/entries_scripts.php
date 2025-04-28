@@ -1,11 +1,23 @@
+<?php if (!empty($entry)): // For edit action
+?>
+    <!-- History modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card is-fullheight">
+            <section class="modal-card-body is-flex" style="--bulma-modal-card-body-padding: 0.5rem;">
+                <iframe id="historyIframe" class="is-flex-grow-1" data-src="<?= base_url('admin/entry-data/' . $entry['id']) ?>" frameborder="0"></iframe>
+            </section>
+        </div>
+        <button class="modal-close delete is-large" aria-label="close"></button>
+    </div>
+<?php endif; ?>
+
 <!-- Modal for File Manager -->
-<div id="fileManagerModal" class="modal is-large">
+<div id="fileManagerModal" class="modal">
     <div class="modal-background"></div>
-    <div class="modal-content">
-        <div class="card">
-            <div class="card-content" style="--bulma-card-content-padding: 8px;">
-                <iframe id="fileManagerIframe" data-src="<?= base_url('admin/file-manager') ?>" frameborder="0" style="width: 100%; height: 500px;"></iframe>
-            </div>
+    <div class="modal-card is-fullheight">
+        <div class="modal-card-body is-flex" style="--bulma-modal-card-body-padding: 0.5rem;">
+            <iframe id="fileManagerIframe" class="is-flex-grow-1" data-src="<?= base_url('admin/file-manager') ?>" frameborder="0"></iframe>
         </div>
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
@@ -16,18 +28,44 @@
     import InputCreator from '<?= base_url('assets/js/admin/InputCreator.js') ?>';
     import InputPopulator from '<?= base_url('assets/js/admin/InputPopulator.js') ?>';
 
+    /**
+     * Wait for an element with the given ID to be added to the DOM.
+     * @param {string} fieldId - The field id to wait for.
+     * @param {Function} callback - The callback to execute when the element is found.
+     * @param {number} timeout - Optional maximum time in milliseconds to wait (default 1000).
+     */
+    function waitForElement(fieldId, callback, timeout = 1000) {
+        const interval = 50; // How frequently to check.
+        let elapsed = 0;
+
+        function check() {
+            const input = document.getElementById(fieldId);
+            if (input) {
+                callback(input);
+            } else {
+                elapsed += interval;
+                if (elapsed < timeout) {
+                    setTimeout(check, interval);
+                } else {
+                    console.warn(`Input with ID ${fieldId} not found after waiting ${timeout}ms.`);
+                }
+            }
+        }
+
+        check();
+    }
+
     const container = document.getElementById('hyper-fields-container');
     const metaInputCreator = new InputCreator({
         container: container,
         onFieldCreated: (fieldId) => {
+            // console.log('Field created:', fieldId);
 
-            // Wait for document to be fully loaded
-            document.addEventListener("DOMContentLoaded", function() {
-
-                // Retrieve the input element using the field ID.
-                const input = document.getElementById(fieldId);
-
-                if (!input) {
+            // Instead of using DOMContentLoaded (which only fires once),
+            // we wait for the element to be available in the DOM.
+            waitForElement(fieldId, (input) => {
+                // At this point, input is guaranteed to exist.
+                if (!input) { // (This check is extra safety – should not happen)
                     <?php if (ENVIRONMENT !== 'production'): ?>
                         console.warn(`Input with ID ${fieldId} not found.`);
                     <?php endif; ?>
@@ -38,13 +76,15 @@
                 if (input.classList.contains('hyper-rich-text-field')) {
                     initializeTinyMCE(fieldId);
                 } else if (input.type === 'url' && input.classList.contains('hyper-file-browse-field')) {
-                    console.log('Found file browse field:', fieldId);
+                    <?php if (ENVIRONMENT !== 'production'): ?>
+                        console.log('Found file browse field:', fieldId);
+                    <?php endif; ?>
 
                     // Create a new "Browse file" button with Bulma styling and a FA icon.
                     const browseBtn = document.createElement('button');
                     browseBtn.type = 'button';
                     browseBtn.className = 'button mt-2'; // Adjust classes as needed.
-                    browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang('ADmin.fileManager') ?></span>';
+                    browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang("ADmin.fileManager") ?></span>';
 
                     // Append the button immediately after the input element.
                     input.insertAdjacentElement('afterend', browseBtn);
@@ -61,10 +101,9 @@
                         }
                     });
 
-                    // Listen for messages from the file manager. (Note: if you have multiple file
-                    // inputs on the same page, consider attaching this listener only once globally.)
+                    // Listen for messages from the file manager. (Attach this listener globally if needed.)
                     window.addEventListener('message', function(event) {
-                        // Optionally validate the event.origin for improved security.
+                        // Optionally, validate event.origin for extra security.
                         if (event.data && event.data.mceAction === 'filesSelected') {
                             const selectedFiles = event.data.data; // Array of URL strings.
                             if (selectedFiles.length > 0) {
@@ -84,6 +123,18 @@
     // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
     metaInputCreator.create(<?= $processed_model_fields ?>);
 
+    window.hyper_recreateMetaInputs = function() {
+        // Destroy all TinyMCE instances before recreating inputs
+        destroyTinyMCEInstances(document.querySelectorAll('.hyper-rich-text-field'));
+
+        // Recreate the inputs
+        metaInputCreator.create(<?= $processed_model_fields ?>);
+    };
+
+    window.hyper_populateMetaInputsWithHistory = function(data) {
+        inputPopulator.populate(data)
+    }
+
     const inputPopulator = new InputPopulator(container);
     inputPopulator.populate(<?= isset($entry) ? $entry['fields'] : '' ?>);
 </script>
@@ -100,10 +151,10 @@
             tinymce.get(id)?.remove(); // Destroy existing instance
         }
 
-        setTimeout(() => {
+        try {
             tinymce.init({
-                skin: 'oxide-dark',
-                content_css: 'dark',
+                skin: window.hyper_isDarkMode ? 'oxide-dark' : 'oxide',
+                content_css: window.hyper_isDarkMode ? 'dark' : 'default',
                 selector: `#${id}`,
                 license_key: "gpl",
                 relative_urls: false,
@@ -133,8 +184,15 @@
                     "alignleft aligncenter alignright alignjustify | " +
                     "bullist numlist checklist outdent indent | removeformat | table | code | help",
                 promotion: false,
+                setup: function(editor) {
+                    editor.on('change', function() {
+                        editor.save();
+                    });
+                },
             });
-        }, 500);
+        } catch (e) {
+            console.error('TinyMCE initialization error:', e);
+        }
     }
 
     function destroyTinyMCEInstances(editors) {
@@ -171,7 +229,9 @@
             .then((data) => {
                 if (data.success) {
                     // If successful
-                    Swal.fire("<?= lang('Admin.success') ?>", data.message, "success"); // Show success message
+                    window.hyper_swal.success("<?= lang('Admin.success') ?>", {
+                        text: data.message
+                    }); // Show success message
 
                     // Redirect the page after 1 second if redirect url exists
                     if (data.redirect) {
@@ -181,7 +241,9 @@
                     }
                 } else {
                     // If error
-                    Swal.fire("<?= lang('Admin.error') ?>", data.message, "error"); // Show error message
+                    window.hyper_swal.error("<?= lang('Admin.error') ?>", {
+                        text: data.message
+                    }); // Show error message
                 }
             })
             .then(data => console.log(data))
@@ -189,16 +251,69 @@
     });
 </script>
 <script>
-    function deleteModel() {
-        Swal.fire({
+    // Listen for messages from the file manager. (Attach this listener globally if needed.)
+    window.addEventListener('message', function(event) {
+        // Optionally, validate event.origin for extra security.
+        if (event.data && event.data.action === 'entryDataSelected') {
+            const selectedData = event.data.data; // Array of URL strings.
+            useData(selectedData);
+            // Close the modal after processing the selection.
+            closeModal(document.getElementById('historyModal'));
+        }
+    });
+
+    /**
+     * Transforms an object into an array of objects with "id" and "value" properties.
+     *
+     * @param {Object} data - The input object with key/value pairs.
+     * @returns {Array} Array of objects in the format [{ id: key, value: value }, ...]
+     */
+    function transformData(data) {
+        return Object.entries(data).map(([key, value]) => ({
+            id: key,
+            value
+        }));
+    }
+
+    function useData(selectedData) {
+        // Check if any rows are selected
+        if (selectedData.length > 0) {
+            // Get the first selected row's ID and model name
+            var id = selectedData[0].id;
+            var modelName = selectedData[0].model_name;
+
+            // Recreate the meta inputs and populate them with the selected data
+            window.hyper_recreateMetaInputs();
+            window.hyper_populateMetaInputsWithHistory(transformData(selectedData[0]));
+
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
+            window.hyper_swal.success("<?= lang('Admin.success') ?>");
+
+        } else {
+            window.hyper_swal.error("<?= lang('Admin.selectRow') ?>");
+        }
+    }
+
+    function showHistoryModal() {
+        // Open the history modal.
+        openModal(document.getElementById('historyModal'));
+
+        // Lazy load the iframe source if it hasn't been loaded already.
+        const iframe = document.getElementById('historyIframe');
+        if (!iframe.getAttribute('src')) {
+            iframe.setAttribute('src', iframe.getAttribute('data-src'));
+        }
+    }
+
+    function deleteEntry() {
+        window.hyper_swal.confirm({
             title: "<?= lang('Admin.areYouSure') ?>",
             text: "<?= lang('Admin.youWillNotBeAbleToRevertThis') ?>",
-            icon: "warning",
-            showCancelButton: true,
             confirmButtonColor: "var(--bulma-danger)",
-            confirmButtonText: "<?= lang('Admin.yes') ?>",
-            cancelButtonText: "<?= lang('Admin.cancel') ?>",
-            theme: window.isDarkMode ? 'dark' : 'light',
         }).then((result) => {
             if (result.isConfirmed) {
                 document.getElementById('deleteForm').submit();

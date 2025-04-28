@@ -41,6 +41,7 @@ class Model extends ApiController
         $order   = $params['order'] ?? null;
         $columns = $params['columns'] ?? null;
         $find    = $params['find'] ?? null;
+        $trash   = $params['trash'] ?? false;
 
         // Validate model ID
         if (!$modelId) {
@@ -55,14 +56,18 @@ class Model extends ApiController
         $codeFields = $modelInfo['codeFields'];
 
         // Build query
-        $entriesModelBuilder = $this->buildBaseQuery($modelId);
+        $entriesModelBuilder = $this->buildBaseQuery($modelId, !$trash || $trash == 'false');
 
-        // Apply filters
+        // Apply necessary filters
+        // $this->applyTrashFilter($entriesModelBuilder, !$trash || $trash == 'false');
         $this->applyFindFilter($entriesModelBuilder, $find);
-        $totalRecords = $entriesModelBuilder->countAllResults(false);
 
-        $this->applySearchFilter($entriesModelBuilder, $search);
-        $recordsFiltered = $entriesModelBuilder->countAllResults(false);
+        $totalRecords = $entriesModelBuilder->countAllResults(false); // Count total results after applying necessary filters
+
+        // Apply optional filters
+        $this->applySearchFilter($entriesModelBuilder, esc($search));
+
+        $recordsFiltered = $entriesModelBuilder->countAllResults(false); // Count filtered results after optional filters
 
         // Apply ordering
         $this->applyOrdering($entriesModelBuilder, $order, $columns, $dateFields, $numericFields);
@@ -119,10 +124,16 @@ class Model extends ApiController
     /**
      * Build the base query for entries
      */
-    protected function buildBaseQuery(int $modelId)
+    protected function buildBaseQuery(int $modelId, bool $trash)
     {
-        $entriesModelBuilder = new EntriesModel();
-        $entriesModelBuilder = $entriesModelBuilder->getCustomBuilder();
+        $entriesModel = new EntriesModel();
+
+        if ($trash) {
+            $entriesModelBuilder = $entriesModel->getCustomBuilder();
+        } else {
+            $entriesModelBuilder = $entriesModel->getDeletedCustomBuilder();
+        }
+
         $entriesModelBuilder->where('model_id', $modelId);
 
         return $entriesModelBuilder;

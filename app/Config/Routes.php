@@ -18,26 +18,48 @@ $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function 
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static function ($routes) {
     $routes->addRedirect('/', 'admin/dashboard', 301);
     $routes->get('dashboard', 'Dashboard');
+
     $routes->get('model', 'Model');
+
     $routes->resource('models', [
         'websafe' => 1,
         'placeholder' => '(:num)',
         'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
     ]);
+    $routes->post('models/delete', 'Models::delete');
+    $routes->post('models/purge-deleted', 'Models::purgeDeleted');
+    $routes->post('models/restore', 'Models::restore');
+
     $routes->resource('entries', [
         'websafe' => 1,
         'placeholder' => '(:num)',
         'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
     ]);
-    $routes->get('file-manager', 'FileManager');
-    $routes->resource('settings', [
+    $routes->post('entries/delete', 'Entries::delete');
+    $routes->post('entries/purge-deleted', 'Entries::purgeDeleted');
+    $routes->post('entries/restore', 'Entries::restore');
+
+    $routes->resource('entry-data', [
+        'controller' => 'EntryData',
         'websafe' => 1,
-        'only' => ['index', 'update'],
+        'placeholder' => '(:num)',
+        'only' => ['show'],
     ]);
+    $routes->post('entry-data/clear-history/(:num)', 'EntryData::clearHistory/$1');
+
+    $routes->get('file-manager', 'FileManager');
     $routes->resource('profile', [
         'websafe' => 1,
         'only' => ['index', 'update'],
     ]);
+
+    $routes->resource('settings', [
+        'websafe' => 1,
+        'only' => ['index', 'update'],
+    ]);
+    $routes->group('settings', static function ($routes) {
+        $routes->get('models', 'ModelsSettings');
+    });
 });
 
 $routes->group('app', ['namespace' => 'App\Controllers\App'], static function ($routes) {
@@ -73,6 +95,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
     // @TODO: Finalize this
     $routes->group('test', ['filter' => 'cors'], static function ($routes) {
         $routes->post('models/dt', 'Models');
+        $routes->post('entry-data/dt', 'EntryData');
         $routes->post('entries/dt', 'Entries');
         $routes->post('model/dt', 'Model');
         $routes->post('entries/create/(:num)', 'Entries::create/$1');

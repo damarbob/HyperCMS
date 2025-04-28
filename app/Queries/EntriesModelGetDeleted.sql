@@ -24,14 +24,12 @@ FROM
                     MAX(id) AS id
                 FROM
                     entry_data
-                WHERE
-                    deleted_at IS NULL
                 GROUP BY
                     entry_id
             ) AS ed2 ON ed1.entry_id = ed2.entry_id
             AND ed1.id = ed2.id
         WHERE
-            deleted_at IS NULL
+            deleted_at IS NOT NULL
     ) AS entry_data ON entries.id = entry_data.entry_id
     LEFT JOIN (
         SELECT
@@ -44,17 +42,13 @@ FROM
                     MAX(id) AS id
                 FROM
                     model_data
-                WHERE
-                    deleted_at IS NULL
                 GROUP BY
                     model_id
             ) AS md2 ON md1.model_id = md2.model_id
             AND md1.id = md2.id
-        WHERE
-            deleted_at IS NULL
     ) AS model_data ON entries.model_id = model_data.model_id
     LEFT JOIN users ON entries.creator_id = users.id
     LEFT JOIN users AS editors ON entry_data.creator_id = editors.id
     LEFT JOIN users AS deleters ON entries.deleter_id = deleters.id
 WHERE
-    entries.deleted_at IS NULL
+    entries.deleted_at IS NOT NULL

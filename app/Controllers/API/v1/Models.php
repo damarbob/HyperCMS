@@ -4,7 +4,6 @@ namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
 use App\Models\ModelsModel;
-use CodeIgniter\HTTP\ResponseInterface;
 
 class Models extends ApiController
 {
@@ -14,23 +13,30 @@ class Models extends ApiController
         $data = $this->request->getPost();
 
         $draw   = $data['draw'] ?? 1;
-        $start  = $data['start'] ?? null;    // Offset]
+        $start  = $data['start'] ?? null;    // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
         $order  = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
+        $trash = $data['trash'] ?? false;
 
         $model = new ModelsModel();
-        $modelBuilder = $model->getCustomBuilder();
+
+        // Apply trash filter
+        if (!$trash || $trash == 'false') {
+            $modelBuilder = $model->getCustomBuilder();
+        } else {
+            $modelBuilder = $model->getDeletedCustomBuilder();
+        }
 
         // 1. Get the total count with no filtering.
         $totalRecords = $modelBuilder->countAllResults(false);
 
         // 2. Apply search filter if provided.
         if (!empty($search)) {
-            $modelBuilder->like('name', $search);
-            $modelBuilder->orLike('fields', $search);
-            $modelBuilder->orLike('created_by', $search);
+            $modelBuilder->like('name', esc($search));
+            $modelBuilder->orLike('fields', esc($search));
+            $modelBuilder->orLike('created_by', esc($search));
         }
 
         // Count the filtered results.

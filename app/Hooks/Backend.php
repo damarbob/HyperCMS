@@ -17,5 +17,6 @@ return [
     'view:settings' => new HyperHook('backend:view:settings', 'Settings View', ''),
 
     // Filters
+    'controller:menu:data' => new HyperHook('backend:controller:menu:data', 'Menu Data on Base Controller', ''),
     'controller:entries:edit:data' => new HyperHook('backend:controller:entries:edit:data', 'Data on Edit Entries Controller', ''),
 ];

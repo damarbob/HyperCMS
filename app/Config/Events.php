@@ -34,7 +34,7 @@ Events::on('pre_system', static function (): void {
             ob_end_flush();
         }
 
-        ob_start(static fn ($buffer) => $buffer);
+        ob_start(static fn($buffer) => $buffer);
     }
 
     /*
@@ -82,6 +82,23 @@ Events::on('pre_system', function () {
 
         // If the module init exists, load it
         $initFile = MODULES_PATH . "{$module}/init.php";
+        if (file_exists($initFile)) {
+            require_once $initFile;
+        }
+    }
+
+    // Autoload development modules
+    $activeDevModules = config(Hyper::class)->activeDevModules;
+    log_message('info', 'Active dev Modules: ' . implode(', ', $activeDevModules));
+    foreach ($activeDevModules as $module) {
+
+        $autoloader->addNamespace(
+            $module,
+            MODULES_PATH . ".hyper-dev/{$module}/"
+        );
+
+        // If the module init exists, load it
+        $initFile = MODULES_PATH . ".hyper-dev/{$module}/init.php";
         if (file_exists($initFile)) {
             require_once $initFile;
         }

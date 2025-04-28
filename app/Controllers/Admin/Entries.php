@@ -72,25 +72,9 @@ class Entries extends BaseController
         /** @var HyperHooks $hooks */
         $hooks = service('hooks');
 
-        $modelName = $this->request->getGet('model_name');
-
-        /* Model */
-
-        $modelBuilder = $this->modelsModel->getCustomBuilder();
-        $modelResult = $modelBuilder->where('name', $modelName)->limit(1)->get()->getResultArray();
-
-        // Check if the model exists
-        if (!$modelResult)
-            return redirect('admin/entries')->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelName]));
-
-        $model = $modelResult[0]; // Assign the model
-
-        /* End of model */
-
         /* Entry */
 
-        $builder = $this->entriesModel->getCustomBuilder();
-        $entriesResult = $builder->where('id', $id)->limit(1)->get()->getResultArray();
+        $entriesResult = $this->entriesModel->getCustomBuilder()->where('id', $id)->limit(1)->get()->getResultArray();
 
         // Check if the entry exists
         if (!$entriesResult)
@@ -100,10 +84,25 @@ class Entries extends BaseController
 
         /* End of entry */
 
+        /* Model */
+
+        $modelResult = $this->modelsModel->getCustomBuilder()->where('id', $entry['model_id'])->limit(1)->get()->getResultArray();
+
+        // Check if the model exists
+        if (empty($modelResult))
+            return redirect('admin/entries')->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelResult['name']]));
+
+        $model = $modelResult[0]; // Assign the model
+
+        // dd($model);
+
+        /* End of model */
+
         /* View data */
         // View data should be declared before filter hooks to allow modification
 
         $this->data['model'] = $model;
+        // $this->data['fields'] = $fields;
 
         // Process data syntax on model fields
         $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']);
@@ -129,9 +128,8 @@ class Entries extends BaseController
 
         /* Register views */
 
-        $hooks->register(hook('backend.view:entries:edit'), function () use ($model, $entry) {
-            return view_cell('EntriesFormCell', ['type' => 'edit', 'entry' => $entry])
-                . view_cell('EntriesHistoryCell', ['model' => $model]);
+        $hooks->register(hook('backend.view:entries:edit'), function () use ($entry) {
+            return view_cell('EntriesFormCell', ['type' => 'edit', 'entry' => $entry]);
         });
 
         /* End of register views */
@@ -206,15 +204,198 @@ class Entries extends BaseController
         return redirect('admin/entries')->with('success', lang('Admin.entryxSuccessfullySaved', ['x' => $id]));
     }
 
-    public function delete($id)
+    public function delete($id = null)
     {
-        // Delete all model_data entries associated with this model
-        $this->entryDataModel->where('entry_id', $id)->delete();
+        /* Validation */
 
-        // Delete the model itself
-        $this->entriesModel->delete($id);
+        // Retrieve an array of IDs from POST data
+        $ids = $this->request->getPost('ids');
 
-        // Redirect with a success message
-        return redirect('admin/entries')->with('success', lang('Admin.entryxSuccessfullyDeleted', ['x' => $id]));
+        // If no array was found but a single ID was passed in the URL, use that instead.
+        if (empty($ids) && $id !== null) {
+            $ids = [$id];
+        }
+
+        // If we still don't have any IDs, respond accordingly.
+        if (empty($ids)) {
+            // Check if the request expects a JSON response.
+            if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
+                return $this->response
+                    ->setStatusCode(400, lang('Admin.noEntrySelected'));
+            } else {
+                return redirect('admin/entries')
+                    ->with('error', lang('Admin.noEntrySelected'));
+            }
+        }
+
+        /* End of validation */
+
+        /* Action */
+
+        // Get the entries
+        $entries = $this->entriesModel->getCustomBuilder()->whereIn('id', $ids)->get()->getResultArray();
+
+        // Delete all related "entry_data" records using whereIn for bulk deletion.
+        $this->entryDataModel->whereIn('entry_id', $ids)->delete();
+
+        // Bulk delete entries.
+        $this->entriesModel->delete($ids);
+
+        /* End of action */
+
+        /* Response */
+
+        // Build a success response.
+        $successMessage = (count($entries) > 1) ? lang('Admin.entriesSuccessfullyDeleted') : lang('Admin.entryxSuccessfullyDeleted', ['x' => $entries[0]['model_name']]);
+
+        // Check if the response should be in JSON.
+        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
+            return $this->response
+                ->setStatusCode(200, $successMessage)
+                ->setJSON(['success' => $successMessage]);
+        } else {
+            return redirect('admin/entries')->with('success', $successMessage);
+        }
+
+        /* End of response */
+    }
+
+    public function purgeDeleted()
+    {
+
+        /* Validation */
+
+        $deleteableEntries = $this->entriesModel->onlyDeleted()->findAll();
+
+        if (empty($deleteableEntries)) {
+            return $this->response
+                ->setStatusCode(400, lang('Admin.trashIsEmpty'));
+        }
+
+        /* End of validation */
+
+        /* Action */
+
+        // Delete all related "entry_data" records using whereIn for bulk deletion.
+        $this->entryDataModel->purgeDeleted();
+
+        // Bulk delete entries.
+        $this->entriesModel->purgeDeleted();
+
+        /* End of action */
+
+        /* Response */
+
+        // Build a success response.
+        $successMessage = lang('Admin.entriesSuccessfullyDeleted');
+
+        // Check if the response should be in JSON.
+        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setJSON(['success' => $successMessage]);
+        } else {
+            return redirect()->back()->with('success', $successMessage);
+        }
+
+        /* End of response */
+    }
+
+    public function restore($id = null)
+    {
+        /* Validation */
+
+        // Retrieve an array of IDs from POST data.
+        $ids = $this->request->getPost('ids');
+
+        // If no array was found but a single ID was passed in the URL, wrap it in an array.
+        if (empty($ids) && $id !== null) {
+            $ids = [$id];
+        }
+
+        // If we still don't have any IDs, respond with an error.
+        if (empty($ids)) {
+            if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
+                return $this->response
+                    ->setStatusCode(400, lang('Admin.noEntrySelected'));
+            } else {
+                return redirect('admin/entries')->with('error', lang('Admin.noEntrySelected'));
+            }
+        }
+
+        // List all entries
+        $entries = $this->entriesModel
+            ->withDeleted()
+            ->whereIn('id', $ids)
+            ->findAll();
+
+        // List restorable entry ids
+        $restorableEntryIds = [];
+
+        // List unrestorable entry ids
+        $unrestorableEntryIds = [];
+
+        foreach ($entries as $entry) {
+            $modelId = $entry['model_id'];
+
+            $model = $this->modelsModel->where('id', $modelId)->findAll();
+
+            // If the model exists, restore the entry
+            if ($model) {
+                $restorableEntryIds[] = $entry['id'];
+            } else {
+                $unrestorableEntryIds[] = $entry['id'];
+            }
+        }
+
+        if (empty($restorableEntryIds) && $unrestorableEntryIds) {
+            return $this->response
+                ->setStatusCode(400, lang('Admin.noRestorableEntriesFound'));
+        }
+
+        /* End of validation */
+
+        /* Action */
+
+        // Get the deleted entries
+        $entries = $this->entriesModel->getDeletedCustomBuilder()->whereIn('id', $ids)->get()->getResultArray();
+
+        // For soft deletes, "restoring" means updating the deleted_at column to NULL.
+        // Restore associated entry_data records.
+        $this->entryDataModel
+            ->withDeleted()
+            ->whereIn('entry_id', $restorableEntryIds)
+            ->set(['deleted_at' => null])
+            ->update();
+
+        // Restore the entries themselves.
+        $this->entriesModel
+            ->withDeleted()
+            ->whereIn('id', $restorableEntryIds)
+            ->set(['deleted_at' => null])
+            ->update();
+
+        /* End of action */
+
+        /* Response */
+
+        // Prepare a success message.
+        $successMessage = (count($entries) > 1) ? lang('Admin.xentriesSuccessfullyRestored', ['x' => count($restorableEntryIds)]) : lang('Admin.entryxSuccessfullyRestored', ['x' => $entries[0]['model_name']]);
+
+        // If unrestorable entries exist
+        if (!empty($unrestorableEntryIds)) {
+            $successMessage .= ' ' . lang('Admin.unableToRestorexEntries', ['x' => count($unrestorableEntryIds)]);
+        }
+
+        // Return a JSON response if requested, otherwise redirect back.
+        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
+            return $this->response
+                ->setStatusCode(200)
+                ->setJSON(['success' => $successMessage]);
+        } else {
+            return redirect()->back()->with('success', $successMessage);
+        }
+
+        /* End of response */
     }
 }

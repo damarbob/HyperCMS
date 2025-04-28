@@ -71,14 +71,14 @@ $locale = service('request')->getLocale();
 
             // Function to update the window property
             function updateDarkModeStatus(e) {
-                window.isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.isDarkMode);
+                window.hyper_isDarkMode = e.matches;
+                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
             }
 
             // Set initial value
-            window.isDarkMode = darkModeMediaQuery.matches;
+            window.hyper_isDarkMode = darkModeMediaQuery.matches;
             <?php if (ENVIRONMENT !== 'production'): ?>
-                console.log('Initial Dark Mode:', window.isDarkMode);
+                console.log('Initial Dark Mode:', window.hyper_isDarkMode);
             <?php endif; ?>
 
             // Listen for changes in the dark mode preference

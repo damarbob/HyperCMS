@@ -62,7 +62,7 @@ export default class MonacoEditorWrapper {
     this.editor = monaco.editor.create(this.editorContainer, {
       // language: language,
       model: this.model,
-      theme: window.isDarkMode ? "vs-dark-dsm" : "vs-dsm",
+      theme: window.hyper_isDarkMode ? "vs-dark-dsm" : "vs-dsm",
       automaticLayout: autoLayout,
     });
 

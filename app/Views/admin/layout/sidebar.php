@@ -23,49 +23,22 @@ helper('hyper_url');
             <?= lang("Admin.general") ?>
         </p>
         <ul class="menu-list">
-            <?php for ($i = 0; $i < 1; $i++): // For overflow testing 
-            ?>
+            <?php foreach ($menu as $item): ?>
                 <li>
-                    <a class="<?= url_contains(normalize_url($uri), base_url('admin/dashboard')) ? 'is-active' : '' ?>" href="<?= base_url('admin/dashboard') ?>" data-tippy-content="<?= lang("Admin.dashboard") ?>" data-tippy-placement="right">
+                    <a
+                        class="<?= url_contains(normalize_url($uri), $item['url']) ? 'is-active' : '' ?>"
+                        href="<?= $item['url'] ?>"
+                        data-tippy-content="<?= $item['tooltip_content'] ?>"
+                        data-tippy-placement="<?= $item['tooltip_placement'] ?>">
                         <span class="icon">
-                            <i class="fa-solid fa-house"></i>
+                            <i class="<?= $item['icon'] ?>"></i>
                         </span>
                         <span class="text">
-                            <?= lang("Admin.dashboard") ?>
+                            <?= $item['text'] ?>
                         </span>
                     </a>
                 </li>
-            <?php endfor; ?>
-            <li>
-                <a class="<?= url_contains(normalize_url($uri), base_url('admin/models')) ? 'is-active' : '' ?>" href="<?= base_url('admin/models') ?>" data-tippy-content="<?= lang("Admin.models") ?>" data-tippy-placement="right">
-                    <span class="icon">
-                        <i class=" fa-solid fa-circle-nodes"></i>
-                    </span>
-                    <span class="text">
-                        <?= lang("Admin.models") ?>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="<?= url_contains(normalize_url($uri), base_url('admin/entries')) ? 'is-active' : '' ?>" href="<?= base_url('admin/entries') ?>" data-tippy-content="<?= lang("Admin.entries") ?>" data-tippy-placement="right">
-                    <span class="icon">
-                        <i class=" fa-solid fa-table-list"></i>
-                    </span>
-                    <span class="text">
-                        <?= lang("Admin.entries") ?>
-                    </span>
-                </a>
-            </li>
-            <li>
-                <a class="<?= url_contains(normalize_url($uri), base_url('admin/file-manager')) ? 'is-active' : '' ?>" href="<?= base_url('admin/file-manager') ?>" data-tippy-content="<?= lang("Admin.fileManager") ?>" data-tippy-placement="right">
-                    <span class="icon">
-                        <i class="fa-solid fa-folder-closed"></i>
-                    </span>
-                    <span class="text">
-                        <?= lang("Admin.fileManager") ?>
-                    </span>
-                </a>
-            </li>
+            <?php endforeach; ?>
         </ul>
         <?php if ($models) : ?>
             <p class="menu-label">
@@ -104,6 +77,13 @@ helper('hyper_url');
                         <a class="<?= urls_match(normalize_url($uri), base_url('admin/settings')) ? 'is-active' : '' ?>" href="<?= base_url('admin/settings') ?>" data-tippy-content="<?= lang("Admin.general") ?>" data-tippy-placement="right">
                             <span class="text">
                                 <?= lang("Admin.general") ?>
+                            </span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="<?= urls_match(normalize_url($uri), base_url('admin/settings/models')) ? 'is-active' : '' ?>" href="<?= base_url('admin/settings/models') ?>" data-tippy-content="<?= lang("Admin.models") ?>" data-tippy-placement="right">
+                            <span class="text">
+                                <?= lang("Admin.models") ?>
                             </span>
                         </a>
                     </li>
