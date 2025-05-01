@@ -27,10 +27,10 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             <div id="users">
                 <div class="field has-addons">
                     <div class="control">
-                        <input class="search input" type="text" placeholder="<?= lang('Admin.search') ?>">
+                        <input class="search input is-small" type="text" placeholder="<?= lang('Admin.search') ?>">
                     </div>
                     <div class="control">
-                        <button class="sort button" data-sort="model-name">
+                        <button class="sort button is-small" data-sort="model-name">
                             <?= lang('Admin.sortByName') ?>
                         </button>
                     </div>
@@ -39,12 +39,15 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                     <ul class="list menu-list">
                         <?php foreach ($models as $model) : ?>
                             <li>
-                                <a href="<?= $uri . 'new?model_id=' . $model['id'] ?>">
+                                <a href="<?= $uri . 'new?model_id=' . $model['id'] ?>" class="is-flex is-gap-1">
                                     <span class="icon">
                                         <i class="<?= !empty($model['icon']) ? $model['icon'] : 'fa-solid fa-box-open' ?>"></i>
                                     </span>
-                                    <span class="model-name">
+                                    <span class="model-name is-flex-grow-1">
                                         <?= lang('Admin.newx', ['x' => $model['name']]) ?>
+                                    </span>
+                                    <span class="icon">
+                                        <i class="fa-solid fa-chevron-right"></i>
                                     </span>
                                 </a>
                             </li>
@@ -122,6 +125,18 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
 <!-- HTML Entity -->
 <script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
+
+<!-- List.js -->
+<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
+
+<script>
+    /* Initialize List.js */
+    var options = {
+        valueNames: ['model-name']
+    };
+
+    var userList = new List('users', options);
+</script>
 
 <script type="text/javascript">
     /* Configs */

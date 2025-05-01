@@ -47,7 +47,7 @@ helper('hyper_url');
             <ul class="menu-list">
                 <?php foreach ($models as $model) : ?>
                     <li>
-                        <a class="<?= url_contains(normalize_url($uri), base_url('admin/model?id=' . $model['id'])) ? 'is-active' : '' ?>" href="<?= base_url('admin/model?id=' . $model['id']) ?>" data-tippy-content="<?= $model['name'] ?>" data-tippy-placement="right">
+                        <a class="<?= url_contains(normalize_url($uri), base_url('admin/model/' . $model['id'])) ? 'is-active' : '' ?>" href="<?= base_url('admin/model/' . $model['id']) ?>" data-tippy-content="<?= $model['name'] ?>" data-tippy-placement="right">
                             <span class="icon">
                                 <i class="<?= !empty($model['icon']) ? $model['icon'] : 'fa-solid fa-box-open' ?>"></i>
                             </span>

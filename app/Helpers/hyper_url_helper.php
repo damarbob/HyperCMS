@@ -33,24 +33,43 @@ if (! function_exists('urls_match')) {
 
 if (! function_exists('url_contains')) {
     /**
-     * Check if the first URL contains the second URL as its beginning (after normalization).
+     * Check if a given full URL contains the base URL by comparing their path segments.
      *
-     * This is useful when the current URL may go deeper than a base URL.
-     * 
-     * For example, if the full URL is:
-     *     http://localhost:8080/index.php/admin/models/details
-     * and the base URL is:
-     *     http://localhost:8080/admin/models
-     * then the condition returns true.
+     * This function normalizes both URLs, splits them into segments, and compares
+     * the base URL’s segments against the corresponding segments of the full URL.
+     * It returns true only if every segment in the base URL exactly matches the
+     * corresponding segment in the full URL.
      *
      * @param string $fullUrl The complete URL.
      * @param string $baseUrl The URL to check as a base.
-     * @return bool True if $fullUrl (normalized) starts with $baseUrl (normalized), false otherwise.
+     * @return bool True if $fullUrl starts with $baseUrl (compared segment-wise), false otherwise.
      */
     function url_contains(string $fullUrl, string $baseUrl): bool
     {
+        // Normalize the URLs first.
         $normalizedFullUrl = normalize_url($fullUrl);
         $normalizedBaseUrl = normalize_url($baseUrl);
-        return strpos($normalizedFullUrl, $normalizedBaseUrl) === 0;
+
+        // Remove any query strings or fragments if necessary. For instance, you could use parse_url() here:
+        $fullPath = parse_url($normalizedFullUrl, PHP_URL_PATH);
+        $basePath = parse_url($normalizedBaseUrl, PHP_URL_PATH);
+
+        // Break the paths into segments; trim leading and trailing slashes.
+        $fullSegments = array_values(array_filter(explode('/', trim($fullPath, '/'))));
+        $baseSegments = array_values(array_filter(explode('/', trim($basePath, '/'))));
+
+        // If the base has more segments than the full URL, it cannot be a prefix.
+        if (count($baseSegments) > count($fullSegments)) {
+            return false;
+        }
+
+        // Compare each segment in the base with the corresponding segment in the full URL.
+        foreach ($baseSegments as $index => $segment) {
+            if ($fullSegments[$index] !== $segment) {
+                return false;
+            }
+        }
+
+        return true;
     }
 }

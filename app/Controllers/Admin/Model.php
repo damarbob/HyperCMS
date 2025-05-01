@@ -8,76 +8,98 @@ use App\Constants\ModelStaticFields;
 class Model extends BaseController
 {
 
-    public function index()
+    /**
+     * Display the details for a given model.
+     *
+     * This method retrieves a model record by its ID, decodes its JSON-defined fields,
+     * and then augments the list with mandatory fields (e.g. "edited_by" and "date_modified").
+     * It also prepares additional metadata (e.g. indices of datetime fields for specialized
+     * processing in the view) and finally renders the view.
+     *
+     * @param mixed $id The model ID to display. Must be non-empty.
+     * 
+     * @return \CodeIgniter\HTTP\Response Redirect or view response.
+     */
+    public function index($id)
     {
-        $id = $this->request->getGet('id');
-
-        if (!$id) {
+        // Ensure an ID is provided; if not, redirect back to entries.
+        if (empty($id)) {
             return redirect('admin/entries');
         }
 
+        // Retrieve model record(s) using a custom query builder.
         $models = $this->modelsModel->getCustomBuilder()
             ->where('id', $id)
             ->get()
             ->getResult();
 
+        // If no model is found, redirect with an error message.
         if (!$models) {
-            return redirect('admin/entries')->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $id]));
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $id]));
         }
 
+        // Use the first (and expected only) model record.
         $model = $models[0];
 
-        $fields = [];
+        // Define invisible fields that are always present.
         $invisibleFields = [
-            (object) [
+            (object)[
                 'title' => lang('Admin.id'),
-                'id' => 'id',
+                'id'    => 'id',
             ],
-            (object) [
+            (object)[
                 'title' => lang('Admin.model'),
-                'id' => 'model_name',
+                'id'    => 'model_name',
             ],
         ];
 
-        // Check if the model fields are not empty
-        // Then push them to the fields array
-        // To prevent errors when decoding JSON
+        // Initialize $fields array.
+        $fields = [];
+
+        // Decode the JSON-defined fields from the model record.
+        // Use an empty array if the JSON is empty or invalid.
         $modelFields = json_decode($model->fields);
         if (!empty($modelFields)) {
             foreach ($modelFields as $field) {
-                array_push($fields, $field);
+                $fields[] = $field;
             }
         }
 
-        // Put mandatory fields (edited_by and date_modified
-        array_push($fields, (object) [
-            'id' => ModelStaticFields::EDITED_BY,
+        // Append mandatory fields.
+        $fields[] = (object)[
+            'id'    => ModelStaticFields::EDITED_BY,
             'label' => lang('Admin.editedBy'),
-            'type' => 'text',
-        ]);
-        array_push($fields, (object) [
-            'id' => ModelStaticFields::DATE_MODIFIED,
+            'type'  => 'text',
+        ];
+        $fields[] = (object)[
+            'id'    => ModelStaticFields::DATE_MODIFIED,
             'label' => lang('Admin.dateModified'),
-            'type' => 'datetime-local',
-        ]);
+            'type'  => 'datetime-local',
+        ];
 
-        // List fields with date type
-        $date_field_ids = [];
-        foreach ($fields as $i => $field) {
-            if ($field->type == 'datetime-local') {
-                $date_field_ids[] = $i + 2; // @IMPORTANT: +2 because of the invisible id and model_name fields
+        /*
+     * Build a list of indices for fields that are of type 'datetime-local'.
+     * The indices are offset by +2 to account for the two invisible fields (id and model_name),
+     * which are assumed to come first when rendering.
+     */
+        $dateFieldIds = [];
+        foreach ($fields as $index => $field) {
+            if (isset($field->type) && $field->type === 'datetime-local') {
+                $dateFieldIds[] = $index + 2;
             }
         }
 
-        $this->data['date_field_ids'] = json_encode($date_field_ids);
-        $this->data['fields'] = $fields;
-        $this->data['invisible_fields'] = $invisibleFields;
+        // Prepare the data to be passed to the view.
+        $this->data = array_merge($this->data, [
+            'date_field_ids'   => json_encode($dateFieldIds),
+            'fields'           => $fields,
+            'invisible_fields' => $invisibleFields,
+            'title'            => $model->name,
+            'id'               => $id,
+        ]);
 
-        $this->data['title'] = $model->name; // Set the title if model is not empty
-
-        $this->data['id'] = $id;
-
-        // Display the admin dashboard view
+        // Return the view for the model details page.
         return view('admin/model', $this->data);
     }
 }

@@ -19,7 +19,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->addRedirect('/', 'admin/dashboard', 301);
     $routes->get('dashboard', 'Dashboard');
 
-    $routes->get('model', 'Model');
+    $routes->get('model/(:num)', 'Model::index/$1');
+    $routes->addRedirect('model', 'admin/entries', 301);
 
     $routes->resource('models', [
         'websafe' => 1,
