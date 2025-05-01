@@ -2,7 +2,7 @@
 
 use Config\Hyper;
 
-helper('type_checking');
+helper('hyper_type_checking');
 ?>
 <!-- Navbar -->
 <nav class="navbar has-shadow py-3" role="navigation" aria-label="navbar" style="position: sticky; top: 0;">
@@ -92,7 +92,7 @@ helper('type_checking');
     </div>
 </nav>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <!-- Include TinyColor2 from a CDN -->
 <script src="https://cdn.jsdelivr.net/npm/tinycolor2@1.6.0/cjs/tinycolor.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@floating-ui/core@1.6.9"></script>

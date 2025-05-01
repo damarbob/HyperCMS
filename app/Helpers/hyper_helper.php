@@ -1,6 +1,6 @@
 <?php
 
-use App\Entities\HyperHook;
+use App\Hyper\HyperHook;
 
 if (! function_exists('hook')) {
     /**

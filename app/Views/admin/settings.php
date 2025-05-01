@@ -42,7 +42,14 @@ $datatableEntriesPerPageError = validation_show_error('general_datatable_entries
         <!-- Submit button -->
         <div class="field is-grouped">
             <div class="control is-flex-grow-1">
-                <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
+                <button type="submit" class="button is-primary">
+                    <span class="icon">
+                        <i class="fas fa-check"></i>
+                    </span>
+                    <span>
+                        <?= lang('Admin.save') ?>
+                    </span>
+                </button>
             </div>
         </div>
 

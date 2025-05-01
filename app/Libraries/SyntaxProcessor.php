@@ -2,7 +2,7 @@
 
 namespace App\Libraries;
 
-use App\Entities\HyperHook;
+use App\Hyper\HyperHook;
 use App\Models\EntriesModel;
 use App\Models\ModelsModel;
 use CodeIgniter\Database\BaseConnection;

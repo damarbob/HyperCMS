@@ -63,6 +63,6 @@
 <textarea id="editor_example" class="hyper-editor"></textarea>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <?= $this->include('\Modules\PagingSystem\Views\Admin\editor_scripts') ?>
 <?= $this->endSection() ?>

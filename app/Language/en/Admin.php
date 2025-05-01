@@ -15,6 +15,7 @@ return [
     'admin' => 'Admin',
     'general' => 'General',
     'others' => 'Others',
+    'avatar' => 'Avatar',
     'profile' => 'Profile',
     'logout' => 'Logout',
 
@@ -53,18 +54,22 @@ return [
 
     'nox' => 'No. {x}',
 
-    // Dashboard
+    // --- Dashboard ---
     'welcomex' => 'Welcome, {x}!',
     'startSomethingBig' => 'Start something <b>big</b> today.',
     'managexEntries' => 'Manage {x} entries',
 
-    // Profile
+    // --- Profile ---
+    'username' => 'Username',
+    'email' => 'Email',
+    'newPassword' => 'New password',
+
     'profileUpdatedSuccessfully' => 'Profile updated successfully',
     'invalidToken' => 'Invalid token',
     'noUserFound' => 'No user found',
     'usernameAndEmailAreRequired' => 'Username and email are required',
 
-    // Models
+    // --- Models ---
     'model' => 'Model',
 
     'newModel' => 'New model',
@@ -87,6 +92,7 @@ return [
     'createdAt' => 'Created at',
     'dateModified' => 'Date modified',
     'dateCreated' => 'Date created',
+    'deletedBy' => 'Deleted by',
     'deletedAt' => 'Deleted at',
 
     'modelxSuccessfullyCreated' => 'Model {x} successfully created!',
@@ -102,7 +108,7 @@ return [
     'areYouSure' => 'Are you sure?',
     'youWillNotBeAbleToRevertThis' => 'You will not be able to revert this!',
 
-    // Entries
+    // --- Entries ---
     'modelId' => 'Model ID',
     'newEntry' => 'New entry',
     'entryData' => 'Entry data',
@@ -135,8 +141,12 @@ return [
     'historySuccessfullyCleared' => 'History successfully cleared',
     'noHistoryCleared' => 'No history cleared',
 
-    // File Manager
+    // --- File Manager ---
     'fileManager' => 'File Manager',
+
+    'loading' => 'Loading...',
+
+    'fileNotFound' => 'File not found',
 
     'size' => 'Size',
     'permission' => 'Permission',
@@ -147,65 +157,74 @@ return [
     'createNewFile' => 'Create new file',
     'createNewFolder' => 'Create new folder',
 
-    'selectFilesToCopy' => 'Select files to copy',
+    'invalidDirectory' => 'Invalid directory',
+    'fileWithThatNameAlreadyExists' => 'A file with that name already exists',
+    'failedToCreateFile' => 'Failed to create file',
+    'fileCreatedSuccessfully' => 'File created successfully',
+    'folderWithThatNameAlreadyExists' => 'A folder with that name already exists',
+    'failedToCreateFolder' => 'Failed to create folder',
+    'folderCreatedSuccessfully' => 'Folder created successfully',
+
+    'originalFileNotFound' => 'Original file not found',
+    'fileWithNewNameAlreadyExists' => 'A file with the new name already exists',
+    'failedToRenameFile' => 'Failed to rename file',
+    'fileRenamedSuccessfully' => 'File renamed successfully',
+
+    'failedToSaveFile' => 'Failed to save file',
+
     'copySelected' => 'Copy selected',
-    'selectFilesToMove' => 'Select files to move',
+    'failedToCopyx' => "Failed to copy {x}",
+
     'moveSelected' => 'Move selected',
+    'failedToMovex' => "Failed to move {x}",
+
     'paste' => 'Paste',
+    'invalidClipboardActionNoFilesSelected' => 'Invalid clipboard action or no files selected',
+    'clipboardSetSuccessfully' => 'Clipboard set successfully',
+    'clipboardEmptyInvalidFormat' => 'Clipboard is empty or invalid format',
+    'invalidDestinationPath' => 'Invalid destination path',
+    'sourcexFileNotFound' => "Source file {x} not found",
+    'pasteCompleted' => 'Paste completed',
+
+    'invalidFilePath' => 'Invalid file path',
+    'invalidAction' => 'Invalid action',
+    'bulkActionCompleted' => 'Bulk action completed',
 
     'extractZipFile' => 'Extract ZIP file',
-    'selectFileToCompressZIP' => 'Select file to compress ZIP',
-    'selectZipFileToEctract' => 'Select  ZIP file to extract',
+    'invalidZipFilePath' => 'Invalid zip file path',
+    'archiveExtracted' => 'Archive extracted',
+    'couldNotOpenArchive' => 'Could not open archive',
     'compressToZip' => 'Compress to ZIP',
-    'successfullyCompressed' => 'Successfully compressed',
-    'failedToCompressFile' => 'Failed to compress file',
-    'successfullyExtracted' => 'Successfully extracted',
-    'failedToExtractFile' => 'Failed to extract file',
+    'couldNotCreateZipFile' => 'Could not create zip file',
+    'filesCompressed' => 'Files compressed',
 
-    'selectFilesToDelete' => 'Select files to delete',
     'deleteSelected' => 'Delete selected',
-    'deletedItemsCannotBeRecovered' => 'Deleted items cannot be recovered',
-    'deletedSuccessfully' => 'Deleted successfully',
-    'failedToDelete' => 'Failed to delete',
+    'noFilesSelectedForDeletion' => 'No files selected for deletion',
+    'filexNotFound' => "File {x} not found",
+    'filesDeletedSuccessfully' => 'Files deleted successfully',
 
     'uploadingFile' => 'Uploading file',
     'fileSuccessfullyUploaded' => 'File successfully uploaded',
-
-    'copiedSuccessfullyReadyToPaste' => 'Copied successfully, ready to paste',
-    'failedToCopy' => 'Failed to copy',
-
-    'pastedSuccessfully' => 'Pasted successfully',
-    'failedToPaste' => 'Failed to paste',
-
-    'previewUnavailable' => 'Preview unavailable',
-    'downloadFile' => 'Download file',
-
-    'noFileOrFolderFound' => 'No file or folder found',
+    'failedToMoveUploadedFile' => 'Failed to move uploaded file',
 
     'searchWithinFolder' => 'Search within folder',
 
-    'open' => 'Open',
-    'view' => 'View',
-    'download' => 'Download',
-    'copy' => 'Copy',
-    'move' => 'Move',
-    'rename' => 'Rename',
+    'invalidPathFormat' => 'Invalid path format!',
+    'invalidDirectory' => 'Invalid directory!',
+    'directoryReadError' => 'Directory read error',
+    'invalidDestinationDirectory' => 'Invalid destination directory',
 
-    'enterNewFileNameWithExtension' => 'Enter new file name with extension',
-    'failedToCreateFile' => 'Failed to create file',
-    'failedToRenameFile' => 'Failed to rename file',
-    'fileSavedSuccessfully' => 'File was successfully saved',
-    'failedToSaveFile' => 'Failed to save file',
+    'noFileUploaded' => 'No file uploaded',
+    'uploadFailedx' => 'Upload failed. {x}',
+    'invalidFilename' => 'Invalid filename',
+    'serverErrorDuringUploadx' => 'Server error during upload. {x}',
 
-    'enterNewFolderName' => 'Enter new folder name',
-    'failedToCreateFolder' => 'Failed to create folder',
-
-    // Settings
+    // --- Settings ---
     'datatableEntriesPerPage' => 'Datatable entries per page',
     'howManyEntriesDisplay' => 'How many entries to display in datatable',
     'settingsSuccessfullySaved' => 'Settings successfully saved!',
 
-    // Models Settings
+    // --- Models Settings ---
     'emptyModelsTrash' => 'Empty models trash',
     'emptyingTheModelsTrashWillPermanentlyDelete' => 'Emptying the models trash will permanently <strong>delete all models contained within</strong>. Please note that this action is irreversible.',
 

@@ -71,7 +71,7 @@ use Config\Hyper;
         </div>
     </section>
 
-    <?= $this->renderSection('scripts') ?>
+    <?= $this->renderSection('footer') ?>
 
     <!-- Dependencies -->
 

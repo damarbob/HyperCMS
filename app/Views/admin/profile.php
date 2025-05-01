@@ -17,7 +17,7 @@ $passwordError = validation_show_error('password');
 <form action="<?= base_url('admin/profile/' . urlencode(hash('sha256', auth()->user()->username . auth()->user()->email))) ?>" method="post">
     <?= csrf_field() ?>
     <div class="field mb-4">
-        <label class="label" for="text_example">Username</label>
+        <label class="label" for="text_example"><?= lang('Admin.username') ?></label>
         <div class="control has-icons-right">
             <input type="username" id="username" name="username" class="input <?= ($usernameError) ? 'is-danger' : '' ?>" value="<?= old('username') ?: auth()->user()->username ?>">
             <?php if ($usernameError): ?>
@@ -29,7 +29,7 @@ $passwordError = validation_show_error('password');
         <?php endif; ?>
     </div>
     <div class="field mb-4">
-        <label class="label" for="text_example">Email</label>
+        <label class="label" for="text_example"><?= lang('Admin.email') ?></label>
         <div class="control has-icons-right">
             <input type="email" id="email" name="email" class="input <?= ($emailError) ? 'is-danger' : '' ?>" value="<?= old('email') ?: auth()->user()->email ?>">
             <?php if ($emailError): ?>
@@ -41,7 +41,7 @@ $passwordError = validation_show_error('password');
         <?php endif; ?>
     </div>
     <div class="field mb-4">
-        <label class="label" for="text_example">New password</label>
+        <label class="label" for="text_example"><?= lang('Admin.newPassword') ?></label>
         <div class="control has-icons-right">
             <input type="password" id="password" name="password" class="input <?= ($passwordError) ? 'is-danger' : '' ?>" placeholder="New password">
             <?php if ($passwordError): ?>
@@ -54,11 +54,18 @@ $passwordError = validation_show_error('password');
     </div>
     <div class="field is-grouped">
         <div class="control is-flex-grow-1">
-            <button type="submit" class="button is-primary">Save</button>
+            <button type="submit" class="button is-primary">
+                <span class="icon">
+                    <i class="fas fa-check"></i>
+                </span>
+                <span>
+                    <?= lang('Admin.save') ?>
+                </span>
+            </button>
         </div>
     </div>
 </form>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <?= $this->endSection() ?>

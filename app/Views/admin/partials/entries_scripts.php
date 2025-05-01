@@ -23,11 +23,7 @@
     <button class="modal-close is-large" aria-label="close"></button>
 </div>
 
-<script type="module" src="<?= base_url('assets/js/admin/use-case/Form.js') ?>"></script>
-<script type="module">
-    import InputCreator from '<?= base_url('assets/js/admin/InputCreator.js') ?>';
-    import InputPopulator from '<?= base_url('assets/js/admin/InputPopulator.js') ?>';
-
+<script>
     /**
      * Wait for an element with the given ID to be added to the DOM.
      * @param {string} fieldId - The field id to wait for.
@@ -55,88 +51,90 @@
         check();
     }
 
-    const container = document.getElementById('hyper-fields-container');
-    const metaInputCreator = new InputCreator({
-        container: container,
-        onFieldCreated: (fieldId) => {
-            // console.log('Field created:', fieldId);
+    document.addEventListener('DOMContentLoaded', function() {
+        const container = document.getElementById('hyper-fields-container');
+        const metaInputCreator = window.hyper_inputCreator({
+            container: container,
+            onFieldCreated: (fieldId) => {
+                // console.log('Field created:', fieldId);
 
-            // Instead of using DOMContentLoaded (which only fires once),
-            // we wait for the element to be available in the DOM.
-            waitForElement(fieldId, (input) => {
-                // At this point, input is guaranteed to exist.
-                if (!input) { // (This check is extra safety – should not happen)
-                    <?php if (ENVIRONMENT !== 'production'): ?>
-                        console.warn(`Input with ID ${fieldId} not found.`);
-                    <?php endif; ?>
-                    return;
-                }
+                // Instead of using DOMContentLoaded (which only fires once),
+                // we wait for the element to be available in the DOM.
+                waitForElement(fieldId, (input) => {
+                    // At this point, input is guaranteed to exist.
+                    if (!input) { // (This check is extra safety – should not happen)
+                        <?php if (ENVIRONMENT !== 'production'): ?>
+                            console.warn(`Input with ID ${fieldId} not found.`);
+                        <?php endif; ?>
+                        return;
+                    }
 
-                // Initialize TinyMCE if element has class 'hyper-rich-text-field'
-                if (input.classList.contains('hyper-rich-text-field')) {
-                    initializeTinyMCE(fieldId);
-                } else if (input.type === 'url' && input.classList.contains('hyper-file-browse-field')) {
-                    <?php if (ENVIRONMENT !== 'production'): ?>
-                        console.log('Found file browse field:', fieldId);
-                    <?php endif; ?>
+                    // Initialize TinyMCE if element has class 'hyper-rich-text-field'
+                    if (input.classList.contains('hyper-rich-text-field')) {
+                        initializeTinyMCE(fieldId);
+                    } else if (input.type === 'url' && input.classList.contains('hyper-file-browse-field')) {
+                        <?php if (ENVIRONMENT !== 'production'): ?>
+                            console.log('Found file browse field:', fieldId);
+                        <?php endif; ?>
 
-                    // Create a new "Browse file" button with Bulma styling and a FA icon.
-                    const browseBtn = document.createElement('button');
-                    browseBtn.type = 'button';
-                    browseBtn.className = 'button mt-2'; // Adjust classes as needed.
-                    browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang("ADmin.fileManager") ?></span>';
+                        // Create a new "Browse file" button with Bulma styling and a FA icon.
+                        const browseBtn = document.createElement('button');
+                        browseBtn.type = 'button';
+                        browseBtn.className = 'button mt-2'; // Adjust classes as needed.
+                        browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang("ADmin.fileManager") ?></span>';
 
-                    // Append the button immediately after the input element.
-                    input.insertAdjacentElement('afterend', browseBtn);
+                        // Append the button immediately after the input element.
+                        input.insertAdjacentElement('afterend', browseBtn);
 
-                    // Attach an event listener to the "Browse file" button.
-                    browseBtn.addEventListener('click', function() {
-                        // Open the file manager modal.
-                        openModal(document.getElementById('fileManagerModal'));
+                        // Attach an event listener to the "Browse file" button.
+                        browseBtn.addEventListener('click', function() {
+                            // Open the file manager modal.
+                            openModal(document.getElementById('fileManagerModal'));
 
-                        // Lazy load the iframe source if it hasn't been loaded already.
-                        const iframe = document.getElementById('fileManagerIframe');
-                        if (!iframe.getAttribute('src')) {
-                            iframe.setAttribute('src', iframe.getAttribute('data-src'));
-                        }
-                    });
-
-                    // Listen for messages from the file manager. (Attach this listener globally if needed.)
-                    window.addEventListener('message', function(event) {
-                        // Optionally, validate event.origin for extra security.
-                        if (event.data && event.data.mceAction === 'filesSelected') {
-                            const selectedFiles = event.data.data; // Array of URL strings.
-                            if (selectedFiles.length > 0) {
-                                // Insert the first selected file URL into the input.
-                                input.value = `<?= base_url('api/file-server/serve/') ?>${encodeURIComponent(hexEncode(selectedFiles[0]))}`;
+                            // Lazy load the iframe source if it hasn't been loaded already.
+                            const iframe = document.getElementById('fileManagerIframe');
+                            if (!iframe.getAttribute('src')) {
+                                iframe.setAttribute('src', iframe.getAttribute('data-src'));
                             }
-                            // Close the modal after processing the selection.
-                            closeModal(document.getElementById('fileManagerModal'));
-                        }
-                    });
-                }
-            });
-        },
+                        });
 
-    });
+                        // Listen for messages from the file manager. (Attach this listener globally if needed.)
+                        window.addEventListener('message', function(event) {
+                            // Optionally, validate event.origin for extra security.
+                            if (event.data && event.data.action === 'filesSelected') {
+                                const selectedFiles = event.data.data; // Array of URL strings.
+                                if (selectedFiles.length > 0) {
+                                    // Insert the first selected file URL into the input.
+                                    input.value = `<?= base_url('api/file-server/serve/') ?>${encodeURIComponent(window.hyper_hexEncode(selectedFiles[0]))}`;
+                                }
+                                // Close the modal after processing the selection.
+                                closeModal(document.getElementById('fileManagerModal'));
+                            }
+                        });
+                    }
+                });
+            },
 
-    // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
-    metaInputCreator.create(<?= $processed_model_fields ?>);
+        });
 
-    window.hyper_recreateMetaInputs = function() {
-        // Destroy all TinyMCE instances before recreating inputs
-        destroyTinyMCEInstances(document.querySelectorAll('.hyper-rich-text-field'));
-
-        // Recreate the inputs
+        // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
         metaInputCreator.create(<?= $processed_model_fields ?>);
-    };
 
-    window.hyper_populateMetaInputsWithHistory = function(data) {
-        inputPopulator.populate(data)
-    }
+        window.hyper_recreateMetaInputs = function() {
+            // Destroy all TinyMCE instances before recreating inputs
+            destroyTinyMCEInstances(document.querySelectorAll('.hyper-rich-text-field'));
 
-    const inputPopulator = new InputPopulator(container);
-    inputPopulator.populate(<?= isset($entry) ? $entry['fields'] : '' ?>);
+            // Recreate the inputs
+            metaInputCreator.create(<?= $processed_model_fields ?>);
+        };
+
+        window.hyper_populateMetaInputsWithHistory = function(data) {
+            inputPopulatorInst.populate(data)
+        }
+
+        const inputPopulatorInst = window.hyper_inputPopulator(container);
+        inputPopulatorInst.populate(<?= isset($entry) ? $entry['fields'] : '' ?>);
+    });
 </script>
 <script src="<?= base_url('assets/js/vendor/tinymce/tinymce.min.js') ?>"></script>
 <script>
@@ -216,8 +214,7 @@
         // Create a FormData object from the form (this grabs all the form elements including files)
         const fd = new FormData(this);
 
-        const newFormData = new FormData();
-        newFormData.encodeFormInputsToJson("fields", this);
+        const newFormData = window.hyper_encodeFormInputsToJson("fields", this);
 
         // Send the new FormData using fetch.
         fetch(this.action, {
@@ -319,19 +316,5 @@
                 document.getElementById('deleteForm').submit();
             }
         });
-    }
-</script>
-<script>
-    function hexEncode(input) {
-        let hex = '';
-        for (let i = 0; i < input.length; i++) {
-            let code = input.charCodeAt(i).toString(16);
-            // Ensure each code is two characters (pad with a leading zero if needed)
-            if (code.length < 2) {
-                code = '0' + code;
-            }
-            hex += code;
-        }
-        return hex;
     }
 </script>

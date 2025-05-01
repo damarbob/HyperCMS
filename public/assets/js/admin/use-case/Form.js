@@ -1,13 +1,22 @@
 import { isValidJson } from "./Json.js";
 
-FormData.prototype.encodeFormInputsToJson = function (name = "meta", form) {
+/**
+ * Encodes the form inputs into JSON and appends it into a FormData object.
+ *
+ * @param {string} name - The key under which the JSON data will be stored.
+ * @param {HTMLFormElement} form - The form element to scan for inputs.
+ * @param {FormData} [formData] - Optional existing FormData object. Defaults to new FormData().
+ * @returns {FormData} The FormData object with the appended JSON data.
+ */
+export function encodeFormInputsToJson(name = "meta", form, formData) {
+  formData = formData || new FormData();
+  console.log(name, form, formData);
   const inputs = form.querySelectorAll("input, textarea, select");
   let meta = [];
-  let formData = this;
-  let processedNames = new Set(); // To keep track of processed radio button groups
+  let processedNames = new Set(); // For radio button group names
 
   inputs.forEach((input) => {
-    // Destructure the needed properties and avoid name conflicts
+    // Destructure the properties we need
     const {
       id,
       type,
@@ -16,22 +25,17 @@ FormData.prototype.encodeFormInputsToJson = function (name = "meta", form) {
       files: inputFiles,
       checked,
     } = input;
-
-    if (!id) return; // Skip inputs without IDs
+    if (!id) return; // Skip if no id
 
     // Handle file inputs
     if (type === "file") {
       if (input.hasAttribute("multiple")) {
-        // Handle multiple files
         if (inputFiles && inputFiles.length > 0) {
           for (let i = 0; i < inputFiles.length; i++) {
-            formData.append(name, inputFiles[i]); // Append files (use the function parameter "name")
+            formData.append(name, inputFiles[i]);
           }
           const fileArray = Array.from(inputFiles).map((file) => file.name);
-          meta.push({
-            id,
-            value: fileArray,
-          });
+          meta.push({ id, value: fileArray });
         } else {
           const oldFiles = document.getElementById(id + "_old").value;
           meta.push({
@@ -40,14 +44,10 @@ FormData.prototype.encodeFormInputsToJson = function (name = "meta", form) {
           });
         }
       } else {
-        // Handle single file
         if (inputFiles && inputFiles.length > 0) {
           formData.append(name, inputFiles[0]);
           const fileArray = Array.from(inputFiles).map((file) => file.name);
-          meta.push({
-            id,
-            value: fileArray,
-          });
+          meta.push({ id, value: fileArray });
         } else {
           const oldFiles = document.getElementById(id + "_old").value;
           meta.push({
@@ -57,63 +57,44 @@ FormData.prototype.encodeFormInputsToJson = function (name = "meta", form) {
         }
       }
     }
-    // Handle radio buttons - only add the checked one, avoid duplicates
+    // Handle radio buttons: only add the checked one and avoid duplicates
     else if (type === "radio") {
       if (checked && !processedNames.has(inputName)) {
-        meta.push({
-          id: inputName,
-          value,
-        }); // Use inputName to group radio buttons
+        meta.push({ id: inputName, value });
         processedNames.add(inputName);
       }
     }
     // Handle checkboxes
     else if (type === "checkbox") {
       if (inputName.endsWith("[]")) {
-        // If unchecked, skip this checkbox
-        if (!checked) {
-          return;
-        }
-
-        let originalName = inputName.slice(0, -2); // Original name without the "[]"
-
-        // Check if an object with the same id already exists
+        if (!checked) return;
+        const originalName = inputName.slice(0, -2);
         let existingItem = meta.find((item) => item.id === originalName);
-
         if (existingItem) {
-          // If the value property is already an array, append the new value
           if (Array.isArray(existingItem.value)) {
             existingItem.value.push(value);
           } else {
-            // Convert to an array and add the new value
             existingItem.value = [existingItem.value, value];
           }
         } else {
-          meta.push({
-            id: originalName,
-            value: value,
-          });
+          meta.push({ id: originalName, value });
         }
       } else {
-        meta.push({
-          id,
-          value: checked ? "on" : "off",
-        });
+        meta.push({ id, value: checked ? "on" : "off" });
       }
     }
-    // Handle hidden inputs (do nothing for hidden inputs)
+    // Skip hidden inputs
     else if (type === "hidden") {
       // Do nothing
     }
-    // Handle other inputs
+    // Handle all other input types (text, textarea, select, etc.)
     else {
-      meta.push({
-        id,
-        value,
-      });
+      meta.push({ id, value });
     }
   });
 
-  // Add the encoded JSON to FormData for sending to the server
+  // Append the JSON-encoded meta-data to the FormData
   formData.append(name, JSON.stringify(meta));
-};
+
+  return formData;
+}

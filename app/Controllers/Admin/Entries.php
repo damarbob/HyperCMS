@@ -232,8 +232,27 @@ class Entries extends BaseController
 
         /* Action */
 
-        // Get the entries
-        $entries = $this->entriesModel->getCustomBuilder()->whereIn('id', $ids)->get()->getResultArray();
+        // Get the current authenticated user's ID (using CI Shield)
+        $deleterId = auth()->user()->id;
+
+        // (Optional) Retrieve the entries before deletion – if needed later.
+        $entries = $this->entriesModel
+            ->getCustomBuilder()
+            ->whereIn('id', $ids)
+            ->get()
+            ->getResultArray();
+
+        // Update deleter_id for the entries before deletion.
+        $this->entriesModel
+            ->whereIn('id', $ids)
+            ->set(['deleter_id' => $deleterId])
+            ->update();
+
+        // Update deleter_id for all related "entry_data" records.
+        $this->entryDataModel
+            ->whereIn('entry_id', $ids)
+            ->set(['deleter_id' => $deleterId])
+            ->update();
 
         // Delete all related "entry_data" records using whereIn for bulk deletion.
         $this->entryDataModel->whereIn('entry_id', $ids)->delete();
