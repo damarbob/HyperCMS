@@ -37,7 +37,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 </style>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 
 <!-- HTML Entity -->
 <script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
@@ -148,7 +148,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         // Use data button
                         extend: "selected",
                         text: '<span class="icon"><i class="fa-solid fa-check"></i></span><span><?= lang('Admin.useData') ?></span>',
-                        className: 'is-primary is-in-iframe is-hidden',
+                        className: 'is-primary is-in-iframe',
                         action: function(e, dt, node, config) {
                             window.hyper_swal.confirm({
                                 text: "<?= lang('Admin.thisActionWillOverwriteCurrentInput') ?>",

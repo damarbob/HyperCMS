@@ -49,7 +49,7 @@ class Models extends BaseController
     {
 
         $rules = [
-            'name' => 'required|is_unique[model_data.name]|min_length[3]|max_length[255]',
+            'name' => 'required|min_length[3]|max_length[255]',
             'fields' => 'required',
             'icon' => ['permit_empty'],
         ];
@@ -163,11 +163,38 @@ class Models extends BaseController
 
         /* Action */
 
-        // Get the models
-        $models = $this->modelsModel->getCustomBuilder()->whereIn('id', $ids)->get()->getResultArray();
+        // Get the current authenticated user's ID (using CI Shield)
+        $deleterId = auth()->user()->id;
 
-        // Delete all related "model_data" records.
+        // ---------------------------
+        // Process Models and Model Data
+        // ---------------------------
+
+        // (Optional) Retrieve the models before deletion.
+        $models = $this->modelsModel
+            ->getCustomBuilder()
+            ->whereIn('id', $ids)
+            ->get()
+            ->getResultArray();
+
+        // Update deleter_id for the models that are about to be deleted.
+        $this->modelsModel
+            ->whereIn('id', $ids)
+            ->set(['deleter_id' => $deleterId])
+            ->update();
+
+        // Update deleter_id for all related model_data records.
+        $this->modelDataModel
+            ->whereIn('model_id', $ids)
+            ->set(['deleter_id' => $deleterId])
+            ->update();
+
+        // Delete all related model_data records.
         $this->modelDataModel->whereIn('model_id', $ids)->delete();
+
+        // ---------------------------
+        // Process Related Entries and Entry Data
+        // ---------------------------
 
         // Retrieve all entry IDs from entriesModel that belong to the models being deleted.
         $entryResults = $this->entriesModel
@@ -178,15 +205,28 @@ class Models extends BaseController
         // Extract the entry IDs into a simple array.
         $entryIds = array_column($entryResults, 'id');
 
-        // Delete all related entry_data records using the retrieved entry IDs.
+        // If any entries exist, update and delete their entry_data records.
         if (!empty($entryIds)) {
+            // Update deleter_id for all related entry_data records.
+            $this->entryDataModel
+                ->whereIn('entry_id', $entryIds)
+                ->set(['deleter_id' => $deleterId])
+                ->update();
+
+            // Delete all related entry_data records.
             $this->entryDataModel->whereIn('entry_id', $entryIds)->delete();
         }
+
+        // Update deleter_id for the entries that belong to the models being deleted.
+        $this->entriesModel
+            ->whereIn('model_id', $ids)
+            ->set(['deleter_id' => $deleterId])
+            ->update();
 
         // Bulk delete entries.
         $this->entriesModel->whereIn('model_id', $ids)->delete();
 
-        // Bulk delete models.
+        // Finally, bulk delete models.
         $this->modelsModel->delete($ids);
 
         /* End of action */

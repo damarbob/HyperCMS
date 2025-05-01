@@ -79,7 +79,7 @@ $fieldsError = validation_show_error('fields');
 <?php endif; ?>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
         const iconInput = document.querySelector('#iconInput');
@@ -110,21 +110,21 @@ $fieldsError = validation_show_error('fields');
 <?= $this->endSection() ?>
 
 <?= $this->section('head') ?>
-<script type="module">
-    import MonacoEditorWrapper from '<?= base_url('assets/js/admin/MonacoEditorWrapper.js') ?>';
-
-    const myEditor = new MonacoEditorWrapper({
-        editorContainerId: "monaco",
-        textareaId: "fields",
-        language: "json",
-        onSave: function(editor) {
-            const form = document.getElementById('formEditModel');
-            if (form) {
-                form.submit();
-            } else {
-                console.warn("Form id is not assigned to the editor");
-            }
-        },
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const myEditor = window.hyper_monaco({
+            editorContainerId: "monaco",
+            textareaId: "fields",
+            language: "json",
+            onSave: function(editor) {
+                const form = document.getElementById('formEditModel');
+                if (form) {
+                    form.submit();
+                } else {
+                    console.warn("Form id is not assigned to the editor");
+                }
+            },
+        });
     });
 </script>
 <?= $this->endSection() ?>

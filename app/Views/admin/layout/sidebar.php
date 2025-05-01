@@ -7,7 +7,7 @@ $hooks = service('hooks');
 helper('hyper_url');
 ?>
 <!-- Sidebar Column -->
-<aside class="column sidebar is-collapsed">
+<aside class="column sidebar">
     <nav class="menu">
         <div class="brand py-3">
             <h1 class="title">
@@ -94,4 +94,4 @@ helper('hyper_url');
         </ul>
     </nav>
 </aside>
-<div class="sidebar-overlay" onclick="toggleCollapse(document.querySelector('.sidebar'))"></div>
+<div class="sidebar-overlay" onclick="toggleActive(document.querySelector('.sidebar'))"></div>

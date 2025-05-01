@@ -34,7 +34,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 </style>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <script type="text/javascript">
     function openCodeModal(buttonEl) {
         // Retrieve the code from the button's data-code attribute

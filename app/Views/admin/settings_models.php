@@ -36,7 +36,7 @@ $context = 'user:' . user_id();
 </form>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <script type="text/javascript">
     // CSRF
     var csrfName = '<?= csrf_token() ?>';

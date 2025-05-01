@@ -9,8 +9,6 @@ import { bulmaInputPopulatorTemplates } from "./templates/addons/BulmaInputPopul
  * Class for populating form fields with meta data.
  *
  * @param {HTMLElement} container - The container for form fields.
- * @param {Object} [options] - Optional configuration.
- * @param {function} [options.confirmDialog] - Optional function for a custom confirmation dialog.
  */
 export default class InputPopulator {
   constructor(container) {

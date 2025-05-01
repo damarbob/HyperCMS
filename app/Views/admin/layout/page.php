@@ -7,7 +7,7 @@ $locale = service('request')->getLocale();
 $content = $this->renderSection('content');
 ?>
 <!DOCTYPE html>
-<html lang="<?= $locale ?>">
+<html lang="<?= $locale ?>" class="not-loaded">
 <!-- data-theme="light" -->
 <!-- data-theme="dark" -->
 
@@ -27,9 +27,6 @@ $content = $this->renderSection('content');
         media="(prefers-color-scheme: dark)"
         href="https://cdn.jsdelivr.net/npm/flatpickr/dist/themes/dark.css">
 
-    <!-- Simplebar -->
-    <script src="https://cdn.jsdelivr.net/npm/simplebar@6.3.0/dist/simplebar.min.js"></script>
-
     <!-- Style overrides -->
     <link rel="stylesheet" href="<?= base_url('assets/css/hyper-admin.css') ?>">
     <style>
@@ -37,6 +34,8 @@ $content = $this->renderSection('content');
             font-family: 'codicon';
             src: url('https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.20.0/min/vs/base/browser/ui/codiconLabel/codicon/codicon.ttf') format('truetype');
         }
+
+        /* CUSTOMIZATION */
 
         :root {
             --hyper-sidebar-width: 16rem;
@@ -51,7 +50,52 @@ $content = $this->renderSection('content');
             scrollbar-width: auto;
         }
 
-        /* Overrides */
+        /* Disable all pointer interactions (clicks, hovers, etc.) when not loaded */
+        .not-loaded * {
+            pointer-events: none;
+        }
+
+        /* Hide iframe-only element */
+        body .is-in-iframe {
+            display: none;
+        }
+
+        /* Show iframe-only element on iframe */
+        body.is-in-iframe .is-in-iframe {
+            display: initial;
+        }
+
+        /* Hide sidebar and navbar on iframe */
+        body.is-in-iframe .sidebar,
+        body.is-in-iframe .navbar {
+            display: none;
+        }
+
+        /* Maximize size to the viewport */
+        .is-fullscreen {
+            max-width: 100vw;
+            max-height: 100vh;
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* Maxizime height to the viewport height */
+        .is-fullheight {
+            max-height: 100vh;
+            height: 100vh;
+        }
+
+        /* END OF CUSTOMIZATION */
+
+        /* TRANSITIONS */
+
+        /* Width */
+        .transition-width {
+            transition: width 0.3s ease-out;
+        }
+
+        /* OVERRIDES */
+
         /* Hide html overflow if modal is active */
         html:has(body .modal.is-active) {
             overflow-y: hidden;
@@ -71,21 +115,14 @@ $content = $this->renderSection('content');
             background: hsla(var(--bulma-scheme-h), var(--bulma-scheme-s), var(--bulma-delete-background-l), var(--bulma-delete-background-alpha));
         }
 
-        .is-fullscreen {
-            max-width: 100vw;
-            max-height: 100vh;
-            width: 100vw;
-            height: 100vh;
+        /* Hide nested submenus by default */
+        .menu-list li ul {
+            display: none;
         }
 
-        .is-fullheight {
-            max-height: 100vh;
-            height: 100vh;
-        }
-
-        /* Transitions */
-        .transition-width {
-            transition: width 0.3s ease-out;
+        /* When the parent li has the is-active class, display its submenu */
+        .menu-list li.is-active ul {
+            display: block;
         }
 
         /* Sidebar */
@@ -107,7 +144,7 @@ $content = $this->renderSection('content');
             scrollbar-width: thin;
         }
 
-        .sidebar.is-collapsed {
+        .sidebar:not(.is-active) {
             width: 0 !important;
             padding-inline: 0 !important;
         }
@@ -125,7 +162,7 @@ $content = $this->renderSection('content');
             z-index: 31;
         }
 
-        .sidebar.is-collapsed~.sidebar-overlay {
+        .sidebar:not(.is-active)~.sidebar-overlay {
             display: none;
         }
 
@@ -149,27 +186,27 @@ $content = $this->renderSection('content');
             white-space: nowrap;
         }
 
-        .sidebar.is-collapsed .brand-collapsed {
+        .sidebar:not(.is-active) .brand-collapsed {
             display: block;
         }
 
-        .sidebar.is-collapsed .brand {
+        .sidebar:not(.is-active) .brand {
             display: none !important;
         }
 
-        .sidebar.is-collapsed .menu-label {
+        .sidebar:not(.is-active) .menu-label {
             display: none !important;
         }
 
-        .sidebar.is-collapsed .menu-list a {
+        .sidebar:not(.is-active) .menu-list a {
             text-align: center;
         }
 
-        .sidebar.is-collapsed .menu-list li .text {
+        .sidebar:not(.is-active) .menu-list li .text {
             display: none !important;
         }
 
-        .sidebar.is-collapsed .menu-list li ul {
+        .sidebar:not(.is-active) .menu-list li ul {
             display: none !important;
         }
 
@@ -177,7 +214,7 @@ $content = $this->renderSection('content');
         @media (max-width: 1023px) {
 
             /* Hide html overflow if sidebar is expanded */
-            html:has(body .sidebar:not(.is-collapsed)) {
+            html:has(body .sidebar.is-active) {
                 overflow-y: hidden;
             }
         }
@@ -188,7 +225,7 @@ $content = $this->renderSection('content');
                 display: block;
             }
 
-            .sidebar.is-collapsed {
+            .sidebar:not(.is-active) {
                 width: var(--hyper-sidebar-collapsed-width) !important;
                 padding-inline: 0 !important;
             }
@@ -201,48 +238,78 @@ $content = $this->renderSection('content');
                 margin-left: var(--hyper-sidebar-width);
             }
 
-            .sidebar.is-collapsed~.content-wrapper {
+            .sidebar:not(.is-active)~.content-wrapper {
                 margin-left: var(--hyper-sidebar-collapsed-width);
             }
         }
 
         /* End of sidebar */
 
-        /* Hide nested submenus by default */
-        .menu-list li ul {
-            display: none;
+        /* SweetAlert2 */
+
+        body.swal2-no-backdrop .swal2-container .swal2-modal.swal2-show,
+        body.swal2-no-backdrop .swal2-container .swal2-toast.swal2-show {
+            box-shadow: var(--bulma-shadow);
         }
 
-        /* When the parent li has the is-active class, display its submenu */
-        .menu-list li.is-active ul {
-            display: block;
+        div:where(.swal2-container) div:where(.swal2-popup) {
+            --swal2-background: var(--bulma-scheme-main);
         }
+
+        div:where(.swal2-container) div:where(.swal2-actions) button:where(.swal2-styled) {
+            color: var(--bulma-scheme-main);
+        }
+
+        div:where(.swal2-container) div:where(.swal2-actions) button:where(.swal2-styled):where(.swal2-cancel),
+        div:where(.swal2-container) div:where(.swal2-actions) button:where(.swal2-styled):where(.swal2-confirm),
+        div:where(.swal2-container) div:where(.swal2-actions) button:where(.swal2-styled):where(.swal2-close) {
+            border-radius: var(--bulma-radius);
+        }
+
+        /* End of SweetAlert2 */
+
+        /* END OF OVERRIDES */
     </style>
 
-    <!-- Javascript for dark mode detection -->
+    <!-- JavaScript for Dark Mode Detection -->
     <script>
-        // Ensure matchMedia is supported by the browser
-        if (window.matchMedia) {
-            // Create media query list for dark mode
+        /**
+         * This script detects the user's dark mode preference using the browser's
+         * matchMedia API and updates a global flag (window.hyper_isDarkMode) accordingly.
+         * It also listens for any changes to the preference.
+         */
+
+        // Ensure the browser supports matchMedia
+        if (typeof window.matchMedia === 'function') {
+            // Create a MediaQueryList object for the dark mode media query.
             const darkModeMediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
 
-            // Function to update the window property
-            function updateDarkModeStatus(e) {
+            /**
+             * Update the global dark mode status.
+             *
+             * @param {MediaQueryListEvent|MediaQueryList} e - The event or object 
+             *   containing the current match results.
+             */
+            const updateDarkModeStatus = (e) => {
                 window.hyper_isDarkMode = e.matches;
                 console.log('Dark Mode Changed:', window.hyper_isDarkMode);
-            }
+            };
 
-            // Set initial value
+            // Set the global variable based on the initial media query state.
             window.hyper_isDarkMode = darkModeMediaQuery.matches;
+
+            // In non-production environments, log the initial dark mode status for debugging.
             <?php if (ENVIRONMENT !== 'production'): ?>
                 console.log('Initial Dark Mode:', window.hyper_isDarkMode);
             <?php endif; ?>
 
-            // Listen for changes in the dark mode preference
+            // Listen for changes to the user's dark mode preference.
+            // Modern browsers support addEventListener on MediaQueryList objects.
             if (typeof darkModeMediaQuery.addEventListener === 'function') {
                 darkModeMediaQuery.addEventListener('change', updateDarkModeStatus);
-            } else if (typeof darkModeMediaQuery.addListener === 'function') {
-                // Fallback for older browsers
+            }
+            // Fallback for older browsers using the deprecated addListener.
+            else if (typeof darkModeMediaQuery.addListener === 'function') {
                 darkModeMediaQuery.addListener(updateDarkModeStatus);
             }
         } else {
@@ -250,10 +317,20 @@ $content = $this->renderSection('content');
         }
     </script>
 
+    <!-- Iframe check -->
+    <script type="text/javascript">
+        window.hyper_inIframe = window.self !== window.top; // Check if loaded inside an iframe
+    </script>
+
     <?= $this->renderSection('head') ?>
 </head>
 
 <body>
+    <script>
+        // Add is-in-iframe class to the body
+        if (window.hyper_inIframe) document.body.classList.add('is-in-iframe');
+    </script>
+
     <!-- Main Content Section -->
     <section class="container is-fluid">
         <?= $this->include("admin/layout/sidebar") ?>
@@ -269,36 +346,7 @@ $content = $this->renderSection('content');
         </div>
     </section>
 
-    <!-- Hyper CMS bootstrap JS -->
-    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
-
-    <?= $this->renderSection('scripts') ?>
-
-    <!-- Iframe check -->
-    <script type="text/javascript">
-        const inIframe = window.self !== window.top; // Check if loaded inside an iframe
-
-        // Adjust UI to disable sidebar if in iframe
-        if (inIframe) {
-            document.querySelector('.navbar').classList.add('is-hidden');
-            document.querySelector('.sidebar').classList.add('is-hidden');
-        }
-
-        // Hide elements that are iframe-specific with is-in-iframe class
-        if (!inIframe) {
-            document.querySelectorAll('.is-in-iframe').forEach(element => {
-                if (!element.classList.contains('is-hidden')) {
-                    element.classList.add('is-hidden');
-                }
-            })
-        } else {
-            document.querySelectorAll('.is-in-iframe').forEach(element => {
-                if (element.classList.contains('is-hidden')) {
-                    element.classList.remove('is-hidden');
-                }
-            })
-        }
-    </script>
+    <?= $this->renderSection('footer') ?>
 
     <!-- Dependencies -->
 
@@ -310,7 +358,15 @@ $content = $this->renderSection('content');
         <script src="https://unpkg.com/@popperjs/core@2"></script>
         <script src="https://unpkg.com/tippy.js@6"></script>
     <?php endif; ?>
+
     <script type="text/javascript">
+        // -------------------------------
+        // Initialize Tippy.js for tooltips
+        // -------------------------------
+
+        // Initialize Tippy.js here
+        // to prevent crashing with other tippy initialization
+        // from other page
         tippy('[data-tippy-content]');
     </script>
 
@@ -320,59 +376,133 @@ $content = $this->renderSection('content');
     <!-- sweetalert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- @TODO: sweetalert2 custom styling -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/themes@5.0.27/bulma/bulma.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script> -->
+    <!-- Clamp.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Clamp.js/0.5.1/clamp.min.js" integrity="sha512-9PanvIYgF2gT2Yau/uKb9ms+cOBNVo+sQzWDb+nLX5F4FZvEUiuFhKIQPmVU2jCvZKKTVB3Y8giDezNt/1H3xg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 
-    <?php if (session()->getFlashdata('success')) : ?>
-        <!-- JavaScript for displaying success/error notifications -->
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
+    <!-- Flatpickr JS -->
+    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
+    <!-- Hyper CMS bootstrap JS -->
+    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
+
+    <!-- JavaScript for displaying success/error notifications -->
+    <script>
+        // Wait until the DOM has fully loaded before running our notification logic.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ----------------------------------------------------
+            // Success Notification
+            // ----------------------------------------------------
+            // If a success message exists in the session flash data,
+            // use the global hyper_swal wrapper to display a success toast.
+            // The title is localized using lang("Admin.success").
+            <?php if (session()->getFlashdata('success')) : ?>
                 window.hyper_swal.success("<?= lang("Admin.success") ?>", {
-                    text: "<?= session()->getFlashdata('success') ?>"
+                    text: "<?= session()->getFlashdata('success') ?>" // Notification detail text
                 });
-            });
-        </script>
-    <?php elseif (session()->getFlashdata('error')) : ?>
-        <!-- JavaScript for displaying success/error notifications -->
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
+            <?php endif; ?>
+
+            // ----------------------------------------------------
+            // Error Notification
+            // ----------------------------------------------------
+            // If no success message is set but an error message exists,
+            // display an error notification using the hyper_swal error method.
+            // The configuration customizes the appearance by overriding the confirm button color,
+            // ensuring the confirm button is displayed and disabling the timer.
+            <?php if (session()->getFlashdata('error')) : ?>
+
                 window.hyper_swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
                     confirmButtonColor: "var(--bulma-primary)",
                     showConfirmButton: true,
                     timer: false,
                 });
-            });
-        </script>
-    <?php endif; ?>
+            <?php endif; ?>
+
+        });
+    </script>
+
 
     <script>
-        // Functions to open and close a modal
+        // ==========================================================
+        // Global Element Selections and Utility Functions
+        // ==========================================================
+
+        // Select elements for the navbar (burger menu), sidebar toggle, sidebar, and submenu links.
+        const navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger'));
+        const sidebarToggle = document.getElementById('sidebarToggle');
+        const sidebar = document.querySelector('.sidebar');
+        const submenuLinks = document.querySelectorAll('.menu-list li > a.has-submenu');
+
+        /**
+         * Opens a modal by adding the is-active class.
+         * @param {HTMLElement} $el - The modal element to open.
+         */
         function openModal($el) {
             $el.classList.add('is-active');
         }
 
+        /**
+         * Closes a modal by removing the is-active class.
+         * @param {HTMLElement} $el - The modal element to close.
+         */
         function closeModal($el) {
             $el.classList.remove('is-active');
         }
 
+        /**
+         * Toggles the is-active state on an element.
+         * @param {HTMLElement} $el - The element to toggle.
+         */
         function toggleActive($el) {
             $el.classList.toggle('is-active');
         }
 
+        /**
+         * Toggles the is-collapsed state on an element.
+         * @param {HTMLElement} $el - The element to toggle.
+         */
         function toggleCollapse($el) {
             $el.classList.toggle('is-collapsed');
         }
 
+        /**
+         * Closes all modals on the page.
+         */
         function closeAllModals() {
             (document.querySelectorAll('.modal') || []).forEach(($modal) => {
                 closeModal($modal);
             });
         }
 
+        // ==========================================================
+        // Sidebar Setup: Load Saved State and Apply Transition
+        // ==========================================================
+
+        // When viewing on desktop screens, check localStorage for the sidebar active state.
+        if (sidebar && window.innerWidth >= 1024) {
+            const collapsedState = localStorage.getItem('sidebar-active');
+            if (collapsedState === 'true') {
+                sidebar.classList.remove('is-active');
+            } else {
+                sidebar.classList.add('is-active');
+            }
+            // Add a transition class after the initial load to animate future width changes.
+            setTimeout(() => {
+                sidebar.classList.add('transition-width');
+            }, 1); // A short delay to apply the transition after the initial layout.
+        }
+
+        // ==========================================================
+        // DOMContentLoaded: Set Up Event Listeners After DOM Parsing
+        // ==========================================================
+
         document.addEventListener('DOMContentLoaded', () => {
-            // Add a click event on buttons to open a specific modal
+            // -------------------------------
+            // Modal Triggers & Closes
+            // -------------------------------
+
+            // Open modals: Attach a click event for every element with the .js-modal-trigger class.
             (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
                 const modal = $trigger.dataset.target;
                 const $target = document.getElementById(modal);
@@ -382,7 +512,7 @@ $content = $this->renderSection('content');
                 });
             });
 
-            // Add a click event on various child elements to close the parent modal
+            // Close modals: Attach click events to elements that should close the modal.
             (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
                 const $target = $close.closest('.modal');
 
@@ -391,39 +521,18 @@ $content = $this->renderSection('content');
                 });
             });
 
-            // Add a keyboard event to close all modals
+            // Close all modals on Escape key press.
             document.addEventListener('keydown', (event) => {
                 if (event.key === "Escape") {
                     closeAllModals();
                 }
             });
-        });
-    </script>
 
-    <!-- JavaScript for toggling states -->
-    <script>
-        const navbarBurgers = Array.from(document.querySelectorAll('.navbar-burger'));
-        const sidebarToggle = document.getElementById('sidebarToggle');
-        const sidebar = document.querySelector('.sidebar');
-        const submenuLinks = document.querySelectorAll('.menu-list li > a.has-submenu');
+            // -------------------------------
+            // Navbar Burger Toggle (Mobile)
+            // -------------------------------
 
-        // 0. Load saved sidebar state from localStorage (if available)
-        if (sidebar && window.innerWidth >= 1024) {
-            const collapsedState = localStorage.getItem('sidebar-collapsed');
-            // If true, add the is-collapsed class, otherwise remove it.
-            if (collapsedState === 'true') {
-                sidebar.classList.add('is-collapsed');
-            } else {
-                sidebar.classList.remove('is-collapsed');
-            }
-            setTimeout(() => {
-                sidebar.classList.add('transition-width');
-            }, 1); // Add transition after initial load
-        }
-
-        document.addEventListener('DOMContentLoaded', () => {
-
-            // 1. Navbar burger toggle (for mobile devices)
+            // When a navbar burger icon is clicked, toggle its active state and the target menu.
             if (navbarBurgers.length > 0) {
                 navbarBurgers.forEach(burger => {
                     burger.addEventListener('click', () => {
@@ -435,24 +544,32 @@ $content = $this->renderSection('content');
                 });
             }
 
-            // 2. Sidebar toggle button - save state on click
+            // -------------------------------
+            // Sidebar Toggle Button
+            // -------------------------------
+
+            // When the sidebar toggle button is clicked, collapse or expand the sidebar,
+            // then save the current state in localStorage.
             if (sidebarToggle && sidebar) {
                 sidebarToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('is-collapsed');
-                    // Determine the current state and save it in localStorage
-                    const isCollapsed = sidebar.classList.contains('is-collapsed');
-                    localStorage.setItem('sidebar-collapsed', isCollapsed);
+                    sidebar.classList.toggle('is-active');
+                    const isCollapsed = !sidebar.classList.contains('is-active');
+                    localStorage.setItem('sidebar-active', isCollapsed);
                 });
             }
 
-            // 3. Submenu toggle: When a link with class "has-submenu" is clicked,
-            // toggle the "is-active" state of its parent list item.
+            // -------------------------------
+            // Submenu Toggle in Sidebar Menu
+            // -------------------------------
+
+            // When a submenu link is clicked, if the sidebar is active,
+            // prevent the default link action and toggle the active state on the link and its parent.
             submenuLinks.forEach(link => {
                 link.addEventListener('click', (e) => {
-                    if (sidebar.classList.contains('is-collapsed')) {
+                    if (!sidebar.classList.contains('is-active')) {
                         return;
                     }
-                    e.preventDefault(); // Prevent the default hyperlink behavior
+                    e.preventDefault();
                     link.classList.toggle('is-active');
                     link.parentElement.classList.toggle('is-active');
                 });
@@ -460,21 +577,32 @@ $content = $this->renderSection('content');
         });
     </script>
 
-    <!-- Clamp.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Clamp.js/0.5.1/clamp.min.js" integrity="sha512-9PanvIYgF2gT2Yau/uKb9ms+cOBNVo+sQzWDb+nLX5F4FZvEUiuFhKIQPmVU2jCvZKKTVB3Y8giDezNt/1H3xg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
-
-    <!-- Flatpickr JS -->
-    <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
     <script>
-        // Wait for the DOM to load
-        document.addEventListener("DOMContentLoaded", function() {
-            // Initialize Flatpickr on all datetime-local inputs automatically
+        // ==========================================================
+        // Third-party libraries initialization
+        // ==========================================================
+
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // -------------------------------
+            // Initialize Flatpickr for Date/Time Inputs
+            // -------------------------------
+
+            // Automatically initialize Flatpickr on all inputs of type="datetime-local".
             flatpickr("input[type='datetime-local']", {
                 enableTime: true,
                 dateFormat: "Y-m-d H:i",
                 time_24hr: true,
-                // Optionally, add any additional Flatpickr options here
+                // Additional Flatpickr options can be added here.
             });
+        });
+    </script>
+
+    <script>
+        // Wait until the full page has loaded, then remove the "not-loaded" class
+        document.addEventListener('DOMContentLoaded', () => {
+            document.documentElement.classList.remove('not-loaded');
+            console.log('Page is fully loaded, interactivity enabled.');
         });
     </script>
 

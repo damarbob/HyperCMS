@@ -118,7 +118,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 <script src="https://cdn.datatables.net/v/bm/jq-3.7.0/jszip-3.10.1/dt-2.2.2/b-3.2.2/b-colvis-3.2.2/b-html5-3.2.2/b-print-3.2.2/cr-2.0.4/fh-4.0.1/r-3.0.4/sl-3.0.0/datatables.min.js" integrity="sha384-JYvoIYf/4ra9ifw1ESGWSNm3QVSdAuT8OaSDJLTKTkRWntshpsM1beOZKdjAXOAb" crossorigin="anonymous"></script>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 
 <!-- HTML Entity -->
 <script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
@@ -211,6 +211,12 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             {
                 title: "<?= lang("Admin.dateModified") ?>",
                 data: "date_modified",
+                orderSequence: ["asc", "desc"],
+            },
+            {
+                title: "<?= lang("Admin.deletedBy") ?>",
+                data: "deleted_by",
+                visible: false,
                 orderSequence: ["asc", "desc"],
             },
         ],
@@ -371,9 +377,9 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         select: true,
     };
 
-    // Order descending by date_modified (last column). Assuming last column is always 'date_modified' column.
+    // Order descending by date_modified (second last column). Assuming last column is always 'date_modified' column.
     options.order = [
-        [options.columns.length - 1, "desc"]
+        [options.columns.length - 2, "desc"]
     ];
 
     // DataTables language

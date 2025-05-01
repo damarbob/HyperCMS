@@ -9,6 +9,6 @@ $hooks = service('hooks');
 <?= $hooks->trigger(hook('backend.view:entries:edit'), [$model, $entry]) ?>
 <?= $this->endSection() ?>
 
-<?= $this->section('scripts') ?>
+<?= $this->section('footer') ?>
 <?= $this->include('admin/partials/entries_scripts') ?>
 <?= $this->endSection() ?>

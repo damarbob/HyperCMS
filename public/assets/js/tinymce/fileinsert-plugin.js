@@ -16,7 +16,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
         // console.log(details);
 
         // Receiving event from single file upload
-        if (details.mceAction && details.mceAction === "filesSelected") {
+        if (details.action && details.action === "filesSelected") {
           windowApi.close(); // Close the window
 
           if (details.data && Array.isArray(details.data)) {
@@ -56,14 +56,15 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       if (fileExt === "svg") {
         editor.insertContent(
           `<img src="${
-            fileViewerUrl + encodeURIComponent(hexEncode(filePath))
+            fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
           }" alt="${fileName}" />`
         );
       } else if (["mp4", "webm", "ogg"].includes(fileExt)) {
         editor.insertContent(`
           <video controls>
             <source src="${
-              fileViewerUrl + encodeURIComponent(hexEncode(filePath))
+              fileViewerUrl +
+              encodeURIComponent(window.hyper_hexEncode(filePath))
             }" type="video/${fileExt}">
             Your browser does not support the video tag.
           </video>
@@ -71,7 +72,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       } else {
         editor.insertContent(
           `<img src="${
-            fileViewerUrl + encodeURIComponent(hexEncode(filePath))
+            fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
           }" alt="${fileName}" />`
         );
       }
@@ -79,24 +80,11 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       // Insert a hyperlink for non-media or unrecognized file types.
       editor.insertContent(
         `<a href="${
-          fileViewerUrl + encodeURIComponent(hexEncode(filePath))
+          fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
         }">${fileName}</a>`
       );
     }
   };
-
-  function hexEncode(input) {
-    let hex = "";
-    for (let i = 0; i < input.length; i++) {
-      let code = input.charCodeAt(i).toString(16);
-      // Ensure each code is two characters (pad with a leading zero if needed)
-      if (code.length < 2) {
-        code = "0" + code;
-      }
-      hex += code;
-    }
-    return hex;
-  }
 
   editor.ui.registry.addButton("fileinsert", {
     tooltip: "Hyper File Insert",

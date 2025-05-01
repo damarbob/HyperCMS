@@ -66,11 +66,9 @@ export default class MonacoEditorWrapper {
       automaticLayout: autoLayout,
     });
 
-    // Bind events once DOM is ready.
-    document.addEventListener("DOMContentLoaded", () => {
-      this.#initializeValue();
-      this.#bindModelChange();
-    });
+    // Initialize value and bind event
+    this.#initializeValue();
+    this.#bindModelChange();
 
     // Register common commands.
     this.#registerCommands();
@@ -82,6 +80,7 @@ export default class MonacoEditorWrapper {
 
   // Initialize the editor value from the hidden textarea if it exists.
   #initializeValue() {
+    console.log("initializeValue");
     if (this.textareaInput) {
       this.editor.getModel().setValue(this.textareaInput.value);
     }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Entities\HyperHook;
+use App\Hyper\HyperHook;
 
 return [
     'main' => new HyperHook('frontend:main', 'Main Frontend', 'This hook is used to add custom content to the main section.'),
