@@ -3,11 +3,9 @@
 namespace Modules\PagingSystem;
 
 use App\Controllers\API\v1\Model;
-use App\Libraries\HtmlEditor;
 use App\Services\HyperHooks;
 use App\Models\EntriesModel;
 use App\Models\ModelsModel;
-use DOMDocument;
 use DOMXPath;
 use Masterminds\HTML5;
 
@@ -33,7 +31,7 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
     foreach ($models as $model) {
         $fields = json_decode($model['fields'], true);
 
-        if (empty($fields)) continue;
+        if (empty($fields) || !is_array($fields)) continue;
 
         // Build a mapping: key -> content array
         $fieldsById = [];

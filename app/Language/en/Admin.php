@@ -87,6 +87,8 @@ return [
     'xToToggleFullscreenMode' => '{x} to toggle fullscreen mode.',
     'forCompleteListOfIconsPleaseVisitx' => 'For a complete list of icons, please visit {x}.',
 
+    'modelNotFound' => 'Model not found',
+
     'createdBy' => 'Created by',
     'editedBy' => 'Edited by',
     'createdAt' => 'Created at',

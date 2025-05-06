@@ -32,7 +32,7 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
       if (input.hasAttribute("multiple")) {
         if (inputFiles && inputFiles.length > 0) {
           for (let i = 0; i < inputFiles.length; i++) {
-            formData.append(name, inputFiles[i]);
+            formData.append(inputName, inputFiles[i]);
           }
           const fileArray = Array.from(inputFiles).map((file) => file.name);
           meta.push({ id, value: fileArray });
@@ -45,7 +45,7 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
         }
       } else {
         if (inputFiles && inputFiles.length > 0) {
-          formData.append(name, inputFiles[0]);
+          formData.append(inputName, inputFiles[0]);
           const fileArray = Array.from(inputFiles).map((file) => file.name);
           meta.push({ id, value: fileArray });
         } else {

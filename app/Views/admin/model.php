@@ -71,7 +71,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
         // Configure the AJAX endpoint and method.
         ajax: {
-            url: "<?= base_url('/api/test/model/dt') ?>", // @TODO: remove test
+            url: "<?= base_url('/api/v1/model') ?>", // @TODO: remove test
             type: "POST",
             data: function(d) {
                 d.id = <?= $id ?>;
@@ -98,7 +98,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                     defaultContent: "<span class='tag is-warning'><?= lang('Admin.n/a') ?></span>", // If data not found, show n/a instead
                     orderSequence: ["asc", "desc"],
                     render: function(data, type, row, meta) {
-                        const fieldType = '<?= $field->type ?>';
+                        const fieldType = '<?= $field->type ?? '' ?>';
                         const fieldClassName = <?= isset($field->className) ? "'" . $field->className . "'" : 'null' ?>;
 
                         // Handle data rendering
@@ -194,28 +194,9 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
                                 console.log('Delete IDs:', ids);
 
-                                // AJAX request to delete entries (POSTing the ids array)
-                                $.ajax({
-                                    url: '<?= base_url('admin/entries/delete') ?>', // Adjust this URL as needed.
-                                    type: 'POST',
-                                    data: {
-                                        ids: ids,
-                                        [csrfName]: csrfHash
-                                    }, // Include CSRF token for security
-                                    dataType: 'json', // Expecting JSON response from the server (if you modify your backend to return JSON)
-                                    success: function(response) {
-                                        // You can perform any action on success here.
-                                        // For example, a success notification and then reload the table.
-                                        alert(response.success || 'Entries deleted successfully.');
-                                        dt.ajax.reload();
-                                    },
-                                    error: function(xhr, status, error) {
-                                        // Handle errors here
-                                        alert('Failed to delete entries: ' + error);
-                                    }
-                                });
+                                deleteEntries(ids);
                             } else {
-                                alert('<?= lang('Admin.selectToDelete') ?>');
+                                window.hyper_swal.error('<?= lang('Admin.selectToDelete') ?>');
                             }
                         }
                     },
@@ -236,28 +217,9 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
                                 console.log('Restore IDs:', ids);
 
-                                // AJAX request to restore entries (POSTing the ids array)
-                                $.ajax({
-                                    url: '<?= base_url('admin/entries/restore') ?>', // Adjust this URL as needed.
-                                    type: 'POST',
-                                    data: {
-                                        ids: ids,
-                                        [csrfName]: csrfHash
-                                    }, // Include CSRF token for security
-                                    dataType: 'json', // Expecting JSON response from the server (if you modify your backend to return JSON)
-                                    success: function(response) {
-                                        // You can perform any action on success here.
-                                        // For example, a success notification and then reload the table.
-                                        alert(response.success || 'Entries restored successfully.');
-                                        dt.ajax.reload();
-                                    },
-                                    error: function(xhr, status, error) {
-                                        // Handle errors here
-                                        alert('Failed to restore entries: ' + error);
-                                    }
-                                });
+                                restoreEntries(ids);
                             } else {
-                                alert('<?= lang('Admin.selectToRestore') ?>');
+                                window.hyper_swal.error('<?= lang('Admin.selectToRestore') ?>');
                             }
                         }
                     },
@@ -355,5 +317,58 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
     }
 
     /* End of views */
+
+    /* Requests */
+
+    // AJAX request to delete entries (POSTing the ids array)
+    function deleteEntries(ids) {
+        $.ajax({
+            url: '<?= base_url('admin/entries/delete') ?>',
+            type: 'POST',
+            data: {
+                ids: ids,
+                [csrfName]: csrfHash
+            }, // Include CSRF token for security
+            dataType: 'json', // Expecting JSON response from the server
+            success: function(response) {
+                window.hyper_swal.success(response.success, {
+                    showConfirmButton: true,
+                    confirmButtonText: "<?= lang('Admin.undo') ?>",
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        restoreEntries(ids);
+                    }
+                });
+                hyperTable.ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                // Handle errors here
+                window.hyper_swal.error(error);
+            }
+        });
+    }
+
+    // AJAX request to restore entries (POSTing the ids array)
+    function restoreEntries(ids) {
+        $.ajax({
+            url: '<?= base_url('admin/entries/restore') ?>',
+            type: 'POST',
+            data: {
+                ids: ids,
+                [csrfName]: csrfHash
+            }, // Include CSRF token for security
+            dataType: 'json', // Expecting JSON response from the server
+            success: function(response) {
+                window.hyper_swal.success(response.success);
+                hyperTable.ajax.reload();
+            },
+            error: function(xhr, status, error) {
+                // Handle errors here
+                window.hyper_swal.error(error);
+            }
+        });
+    }
+
+    /* End of requests */
 </script>
 <?= $this->endSection() ?>

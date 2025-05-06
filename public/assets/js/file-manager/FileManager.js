@@ -31,7 +31,7 @@ export default class FileManager {
 
   #downloadFile(path) {
     window.location.href =
-      `${config.baseUrl + "api/file-manager/download/"}` +
+      `${config.baseUrl + "admin/api/file-manager/download/"}` +
       encodeURIComponent(window.hyper_hexEncode(path));
   }
 
@@ -41,7 +41,7 @@ export default class FileManager {
       action,
     };
 
-    fetch(`${config.baseUrl + "api/file-manager/set-clipboard/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/set-clipboard/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -71,7 +71,7 @@ export default class FileManager {
   }
 
   pasteFiles() {
-    fetch(`${config.baseUrl + "api/file-manager/paste/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/paste/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -116,7 +116,7 @@ export default class FileManager {
     const fileName = path.split("/").pop(); // Get file extension
     const fileExtension = path.split(".").pop().toLowerCase(); // Get file extension
     const imageUrl =
-      `${config.baseUrl + "api/file-manager/view-file/"}` +
+      `${config.baseUrl + "admin/api/file-manager/view-file/"}` +
       encodeURIComponent(window.hyper_hexEncode(path));
 
     // UI
@@ -344,7 +344,7 @@ export default class FileManager {
     }
 
     fetch(
-      `${config.baseUrl + "api/file-manager/list-files/"}` +
+      `${config.baseUrl + "admin/api/file-manager/list-files/"}` +
         encodeURIComponent(window.hyper_hexEncode(path))
     )
       .then(async (response) => {
@@ -599,7 +599,7 @@ export default class FileManager {
               );
             return;
           }
-          return fetch(`${config.baseUrl + "api/file-manager/create-file/"}`, {
+          return fetch(`${config.baseUrl + "admin/api/file-manager/create-file/"}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -652,7 +652,7 @@ export default class FileManager {
             return;
           }
           return fetch(
-            `${config.baseUrl + "api/file-manager/create-folder/"}`,
+            `${config.baseUrl + "admin/api/file-manager/create-folder/"}`,
             {
               method: "POST",
               headers: {
@@ -709,7 +709,7 @@ export default class FileManager {
               );
             return;
           }
-          return fetch(`${config.baseUrl + "api/file-manager/rename/"}`, {
+          return fetch(`${config.baseUrl + "admin/api/file-manager/rename/"}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -800,7 +800,7 @@ export default class FileManager {
     /* End of UI */
 
     const updatedContent = this.fileEditor.value;
-    fetch(`${config.baseUrl + "api/file-manager/save-file/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/save-file/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -834,7 +834,7 @@ export default class FileManager {
   }
 
   deleteSelectedFiles() {
-    const selectedFiles = this.#getSelectedFiles();
+    const selectedFiles = this.getSelectedFiles();
 
     if (selectedFiles.length === 0) {
       // Show error toast
@@ -849,7 +849,7 @@ export default class FileManager {
       .then((result) => {
         if (result.isConfirmed) {
           // Request item deletion
-          fetch(`${config.baseUrl + "api/file-manager/delete-files/"}`, {
+          fetch(`${config.baseUrl + "admin/api/file-manager/delete-files/"}`, {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -882,7 +882,7 @@ export default class FileManager {
       });
   }
 
-  #getSelectedFiles() {
+  getSelectedFiles() {
     return Array.from(this.tableBody.querySelectorAll("tr.selected")).map(
       (row) => {
         return row.querySelector(".file-link").getAttribute("data-path");
@@ -891,7 +891,7 @@ export default class FileManager {
   }
 
   compressSelectedFiles() {
-    const selectedFiles = this.#getSelectedFiles();
+    const selectedFiles = this.getSelectedFiles();
 
     if (selectedFiles.length === 0) {
       window.hyper_swal.error(`${i18next.t("selectFileToCompressZIP")}`);
@@ -904,7 +904,7 @@ export default class FileManager {
     }
     /* End of UI */
 
-    fetch(`${config.baseUrl + "api/file-manager/compress/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/compress/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -937,7 +937,7 @@ export default class FileManager {
   }
 
   extractSelectedFiles() {
-    const selectedFiles = this.#getSelectedFiles();
+    const selectedFiles = this.getSelectedFiles();
 
     if (selectedFiles.length !== 1 || !selectedFiles[0].endsWith(".zip")) {
       window.hyper_swal.error(`${i18next.t("selectZipFileToEctract")}`);
@@ -950,7 +950,7 @@ export default class FileManager {
     }
     /* End of UI */
 
-    fetch(`${config.baseUrl + "api/file-manager/extract/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/extract/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -980,7 +980,7 @@ export default class FileManager {
   }
 
   copySelectedFiles() {
-    const selectedFiles = this.#getSelectedFiles();
+    const selectedFiles = this.getSelectedFiles();
     if (selectedFiles.length === 0) {
       // Show error toast
       window.hyper_swal.error(`${i18next.t("selectFilesToCopy")}`);
@@ -990,7 +990,7 @@ export default class FileManager {
   }
 
   moveSelectedFiles() {
-    const selectedFiles = this.#getSelectedFiles();
+    const selectedFiles = this.getSelectedFiles();
     if (selectedFiles.length === 0) {
       // Show error toast
       window.hyper_swal.error(`${i18next.t("selectFilesToMove")}`);
@@ -1000,7 +1000,7 @@ export default class FileManager {
   }
 
   #setClipboard(files, action) {
-    fetch(`${config.baseUrl + "api/file-manager/set-clipboard/"}`, {
+    fetch(`${config.baseUrl + "admin/api/file-manager/set-clipboard/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

@@ -6,6 +6,7 @@ import InputCreator from "./admin/InputCreator.js";
 import { encodeFormInputsToJson as EncodeFormInputsToJson } from "./admin/use-case/Form.js";
 import { hexDecode, hexEncode } from "./admin/use-case/Hex.js";
 import FileManager from "./file-manager/FileManager.js";
+import { areUrisEqual } from "./admin/use-case/Url.js";
 
 /* Bootstrap the app */
 
@@ -49,4 +50,5 @@ if (typeof window !== "undefined") {
   window.hyper_hexEncode = hexEncode;
   window.hyper_hexDecode = hexDecode;
   window.hyper_fileManager = fileManager();
+  window.hyper_areUrisEqual = areUrisEqual;
 }

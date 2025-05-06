@@ -1,7 +1,8 @@
 <?php
 
-namespace App\Controllers\API\v1;
+namespace App\Controllers\Admin\API;
 
+use App\Controllers\API\v1\ApiController;
 use Config\Services;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;

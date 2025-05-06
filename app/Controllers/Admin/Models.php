@@ -30,13 +30,16 @@ class Models extends BaseController
         );
     }
 
-    public function edit($id): string
+    public function edit($id)
     {
-
         $this->data['title'] = lang('Admin.editModel');
 
-        $modelBuilder = $this->modelsModel->getCustomBuilder();
-        $model = $modelBuilder->where('id', $id)->limit(1)->get()->getResultArray()[0];
+        $model = $this->modelsManager->find($id);
+
+        if (empty($model)) {
+            return $this->respond(lang('Admin.modelNotFound'), 'admin/models', 400, success: false);
+        }
+
         $this->data['model'] = $model;
 
         return view('admin/models_action', array_merge($this->data, [
@@ -45,51 +48,49 @@ class Models extends BaseController
         ]));
     }
 
+    /**
+     * Create a new model.
+     *
+     * Validates input and delegates creation to the ModelManager.
+     * 
+     * @return \CodeIgniter\HTTP\Response JSON redirect or error response.
+     */
     public function create()
     {
-
+        // Define validation rules.
         $rules = [
             'name' => 'required|min_length[3]|max_length[255]',
             'fields' => 'required',
             'icon' => ['permit_empty'],
         ];
 
+        // Get only the keys that are in the rules array.
         $data = $this->request->getPost(array_keys($rules));
 
-        if (! $this->validateData($data, $rules)) {
-            return redirect()->back()->withInput();
+        // Validate data – using CodeIgniter’s built-in validation.
+        if (!$this->validateData($data, $rules)) {
+            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
         }
 
-        // If you want to get the validated data.
+        // Get the validated data.
         $validData = $this->validator->getValidated();
-
-        // Data conversion for ModelsModel
-        $modelsSubmitData = ['creator_id' => auth()->user()->id];
-
-        // d($modelsSubmitData);
-        // dd($modelDataSubmitData);
-
-        // Data saving to ModelsModel
-        $this->modelsModel->save($modelsSubmitData);
-
-        // Data conversion for ModelDataModel
-        $modelDataSubmitData = $data;
-        $modelDataSubmitData['model_id'] = $this->modelsModel->getInsertID();
-        $modelDataSubmitData['creator_id'] = auth()->user()->id;
+        $userId = auth()->user()->id; // Current authenticated user's ID
 
         try {
-            // Data saving to ModelDataModel
-            $this->modelDataModel->save($modelDataSubmitData);
+            // Delegate the creation process to the service.
+            $modelId = $this->modelsManager->create($validData, $userId);
         } catch (DatabaseException $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+            return redirect()->back()
+                ->withInput()
+                ->with('error', $e->getMessage());
         }
 
-        return redirect('admin/models')->with('success', lang('Admin.modelxSuccessfullyCreated', ['x' => $data['name']]));
+        return redirect('admin/models')
+            ->with('success', lang('Admin.modelxSuccessfullyCreated', ['x' => $data['name']]));
     }
 
     public function update($id)
     {
-
         $rules = [
             'name' => 'required|min_length[3]|max_length[255]',
             'fields' => 'required',
@@ -98,293 +99,77 @@ class Models extends BaseController
 
         $data = $this->request->getPost(array_keys($rules));
 
-        $modelBuilder = $this->modelsModel->getCustomBuilder();
-
-        /** @todo Improve validation due to unusable is_unique as model_data may store the same data multiple times for historical tracking */
-        // If user tries to change the name, prevent duplicate entry
-        // $oldModel = $modelBuilder->where('id', $id)->limit(1)->get()->getResultArray()[0];
-        // if ($oldModel['name'] != $data['name']) {
-        //     $rules['name'] = $rules['name'] . '|is_unique[model_data.name]';
-        // }
-
-        // dd($this->validateData($data, $rules));
-
         if (!$this->validateData($data, $rules)) {
-            return redirect()->back()->withInput()->with('error', implode(" ", $this->validator->getErrors()));
+            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
         }
 
-        // Data conversion for ModelsModel
-        $modelsSubmitData = ['id' => $id];
-
-        // Data saving to ModelsModel
-        // $this->modelsModel->save($modelsSubmitData);
-
-        // Data conversion for ModelDataModel
-        $modelDataSubmitData = $data;
-        $modelDataSubmitData['model_id'] = $id;
-        $modelDataSubmitData['creator_id'] = auth()->user()->id;
+        $validData = $this->validator->getValidated();
+        $userId = auth()->user()->id;
 
         try {
-            // Data saving to ModelDataModel
-            $this->modelDataModel->save($modelDataSubmitData);
+            $this->modelsManager->update($id, $validData, $userId);
         } catch (DatabaseException $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+            return $this->respond($e->getMessage(), withInput: true, success: false);
         }
 
-        // Redirect back to the edit page
-        return redirect()->to("admin/models/$id/edit")->with('success', lang('Admin.modelxSuccessfullySaved', ['x' => $data['name']]));
+        return $this->respond(lang('Admin.modelxSuccessfullySaved', ['x' => $validData['name']]), withInput: false);
     }
 
     public function delete($id = null)
     {
-        // Retrieve an array of IDs from POST data
-        $ids = $this->request->getPost('ids');
+        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
 
-        /* Validation */
-
-        // If no array was found but a single ID was passed in the URL, use that instead.
-        if (empty($ids) && $id !== null) {
-            $ids = [$id];
-        }
-
-        // If we still don't have any IDs, respond accordingly.
         if (empty($ids)) {
-            // Check if the request expects a JSON response.
-            if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-                return $this->response
-                    ->setStatusCode(400, lang('Admin.noEntrySelected'));
-            } else {
-                return redirect('admin/models')
-                    ->with('error', lang('Admin.noEntrySelected'));
-            }
+            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400, success: false);
         }
 
-        /* End of validation */
-
-        /* Action */
-
-        // Get the current authenticated user's ID (using CI Shield)
-        $deleterId = auth()->user()->id;
-
-        // ---------------------------
-        // Process Models and Model Data
-        // ---------------------------
-
-        // (Optional) Retrieve the models before deletion.
-        $models = $this->modelsModel
-            ->getCustomBuilder()
-            ->whereIn('id', $ids)
-            ->get()
-            ->getResultArray();
-
-        // Update deleter_id for the models that are about to be deleted.
-        $this->modelsModel
-            ->whereIn('id', $ids)
-            ->set(['deleter_id' => $deleterId])
-            ->update();
-
-        // Update deleter_id for all related model_data records.
-        $this->modelDataModel
-            ->whereIn('model_id', $ids)
-            ->set(['deleter_id' => $deleterId])
-            ->update();
-
-        // Delete all related model_data records.
-        $this->modelDataModel->whereIn('model_id', $ids)->delete();
-
-        // ---------------------------
-        // Process Related Entries and Entry Data
-        // ---------------------------
-
-        // Retrieve all entry IDs from entriesModel that belong to the models being deleted.
-        $entryResults = $this->entriesModel
-            ->select('id')
-            ->whereIn('model_id', $ids)
-            ->findAll();
-
-        // Extract the entry IDs into a simple array.
-        $entryIds = array_column($entryResults, 'id');
-
-        // If any entries exist, update and delete their entry_data records.
-        if (!empty($entryIds)) {
-            // Update deleter_id for all related entry_data records.
-            $this->entryDataModel
-                ->whereIn('entry_id', $entryIds)
-                ->set(['deleter_id' => $deleterId])
-                ->update();
-
-            // Delete all related entry_data records.
-            $this->entryDataModel->whereIn('entry_id', $entryIds)->delete();
+        try {
+            $this->modelsManager->deleteModels($ids, auth()->user()->id);
+        } catch (DatabaseException $e) {
+            return $this->respond($e->getMessage(), 'admin/models', 500, false, false);
         }
 
-        // Update deleter_id for the entries that belong to the models being deleted.
-        $this->entriesModel
-            ->whereIn('model_id', $ids)
-            ->set(['deleter_id' => $deleterId])
-            ->update();
+        $deletedModels = $this->modelsManager->findDeletedModels($ids);
 
-        // Bulk delete entries.
-        $this->entriesModel->whereIn('model_id', $ids)->delete();
-
-        // Finally, bulk delete models.
-        $this->modelsModel->delete($ids);
-
-        /* End of action */
-
-        /* Response */
-
-        // Build a success response.
-        $successMessage = (count($models) > 1) ? lang('Admin.modelsSuccessfullyDeleted') : lang('Admin.modelxSuccessfullyDeleted', ['x' => $models[0]['name']]);
-
-        // Check if the response should be in JSON.
-        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-            return $this->response
-                ->setStatusCode(200, $successMessage)
-                ->setJSON(['success' => $successMessage]);;
-        } else {
-            return redirect('admin/models')->with('success', $successMessage);
+        if (count($deletedModels) > 1) {
+            return $this->respond(lang('Admin.modelsSuccessfullyDeleted'), 'admin/models');
         }
 
-        /* End of response */
+        return $this->respond(
+            lang('Admin.modelxSuccessfullyDeleted', ['x' => $deletedModels[0]['name']]),
+            'admin/models'
+        );
     }
 
     public function purgeDeleted()
     {
-        /* Action */
-
-        // Retrieve all deleted model IDs from modelsModel.
-        $deletedModels = $this->modelsModel
-            ->select('id')
-            ->onlyDeleted()
-            ->findAll();
-
-        $deletedModelIds = array_column($deletedModels, 'id');
-
-        if (empty($deletedModelIds)) {
-            if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-                return $this->response
-                    ->setStatusCode(400, lang('Admin.trashIsEmpty'));
-            } else {
-                return redirect()->back()->with('error', lang('Admin.trashIsEmpty'));
-            }
+        if ($this->modelsManager->countDeleted() == 0) {
+            return $this->respond(lang('Admin.trashIsEmpty'), statusCode: 400, success: false);
         }
 
-        // Retrieve all entry IDs from entriesModel that belong to the models being deleted.
-        $deletedEntries = $this->entriesModel
-            ->select('id')
-            ->whereIn('model_id', $deletedModelIds)
-            ->findAll();
-
-        // Extract the entry IDs into a simple array.
-        $deletedEntryIds = array_column($deletedEntries, 'id');
-
-        // Purge data
-
-        // Purge all related model_data records using the retrieved model IDs.
-        if (!empty($deletedModelIds)) {
-            $this->modelDataModel->whereIn('model_id', $deletedModelIds)->delete(purge: true);
+        try {
+            $this->modelsManager->purgeDeleted();
+        } catch (DatabaseException $e) {
+            return $this->respond("{$e->getMessage()} {$e->getTraceAsString()}", statusCode: 500, success: false);
         }
 
-        // Purge all related entry_data records using the retrieved entry IDs.
-        if (!empty($deletedEntryIds)) {
-            $this->entryDataModel->whereIn('entry_id', $deletedEntryIds)->delete(purge: true);
-        }
-
-        // Delete all related "entry_data" records using whereIn for bulk deletion.
-        $this->modelDataModel->purgeDeleted();
-
-        // Bulk delete entries.
-        $this->modelsModel->purgeDeleted();
-
-        /* End of action */
-
-        /* Response */
-
-        // Build a success response.
-        $successMessage = lang('Admin.modelsSuccessfullyDeleted');
-
-        // Check if the response should be in JSON.
-        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-            return $this->response
-                ->setStatusCode(200, $successMessage)
-                ->setJSON(['success' => $successMessage]);;
-        } else {
-            return redirect()->back()->with('success', $successMessage);
-        }
-
-        /* End of response */
+        return $this->respond(lang('Admin.modelsSuccessfullyDeleted'));
     }
 
     public function restore($id = null)
     {
-        /* Validation */
+        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
 
-        // Retrieve an array of IDs from POST data.
-        $ids = $this->request->getPost('ids');
-
-        // If no array was found but a single ID was passed in the URL, wrap it in an array.
-        if (empty($ids) && $id !== null) {
-            $ids = [$id];
-        }
-
-        // If we still don't have any IDs, respond with an error.
         if (empty($ids)) {
-            if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-                return $this->response
-                    ->setStatusCode(400, lang('Admin.noEntrySelected'));
-            } else {
-                return redirect('admin/models')->with('error', lang('Admin.noEntrySelected'));
-            }
+            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400);
         }
 
-        /* End of validation */
-
-        /* Action */
-
-        // Get the deleted models
-        $models = $this->modelsModel->getDeletedCustomBuilder()->whereIn('id', $ids)->get()->getResultArray();
-        $entries = $this->entriesModel->getDeletedCustomBuilder()->whereIn('model_id', $ids)->get()->getResultArray();
-
-        $entryIds = array_column($entries, 'id'); // Collect entry ids
-
-        // If entries exist, restore the entry data as well
-        if (!empty($entryIds)) {
-            $this->entryDataModel->withDeleted()->whereIn('entry_id', $entryIds)
-                ->set(['deleted_at' => null])
-                ->update();
+        try {
+            $this->modelsManager->restore($ids);
+        } catch (DatabaseException $e) {
+            return $this->respond($e->getMessage(), statusCode: 500);
         }
 
-        $this->entriesModel->withDeleted()->whereIn('model_id', $ids)
-            ->set(['deleted_at' => null])
-            ->update();
-
-        // For soft deletes, "restoring" means updating the deleted_at column to NULL.
-        // Restore associated model_data records.
-        $this->modelDataModel->withDeleted()->whereIn('model_id', $ids)
-            ->set(['deleted_at' => null])
-            ->update();
-
-        // Restore the models themselves.
-        $this->modelsModel->withDeleted()->whereIn('id', $ids)
-            ->set(['deleted_at' => null])
-            ->update();
-
-        /* End of action */
-
-        /* Response */
-
-        // Prepare a success message.
-        $successMessage = (count($models) > 1) ? lang('Admin.modelsSuccessfullyRestored') : lang('Admin.modelxSuccessfullyRestored', ['x' => $models[0]['name']]);
-
-        // Return a JSON response if requested, otherwise redirect back.
-        if (strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false || $this->request->isAJAX()) {
-            return $this->response
-                ->setStatusCode(200, $successMessage)
-                ->setJSON(['success' => $successMessage]);;
-        } else {
-            return redirect()->back()->with('success', $successMessage);
-        }
-
-        /* End of response */
+        return $this->respond(lang('Admin.modelsSuccessfullyRestored'), 200);
     }
 }

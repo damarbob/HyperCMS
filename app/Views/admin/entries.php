@@ -159,7 +159,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         pageLength: <?= $datatableEntriesPerPageValue ?>,
 
         ajax: {
-            url: "<?= base_url('/api/test/entries/dt') ?>",
+            url: "<?= base_url('/api/v1/entries') ?>",
             type: "POST",
             data: function(d) {
 

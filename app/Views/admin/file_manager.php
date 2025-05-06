@@ -20,14 +20,19 @@ $currentRoute = $request->getUri()->getPath();
 
 <script>
     function confirmSelectedFiles() {
-        const selectedFiles = Array.from(document.querySelectorAll('.file-checkbox:checked'))
-            .map(checkbox => checkbox.getAttribute('data-path'));
+        const selectedFiles = window.hyper_fileManager.getSelectedFiles();
         if (true) {
             // Post the message with the deserialized data included
             window.parent.postMessage({
-                action: 'filesSelected',
+                action: 'filesSelected_r<?= $requesterId ?>',
                 data: selectedFiles
-            }, '*'); // @TODO: Use proper target origin
+            }, '<?= base_url() ?>');
+
+            // Post TinyMCE action
+            window.parent.postMessage({
+                mceAction: 'filesSelected_r<?= $requesterId ?>', // Important for TinyMCE to read
+                data: selectedFiles
+            }, '<?= base_url() ?>');
         }
     }
 </script>
@@ -260,7 +265,7 @@ $currentRoute = $request->getUri()->getPath();
 
         <!-- Dropzone Container -->
         <div id="dropzoneContainer" class="box mt-3" style="display: none;">
-            <form action="<?= base_url('api/file-manager/upload') ?>" class="dropzone" id="fileDropzone" style="border: none; background: none;"></form>
+            <form action="<?= base_url('admin/api/file-manager/upload') ?>" class="dropzone" id="fileDropzone" style="border: none; background: none;"></form>
             <p id="uploadProgress" style="display: none;"><?= lang('Admin.uploadingFile') ?></p>
         </div>
     </div>

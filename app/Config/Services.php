@@ -2,7 +2,9 @@
 
 namespace Config;
 
+use App\Services\EntriesManager;
 use App\Services\HyperHooks;
+use App\Services\ModelsManager;
 use CodeIgniter\Config\BaseService;
 
 /**
@@ -40,5 +42,27 @@ class Services extends BaseService
             return static::getSharedInstance('hooks');
         }
         return HyperHooks::getInstance();
+    }
+
+    /**
+     * Returns an instance of the ModelsManager class.
+     */
+    public static function modelsManager(bool $getShared = true): ModelsManager
+    {
+        if ($getShared) {
+            return static::getSharedInstance('modelsManager');
+        }
+        return ModelsManager::getInstance();
+    }
+
+    /**
+     * Returns an instance of the EntriesManager class.
+     */
+    public static function entriesManager(bool $getShared = true): EntriesManager
+    {
+        if ($getShared) {
+            return static::getSharedInstance('entriesManager');
+        }
+        return EntriesManager::getInstance();
     }
 }

@@ -15,8 +15,10 @@ class Editor extends BaseController
         }
 
         $entry_id = $data['entry_id'];
+
         // Load the page entry record
-        $entry = $this->entriesModel->getCustomBuilder()->where('id', $entry_id)->get()->getRow();
+        $entry = (object) $this->entriesManager->find($entry_id);
+
         if (!$entry) {
             return redirect()->back()->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $entry_id]));
         }
@@ -27,24 +29,27 @@ class Editor extends BaseController
         $this->data['entry'] = $entry;
         $this->data['mapped_entry_fields'] = $mappedEntryFields;
 
-        // @TESTING: Get test components for editor plugin blocks
-        $testComponents = $this->entriesModel->getCustomBuilder()->where('model_name', 'Component')->get()->getResultArray();
-        foreach ($testComponents as &$row) {
-            if (isset($row['fields'])) {
-                $fieldsArray = json_decode($row['fields'], true);
-                if (is_array($fieldsArray)) {
-                    foreach ($fieldsArray as $field) {
-                        if (isset($field['id']) && isset($field['value'])) {
-                            $row[$field['id']] = $field['value'];
+        /** @todo Finish user-created components */
+        // Get test user-created components for editor plugin blocks
+        if (ENVIRONMENT !== 'production') {
+            $testComponents = $this->entriesModel->getCustomBuilder()->where('model_name', 'Component')->get()->getResultArray();
+            foreach ($testComponents as &$row) {
+                if (isset($row['fields'])) {
+                    $fieldsArray = json_decode($row['fields'], true);
+                    if (is_array($fieldsArray)) {
+                        foreach ($fieldsArray as $field) {
+                            if (isset($field['id']) && isset($field['value'])) {
+                                $row[$field['id']] = $field['value'];
+                            }
                         }
                     }
+                    unset($row['fields']);
                 }
-                unset($row['fields']);
             }
+            $this->data['test_components'] = $testComponents;
         }
 
         $this->data['title'] = lang('PagingSystem.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
-        $this->data['test_components'] = $testComponents;
 
         return view('\Modules\PagingSystem\Views\Admin\editor', $this->data);
     }

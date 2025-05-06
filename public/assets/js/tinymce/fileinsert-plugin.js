@@ -1,11 +1,16 @@
 tinymce.PluginManager.add("fileinsert", (editor, url) => {
+  // Hex encoded requester id to pass to File Manager
+  const fileManagerRequesterId = Array.from("tinymce.fileinsert")
+    .map((char) => char.charCodeAt(0).toString(16).padStart(2, "0"))
+    .join("");
+
   const fileManagerUrl = editor.getParam(
     "fileinsert_file_manager_url",
-    "/admin/file-manager/"
+    `/admin/file-manager?requester_id=${fileManagerRequesterId}`
   );
   const fileViewerUrl = editor.getParam(
     "fileinsert_file_viewer_url",
-    "/api/file-server/serve/"
+    "/public/file-server/serve/"
   );
 
   const openDialog = () => {
@@ -13,10 +18,11 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       title: "Insert file",
       url: fileManagerUrl,
       onMessage: (windowApi, details) => {
-        // console.log(details);
-
         // Receiving event from single file upload
-        if (details.action && details.action === "filesSelected") {
+        if (
+          details.mceAction &&
+          details.mceAction === `filesSelected_r${fileManagerRequesterId}`
+        ) {
           windowApi.close(); // Close the window
 
           if (details.data && Array.isArray(details.data)) {
@@ -24,8 +30,6 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
               insertFileContent(editor, file);
             });
           }
-
-          // editor.insertContent(JSON.stringify(details.data));
         }
       },
       onClose: () => {},
