@@ -52,7 +52,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             window.parent.postMessage({
                 action: 'entryDataSelected',
                 data: selectedRows
-            }, '*'); // @TODO: Use proper target origin
+            }, '<?= base_url() ?>');
         }
     }
 
@@ -87,7 +87,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
         // Configure the AJAX endpoint and method.
         ajax: {
-            url: "<?= base_url('/api/test/entry-data/dt') ?>", // @TODO: remove test
+            url: "<?= base_url('/api/v1/entry-data') ?>", // @TODO: remove test
             type: "POST",
             data: function(d) {
                 d.id = <?= $entry['id'] ?>;

@@ -106,7 +106,17 @@ class Filters extends BaseFilters
     public array $filters = [
         'session' => [
             'before' => [
-                'admin/*'
+                'admin/*',
+            ]
+        ],
+        'chain' => [
+            'before' => [
+                'api/*'
+            ]
+        ],
+        'auth-rates' => [
+            'before' => [
+                'auth/*'
             ]
         ]
     ];

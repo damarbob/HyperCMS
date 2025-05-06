@@ -7,6 +7,9 @@ use App\Models\EntriesModel;
 use App\Models\EntryDataModel;
 use App\Models\ModelDataModel;
 use App\Models\ModelsModel;
+use App\Services\EntriesManager;
+use App\Services\HyperHooks;
+use App\Services\ModelsManager;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -48,7 +51,9 @@ abstract class BaseController extends Controller
      * The creation of dynamic property is deprecated in PHP 8.2.
      */
     // protected $session;
-    protected $hooks;
+    protected HyperHooks $hooks;
+    protected ModelsManager $modelsManager;
+    protected EntriesManager $entriesManager;
 
     // Models
     protected ModelsModel $modelsModel;
@@ -71,8 +76,9 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = service('session');
 
-        /** @var \App\Services\HyperHooks */
         $this->hooks = service('hooks');
+        $this->modelsManager = service('modelsManager');
+        $this->entriesManager = service('entriesManager');
 
         // Models
         $this->modelsModel = new ModelsModel();
@@ -124,11 +130,9 @@ abstract class BaseController extends Controller
         $additionalMenu = [];
         $additionalMenu = $this->hooks->filter(hook('Backend.controller:menu:data'), $additionalMenu);
 
-        // dd($additionalMenu);
-
         $this->data['menu'] = array_merge($menu, $additionalMenu);
 
-        // dd($this->data['menu']);
+        // dd($this->data);
 
         /* End of view data */
 
@@ -155,5 +159,38 @@ abstract class BaseController extends Controller
         endif;
 
         /* End of testing */
+    }
+
+    protected function respond(
+        string $message,
+        ?string $redirectTo = null,
+        int $statusCode = 200,
+        bool $withInput = true,
+        bool $success = true
+    ) {
+        if (
+            $this->request->isAJAX() ||
+            strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false ||
+            strpos($this->request->getHeaderLine('Content-Type'), 'application/json') !== false
+        ) {
+            return $this->response->setStatusCode($statusCode)->setJSON([$success ? 'success' : 'error' => $message]);
+        }
+
+        /** @var \CodeIgniter\HTTP\RedirectResponse */
+        $redirect = redirect();
+
+        if (empty($redirectTo)) {
+            $redirect = $redirect->back();
+        } else {
+            $redirect = $redirect->to($redirectTo);
+        }
+
+        if ($withInput) {
+            $redirect = $redirect->withInput();
+        }
+
+        $redirect = $redirect->with($success ? 'success' : 'error', $message);
+
+        return $redirect;
     }
 }

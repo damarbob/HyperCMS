@@ -1,6 +1,8 @@
 <?php
 
-namespace App\Controllers\API\v1;
+namespace App\Controllers\Public;
+
+use App\Controllers\API\v1\ApiController;
 
 // @TODO: Translation
 class FileServer extends ApiController

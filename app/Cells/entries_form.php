@@ -3,7 +3,7 @@ helper('form');
 
 $fieldsError = validation_show_error('fields');
 
-$action = $type === 'edit' ? base_url('api/test/entries/save/' . $entry['id']) : base_url('api/test/entries/create/' . $model['id']);
+$action = $type === 'edit' ? base_url('admin/entries/' . $entry['id']) : base_url('admin/entries');
 ?>
 
 <div class="block">

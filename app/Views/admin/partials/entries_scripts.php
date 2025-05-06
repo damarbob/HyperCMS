@@ -1,3 +1,7 @@
+<?php
+helper('hyper_hex');
+$requester = hex_encode($uri);
+?>
 <?php if (!empty($entry)): // For edit action
 ?>
     <!-- History modal -->
@@ -17,7 +21,7 @@
     <div class="modal-background"></div>
     <div class="modal-card is-fullheight">
         <div class="modal-card-body is-flex" style="--bulma-modal-card-body-padding: 0.5rem;">
-            <iframe id="fileManagerIframe" class="is-flex-grow-1" data-src="<?= base_url('admin/file-manager') ?>" frameborder="0"></iframe>
+            <iframe id="fileManagerIframe" class="is-flex-grow-1" data-src="<?= base_url("admin/file-manager?requester_id={$requester}") ?>" frameborder="0"></iframe>
         </div>
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
@@ -100,12 +104,15 @@
 
                         // Listen for messages from the file manager. (Attach this listener globally if needed.)
                         window.addEventListener('message', function(event) {
-                            // Optionally, validate event.origin for extra security.
-                            if (event.data && event.data.action === 'filesSelected') {
+
+                            // Validate event.origin for extra security.
+                            if (!window.hyper_areUrisEqual(event.origin, '<?= base_url() ?>')) return;
+
+                            if (event.data && event.data.action === 'filesSelected_r<?= $requester ?>') {
                                 const selectedFiles = event.data.data; // Array of URL strings.
                                 if (selectedFiles.length > 0) {
                                     // Insert the first selected file URL into the input.
-                                    input.value = `<?= base_url('api/file-server/serve/') ?>${encodeURIComponent(window.hyper_hexEncode(selectedFiles[0]))}`;
+                                    input.value = `<?= base_url('public/file-server/serve/') ?>${encodeURIComponent(window.hyper_hexEncode(selectedFiles[0]))}`;
                                 }
                                 // Close the modal after processing the selection.
                                 closeModal(document.getElementById('fileManagerModal'));
@@ -203,10 +210,16 @@
 </script>
 <script>
     const hyperForm = document.getElementById("hyper-form");
+    const hyperFormSubmit = hyperForm.querySelectorAll('input[type="submit"], button[type="submit"]');
 
     // Intercept the form submission, compute meta data, inject it, then let it submit.
     hyperForm.addEventListener("submit", function(event) {
         event.preventDefault();
+
+        // Disable all input type submit
+        hyperFormSubmit.forEach((el) => {
+            el.disabled = true;
+        });
 
         // Before building FormData, force TinyMCE to save editor content back to the textarea.
         tinymce.triggerSave();
@@ -214,43 +227,59 @@
         // Create a FormData object from the form (this grabs all the form elements including files)
         const fd = new FormData(this);
 
+        /** @type {FormData} */
         const newFormData = window.hyper_encodeFormInputsToJson("fields", this);
+        newFormData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
+
+        <?php if ($type === 'new'): ?>
+            newFormData.append('model_id', '<?= $model['id'] ?>');
+        <?php endif ?>
 
         // Send the new FormData using fetch.
         fetch(this.action, {
                 method: this.method,
+                headers: {
+                    'Accept': 'application/json'
+                },
                 body: newFormData
             })
             .then(response => response.json())
-
             .then((data) => {
                 if (data.success) {
+                    // Enable all input type submit
+                    hyperFormSubmit.forEach((el) => {
+                        el.disabled = false;
+                    });
+
                     // If successful
                     window.hyper_swal.success("<?= lang('Admin.success') ?>", {
-                        text: data.message
+                        text: data.success
                     }); // Show success message
 
-                    // Redirect the page after 1 second if redirect url exists
-                    if (data.redirect) {
+                    <?php if ($type === 'new'): ?>
+                        // Redirect the page after 1 second 
                         setTimeout(() => {
-                            window.location.href = data.redirect;
+                            window.location.href = '<?= base_url('admin/entries') ?>';
                         }, 1000);
-                    }
+                    <?php endif ?>
                 } else {
                     // If error
                     window.hyper_swal.error("<?= lang('Admin.error') ?>", {
-                        text: data.message
+                        text: data.error
                     }); // Show error message
                 }
             })
-            .then(data => console.log(data))
+            // .then(data => console.log(data))
             .catch(err => console.error(err));
     });
 </script>
 <script>
     // Listen for messages from the file manager. (Attach this listener globally if needed.)
     window.addEventListener('message', function(event) {
-        // Optionally, validate event.origin for extra security.
+
+        // Validate event.origin for extra security.
+        if (!window.hyper_areUrisEqual(event.origin, '<?= base_url() ?>')) return;
+
         if (event.data && event.data.action === 'entryDataSelected') {
             const selectedData = event.data.data; // Array of URL strings.
             useData(selectedData);

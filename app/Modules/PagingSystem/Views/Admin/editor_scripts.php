@@ -128,16 +128,20 @@ if (file_exists($editorScriptsOverrideFile)) {
 
         const newFormData = new FormData();
         newFormData.append('fields', JSON.stringify(payload));
+        newFormData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
-        fetch('<?= base_url('api/test/entries/save/' . $entry->id) ?>', {
+        fetch('<?= base_url('admin/entries/' . $entry->id) ?>', {
             method: 'POST',
+            headers: {
+              'Accept': 'application/json',
+            },
             body: newFormData,
           })
           .then(response => response.json())
           .then((data) => {
             if (data.success) {
               window.hyper_swal.success("<?= lang('Admin.success') ?>", {
-                text: data.message
+                text: data.success
               });
               if (data.redirect) {
                 setTimeout(() => {
@@ -145,10 +149,10 @@ if (file_exists($editorScriptsOverrideFile)) {
                 }, 1000);
               }
             } else {
-              throw new Error(data.message);
               window.hyper_swal.error("<?= lang('Admin.error') ?>", {
-                text: data.message
+                text: data.error
               });
+              throw new Error(data.error);
             }
           })
           .then(data => {
@@ -161,17 +165,19 @@ if (file_exists($editorScriptsOverrideFile)) {
     });
   }
 
-  // Plugin to load hyper components as blocks if available
-  grapesjs.plugins.add('grapesjs-hyper-components', function(editor, opts = {}) {
+  <?php if (ENVIRONMENT !== 'production'): ?>
+    // Plugin to load hyper components as blocks if available
+    grapesjs.plugins.add('grapesjs-hyper-components', function(editor, opts = {}) {
 
-    const defaultMedia = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M234.5 5.7c13.9-5 29.1-5 43.1 0l192 68.6C495 83.4 512 107.5 512 134.6l0 242.9c0 27-17 51.2-42.5 60.3l-192 68.6c-13.9 5-29.1 5-43.1 0l-192-68.6C17 428.6 0 404.5 0 377.4L0 134.6c0-27 17-51.2 42.5-60.3l192-68.6zM256 66L82.3 128 256 190l173.7-62L256 66zm32 368.6l160-57.1 0-188L288 246.6l0 188z"/></svg>';
+      const defaultMedia = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--!Font Awesome Free 6.7.2 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free Copyright 2025 Fonticons, Inc.--><path d="M234.5 5.7c13.9-5 29.1-5 43.1 0l192 68.6C495 83.4 512 107.5 512 134.6l0 242.9c0 27-17 51.2-42.5 60.3l-192 68.6c-13.9 5-29.1 5-43.1 0l-192-68.6C17 428.6 0 404.5 0 377.4L0 134.6c0-27 17-51.2 42.5-60.3l192-68.6zM256 66L82.3 128 256 190l173.7-62L256 66zm32 368.6l160-57.1 0-188L288 246.6l0 188z"/></svg>';
 
-    <?php foreach ($test_components as $component): ?>
-      editor.Blocks.add('<?= url_title($component['component_title']) ?>', {
-        label: '<?= $component['component_title'] ?>',
-        media: defaultMedia,
-        content: `<?= $component['component_content'] ?>`,
-      });
-    <?php endforeach; ?>
-  });
+      <?php foreach ($test_components as $component): ?>
+        editor.Blocks.add('<?= url_title($component['component_title']) ?>', {
+          label: '<?= $component['component_title'] ?>',
+          media: defaultMedia,
+          content: `<?= $component['component_content'] ?>`,
+        });
+      <?php endforeach; ?>
+    });
+  <?php endif ?>
 </script>

@@ -104,12 +104,14 @@ class Model extends ApiController
         $codeFields = [];
 
         foreach ($modelFields as $field) {
-            if ($field->type == 'datetime-local') {
-                $dateFields[] = $field->id;
-            } elseif ($field->type == 'number') {
-                $numericFields[] = $field->id;
-            } elseif ($field->type == 'code') {
-                $codeFields[] = $field->id;
+            if (!empty($field->type)) {
+                if ($field->type == 'datetime-local') {
+                    $dateFields[] = $field->id;
+                } elseif ($field->type == 'number') {
+                    $numericFields[] = $field->id;
+                } elseif ($field->type == 'code') {
+                    $codeFields[] = $field->id;
+                }
             }
         }
 

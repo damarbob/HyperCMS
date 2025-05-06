@@ -41,7 +41,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
         // Configure the AJAX endpoint and method.
         ajax: {
-            url: "<?= base_url('/api/test/models/dt') ?>", // Our CI4 API endpoint that returns JSON, @TODO: remove test
+            url: "<?= base_url('/api/v1/models') ?>", // Our CI4 API endpoint that returns JSON, @TODO: remove test
             type: "POST", // Often POST is used for server side processing
             data: function(d) {
                 // Whether trash view is enabled
