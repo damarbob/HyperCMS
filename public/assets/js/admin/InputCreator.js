@@ -2,7 +2,7 @@
 
 import { InputCreatorTemplates } from "./templates/InputCreatorTemplates.js";
 import { bulmaInputCreatorTemplates } from "./templates/addons/BulmaInputCreatorTemplates.js";
-import { config } from "../Config.js";
+import i18next from "./translations/I18n.js";
 
 export default class InputCreator {
   constructor({
@@ -72,7 +72,7 @@ export default class InputCreator {
   displayNoMetaMessage() {
     this.container.insertAdjacentHTML(
       "beforeend",
-      `<p>Entry has empty fields</p>` // @TODO: Localization
+      `<p>${i18next.t("entryHasEmptyFields")}</p>`
     );
   }
 

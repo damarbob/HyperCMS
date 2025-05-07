@@ -78,10 +78,6 @@
     <!-- sweetalert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <!-- @TODO: sweetalert2 custom styling -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@sweetalert2/themes@5.0.27/bulma/bulma.css">
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.js"></script> -->
-
     <?php if (session()->getFlashdata('success')) : ?>
         <!-- JavaScript for displaying success/error notifications -->
         <script>
