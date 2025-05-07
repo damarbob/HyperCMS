@@ -8,28 +8,49 @@ class Editor extends BaseController
 {
     public function index()
     {
-        $data = $this->request->getGet();
+        $data = $this->request->getGet(); // Get data from get
 
+        // Return if entry_id is empty
         if (!$data || empty($data['entry_id'])) {
             return redirect()->back()->with('error', lang('Admin.noEntryFound'));
         }
-
-        $entry_id = $data['entry_id'];
+        $entryId = $data['entry_id']; // Assign entry id
 
         // Load the page entry record
-        $entry = (object) $this->entriesManager->find($entry_id);
+        $entry = (object) $this->entriesManager->find($entryId);
 
         if (!$entry) {
-            return redirect()->back()->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $entry_id]));
+            return redirect()->back()->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $entryId]));
         }
 
         // Map entry fields for easier access, e.g., hyper_component_elements, hyper_css, etc.
         $mappedEntryFields = array_column(json_decode($entry->fields), 'value', 'id');
 
+        $this->loadUserCreatedComponents();
+
+        /* View data */
+
         $this->data['entry'] = $entry;
         $this->data['mapped_entry_fields'] = $mappedEntryFields;
 
-        /** @todo Finish user-created components */
+        $this->data['scripts'] = []; // Script assets
+        $this->data['styles'] = []; // Style assets
+
+        $this->data['title'] = lang('PagingSystem.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
+
+        /* Filters */
+
+        $this->data = $this->hooks->filter(hook('PagingSystemBackend.controller:editor:index:data'), $this->data);
+
+        return view('\Modules\PagingSystem\Views\Admin\editor', $this->data);
+    }
+
+    /**
+     * Load user created components
+     * @todo Finish user-created components 
+     */
+    private function loadUserCreatedComponents()
+    {
         // Get test user-created components for editor plugin blocks
         if (ENVIRONMENT !== 'production') {
             $testComponents = $this->entriesModel->getCustomBuilder()->where('model_name', 'Component')->get()->getResultArray();
@@ -46,11 +67,8 @@ class Editor extends BaseController
                     unset($row['fields']);
                 }
             }
+
             $this->data['test_components'] = $testComponents;
         }
-
-        $this->data['title'] = lang('PagingSystem.editor-x', ['x' => (isset($mappedEntryFields['hyper_title']) ? $mappedEntryFields['hyper_title'] : 'Untitled')]);
-
-        return view('\Modules\PagingSystem\Views\Admin\editor', $this->data);
     }
 }
