@@ -71,7 +71,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
         // Configure the AJAX endpoint and method.
         ajax: {
-            url: "<?= base_url('/api/v1/model') ?>", // @TODO: remove test
+            url: "<?= base_url('/api/v1/model') ?>",
             type: "POST",
             data: function(d) {
                 d.id = <?= $id ?>;

@@ -3,9 +3,9 @@
 namespace App\Controllers\Public;
 
 use App\Controllers\API\v1\ApiController;
+use CodeIgniter\Exceptions\PageNotFoundException;
 use Config\Mimes;
 
-// @TODO: Translation
 class FileServer extends ApiController
 {
     /**
@@ -35,7 +35,7 @@ class FileServer extends ApiController
             && (!validate_directory($productionFullPath, FCPATH) || !file_exists($productionFullPath))
             && (!validate_directory_within_base($productionPublicHtmlFullPath, FCPATH) || !file_exists($productionPublicHtmlFullPath))
         ) {
-            return $this->response->setStatusCode(404, 'File not found');
+            throw PageNotFoundException::forPageNotFound(lang('Admin.fileNotFound'));
         }
 
         // If the development path is valid, use it; otherwise, use the production path
