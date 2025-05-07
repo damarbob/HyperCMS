@@ -58,11 +58,7 @@ class HyperHooks
                     } catch (\Throwable $e) {
                         // Log or handle errors silently
                         error_log("Hook '$hook' error: " . $e->getMessage());
-
-                        if (ENVIRONMENT !== 'production') {
-                            // Optionally, throw the error in development mode
-                            throw $e;
-                        }
+                        throw $e;
                     }
                 }
             }
@@ -91,11 +87,7 @@ class HyperHooks
                     } catch (\Throwable $e) {
                         // Log or handle errors silently
                         error_log("Hook '$hook' error: " . $e->getMessage());
-
-                        if (ENVIRONMENT !== 'production') {
-                            // Optionally, throw the error in development mode
-                            throw $e;
-                        }
+                        throw $e;
                     }
                 }
             }
@@ -113,7 +105,9 @@ class HyperHooks
                     try {
                         $value = call_user_func_array($callback, array_merge([$value], $params));
                     } catch (\Throwable $e) {
-                        error_log("Filter '$hook' error: " . $e->getMessage());
+                        // Log to CodeIgniter's log for visibility
+                        log_message('error', "Filter '$hook' error: " . $e->getMessage());
+                        throw $e;
                     }
                 }
             }

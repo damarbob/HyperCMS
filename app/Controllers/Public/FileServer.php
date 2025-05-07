@@ -3,6 +3,7 @@
 namespace App\Controllers\Public;
 
 use App\Controllers\API\v1\ApiController;
+use Config\Mimes;
 
 // @TODO: Translation
 class FileServer extends ApiController
@@ -40,8 +41,12 @@ class FileServer extends ApiController
         // If the development path is valid, use it; otherwise, use the production path
         $fullPath = $developmentFullPath ?: ($productionFullPath ?: $productionPublicHtmlFullPath);
 
+        // @IMPORTANT: This feature require fileinfo PHP extension
         // Serve the file content with correct headers
-        $mimeType = mime_content_type($fullPath); // @IMPORTANT: Require the fileinfo PHP extension
+        // Use CodeIgniter's File class to handle MIME detection
+        $file = new \CodeIgniter\Files\File($fullPath);
+        $mimeType = Mimes::guessTypeFromExtension($file->getExtension()); // More reliable way to guess MIME
+
         return $this->response
             ->setHeader('Content-Type', $mimeType)
             ->setBody(file_get_contents($fullPath));

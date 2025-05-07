@@ -5,7 +5,8 @@
 
 <?php
 
-// Default values
+/* Default values */
+
 // Can be overridden in the override file
 $editorPlugins = [
   'grapesjs-bulma',
@@ -15,8 +16,10 @@ $editorPlugins = [
   'grapesjs-custom-code',
 ];
 
+// Plugin options
 $editorPluginsOpts = [];
 
+// Selector manager
 $selectorManager = [];
 
 // Include override file if available
@@ -53,16 +56,15 @@ if (file_exists($editorScriptsOverrideFile)) {
 
   });
 
+  // Initialize the Page Editor
   function initializeEditor(id) {
     var editor = grapesjs.init({
       container: '#' + id,
       canvas: {
-        styles: [
-          // Will be used to populate stylesheets from backend
-        ],
-        scripts: [
-          // Will be used to populate scripts from backend
-        ],
+        // Placeholder to inject styles from backend
+        styles: [],
+        // Placeholder to inject scripts from backend
+        scripts: [],
       },
       panels: {},
       height: '100vh',
@@ -97,20 +99,39 @@ if (file_exists($editorScriptsOverrideFile)) {
         className: 'fa fa-save',
         command: 'gjs-save',
         attributes: {
-          title: 'Save',
+          title: '<?= lang('Admin.save') ?>',
         },
       });
     });
+
+    /* Save command */
 
     // Custom command: Save only the overrides (page-specific data)
     editor.Commands.add('gjs-save', {
       run(editor, sender) {
         if (sender) sender.set('active', false);
 
-        const htmlOutput = editor.getHtml();
+        let htmlOutput = editor.getHtml();
         const cssOutput = editor.getCss();
         const components = editor.getComponents();
         const projectData = editor.getProjectData();
+
+        /* HTML cleanup */
+        // Parse the HTML into a DOM Document using DOMParser
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(htmlOutput, 'text/html');
+
+        // Select all elements with the attribute data-no-export
+        doc.querySelectorAll('[data-no-export]').forEach(el => {
+          el.parentNode.removeChild(el);
+        });
+
+        // Serialize the cleaned DOM back into an HTML string for saving/exporting
+        htmlOutput = doc.documentElement.outerHTML;
+        <?php if (ENVIRONMENT !== 'production'): ?>
+          console.log(htmlOutput);
+        <?php endif ?>
+        /* End of HTML cleanup */
 
         // Replace neccessary data
         const newEntryFields = <?= json_encode($mapped_entry_fields) ?>;
@@ -155,14 +176,65 @@ if (file_exists($editorScriptsOverrideFile)) {
               throw new Error(data.error);
             }
           })
-          .then(data => {
-            console.log('Save Successful:', data);
-          })
           .catch(error => {
             console.error('Error saving data:', error);
+            window.hyper_swal.error("<?= lang('Admin.error') ?>", {
+              text: error
+            });
           });
       }
     });
+
+    /* End of save command */
+
+    /* Inject assets */
+
+    // Add to canvas config (if editor not yet initialized)
+    if (editor.config) {
+      editor.config.canvas = editor.config.canvas || {};
+      editor.config.canvas.styles = editor.config.canvas.styles || [];
+      editor.config.canvas.scripts = editor.config.canvas.scripts || [];
+
+      // CSS dependencies to load on head
+      const cssHeadDependencies = <?= json_encode($styles['head'] ?? [], JSON_UNESCAPED_SLASHES) ?>;
+
+      cssHeadDependencies.forEach((item) => {
+        if (!editor.config.canvas.styles.includes(item)) {
+          editor.config.canvas.styles.push(item);
+        }
+      });
+
+      // JS dependencies to load on head
+      const jsHeadDependencies = <?= json_encode($scripts['head'] ?? [], JSON_UNESCAPED_SLASHES) ?>;
+
+      jsHeadDependencies.forEach((item) => {
+        if (!editor.config.canvas.scripts.includes(item)) {
+          editor.config.canvas.scripts.push(item);
+        }
+      });
+    }
+
+    editor.on("load", function() {
+      const canvasDoc = editor.Canvas.getDocument();
+
+      // Array of external scripts to inject into the canvas.
+      // These scripts will be used in the editor for preview, but can be exclude
+      // later when exporting/saving by filtering out nodes with data-no-export.
+      const scriptsToInject = <?= json_encode($scripts['body'] ?? [], JSON_UNESCAPED_SLASHES) ?>;
+
+      // Loop through each script URL and inject it at the end of the body.
+      scriptsToInject.forEach((scriptUrl) => {
+        const scriptEl = canvasDoc.createElement("script");
+        scriptEl.src = scriptUrl;
+        // Add a custom attribute to flag this script for exclusion from saved output.
+        scriptEl.setAttribute("data-no-export", "true");
+        canvasDoc.body.appendChild(scriptEl);
+        console.log(`Injected script: ${scriptUrl}`);
+      });
+    });
+
+    /* End of inject assets */
+
   }
 
   <?php if (ENVIRONMENT !== 'production'): ?>

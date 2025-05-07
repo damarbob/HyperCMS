@@ -2,6 +2,7 @@
 helper('form');
 
 $primaryModelError = validation_show_error('paging_system_primary_model_id');
+$assetsModelError = validation_show_error('paging_system_assets_model_id');
 $metaModelError = validation_show_error('paging_system_meta_model_id');
 ?>
 <?= $this->extend('admin/layout/page') ?>
@@ -28,9 +29,27 @@ $metaModelError = validation_show_error('paging_system_meta_model_id');
                     </select>
                 </div>
             </div>
-            <p class="help"><?= lang('PagingSystem.choosenPrimaryModelWillBeRoutedToTheFrontend') ?></p>
+            <p class="help"><?= lang('PagingSystem.chosenPrimaryModelWillBeRoutedToTheFrontend') ?></p>
             <?php if ($primaryModelError): ?>
                 <p class="help is-danger"><?= $primaryModelError ?></p>
+            <?php endif; ?>
+        </div>
+
+        <!-- Assets model selection -->
+        <div class="field">
+            <label class="label"><?= lang('PagingSystem.assets') ?></label>
+            <div class="control">
+                <div class="select">
+                    <select name="paging_system_assets_model_id">
+                        <?php for ($i = 0; $i < count($pagingSystemAssetsEligibleModelNames); $i++): ?>
+                            <option value="<?= $pagingSystemAssetsEligibleModelIds[$i] ?>"><?= $pagingSystemAssetsEligibleModelNames[$i] ?></option>
+                        <?php endfor; ?>
+                    </select>
+                </div>
+            </div>
+            <p class="help"><?= lang('PagingSystem.selectedModelWillServeAsPrimaryModelForServingAssets') ?></p>
+            <?php if ($metaModelError): ?>
+                <p class="help is-danger"><?= $metaModelError ?></p>
             <?php endif; ?>
         </div>
 
