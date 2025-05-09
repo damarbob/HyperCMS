@@ -21,11 +21,17 @@ class Models extends BaseController
 
         $this->data['title'] = lang('Admin.newModel');
 
+        $this->hooks->register(hook('backend.view:models:new'), function () {
+            return view_cell('ModelsFormCell', [
+                'action' => 'new',
+                'formAction' => base_url('admin/models'),
+            ]);
+        });
+
         return view(
             'admin/models_action',
             array_merge($this->data, [
                 'action' => 'new',
-                'formAction' => base_url('admin/models'),
             ])
         );
     }
@@ -40,11 +46,17 @@ class Models extends BaseController
             return $this->respond(lang('Admin.modelNotFound'), 'admin/models', 400, success: false);
         }
 
-        $this->data['model'] = $model;
+        $this->hooks->register(hook('backend.view:models:edit'), function () use ($model) {
+            return view_cell('ModelsFormCell', [
+                'action' => 'edit',
+                'formAction' => base_url('admin/models/' . $model['id']),
+                'model' => $model
+            ]);
+        });
 
         return view('admin/models_action', array_merge($this->data, [
             'action' => 'edit',
-            'formAction' => base_url('admin/models/' . $model['id']),
+            'model' => $model,
         ]));
     }
 

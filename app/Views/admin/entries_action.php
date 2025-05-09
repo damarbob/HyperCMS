@@ -6,7 +6,14 @@ $hooks = service('hooks');
 <?= $this->extend('admin/layout/page') ?>
 
 <?= $this->section('content') ?>
-<?= $hooks->trigger(hook('backend.view:entries:new'), [$model]) ?>
+<?php
+if ($action == 'edit') {
+    echo $hooks->trigger(hook('Backend.view:entries:edit'), [$model, $entry]);
+}
+if ($action == 'new') {
+    echo $hooks->trigger(hook('Backend.view:entries:new'), [$model]);
+}
+?>
 <?= $this->endSection() ?>
 
 <?= $this->section('footer') ?>

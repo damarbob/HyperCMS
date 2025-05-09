@@ -7,6 +7,9 @@ return [
     // Hooks
     'part:view:sidebar:settings' => new HyperHook('backend:part:view:sidebar:settings', 'Settings Sidebar', ''),
 
+    'view:models:new' => new HyperHook('backend:view:models:new', 'New Models View', ''),
+    'view:models:edit' => new HyperHook('backend:view:models:edit', 'Edit Models View', ''),
+
     'controller:entries:edit' => new HyperHook('backend:controller:entries:edit', 'Edit Entries Controller', ''),
     'view:entries:new' => new HyperHook('backend:view:entries:new', 'New Entries View', ''),
     'view:entries:edit' => new HyperHook('backend:view:entries:edit', 'Edit Entries View', ''),

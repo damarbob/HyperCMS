@@ -4,10 +4,9 @@ namespace App\Cells;
 
 use CodeIgniter\View\Cells\Cell;
 
-class EntriesFormCell extends Cell
+class ModelsFormCell extends Cell
 {
     public $action = ''; // Form action (new/edit)
     public $formAction = ''; // Form action url
-    public $entry; // Current entry (required by action 'edit')
-    public $model; // Current model (required by action 'new')
+    public $model; // Current model (required by action 'edit')
 }
