@@ -80,11 +80,10 @@ export default class MonacoEditorWrapper {
 
   // Initialize the editor value from the hidden textarea if it exists.
   #initializeValue() {
-    console.log("initializeValue");
     if (this.textareaInput) {
       this.editor.getModel().setValue(this.textareaInput.value);
     }
-    
+
     // When the textarea content changes, update the Monaco editor.
     this.textareaInput.addEventListener("change", () => {
       const textareaContent = this.textareaInput.value;

@@ -39,12 +39,18 @@
             // Function to update the window property
             function updateDarkModeStatus(e) {
                 window.hyper_isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+
+                <?php if (ENVIRONMENT !== 'production'): ?>
+                    console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+                <?php endif ?>
             }
 
             // Set initial value
             window.hyper_isDarkMode = darkModeMediaQuery.matches;
-            console.log('Initial Dark Mode:', window.hyper_isDarkMode);
+
+            <?php if (ENVIRONMENT !== 'production'): ?>
+                console.log('Initial Dark Mode:', window.hyper_isDarkMode);
+            <?php endif ?>
 
             // Listen for changes in the dark mode preference
             if (typeof darkModeMediaQuery.addEventListener === 'function') {
@@ -54,7 +60,7 @@
                 darkModeMediaQuery.addListener(updateDarkModeStatus);
             }
         } else {
-            console.log('matchMedia is not supported in this browser.');
+            console.error('matchMedia is not supported in this browser.');
         }
     </script>
 

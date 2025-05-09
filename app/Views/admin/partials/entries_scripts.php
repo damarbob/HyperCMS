@@ -63,8 +63,6 @@ $requester = hex_encode($uri);
         const metaInputCreator = window.hyper_inputCreator({
             container: container,
             onFieldCreated: (fieldId) => {
-                // console.log('Field created:', fieldId);
-
                 // Instead of using DOMContentLoaded (which only fires once),
                 // we wait for the element to be available in the DOM.
                 waitForElement(fieldId, (input) => {
@@ -153,7 +151,6 @@ $requester = hex_encode($uri);
      * @param id - The ID of the textarea element.
      */
     function initializeTinyMCE(id) {
-        // console.log("Initializing TinyMCE for:", id);
 
         if (tinymce.get(id)) {
             tinymce.get(id)?.remove(); // Destroy existing instance
@@ -272,7 +269,6 @@ $requester = hex_encode($uri);
                     }); // Show error message
                 }
             })
-            // .then(data => console.log(data))
             .catch(err => console.error(err));
     });
 </script>

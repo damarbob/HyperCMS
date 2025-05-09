@@ -10,7 +10,9 @@ import { isValidJson } from "./Json.js";
  */
 export function encodeFormInputsToJson(name = "meta", form, formData) {
   formData = formData || new FormData();
-  console.log(name, form, formData);
+
+  // console.log(name, form, formData);
+
   const inputs = form.querySelectorAll("input, textarea, select");
   let meta = [];
   let processedNames = new Set(); // For radio button group names
