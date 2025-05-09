@@ -72,7 +72,10 @@ $locale = service('request')->getLocale();
             // Function to update the window property
             function updateDarkModeStatus(e) {
                 window.hyper_isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+
+                <?php if (ENVIRONMENT !== 'production'): ?>
+                    console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+                <?php endif ?>
             }
 
             // Set initial value
@@ -89,7 +92,7 @@ $locale = service('request')->getLocale();
                 darkModeMediaQuery.addListener(updateDarkModeStatus);
             }
         } else {
-            console.log('matchMedia is not supported in this browser.');
+            console.error('matchMedia is not supported in this browser.');
         }
     </script>
 

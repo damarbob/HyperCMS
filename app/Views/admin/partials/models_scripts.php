@@ -56,7 +56,10 @@
                 fields,
                 icon
             } = selectedData[0];
-            console.log(name, fields, icon);
+
+            <?php if (ENVIRONMENT !== 'production'): ?>
+                console.log(name, fields, icon);
+            <?php endif ?>
 
             // Update all elements with the name "name"
             document.getElementsByName("name").forEach((element) => {

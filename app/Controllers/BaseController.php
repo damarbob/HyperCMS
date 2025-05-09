@@ -98,32 +98,32 @@ abstract class BaseController extends Controller
 
         $menu = [
             [
-                'url'              => base_url('admin/dashboard'),
-                'icon'             => 'fa-solid fa-house',
-                'text'             => lang("Admin.dashboard"),
-                'tooltip_content'    => lang("Admin.dashboard"),
-                'tooltip_placement'  => 'right',
+                'url' => base_url('admin/dashboard'),
+                'icon' => 'fa-solid fa-house',
+                'text' => lang("Admin.dashboard"),
+                'tooltip_content' => lang("Admin.dashboard"),
+                'tooltip_placement' => 'right',
             ],
             [
-                'url'              => base_url('admin/models'),
-                'icon'             => 'fa-solid fa-circle-nodes',
-                'text'             => lang("Admin.models"),
-                'tooltip_content'    => lang("Admin.models"),
-                'tooltip_placement'  => 'right',
+                'url' => base_url('admin/models'),
+                'icon' => 'fa-solid fa-circle-nodes',
+                'text' => lang("Admin.models"),
+                'tooltip_content' => lang("Admin.models"),
+                'tooltip_placement' => 'right',
             ],
             [
-                'url'              => base_url('admin/entries'),
-                'icon'             => 'fa-solid fa-table-list',
-                'text'             => lang("Admin.entries"),
-                'tooltip_content'    => lang("Admin.entries"),
-                'tooltip_placement'  => 'right',
+                'url' => base_url('admin/entries'),
+                'icon' => 'fa-solid fa-table-list',
+                'text' => lang("Admin.entries"),
+                'tooltip_content' => lang("Admin.entries"),
+                'tooltip_placement' => 'right',
             ],
             [
-                'url'              => base_url('admin/file-manager'),
-                'icon'             => 'fa-solid fa-folder-closed',
-                'text'             => lang("Admin.fileManager"),
-                'tooltip_content'    => lang("Admin.fileManager"),
-                'tooltip_placement'  => 'right',
+                'url' => base_url('admin/file-manager'),
+                'icon' => 'fa-solid fa-folder-closed',
+                'text' => lang("Admin.fileManager"),
+                'tooltip_content' => lang("Admin.fileManager"),
+                'tooltip_placement' => 'right',
             ]
         ];
 
@@ -131,8 +131,6 @@ abstract class BaseController extends Controller
         $additionalMenu = $this->hooks->filter(hook('Backend.controller:menu:data'), $additionalMenu);
 
         $this->data['menu'] = array_merge($menu, $additionalMenu);
-
-        // dd($this->data);
 
         /* End of view data */
 

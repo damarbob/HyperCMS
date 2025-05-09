@@ -32,8 +32,6 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:
         ->get()
         ->getResultArray();
 
-    // dd($assets);
-
     if ($assets) {
         foreach ($assets as $asset) {
 

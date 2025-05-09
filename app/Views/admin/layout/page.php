@@ -292,7 +292,10 @@ $content = $this->renderSection('content');
              */
             const updateDarkModeStatus = (e) => {
                 window.hyper_isDarkMode = e.matches;
-                console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+
+                <?php if (ENVIRONMENT !== 'production'): ?>
+                    console.log('Dark Mode Changed:', window.hyper_isDarkMode);
+                <?php endif ?>
             };
 
             // Set the global variable based on the initial media query state.
@@ -313,7 +316,7 @@ $content = $this->renderSection('content');
                 darkModeMediaQuery.addListener(updateDarkModeStatus);
             }
         } else {
-            console.log('matchMedia is not supported in this browser.');
+            console.error('matchMedia is not supported in this browser.');
         }
     </script>
 
@@ -602,7 +605,10 @@ $content = $this->renderSection('content');
         // Wait until the full page has loaded, then remove the "not-loaded" class
         document.addEventListener('DOMContentLoaded', () => {
             document.documentElement.classList.remove('not-loaded');
-            console.log('Page is fully loaded, interactivity enabled.');
+
+            <?php if (ENVIRONMENT !== 'production'): ?>
+                console.log('Page is fully loaded, interactivity enabled.');
+            <?php endif ?>
         });
     </script>
 

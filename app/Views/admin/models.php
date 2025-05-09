@@ -182,7 +182,9 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                                         return row.id;
                                     });
 
-                                    console.log('Delete IDs:', ids);
+                                    <?php if (ENVIRONMENT !== 'production'): ?>
+                                        console.log('Delete IDs:', ids);
+                                    <?php endif ?>
 
                                     window.hyper_swal.confirm().then((result) => {
                                         if (result.isConfirmed) {
@@ -209,7 +211,9 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                                         return row.id;
                                     });
 
-                                    console.log('Restore IDs:', ids);
+                                    <?php if (ENVIRONMENT !== 'production'): ?>
+                                        console.log('Restore IDs:', ids);
+                                    <?php endif ?>
 
                                     restoreModels(ids);
                                 } else {

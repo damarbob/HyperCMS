@@ -99,7 +99,6 @@ class Autoload extends AutoloadConfig
             MODULE_NAMESPACE => MODULES_PATH,
         ]);
         $this->helpers[] = 'hyper'; // Load the hook helper
-        // $this->files[] = APPPATH . 'Helpers/hook_helper.php'; // Load the hook helper file
 
         // Load the default autoload settings
         parent::__construct();

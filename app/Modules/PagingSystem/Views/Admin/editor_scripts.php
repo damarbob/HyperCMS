@@ -47,7 +47,10 @@ if (file_exists($editorScriptsOverrideFile)) {
 
     // Create editor instance for each .hyper-editor element
     document.querySelectorAll('.hyper-editor').forEach((element) => {
-      console.log("Initializing editor for:", element.id);
+      <?php if (ENVIRONMENT !== 'production'): ?>
+        console.log("Initializing editor for:", element.id);
+      <?php endif ?>
+
       element.style.display = 'none';
       const gjsId = `gjs-${element.id}`;
       element.insertAdjacentHTML('afterend', `<div id='${gjsId}'></div>`);
@@ -229,7 +232,10 @@ if (file_exists($editorScriptsOverrideFile)) {
         // Add a custom attribute to flag this script for exclusion from saved output.
         scriptEl.setAttribute("data-no-export", "true");
         canvasDoc.body.appendChild(scriptEl);
-        console.log(`Injected script: ${scriptUrl}`);
+        
+        <?php if (ENVIRONMENT !== 'production'): ?>
+          console.log(`Injected script: ${scriptUrl}`);
+        <?php endif ?>
       });
     });
 

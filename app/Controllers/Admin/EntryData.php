@@ -35,8 +35,6 @@ class EntryData extends BaseController
 
         $model = $modelResult[0]; // Assign the model
 
-        // dd($model);
-
         /* End of model */
 
         /* Configs */
@@ -110,8 +108,6 @@ class EntryData extends BaseController
                 unset($row['fields']);
             }
         }
-
-        // dd($entriesHistory);
 
         /* End of entry history */
 
