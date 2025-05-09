@@ -32,7 +32,8 @@ class EntryData extends ApiController
         }
 
         // Get the entry data
-        $entryDataModel = new EntryDataModel();
+        /** @var EntryDataModel */
+        $entryDataModel = model('entryDataModel');
         $entryData = $entryDataModel
             ->getCustomBuilder()
             ->where('entry_id', $entryId)
@@ -47,7 +48,8 @@ class EntryData extends ApiController
         }
 
         // Get the model
-        $modelsModel = new ModelsModel();
+        /** @var ModelsModel */
+        $modelsModel = model('modelsModel');
         $model = $modelsModel->getCustomBuilder()->where('id', $entryData->model_id)->get()->getRow();
 
         if (!$model) {

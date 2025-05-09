@@ -23,7 +23,8 @@ class Entries extends ApiController
         $columns = $data['columns'] ?? null;
         $trash = $data['trash'] ?? false;
 
-        $model = new EntriesModel();
+        /** @var \App\Models\EntriesModel */
+        $model = model('entriesModel');
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {

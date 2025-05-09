@@ -71,6 +71,9 @@ return [
 
     // --- Models ---
     'model' => 'Model',
+    'modelxHistory' => 'Model {x} history',
+
+    'noModelFound' => 'No model found',
 
     'newModel' => 'New model',
     'editModel' => 'Edit model',

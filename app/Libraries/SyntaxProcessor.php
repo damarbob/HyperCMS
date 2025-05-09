@@ -111,10 +111,10 @@ class SyntaxProcessor
         $builder = $this->db->table($table);
 
         if ($table === 'models') {
-            $model = new ModelsModel();
+            $model = model('modelsModel');
             $builder = $model->getCustomBuilder();
         } elseif ($table === 'entries') {
-            $model = new EntriesModel();
+            $model = model('entriesModel');
             $builder = $model->getCustomBuilder();
         }
 

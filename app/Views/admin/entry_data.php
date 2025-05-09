@@ -16,7 +16,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
     <div class="modal-card is-fullscreen">
         <section class="modal-card-body">
             <h1 class="title"><?= lang('Admin.preview') ?></h1>
-            <pre id="contentModalTextarea"></pre>
+            <pre id="contentArea"></pre>
         </section>
     </div>
     <button class="modal-close button is-large" aria-label="close"></button>
@@ -56,13 +56,11 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         }
     }
 
-    function openContentModal(buttonEl) {
-        // Retrieve the content from the button's data-content attribute
-        const content = buttonEl.getAttribute('data-content');
-        // Set the content in the modal's textarea
-        const textarea = document.getElementById('contentModalTextarea');
-        if (textarea) {
-            textarea.innerHTML = he.encode(unescape(content));
+    function openPreviewModal(content) {
+        // Set the content in the modal's content area
+        const contentArea = document.getElementById('contentArea');
+        if (contentArea) {
+            contentArea.innerHTML = he.encode(unescape(content));
         }
         // Get the modal element (you can also pass this in if desired)
         const modal = document.getElementById('contentModal');
@@ -121,7 +119,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
                                 if (data.length > limit) {
                                     return he.encode(data.substring(0, limit - 3) + '...') +
-                                        ` <a class="is-link" data-content="${escape(data)}" onclick="openContentModal(this)"><?= lang('Admin.seeMore') ?></a>`;
+                                        `<a class="is-link ml-2" onclick='openPreviewModal("${escape(data)}")'><?= lang('Admin.seeMore') ?></a>`;
                                 } else {
                                     return data;
                                 }
@@ -194,7 +192,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                                 text: "<?= lang('Admin.thisActionPermanentlyDeleteAllHistorical') ?>",
                             }).then((result) => {
                                 if (result.isConfirmed) {
-                                    // AJAX request to restore entries (POSTing the ids array)
+                                    // AJAX request to clear entry history
                                     $.ajax({
                                         url: '<?= base_url('admin/entry-data/clear-history/' . $entry['id']) ?>', // Adjust this URL as needed.
                                         type: 'POST',
@@ -250,7 +248,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         select: true, // Allow row selection
     };
 
-    // Order descending by date_modified (last column). Assuming last column is always 'date_modified' column.
+    // Order descending by date_created (last column). Assuming last column is always 'date_created' column.
     // @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
     options.order = [
         [options.columns.length - 1, "desc"]

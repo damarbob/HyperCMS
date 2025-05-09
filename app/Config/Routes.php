@@ -44,6 +44,15 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->post('models/purge-deleted', 'Models::purgeDeleted');
     $routes->post('models/restore', 'Models::restore');
 
+    // Model data
+    $routes->resource('model-data', [
+        'controller' => 'ModelData',
+        'websafe' => 1,
+        'placeholder' => '(:num)',
+        'only' => ['show'],
+    ]);
+    $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1');
+
     // Entries
     $routes->resource('entries', [
         'websafe' => 1,
@@ -119,6 +128,7 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
 
     $routes->group('v1', ['filter' => 'cors'], static function ($routes) {
         $routes->post('models', 'Models');
+        $routes->post('model-data', 'ModelData');
         $routes->post('entry-data', 'EntryData');
         $routes->post('entries', 'Entries');
         $routes->post('model', 'Model');

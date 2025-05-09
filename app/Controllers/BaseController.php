@@ -81,10 +81,10 @@ abstract class BaseController extends Controller
         $this->entriesManager = service('entriesManager');
 
         // Models
-        $this->modelsModel = new ModelsModel();
-        $this->modelDataModel = new ModelDataModel();
-        $this->entriesModel = new EntriesModel();
-        $this->entryDataModel = new EntryDataModel();
+        $this->modelsModel = model('modelsModel');
+        $this->modelDataModel = model('modelDataModel');
+        $this->entriesModel = model('entriesModel');
+        $this->entryDataModel = model('entryDataModel');
 
         // Preinit data
         $this->data['title'] = (new Hyper)->appName;
