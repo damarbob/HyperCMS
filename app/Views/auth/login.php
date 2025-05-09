@@ -6,7 +6,7 @@ use Config\Hyper;
 
 <?= $this->section('content') ?>
 <div class="block">
-    <h1 class="title has-text-centered"><?= (new Hyper)->appName ?></h1>
+    <h1 class="title has-text-centered"><?= config(Hyper::class)->appName ?></h1>
 </div>
 <div class="block">
     <!-- Use columns to center the card -->

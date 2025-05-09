@@ -87,7 +87,7 @@ abstract class BaseController extends Controller
         $this->entryDataModel = model('entryDataModel');
 
         // Preinit data
-        $this->data['title'] = (new Hyper)->appName;
+        $this->data['title'] = config(Hyper::class)->appName;
         $this->data['lang'] = service('request')->getLocale();
         $this->data['uri'] = $request->getUri() . '/';
         $this->data['uriSegments'] = $request->getUri()->getSegments();

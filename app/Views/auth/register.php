@@ -7,7 +7,7 @@ use Config\Hyper;
 <?= $this->section('content') ?>
 <!-- App Name / Title -->
 <div class="block">
-    <h1 class="title has-text-centered"><?= (new Hyper)->appName ?></h1>
+    <h1 class="title has-text-centered"><?= config(Hyper::class)->appName ?></h1>
 </div>
 
 <!-- Registration Card -->

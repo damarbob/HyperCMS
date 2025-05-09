@@ -84,7 +84,7 @@ helper('hyper_type_checking');
                     </a>
                     <hr class="navbar-divider">
                     <div class="navbar-item">
-                        <?= (new Hyper)->appName ?> v<?= (new Hyper)->appVersion ?>
+                        <?= config(Hyper::class)->appName ?> v<?= config(Hyper::class)->appVersion ?>
                     </div>
                 </div>
             </div>
