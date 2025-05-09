@@ -2,6 +2,8 @@
 helper('hyper_hex');
 $requester = hex_encode($uri);
 ?>
+
+<?= $this->section('content') ?>
 <?php if (!empty($entry)): // For edit action
 ?>
     <!-- History modal -->
@@ -26,6 +28,7 @@ $requester = hex_encode($uri);
     </div>
     <button class="modal-close is-large" aria-label="close"></button>
 </div>
+<?= $this->endSection() ?>
 
 <script>
     /**
@@ -231,7 +234,7 @@ $requester = hex_encode($uri);
         const newFormData = window.hyper_encodeFormInputsToJson("fields", this);
         newFormData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
-        <?php if ($type === 'new'): ?>
+        <?php if ($action === 'new'): ?>
             newFormData.append('model_id', '<?= $model['id'] ?>');
         <?php endif ?>
 
@@ -256,7 +259,7 @@ $requester = hex_encode($uri);
                         text: data.success
                     }); // Show success message
 
-                    <?php if ($type === 'new'): ?>
+                    <?php if ($action === 'new'): ?>
                         // Redirect the page after 1 second 
                         setTimeout(() => {
                             window.location.href = '<?= base_url('admin/entries') ?>';

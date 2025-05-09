@@ -54,12 +54,18 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:new'), function () use ($model, $action) {
-            return view_cell('EntriesFormCell', ['type' => $action, 'model' => $model]);
+            return view_cell('EntriesFormCell', [
+                'action' => $action,
+                'formAction' => base_url('admin/entries'),
+                'model' => $model
+            ]);
         });
 
         /* End of register views */
 
-        return view('admin/entries_new', $this->data);
+        return view('admin/entries_action', array_merge($this->data, [
+            'action' => 'new'
+        ]));
     }
 
     public function edit($id)
@@ -96,7 +102,7 @@ class Entries extends BaseController
 
         // Page title
         $this->data['title'] = lang('Admin.editx', ['x' => $entry['model_name']]);
-        $this->data['type'] = $action;
+        // $this->data['type'] = $action;
 
         /* End of view data */
 
@@ -115,12 +121,18 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:edit'), function () use ($entry, $action) {
-            return view_cell('EntriesFormCell', ['type' => $action, 'entry' => $entry]);
+            return view_cell('EntriesFormCell', [
+                'action' => $action,
+                'formAction' => base_url('admin/entries/' . $entry['id']),
+                'entry' => $entry
+            ]);
         });
 
         /* End of register views */
 
-        return view('admin/entries_edit', $this->data);
+        return view('admin/entries_action', array_merge($this->data, [
+            'action' => 'edit'
+        ]));
     }
 
     public function create()

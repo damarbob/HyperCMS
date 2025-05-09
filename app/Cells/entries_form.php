@@ -2,12 +2,10 @@
 helper('form');
 
 $fieldsError = validation_show_error('fields');
-
-$action = $type === 'edit' ? base_url('admin/entries/' . $entry['id']) : base_url('admin/entries');
 ?>
 
 <div class="block">
-    <form id="hyper-form" action="<?= $action ?>" method="POST" enctype="multipart/form-data">
+    <form id="hyper-form" action="<?= $formAction ?>" method="POST" enctype="multipart/form-data">
         <div id="hyper-fields-container" class="field">
         </div>
         <div class="field is-grouped">
@@ -21,7 +19,7 @@ $action = $type === 'edit' ? base_url('admin/entries/' . $entry['id']) : base_ur
                     </span>
                 </button>
             </div>
-            <?php if ($type === 'edit'): ?>
+            <?php if ($action === 'edit'): ?>
                 <div class="control is-flex-grow-1">
                     <button type="button" class="button" onclick="showHistoryModal()" title="<?= lang('Admin.entryHistory') ?>">
                         <span class="icon">
@@ -30,7 +28,7 @@ $action = $type === 'edit' ? base_url('admin/entries/' . $entry['id']) : base_ur
                     </button>
                 </div>
             <?php endif; ?>
-            <?php if ($type === 'edit'): ?>
+            <?php if ($action === 'edit'): ?>
                 <!-- Show delete button on edit page -->
                 <div class="control">
                     <button type="button" class="button is-link is-danger" onclick="deleteEntry()">
@@ -45,17 +43,17 @@ $action = $type === 'edit' ? base_url('admin/entries/' . $entry['id']) : base_ur
             <?php endif; ?>
         </div>
     </form>
-    <?php if ($type === 'edit'): ?>
+    <?php if ($action === 'edit'): ?>
         <form id="deleteForm" method="POST" action="<?= base_url("admin/entries/{$entry['id']}/delete") ?>">
             <?= csrf_field() ?>
         </form>
     <?php endif; ?>
 </div>
 
-<?php if (ENVIRONMENT === 'testing' && $type === 'edit'): ?>
+<?php if (ENVIRONMENT === 'testing' && $action === 'edit'): ?>
     <!-- Debugging -->
     <div class="block">
-        <form method="POST" action="<?= $action ?>">
+        <form method="POST" action="<?= $formAction ?>">
             <?= csrf_field() ?>
             <div class="field">
                 <label class="label"><?= lang('Admin.fields') ?></label>
