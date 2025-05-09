@@ -14,8 +14,8 @@ class EntriesManager
     public static function getInstance()
     {
         if (is_null(static::$instance)) {
-            $entriesModel = new EntriesModel();
-            $entryDataModel = new EntryDataModel();
+            $entriesModel = model('entriesModel');
+            $entryDataModel = model('entryDataModel');
             static::$instance = new static(
                 $entriesModel,
                 $entryDataModel

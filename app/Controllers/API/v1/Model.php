@@ -91,7 +91,7 @@ class Model extends ApiController
      */
     protected function getModelInfo(int $modelId): array
     {
-        $modelsModel = new ModelsModel();
+        $modelsModel = model('modelsModel');
         $model = $modelsModel->getCustomBuilder()->where('id', $modelId)->get()->getRow();
 
         if (!$model) {
@@ -128,7 +128,8 @@ class Model extends ApiController
      */
     protected function buildBaseQuery(int $modelId, bool $trash)
     {
-        $entriesModel = new EntriesModel();
+        /** @var \App\Models\EntriesModel */
+        $entriesModel = model('entriesModel');
 
         if ($trash) {
             $entriesModelBuilder = $entriesModel->getCustomBuilder();

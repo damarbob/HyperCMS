@@ -84,6 +84,15 @@ export default class MonacoEditorWrapper {
     if (this.textareaInput) {
       this.editor.getModel().setValue(this.textareaInput.value);
     }
+    
+    // When the textarea content changes, update the Monaco editor.
+    this.textareaInput.addEventListener("change", () => {
+      const textareaContent = this.textareaInput.value;
+      // Only update if the content is different.
+      if (this.editor.getValue() !== textareaContent) {
+        this.editor.getModel().setValue(textareaContent);
+      }
+    });
   }
 
   // Update the hidden textarea with the current editor content.

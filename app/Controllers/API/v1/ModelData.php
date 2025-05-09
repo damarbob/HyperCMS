@@ -3,47 +3,47 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
+use App\Models\ModelDataModel;
 use App\Models\ModelsModel;
 
-class Models extends ApiController
+class ModelData extends ApiController
 {
     public function index()
     {
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
+        $modelId = $data['id'] ?? null;
         $draw   = $data['draw'] ?? 1;
         $start  = $data['start'] ?? null;    // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
         $order  = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
-        $trash = $data['trash'] ?? false;
 
-        /** @var ModelsModel */
-        $model = model('modelsModel');
+        /** @var ModelDataModel */
+        $modelData = model('modelDataModel');
+        $modelDataBuilder = $modelData->getCustomBuilder();
 
-        // Apply trash filter
-        if (!$trash || $trash == 'false') {
-            $modelBuilder = $model->getCustomBuilder();
-        } else {
-            $modelBuilder = $model->getDeletedCustomBuilder();
+        // Get the total count with no filtering.
+        $totalRecords = $modelDataBuilder->countAllResults(false);
+
+        // 1. Filter by model_id if provided:
+        if (!empty($modelId)) {
+            $modelDataBuilder->where('id', $modelId);
         }
-
-        // 1. Get the total count with no filtering.
-        $totalRecords = $modelBuilder->countAllResults(false);
 
         // 2. Apply search filter if provided.
         if (!empty($search)) {
-            $modelBuilder->groupStart();
-            $modelBuilder->like('name', esc($search));
-            $modelBuilder->orLike('fields', esc($search));
-            $modelBuilder->orLike('created_by', esc($search));
-            $modelBuilder->groupEnd();
+            $modelDataBuilder->groupStart();
+            $modelDataBuilder->like('name', esc($search));
+            $modelDataBuilder->orLike('fields', esc($search));
+            $modelDataBuilder->orLike('created_by', esc($search));
+            $modelDataBuilder->groupEnd();
         }
 
         // Count the filtered results.
-        $recordsFiltered = $modelBuilder->countAllResults(false);
+        $recordsFiltered = $modelDataBuilder->countAllResults(false);
 
         // 3. Apply ordering, if provided.
         if (!empty($order)) {
@@ -52,19 +52,19 @@ class Models extends ApiController
             $orderColumnIndex = $order[0]['column'];
             $orderDir = $order[0]['dir'];
             $orderColumn = $columns[$orderColumnIndex]['data'];
-            $modelBuilder->orderBy($orderColumn, $orderDir);
+            $modelDataBuilder->orderBy($orderColumn, $orderDir);
         } else {
             // Default ordering by date_modified DESC
-            $modelBuilder->orderBy('date_modified', 'DESC');
+            $modelDataBuilder->orderBy('date_modified', 'DESC');
         }
 
         // 4. Apply limit for pagination (if length is -1, that means no limit).
         if ($length != -1) {
-            $modelBuilder->limit(intval($length), intval($start));
+            $modelDataBuilder->limit(intval($length), intval($start));
         }
 
         // 5. Fetch data from the database.
-        $data = $modelBuilder->get()->getResultArray();
+        $data = $modelDataBuilder->get()->getResultArray();
 
         // 6. Prepare and output the JSON response.
         $output = [
