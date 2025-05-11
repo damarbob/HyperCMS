@@ -99,3 +99,7 @@ $fieldsError = validation_show_error('fields');
         <?= csrf_field() ?>
     </form>
 <?php endif; ?>
+
+<?= $this->section('footer') ?>
+<?= $this->include('admin/partials/models_scripts') ?>
+<?= $this->endSection() ?>

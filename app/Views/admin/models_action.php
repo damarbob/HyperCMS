@@ -13,7 +13,3 @@ if ($action == 'new') {
 }
 ?>
 <?= $this->endSection() ?>
-
-<?= $this->section('footer') ?>
-<?= $this->include('admin/partials/models_scripts') ?>
-<?= $this->endSection() ?>

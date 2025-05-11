@@ -15,7 +15,3 @@ if ($action == 'new') {
 }
 ?>
 <?= $this->endSection() ?>
-
-<?= $this->section('footer') ?>
-<?= $this->include('admin/partials/entries_scripts') ?>
-<?= $this->endSection() ?>

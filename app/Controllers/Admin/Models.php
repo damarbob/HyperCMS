@@ -22,7 +22,7 @@ class Models extends BaseController
         $this->data['title'] = lang('Admin.newModel');
 
         $this->hooks->register(hook('backend.view:models:new'), function () {
-            return view_cell('ModelsFormCell', [
+            return view('admin/partials/models_form', [
                 'action' => 'new',
                 'formAction' => base_url('admin/models'),
             ]);
@@ -47,7 +47,7 @@ class Models extends BaseController
         }
 
         $this->hooks->register(hook('backend.view:models:edit'), function () use ($model) {
-            return view_cell('ModelsFormCell', [
+            return view('admin/partials/models_form', [
                 'action' => 'edit',
                 'formAction' => base_url('admin/models/' . $model['id']),
                 'model' => $model
