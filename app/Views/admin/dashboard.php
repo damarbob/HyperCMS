@@ -31,7 +31,7 @@
             ];
             ?>
             <?php foreach ($models as $index => $model) : ?>
-                <a href="<?= base_url('admin/model?id=' . $model['id']) ?>">
+                <a href="<?= base_url('admin/model/' . $model['id']) ?>">
                     <div class="cell" style="height: 100%;">
                         <!-- Apply a different background color for each model -->
                         <div class="card is-flex is-flex-direction-column is-shadowless" style="--bulma-card-background-color: <?= $cardBackgroundColors[$index % count($cardBackgroundColors)] ?>; --bulma-card-footer-border-top: 1px solid var(--bulma-scheme-main); height: 100%;">

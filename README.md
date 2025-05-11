@@ -1,68 +1,64 @@
-# CodeIgniter 4 Application Starter
+# Hyper CMS
 
-## What is CodeIgniter?
+Welcome to **Hyper CMS**—a cutting-edge content management system that redefines how you build, manage, and maintain web content. Leveraging PHP 8 and CodeIgniter 4, Hyper CMS offers a hyper-customizable platform built around a dynamic fields concept, empowering both developers and content creators to tailor models, inputs, and entries to their exact needs. Designed with a sleek, responsive user interface and a robust modular architecture, Hyper CMS is your gateway to an adaptable and efficient web development experience.
 
-CodeIgniter is a PHP full-stack web framework that is light, fast, flexible and secure.
-More information can be found at the [official site](https://codeigniter.com).
+## Table of Contents
 
-This repository holds a composer-installable app starter.
-It has been built from the
-[development repository](https://github.com/codeigniter4/CodeIgniter4).
+- [Overview](#overview)
+- [Key Components](#key-components)
+  - [Models](#models)
+  - [Fields](#fields)
+  - [Items/entries](#itemsentries)
+- [Documentation](#documentation)
+- [Vision](#vision)
+- [Notes](#notes)
+- [Contact](#contact)
 
-More information about the plans for version 4 can be found in [CodeIgniter 4](https://forum.codeigniter.com/forumdisplay.php?fid=28) on the forums.
+## Overview
 
-You can read the [user guide](https://codeigniter.com/user_guide/)
-corresponding to the latest version of the framework.
+Hyper CMS is an innovative and hyper-customizable content management system designed to simplify web development by leveraging a dynamic fields concept. Developed using PHP 8 and the CodeIgniter 4 framework, Hyper CMS aims to empower users by providing flexibility in creating and customizing models within the system. Hyper CMS combines robustness with a sleek, responsive user interface.
 
-## Installation & updates
+![Hyper CMS Screenshot](https://t9018906321.p.clickup-attachments.com/t9018906321/82ce8a03-d765-4796-a3f5-68c0ccd8da9d/localhost_8080_admin_dashboard.png)
 
-`composer create-project codeigniter4/appstarter` then `composer update` whenever
-there is a new release of the framework.
+## Key Components
 
-When updating, check the release notes to see if there are any changes you might need to apply
-to your `app` folder. The affected files can be copied or merged from
-`vendor/codeigniter4/framework/app`.
+To master the core concepts of Hyper CMS, you only need to understand the following:
 
-## Setup
+### Models
 
-Copy `env` to `.env` and tailor for your app, specifically the baseURL
-and any database settings.
+Central to Hyper CMS, models can be extended into various types such as Blog, Agenda, Gallery, etc. Each model is highly customizable, with a set of dynamic fields tailored to user requirements.
 
-## Important Change with index.php
+### Fields
 
-`index.php` is no longer in the root of the project! It has been moved inside the *public* folder,
-for better security and separation of components.
+Individual inputs are required to form a model. These fields are versatile and adaptable, converting into inputs in the Item Editor. The wide range of input types available ensures comprehensive customization.
 
-This means that you should configure your web server to "point" to your project's *public* folder, and
-not to the project root. A better practice would be to configure a virtual host to point there. A poor practice would be to point your web server to the project root and expect to enter *public/...*, as the rest of your logic and the
-framework are exposed.
+### Entries/Items
 
-**Please** read the user guide for a better explanation of how CI4 works!
+Data entries based on created models. For instance, a Blog model allows users to write and manage blog posts as individual Blog Items.
 
-## Repository Management
+## Documentation
 
-We use GitHub issues, in our main repository, to track **BUGS** and to track approved **DEVELOPMENT** work packages.
-We use our [forum](http://forum.codeigniter.com) to provide SUPPORT and to discuss
-FEATURE REQUESTS.
+The documentation is a work in progress and is publicly available in our internal ClickUp workspace. You can access it via the following ClickUp document. Please note that the documentation is not yet complete and may be missing some information. We apologize for any inconvenience.
 
-This repository is a "distribution" one, built by our release preparation script.
-Problems with it can be raised on our forum, or as issues in the main repository.
+[https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4](https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4)
 
-## Server Requirements
+## Vision
 
-PHP version 8.1 or higher is required, with the following extensions installed:
+The vision for Hyper CMS is to become a leading content management system that champions flexibility, user empowerment, and seamless integration of modern technologies. By fostering a dynamic and interactive development environment, Hyper CMS aims to revolutionize the way users build and manage web content, setting a new standard for CMS platforms.
 
-- [intl](http://php.net/manual/en/intl.requirements.php)
-- [mbstring](http://php.net/manual/en/mbstring.installation.php)
+## Notes
 
-> [!WARNING]
-> - The end of life date for PHP 7.4 was November 28, 2022.
-> - The end of life date for PHP 8.0 was November 26, 2023.
-> - If you are still using PHP 7.4 or 8.0, you should upgrade immediately.
-> - The end of life date for PHP 8.1 will be December 31, 2025.
+- This repository is under rapid development.
+- Expect breaking changes in every published commit.
+- Stick to minor releases if you want to update.
+- However, there may be little to no documentation on the update steps; we will do our best to address your issues privately if necessary.
 
-Additionally, make sure that the following extensions are enabled in your PHP:
+## Contact
 
-- json (enabled by default - don't turn it off)
-- [mysqlnd](http://php.net/manual/en/mysqlnd.install.php) if you plan to use MySQL
-- [libcurl](http://php.net/manual/en/curl.requirements.php) if you plan to use the HTTP\CURLRequest library
+For donation inquiries, contribution guidelines, and to report security issues, please contact us at [hyper.cms@outlook.com](mailto:hyper.cms@outlook.com). We welcome your support and feedback, as it plays a crucial role in the ongoing development and security of Hyper CMS. Whether you have suggestions, questions, or concerns, don't hesitate to reach out. Your contributions help us continually improve the platform, and we look forward to collaborating with you.
+
+---
+
+© 2025 PT. Konstelasi Teknologi Internasional and Damar Syah Maulana. All rights reserved.
+
+Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for details.
