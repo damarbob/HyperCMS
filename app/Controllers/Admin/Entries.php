@@ -54,7 +54,7 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:new'), function () use ($model, $action) {
-            return view_cell('EntriesFormCell', [
+            return view('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries'),
                 'model' => $model
@@ -121,7 +121,7 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:edit'), function () use ($entry, $action) {
-            return view_cell('EntriesFormCell', [
+            return view('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries/' . $entry['id']),
                 'entry' => $entry

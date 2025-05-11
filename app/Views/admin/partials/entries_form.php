@@ -8,7 +8,11 @@ $fieldsError = validation_show_error('fields');
     <form id="hyper-form" action="<?= $formAction ?>" method="POST" enctype="multipart/form-data">
         <div id="hyper-fields-container" class="field">
         </div>
+
+        <!-- Save, history, and delete button (if applicable) -->
         <div class="field is-grouped">
+
+            <!-- Save button -->
             <div class="control">
                 <button type="submit" class="button is-primary">
                     <span class="icon">
@@ -19,7 +23,11 @@ $fieldsError = validation_show_error('fields');
                     </span>
                 </button>
             </div>
+
             <?php if ($action === 'edit'): ?>
+                <!-- Show history and delete button on edit page -->
+
+                <!-- History button -->
                 <div class="control is-flex-grow-1">
                     <button type="button" class="button" onclick="showHistoryModal()" title="<?= lang('Admin.entryHistory') ?>">
                         <span class="icon">
@@ -27,9 +35,8 @@ $fieldsError = validation_show_error('fields');
                         </span>
                     </button>
                 </div>
-            <?php endif; ?>
-            <?php if ($action === 'edit'): ?>
-                <!-- Show delete button on edit page -->
+
+                <!-- Delete button -->
                 <div class="control">
                     <button type="button" class="button is-link is-danger" onclick="deleteEntry()">
                         <span class="icon">
@@ -43,7 +50,9 @@ $fieldsError = validation_show_error('fields');
             <?php endif; ?>
         </div>
     </form>
+
     <?php if ($action === 'edit'): ?>
+        <!-- Add delete form on edit mode -->
         <form id="deleteForm" method="POST" action="<?= base_url("admin/entries/{$entry['id']}/delete") ?>">
             <?= csrf_field() ?>
         </form>
@@ -51,7 +60,7 @@ $fieldsError = validation_show_error('fields');
 </div>
 
 <?php if (ENVIRONMENT === 'testing' && $action === 'edit'): ?>
-    <!-- Debugging -->
+    <!-- Debugging on testing environment -->
     <div class="block">
         <form method="POST" action="<?= $formAction ?>">
             <?= csrf_field() ?>
@@ -82,3 +91,7 @@ $fieldsError = validation_show_error('fields');
         </form>
     </div>
 <?php endif; ?>
+
+<?= $this->section('footer') ?>
+<?= $this->include('admin/partials/entries_scripts') ?>
+<?= $this->endSection() ?>
