@@ -103,4 +103,4 @@ defined('MODULE_NAMESPACE') || define('MODULE_NAMESPACE', 'Modules');
  | this constant to change the path that all module
  | classes should use.
  */
-defined('MODULES_PATH') || define('MODULES_PATH', APPPATH . 'Modules'. DIRECTORY_SEPARATOR);
+defined('MODULES_PATH') || define('MODULES_PATH', ROOTPATH . 'modules' . DIRECTORY_SEPARATOR);
