@@ -59,7 +59,6 @@ class Model extends ApiController
         $entriesModelBuilder = $this->buildBaseQuery($modelId, !$trash || $trash == 'false');
 
         // Apply necessary filters
-        // $this->applyTrashFilter($entriesModelBuilder, !$trash || $trash == 'false');
         $this->applyFindFilter($entriesModelBuilder, $find);
 
         $totalRecords = $entriesModelBuilder->countAllResults(false); // Count total results after applying necessary filters
@@ -144,32 +143,15 @@ class Model extends ApiController
 
     /**
      * Apply find filter if specified
+     * @todo In the future, handle multiple find conditions
+     * as the entriesModel's whereFields supports multiple conditions
      */
     protected function applyFindFilter(&$builder, ?array $find): void
     {
+        /** @var \App\Models\EntriesModel */
+        $entriesModel = model('entriesModel');
         if ($find && !empty($find['field']) && !empty($find['value'])) {
-            $builder->where("
-                LOWER(
-                    JSON_UNQUOTE(
-                        JSON_EXTRACT(
-                            fields,
-                            CONCAT(
-                                '$[',
-                                SUBSTRING_INDEX(
-                                    SUBSTRING_INDEX(
-                                        JSON_SEARCH(fields, 'one', '" . $find['field'] . "', NULL, '$[*].id'),
-                                        '[',
-                                        -1
-                                    ),
-                                    ']',
-                                    1
-                                ),
-                                '].value'
-                            )
-                        )
-                    )
-                ) LIKE '%" . strtolower($find['value']) . "%'
-            ");
+            $entriesModel->whereFields($builder, [$find]);
         }
     }
 
