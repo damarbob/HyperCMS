@@ -92,14 +92,23 @@ class Model extends BaseController
 
         // Prepare the data to be passed to the view.
         $this->data = array_merge($this->data, [
-            'date_field_ids'   => json_encode($dateFieldIds),
-            'fields'           => $fields,
+            'date_field_ids' => json_encode($dateFieldIds),
+            'fields' => $fields,
             'invisible_fields' => $invisibleFields,
-            'title'            => $model->name,
-            'id'               => $id,
+            'title' => $model->name,
+            'id' => $id,
+            'links' => [
+                'new' => base_url("admin/entries/new?model_id=$id"),
+                'edit' => base_url('admin/entries/') . '{id}/edit', // The ID must be separated from the base URL to prevent it from being URL-encoded.
+                'delete' => base_url('admin/entries/delete'),
+                'restore' => base_url('admin/entries/restore'),
+            ]
         ]);
 
+        // Filter
+        $this->data = $this->hooks->filter(hook('Backend.controller:model:index:data'), $this->data);
+
         // Return the view for the model details page.
-        return view('admin/model', $this->data);
+        return render('admin/model', $this->data);
     }
 }

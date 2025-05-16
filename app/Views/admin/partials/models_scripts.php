@@ -26,7 +26,7 @@
      */
     window.addEventListener("message", function(event) {
         // Validate event.origin for extra security using a helper function.
-        if (!window.hyper_areUrisEqual(event.origin, "<?= base_url() ?>")) return;
+        if (!window.hyper.util.uri.areUrisEqual(event.origin, "<?= base_url() ?>")) return;
 
         // If the event has the expected action, process the selected data.
         if (event.data && event.data.action === "modelDataSelected") {
@@ -85,10 +85,10 @@
             });
 
             // Display a success message.
-            window.hyper_swal.success("<?= lang('Admin.success') ?>");
+            window.hyper.factory.swal.success("<?= lang('Admin.success') ?>");
         } else {
             // If no rows are selected, display an error message.
-            window.hyper_swal.error("<?= lang('Admin.selectRow') ?>");
+            window.hyper.factory.swal.error("<?= lang('Admin.selectRow') ?>");
         }
     }
 
@@ -109,7 +109,7 @@
         }
 
         // Initialize the Monaco editor with specific options.
-        const fieldsEditor = window.hyper_monaco({
+        const fieldsEditor = window.hyper.factory.monaco({
             editorContainerId: "monaco",
             textareaId: "fields",
             language: "json",
@@ -160,11 +160,11 @@
      * -------------------------------------------------------------------
      * Function: deleteModel
      * -------------------------------------------------------------------
-     * Prompts the user for confirmation (using hyper_swal) and submits the
+     * Prompts the user for confirmation (using hyper.factory.swal) and submits the
      * delete form if confirmed.
      */
     function deleteModel() {
-        window.hyper_swal
+        window.hyper.factory.swal
             .confirm({
                 title: "<?= lang('Admin.areYouSure') ?>",
                 text: "<?= lang('Admin.youWillNotBeAbleToRevertThis') ?>",

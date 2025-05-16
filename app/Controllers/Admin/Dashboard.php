@@ -12,7 +12,7 @@ class Dashboard extends BaseController
         $this->data['title'] = lang('Admin.dashboard');
         $this->data['quote'] = $this->getZenQuote();
         // Display the admin dashboard view
-        return view('admin/dashboard', $this->data);
+        return render('admin/dashboard', $this->data);
     }
 
     private function getZenQuote()

@@ -60,7 +60,7 @@ $requester = hex_encode($uri);
 
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('hyper-fields-container');
-        const metaInputCreator = window.hyper_inputCreator({
+        const metaInputCreator = window.hyper.factory.inputCreator({
             container: container,
             onFieldCreated: (fieldId) => {
                 // Instead of using DOMContentLoaded (which only fires once),
@@ -107,13 +107,13 @@ $requester = hex_encode($uri);
                         window.addEventListener('message', function(event) {
 
                             // Validate event.origin for extra security.
-                            if (!window.hyper_areUrisEqual(event.origin, '<?= base_url() ?>')) return;
+                            if (!window.hyper.util.uri.areUrisEqual(event.origin, '<?= base_url() ?>')) return;
 
                             if (event.data && event.data.action === 'filesSelected_r<?= $requester ?>') {
                                 const selectedFiles = event.data.data; // Array of URL strings.
                                 if (selectedFiles.length > 0) {
                                     // Insert the first selected file URL into the input.
-                                    input.value = `<?= base_url('public/file-server/serve/') ?>${encodeURIComponent(window.hyper_hexEncode(selectedFiles[0]))}`;
+                                    input.value = `<?= base_url('public/file-server/serve/') ?>${encodeURIComponent(window.hyper.util.hex.encode(selectedFiles[0]))}`;
                                 }
                                 // Close the modal after processing the selection.
                                 closeModal(document.getElementById('fileManagerModal'));
@@ -140,7 +140,7 @@ $requester = hex_encode($uri);
             inputPopulatorInst.populate(data)
         }
 
-        const inputPopulatorInst = window.hyper_inputPopulator(container);
+        const inputPopulatorInst = window.hyper.factory.inputPopulator(container);
         inputPopulatorInst.populate(<?= isset($entry) ? $entry['fields'] : '' ?>);
     });
 </script>
@@ -245,14 +245,14 @@ $requester = hex_encode($uri);
             })
             .then(response => response.json())
             .then((data) => {
-                if (data.success) {
-                    // Enable all input type submit
-                    hyperFormSubmit.forEach((el) => {
-                        el.disabled = false;
-                    });
+                // Enable all input type submit
+                hyperFormSubmit.forEach((el) => {
+                    el.disabled = false;
+                });
 
+                if (data.success) {
                     // If successful
-                    window.hyper_swal.success("<?= lang('Admin.success') ?>", {
+                    window.hyper.factory.swal.success("<?= lang('Admin.success') ?>", {
                         text: data.success
                     }); // Show success message
 
@@ -264,7 +264,7 @@ $requester = hex_encode($uri);
                     <?php endif ?>
                 } else {
                     // If error
-                    window.hyper_swal.error("<?= lang('Admin.error') ?>", {
+                    window.hyper.factory.swal.error("<?= lang('Admin.error') ?>", {
                         text: data.error
                     }); // Show error message
                 }
@@ -277,7 +277,7 @@ $requester = hex_encode($uri);
     window.addEventListener('message', function(event) {
 
         // Validate event.origin for extra security.
-        if (!window.hyper_areUrisEqual(event.origin, '<?= base_url() ?>')) return;
+        if (!window.hyper.util.uri.areUrisEqual(event.origin, '<?= base_url() ?>')) return;
 
         if (event.data && event.data.action === 'entryDataSelected') {
             const selectedData = event.data.data; // Array of URL strings.
@@ -316,10 +316,10 @@ $requester = hex_encode($uri);
                 behavior: 'smooth'
             });
 
-            window.hyper_swal.success("<?= lang('Admin.success') ?>");
+            window.hyper.factory.swal.success("<?= lang('Admin.success') ?>");
 
         } else {
-            window.hyper_swal.error("<?= lang('Admin.selectRow') ?>");
+            window.hyper.factory.swal.error("<?= lang('Admin.selectRow') ?>");
         }
     }
 
@@ -335,7 +335,7 @@ $requester = hex_encode($uri);
     }
 
     function deleteEntry() {
-        window.hyper_swal.confirm({
+        window.hyper.factory.swal.confirm({
             title: "<?= lang('Admin.areYouSure') ?>",
             text: "<?= lang('Admin.youWillNotBeAbleToRevertThis') ?>",
             confirmButtonColor: "var(--bulma-danger)",

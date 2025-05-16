@@ -47,7 +47,7 @@ $context = 'user:' . user_id();
         button.addEventListener('click', function(e) {
             e.preventDefault();
 
-            window.hyper_swal.confirm().then((result) => {
+            window.hyper.factory.swal.confirm().then((result) => {
                 if (result.isConfirmed) {
                     document.getElementById('formEmptyTrash').submit();
                 }

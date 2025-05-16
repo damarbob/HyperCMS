@@ -87,8 +87,16 @@ abstract class BaseController extends Controller
         $this->entryDataModel = model('entryDataModel');
 
         // Preinit data
+        $this->data['hyper']['config'] = [
+            "baseUrl" => base_url(),
+            "environment" => ENVIRONMENT,
+            "csrfToken" => csrf_token(),
+            "csrfHash" => csrf_hash(),
+        ];
+        $this->data['hyper']['lang'] = dump_language_keys_grouped();
+
         $this->data['title'] = config(Hyper::class)->appName;
-        $this->data['lang'] = service('request')->getLocale();
+        $this->data['locale'] = service('request')->getLocale();
         $this->data['uri'] = $request->getUri() . '/';
         $this->data['uriSegments'] = $request->getUri()->getSegments();
 

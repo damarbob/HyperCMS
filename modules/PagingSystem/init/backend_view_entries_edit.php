@@ -12,7 +12,7 @@ HyperHooks::getInstance()->register(hook('Backend.view:entries:edit'), function 
     }
 
     if ($eligibility):
-        return view('Modules\PagingSystem\Views\Parts\button_open_editor', [
+        return render('Modules\PagingSystem\Views\Parts\button_open_editor', [
             'entry' => $entry,
         ]);
     endif;

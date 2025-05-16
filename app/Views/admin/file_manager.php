@@ -20,7 +20,7 @@ $currentRoute = $request->getUri()->getPath();
 
 <script>
     function confirmSelectedFiles() {
-        const selectedFiles = window.hyper_fileManager.getSelectedFiles();
+        const selectedFiles = window.hyper.factory.fileManager.getSelectedFiles();
         if (true) {
             // Post the message with the deserialized data included
             window.parent.postMessage({
@@ -192,7 +192,7 @@ $currentRoute = $request->getUri()->getPath();
                         </span>
                         <span><?= lang('Admin.upload') ?></span>
                     </button>
-                    <button class="button is-primary" onclick="window.hyper_fileManager.refreshFileList()" data-tippy-content="<?= lang('Admin.refresh') ?>" data-tippy-placement="bottom">
+                    <button class="button is-primary" onclick="window.hyper.factory.fileManager.refreshFileList()" data-tippy-content="<?= lang('Admin.refresh') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-arrows-rotate"></i>
                         </span>
@@ -203,12 +203,12 @@ $currentRoute = $request->getUri()->getPath();
             <!-- Create Group -->
             <div class="control">
                 <div class="buttons has-addons">
-                    <button class="button" onclick="window.hyper_fileManager.createFile()" data-tippy-content="<?= lang('Admin.createNewFile') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.createFile()" data-tippy-content="<?= lang('Admin.createNewFile') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-file-circle-plus"></i>
                         </span>
                     </button>
-                    <button class="button" onclick="window.hyper_fileManager.createFolder()" data-tippy-content="<?= lang('Admin.createNewFolder') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.createFolder()" data-tippy-content="<?= lang('Admin.createNewFolder') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-folder-plus"></i>
                         </span>
@@ -219,17 +219,17 @@ $currentRoute = $request->getUri()->getPath();
             <!-- Copy/Move Group -->
             <div class="control">
                 <div class="buttons has-addons">
-                    <button class="button" onclick="window.hyper_fileManager.copySelectedFiles()" data-tippy-content="<?= lang('Admin.copySelected') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.copySelectedFiles()" data-tippy-content="<?= lang('Admin.copySelected') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-copy"></i>
                         </span>
                     </button>
-                    <button class="button is-warning" onclick="window.hyper_fileManager.moveSelectedFiles()" data-tippy-content="<?= lang('Admin.moveSelected') ?>" data-tippy-placement="bottom">
+                    <button class="button is-warning" onclick="window.hyper.factory.fileManager.moveSelectedFiles()" data-tippy-content="<?= lang('Admin.moveSelected') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-scissors"></i>
                         </span>
                     </button>
-                    <button class="button" onclick="window.hyper_fileManager.pasteFiles()" data-tippy-content="<?= lang('Admin.paste') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.pasteFiles()" data-tippy-content="<?= lang('Admin.paste') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-paste"></i>
                         </span>
@@ -240,12 +240,12 @@ $currentRoute = $request->getUri()->getPath();
             <!-- Archive Group -->
             <div class="control">
                 <div class="buttons has-addons">
-                    <button class="button" onclick="window.hyper_fileManager.extractSelectedFiles()" data-tippy-content="<?= lang('Admin.extractZipFile') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.extractSelectedFiles()" data-tippy-content="<?= lang('Admin.extractZipFile') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-box-open"></i>
                         </span>
                     </button>
-                    <button class="button" onclick="window.hyper_fileManager.compressSelectedFiles()" data-tippy-content="<?= lang('Admin.compressToZip') ?>" data-tippy-placement="bottom">
+                    <button class="button" onclick="window.hyper.factory.fileManager.compressSelectedFiles()" data-tippy-content="<?= lang('Admin.compressToZip') ?>" data-tippy-placement="bottom">
                         <span class="icon">
                             <i class="fas fa-file-zipper"></i>
                         </span>
@@ -255,7 +255,7 @@ $currentRoute = $request->getUri()->getPath();
 
             <!-- Delete Group -->
             <div class="control">
-                <button class="button is-danger" onclick="window.hyper_fileManager.deleteSelectedFiles()" data-tippy-content="<?= lang('Admin.deleteSelected') ?>" data-tippy-placement="bottom">
+                <button class="button is-danger" onclick="window.hyper.factory.fileManager.deleteSelectedFiles()" data-tippy-content="<?= lang('Admin.deleteSelected') ?>" data-tippy-placement="bottom">
                     <span class="icon">
                         <i class="fas fa-trash"></i>
                     </span>
@@ -341,8 +341,8 @@ $currentRoute = $request->getUri()->getPath();
      *
      * Dependencies:
      *   - Dropzone.js (with automatic discovery disabled)
-     *   - A global hyper_fileManager object (for managing file lists)
-     *   - A global hyper_swal object (for displaying alerts)
+     *   - A global hyper.factory.fileManager object (for managing file lists)
+     *   - A global hyper.factory.swal object (for displaying alerts)
      *   - Server-side CSRF auth tokens injected via PHP functions.
      */
 
@@ -407,7 +407,7 @@ $currentRoute = $request->getUri()->getPath();
                 }
 
                 // Refresh the file list using the global file manager.
-                window.hyper_fileManager.listFiles(window.hyper_fileManager.currentPath);
+                window.hyper.factory.fileManager.listFiles(window.hyper.factory.fileManager.currentPath);
             });
         },
         /**
@@ -428,7 +428,7 @@ $currentRoute = $request->getUri()->getPath();
          */
         params: function(files, xhr, chunk) {
             return {
-                path: window.hyper_fileManager.currentPath
+                path: window.hyper.factory.fileManager.currentPath
             };
         },
         /**
@@ -451,7 +451,7 @@ $currentRoute = $request->getUri()->getPath();
                     node.textContent = error;
                 }
                 // Display an error toast using SweetAlert.
-                window.hyper_swal.error(error, {
+                window.hyper.factory.swal.error(error, {
                     showConfirmButton: true,
                     timer: false
                 });
@@ -474,7 +474,7 @@ $currentRoute = $request->getUri()->getPath();
          * @param {Object} response - The server response.
          */
         success: function(file, response) {
-            window.hyper_swal.success("<?= lang('Admin.fileSuccessfullyUploaded') ?>");
+            window.hyper.factory.swal.success("<?= lang('Admin.fileSuccessfullyUploaded') ?>");
         }
     });
 
@@ -483,7 +483,7 @@ $currentRoute = $request->getUri()->getPath();
         // Initialize the File Manager File Listing
         // -------------------------------------------------------------------
         // Loads the initial list of files (using default path)
-        window.hyper_fileManager.listFiles();
+        window.hyper.factory.fileManager.listFiles();
 
         // -------------------------------------------------------------------
         // Initialize the DataTable for the File Manager
@@ -573,11 +573,11 @@ $currentRoute = $request->getUri()->getPath();
                 const type = item.getAttribute('data-type');
                 // If the item is a folder, navigate into it
                 if (type === 'folder') {
-                    window.hyper_fileManager.listFiles(path);
+                    window.hyper.factory.fileManager.listFiles(path);
                 }
                 // If the item is a file, view it
                 else if (type === 'file') {
-                    window.hyper_fileManager.viewFile(path);
+                    window.hyper.factory.fileManager.viewFile(path);
                 }
             }
         });
@@ -587,12 +587,12 @@ $currentRoute = $request->getUri()->getPath();
         // -------------------------------------------------------------------
         // This initializes the Monaco editor with the provided configuration.
         // The onSave callback triggers a file save operation from the file manager.
-        window.hyper_fileManagerMonaco = window.hyper_monaco({
+        window.hyper_fileManagerMonaco = window.hyper.factory.monaco({
             editorContainerId: "monaco", // The container element ID for Monaco
             textareaId: "fileEditor", // The ID of the textarea linked to the editor
             onSave: function(editor) {
                 // Save the currently open file when the editor triggers a save
-                window.hyper_fileManager.saveFile(window.hyper_fileManager.currentFile);
+                window.hyper.factory.fileManager.saveFile(window.hyper.factory.fileManager.currentFile);
             },
             language: "javascript" // Set the default language mode
         });

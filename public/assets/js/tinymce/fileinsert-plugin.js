@@ -60,7 +60,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       if (fileExt === "svg") {
         editor.insertContent(
           `<img src="${
-            fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
+            fileViewerUrl + encodeURIComponent(window.hyper.util.hex.encode(filePath))
           }" alt="${fileName}" />`
         );
       } else if (["mp4", "webm", "ogg"].includes(fileExt)) {
@@ -68,7 +68,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
           <video controls>
             <source src="${
               fileViewerUrl +
-              encodeURIComponent(window.hyper_hexEncode(filePath))
+              encodeURIComponent(window.hyper.util.hex.encode(filePath))
             }" type="video/${fileExt}">
             Your browser does not support the video tag.
           </video>
@@ -76,7 +76,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       } else {
         editor.insertContent(
           `<img src="${
-            fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
+            fileViewerUrl + encodeURIComponent(window.hyper.util.hex.encode(filePath))
           }" alt="${fileName}" />`
         );
       }
@@ -84,7 +84,7 @@ tinymce.PluginManager.add("fileinsert", (editor, url) => {
       // Insert a hyperlink for non-media or unrecognized file types.
       editor.insertContent(
         `<a href="${
-          fileViewerUrl + encodeURIComponent(window.hyper_hexEncode(filePath))
+          fileViewerUrl + encodeURIComponent(window.hyper.util.hex.encode(filePath))
         }">${fileName}</a>`
       );
     }

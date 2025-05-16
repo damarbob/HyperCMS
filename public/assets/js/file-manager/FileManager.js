@@ -1,5 +1,4 @@
 import i18next from "../admin/translations/I18n.js";
-import { config } from "../Config.js";
 import tippy from "https://cdn.jsdelivr.net/npm/tippy.js@6.3.7/+esm";
 
 export default class FileManager {
@@ -31,8 +30,8 @@ export default class FileManager {
 
   #downloadFile(path) {
     window.location.href =
-      `${config.baseUrl + "admin/api/file-manager/download/"}` +
-      encodeURIComponent(window.hyper_hexEncode(path));
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/download/"}` +
+      encodeURIComponent(window.hyper.util.hex.encode(path));
   }
 
   #addToClipboard(path, action) {
@@ -41,25 +40,30 @@ export default class FileManager {
       action,
     };
 
-    fetch(`${config.baseUrl + "admin/api/file-manager/set-clipboard/"}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(clipboard),
-    })
+    fetch(
+      `${
+        window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard/"
+      }`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(clipboard),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         if (data.status) {
           // Show success toast
-          window.hyper_swal.success(
+          window.hyper.factory.swal.success(
             `${action.charAt(0).toUpperCase() + action.slice(1)}: ${i18next.t(
               "copiedSuccessfullyReadyToPaste"
             )}`
           );
         } else {
           // Show error toast
-          window.hyper_swal.error(
+          window.hyper.factory.swal.error(
             `${i18next.t("failedToCopy")}: ` + data.error,
             {
               showConfirmButton: true,
@@ -71,7 +75,7 @@ export default class FileManager {
   }
 
   pasteFiles() {
-    fetch(`${config.baseUrl + "admin/api/file-manager/paste/"}`, {
+    fetch(`${window.hyper.config.baseUrl + "admin/api/file-manager/paste/"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -84,11 +88,13 @@ export default class FileManager {
       .then((data) => {
         if (data.status) {
           // Show success toast
-          window.hyper_swal.success(`${i18next.t("pastedSuccessfully")}`);
+          window.hyper.factory.swal.success(
+            `${i18next.t("pastedSuccessfully")}`
+          );
           this.listFiles(this.currentPath); // Refresh the file list
         } else if (data.error) {
           // Show error toast
-          window.hyper_swal.error(
+          window.hyper.factory.swal.error(
             `${i18next.t("failedToPaste")} ` + data.error,
             {
               showConfirmButton: true,
@@ -116,8 +122,8 @@ export default class FileManager {
     const fileName = path.split("/").pop(); // Get file extension
     const fileExtension = path.split(".").pop().toLowerCase(); // Get file extension
     const imageUrl =
-      `${config.baseUrl + "admin/api/file-manager/view-file/"}` +
-      encodeURIComponent(window.hyper_hexEncode(path));
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/view-file/"}` +
+      encodeURIComponent(window.hyper.util.hex.encode(path));
 
     // UI
     const viewModalKonten = this.viewModalKonten;
@@ -344,8 +350,8 @@ export default class FileManager {
     }
 
     fetch(
-      `${config.baseUrl + "admin/api/file-manager/list-files/"}` +
-        encodeURIComponent(window.hyper_hexEncode(path))
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/list-files/"}` +
+        encodeURIComponent(window.hyper.util.hex.encode(path))
     )
       .then(async (response) => {
         if (!response.ok) {
@@ -574,7 +580,7 @@ export default class FileManager {
           this.loaderBody.classList.add("is-hidden");
         }
         // Display error using your SweetAlert2 error handler.
-        window.hyper_swal.error(
+        window.hyper.factory.swal.error(
           error.message || "An unexpected error occurred",
           {
             showConfirmButton: true,
@@ -585,12 +591,12 @@ export default class FileManager {
   }
 
   createFile() {
-    window.hyper_swal
+    window.hyper.factory.swal
       .prompt({
         title: `${i18next.t("enterNewFileNameWithExtension")}`,
         preConfirm: (fileName) => {
           if (!fileName) {
-            window.hyper_swal
+            window.hyper.factory.swal
               .get()
               .showValidationMessage(
                 `${i18next.t("failedToCreateFile")}: ${i18next.t(
@@ -599,20 +605,26 @@ export default class FileManager {
               );
             return;
           }
-          return fetch(`${config.baseUrl + "admin/api/file-manager/create-file/"}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              path: this.currentPath,
-              fileName: fileName,
-            }),
-          })
+          return fetch(
+            `${
+              window.hyper.config.baseUrl +
+              "admin/api/file-manager/create-file/"
+            }`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                path: this.currentPath,
+                fileName: fileName,
+              }),
+            }
+          )
             .then((response) => response.json())
             .then((data) => {
               if (!data.status) {
-                window.hyper_swal
+                window.hyper.factory.swal
                   .get()
                   .showValidationMessage(
                     `${i18next.t("failedToCreateFile")}: ` + data.error
@@ -621,28 +633,28 @@ export default class FileManager {
               return data;
             })
             .catch((error) => {
-              window.hyper_swal
+              window.hyper.factory.swal
                 .get()
                 .showValidationMessage(`Request failed: ${error}`);
             });
         },
-        allowOutsideClick: () => !window.hyper_swal.get().isLoading(),
+        allowOutsideClick: () => !window.hyper.factory.swal.get().isLoading(),
       })
       .then((result) => {
         if (result.isConfirmed && result.value.status) {
-          window.hyper_swal.success(result.value.status);
+          window.hyper.factory.swal.success(result.value.status);
           this.listFiles(this.currentPath); // Refresh the list to show the new file
         }
       });
   }
 
   createFolder() {
-    window.hyper_swal
+    window.hyper.factory.swal
       .prompt({
         title: `${i18next.t("enterNewFolderName")}`,
         preConfirm: (folderName) => {
           if (!folderName) {
-            window.hyper_swal
+            window.hyper.factory.swal
               .get()
               .showValidationMessage(
                 `${i18next.t("failedToCreateFolder")}: ${i18next.t(
@@ -652,7 +664,10 @@ export default class FileManager {
             return;
           }
           return fetch(
-            `${config.baseUrl + "admin/api/file-manager/create-folder/"}`,
+            `${
+              window.hyper.config.baseUrl +
+              "admin/api/file-manager/create-folder/"
+            }`,
             {
               method: "POST",
               headers: {
@@ -667,7 +682,7 @@ export default class FileManager {
             .then((response) => response.json())
             .then((data) => {
               if (!data.status) {
-                window.hyper_swal
+                window.hyper.factory.swal
                   .get()
                   .showValidationMessage(
                     `${i18next.t("failedToCreateFolder")}: ` + data.error
@@ -676,16 +691,16 @@ export default class FileManager {
               return data;
             })
             .catch((error) => {
-              window.hyper_swal
+              window.hyper.factory.swal
                 .get()
                 .showValidationMessage(`Request failed: ${error}`);
             });
         },
-        allowOutsideClick: () => !window.hyper_swal.get().isLoading(),
+        allowOutsideClick: () => !window.hyper.factory.swal.get().isLoading(),
       })
       .then((result) => {
         if (result.isConfirmed && result.value.status) {
-          window.hyper_swal.success(result.value.status);
+          window.hyper.factory.swal.success(result.value.status);
           this.listFiles(this.currentPath); // Refresh the list to show the new folder
         }
       });
@@ -695,12 +710,12 @@ export default class FileManager {
     // Extract the filename from oldPath
     const oldFileName = oldPath.split("/").pop();
 
-    window.hyper_swal
+    window.hyper.factory.swal
       .prompt({
         title: `${i18next.t("rename")}`,
         preConfirm: (newName) => {
           if (!newName) {
-            window.hyper_swal
+            window.hyper.factory.swal
               .get()
               .showValidationMessage(
                 `${i18next.t("failedToRenameFile")}: ${i18next.t(
@@ -709,20 +724,23 @@ export default class FileManager {
               );
             return;
           }
-          return fetch(`${config.baseUrl + "admin/api/file-manager/rename/"}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              oldPath: oldPath,
-              newName: newName,
-            }),
-          })
+          return fetch(
+            `${window.hyper.config.baseUrl + "admin/api/file-manager/rename/"}`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                oldPath: oldPath,
+                newName: newName,
+              }),
+            }
+          )
             .then((response) => response.json())
             .then((data) => {
               if (!data.status) {
-                window.hyper_swal
+                window.hyper.factory.swal
                   .get()
                   .showValidationMessage(
                     `${i18next.t("failedToRenameFile")}: ` + data.error
@@ -731,16 +749,16 @@ export default class FileManager {
               return data;
             })
             .catch((error) => {
-              window.hyper_swal
+              window.hyper.factory.swal
                 .get()
                 .showValidationMessage(`Request failed: ${error}`);
             });
         },
-        allowOutsideClick: () => !window.hyper_swal.get().isLoading(),
+        allowOutsideClick: () => !window.hyper.factory.swal.get().isLoading(),
       })
       .then((result) => {
         if (result.isConfirmed && result.value.status) {
-          window.hyper_swal.success(result.value.status);
+          window.hyper.factory.swal.success(result.value.status);
           this.listFiles(this.currentPath); // Refresh the list to show renamed file
         }
       });
@@ -800,16 +818,19 @@ export default class FileManager {
     /* End of UI */
 
     const updatedContent = this.fileEditor.value;
-    fetch(`${config.baseUrl + "admin/api/file-manager/save-file/"}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        path: encodeURIComponent(window.hyper_hexEncode(path)), // Encode the file path
-        content: updatedContent,
-      }),
-    })
+    fetch(
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/save-file/"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: encodeURIComponent(window.hyper.util.hex.encode(path)), // Encode the file path
+          content: updatedContent,
+        }),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         /* UI */
@@ -820,10 +841,12 @@ export default class FileManager {
 
         if (data.success) {
           // Show success toast
-          window.hyper_swal.success(`${i18next.t("fileSavedSuccessfully")}`);
+          window.hyper.factory.swal.success(
+            `${i18next.t("fileSavedSuccessfully")}`
+          );
         } else {
           // Show error toast
-          window.hyper_swal.success(
+          window.hyper.factory.swal.success(
             `${i18next.t("failedToSaveFile")}: ` + data.error,
             {
               showConfirmButton: true,
@@ -838,37 +861,43 @@ export default class FileManager {
 
     if (selectedFiles.length === 0) {
       // Show error toast
-      window.hyper_swal.error(`${i18next.t("selectFilesToDelete")}`);
+      window.hyper.factory.swal.error(`${i18next.t("selectFilesToDelete")}`);
       return;
     }
 
-    window.hyper_swal
+    window.hyper.factory.swal
       .confirm({
         text: i18next.t("deletedItemsCannotBeRecovered"),
       })
       .then((result) => {
         if (result.isConfirmed) {
           // Request item deletion
-          fetch(`${config.baseUrl + "admin/api/file-manager/delete-files/"}`, {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-            },
-            body: JSON.stringify({
-              files: selectedFiles,
-            }),
-          })
+          fetch(
+            `${
+              window.hyper.config.baseUrl +
+              "admin/api/file-manager/delete-files/"
+            }`,
+            {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                files: selectedFiles,
+              }),
+            }
+          )
             .then((response) => response.json())
             .then((data) => {
               if (data.status) {
                 // Show success alert dialog
-                window.hyper_swal.success(
+                window.hyper.factory.swal.success(
                   `${i18next.t("deletedSuccessfully")}`
                 );
                 this.listFiles(this.currentPath); // Refresh file list
               } else if (data.error) {
                 // Show error alert dialog
-                window.hyper_swal.success(
+                window.hyper.factory.swal.success(
                   `${i18next.t("failedToDelete")}: ` + data.error,
                   {
                     showConfirmButton: true,
@@ -894,7 +923,9 @@ export default class FileManager {
     const selectedFiles = this.getSelectedFiles();
 
     if (selectedFiles.length === 0) {
-      window.hyper_swal.error(`${i18next.t("selectFileToCompressZIP")}`);
+      window.hyper.factory.swal.error(
+        `${i18next.t("selectFileToCompressZIP")}`
+      );
       return;
     }
 
@@ -904,16 +935,19 @@ export default class FileManager {
     }
     /* End of UI */
 
-    fetch(`${config.baseUrl + "admin/api/file-manager/compress/"}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        files: selectedFiles,
-        path: this.currentPath,
-      }),
-    })
+    fetch(
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/compress/"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          files: selectedFiles,
+          path: this.currentPath,
+        }),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         /* UI */
@@ -923,12 +957,15 @@ export default class FileManager {
         /* End of UI */
 
         if (data.status) {
-          window.hyper_swal.success(`${i18next.t("successfullyCompressed")}`, {
-            text: data.archive,
-          });
+          window.hyper.factory.swal.success(
+            `${i18next.t("successfullyCompressed")}`,
+            {
+              text: data.archive,
+            }
+          );
           this.listFiles(this.currentPath); // Refresh list to show new zip file
         } else {
-          window.hyper_swal.error(`${i18next.t("error")}`, {
+          window.hyper.factory.swal.error(`${i18next.t("error")}`, {
             text: `${i18next.t("failedToCompressFile")}: ` + data.error,
           });
         }
@@ -940,7 +977,7 @@ export default class FileManager {
     const selectedFiles = this.getSelectedFiles();
 
     if (selectedFiles.length !== 1 || !selectedFiles[0].endsWith(".zip")) {
-      window.hyper_swal.error(`${i18next.t("selectZipFileToEctract")}`);
+      window.hyper.factory.swal.error(`${i18next.t("selectZipFileToEctract")}`);
       return;
     }
 
@@ -950,15 +987,18 @@ export default class FileManager {
     }
     /* End of UI */
 
-    fetch(`${config.baseUrl + "admin/api/file-manager/extract/"}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        path: selectedFiles[0],
-      }),
-    })
+    fetch(
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/extract/"}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          path: selectedFiles[0],
+        }),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         /* UI */
@@ -968,10 +1008,12 @@ export default class FileManager {
         /* End of UI */
 
         if (data.status) {
-          window.hyper_swal.success(`${i18next.t("successfullyExtracted")}`);
+          window.hyper.factory.swal.success(
+            `${i18next.t("successfullyExtracted")}`
+          );
           this.listFiles(this.currentPath); // Refresh to show extracted files
         } else {
-          window.hyper_swal.error(
+          window.hyper.factory.swal.error(
             `${i18next.t("failedToExtractFile")}: ` + data.error
           );
         }
@@ -983,7 +1025,7 @@ export default class FileManager {
     const selectedFiles = this.getSelectedFiles();
     if (selectedFiles.length === 0) {
       // Show error toast
-      window.hyper_swal.error(`${i18next.t("selectFilesToCopy")}`);
+      window.hyper.factory.swal.error(`${i18next.t("selectFilesToCopy")}`);
       return;
     }
     this.#setClipboard(selectedFiles, "copy");
@@ -993,35 +1035,40 @@ export default class FileManager {
     const selectedFiles = this.getSelectedFiles();
     if (selectedFiles.length === 0) {
       // Show error toast
-      window.hyper_swal.error(`${i18next.t("selectFilesToMove")}`);
+      window.hyper.factory.swal.error(`${i18next.t("selectFilesToMove")}`);
       return;
     }
     this.#setClipboard(selectedFiles, "move");
   }
 
   #setClipboard(files, action) {
-    fetch(`${config.baseUrl + "admin/api/file-manager/set-clipboard/"}`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        files,
-        action,
-      }),
-    })
+    fetch(
+      `${
+        window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard/"
+      }`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          files,
+          action,
+        }),
+      }
+    )
       .then((response) => response.json())
       .then((data) => {
         if (data.status) {
           // Show success toast
-          window.hyper_swal.success(
+          window.hyper.factory.swal.success(
             `${action.charAt(0).toUpperCase() + action.slice(1)}: ${i18next.t(
               "copiedSuccessfullyReadyToPaste"
             )}`
           );
         } else {
           // Show error toast
-          window.hyper_swal.error(
+          window.hyper.factory.swal.error(
             `${i18next.t("failedToCopy")}: ` + data.error,
             {
               showConfirmButton: true,

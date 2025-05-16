@@ -28,7 +28,7 @@ class Settings extends BaseController
 
         $this->data['title'] = lang('PagingSystem.moduleName');
 
-        return view('Modules\PagingSystem\Views\Admin\settings', array_merge($this->data, [
+        return render('Modules\PagingSystem\Views\Admin\settings', array_merge($this->data, [
             'pagingSystemEligibleModelIds' => $pagingSystemEligibleModelIds,
             'pagingSystemEligibleModelNames' => $pagingSystemEligibleModelNames,
             'pagingSystemAssetsEligibleModelIds' => $pagingSystemAssetsEligibleModelIds,

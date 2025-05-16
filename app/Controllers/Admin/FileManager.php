@@ -17,6 +17,6 @@ class FileManager extends BaseController
 
         $this->data['title'] = lang('Admin.fileManager');
 
-        return view('admin/file_manager', $this->data);
+        return render('admin/file_manager', $this->data);
     }
 }

@@ -21,7 +21,7 @@ class Settings extends BaseController
         // Passes the request to the hook
         $hooks->trigger(hook('Backend.controller:settings'), [$this->data]);
 
-        return view('admin/settings', $this->data);
+        return render('admin/settings', $this->data);
     }
 
     public function update($_)

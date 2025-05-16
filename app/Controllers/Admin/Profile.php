@@ -11,7 +11,7 @@ class Profile extends BaseController
     {
         $user = auth()->user();
         $this->data['title'] = $user ? $user->username . "'s " . lang('Admin.profile') : lang('Admin.profile');
-        return view('admin/profile', $this->data);
+        return render('admin/profile', $this->data);
     }
 
     public function update($hash)

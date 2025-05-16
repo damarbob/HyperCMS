@@ -12,7 +12,7 @@ import i18next from "https://deno.land/x/i18next/index.js";
  * In traditional scripts, you can bind and call this via the global:
  *
  *   document.addEventListener('DOMContentLoaded', function() {
- *     window.hyper_swal.success("I'm success");
+ *     window.hyper.factory.swal.success("I'm success");
  *   });
  *
  * In modules, import it and then call:
@@ -196,5 +196,5 @@ export default class SwalWrapper {
 // and global script usage, as the following code would attach it to the window):
 //
 // if (typeof window !== "undefined") {
-//   window.hyper_swal = () => new SwalWrapper();
+//   window.hyper.factory.swal = () => new SwalWrapper();
 // }
