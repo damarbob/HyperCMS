@@ -10,6 +10,6 @@ class ModelsSettings extends BaseController
     {
         $this->data['title'] = lang('Admin.settings');
 
-        return view('admin/settings_models', $this->data);
+        return render('admin/settings_models', $this->data);
     }
 }

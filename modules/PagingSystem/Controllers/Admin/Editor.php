@@ -17,14 +17,14 @@ class Editor extends BaseController
         $entryId = $data['entry_id']; // Assign entry id
 
         // Load the page entry record
-        $entry = (object) $this->entriesManager->find($entryId);
+        $entry = $this->entriesManager->find($entryId);
 
-        if (!$entry) {
+        if (empty($entry)) {
             return redirect()->back()->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $entryId]));
         }
 
         // Map entry fields for easier access, e.g., hyper_component_elements, hyper_css, etc.
-        $mappedEntryFields = array_column(json_decode($entry->fields), 'value', 'id');
+        $mappedEntryFields = map_entry_fields($entry['fields']);
 
         $this->loadUserCreatedComponents();
 
@@ -42,7 +42,7 @@ class Editor extends BaseController
 
         $this->data = $this->hooks->filter(hook('PagingSystemBackend.controller:editor:index:data'), $this->data);
 
-        return view('\Modules\PagingSystem\Views\Admin\editor', $this->data);
+        return render('\Modules\PagingSystem\Views\Admin\editor', $this->data);
     }
 
     /**

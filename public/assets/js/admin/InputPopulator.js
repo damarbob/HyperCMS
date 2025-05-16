@@ -1,6 +1,5 @@
 // InputPopulator.js
 
-import { config } from "../Config.js";
 import { InputPopulatorTemplates } from "./templates/InputPopulatorTemplates.js";
 import { getFilenameAndExtension } from "./use-case/Formatting.js";
 import { bulmaInputPopulatorTemplates } from "./templates/addons/BulmaInputPopulatorTemplates.js";
@@ -63,16 +62,37 @@ export default class InputPopulator {
   }
 
   /**
-   * Populates a NodeList (e.g. checkboxes or radio buttons) based on matching values.
+   * Populates a NodeList of input elements (such as checkboxes or radio buttons)
+   * by setting the `checked` property based on a provided value or array of values.
    *
-   * @param {NodeList} nodeList - The NodeList to populate.
-   * @param {*} value - The value(s) to check.
+   * This function iterates over each element in the given NodeList. If a scalar value
+   * is provided, it checks the element that has a matching value and marks it as checked.
+   * If an array of values is provided, then each element whose value is included in the array
+   * will have its `checked` property set to true.
+   *
+   * @param {NodeList} nodeList - The NodeList of input elements to update.
+   * @param {*} value - The value or an array of values to match against.
+   *
+   * @example
+   * // For a NodeList of radio buttons, check the radio button whose value equals 'yes':
+   * populateNodeList(radioButtonNodeList, 'yes');
+   *
+   * @example
+   * // For a NodeList of checkboxes, check all checkboxes that match any of the given values:
+   * populateNodeList(checkboxNodeList, ['apple', 'orange']);
    */
   populateNodeList(nodeList, value) {
     nodeList.forEach((element) => {
+      element.defaultChecked = false; // Reset default checked state
+      element.checked = false; // Reset checked state
+
+      // If value is not an array, check if the current element's value matches the value.
       if (!Array.isArray(value) && element.value === value) {
         element.checked = true;
-      } else if (Array.isArray(value)) {
+      }
+      // If value is an array, iterate over each of the provided values
+      // and check if the element's value is included in the list.
+      else if (Array.isArray(value)) {
         value.forEach((x) => {
           if (element.value === x) {
             element.checked = true;
@@ -146,7 +166,7 @@ export default class InputPopulator {
       value.forEach((fileUrl) => {
         filesFormHelper.append(
           InputPopulatorTemplates.fileLink({
-            url: config.baseUrl + fileUrl,
+            url: window.hyper.config.baseUrl + fileUrl,
             filename: fileUrl,
           })
         );

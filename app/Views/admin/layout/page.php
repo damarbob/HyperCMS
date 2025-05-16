@@ -376,7 +376,7 @@ $content = $this->renderSection('content');
     <!-- TinyMCE -->
     <script src="<?= base_url('assets/js/vendor/tinymce/tinymce.min.js') ?>"></script>
 
-    <!-- sweetalert2 -->
+    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <!-- Clamp.js -->
@@ -397,10 +397,10 @@ $content = $this->renderSection('content');
             // Success Notification
             // ----------------------------------------------------
             // If a success message exists in the session flash data,
-            // use the global hyper_swal wrapper to display a success toast.
+            // use the global hyper.factory.swal wrapper to display a success toast.
             // The title is localized using lang("Admin.success").
             <?php if (session()->getFlashdata('success')) : ?>
-                window.hyper_swal.success("<?= lang("Admin.success") ?>", {
+                window.hyper.factory.swal.success("<?= lang("Admin.success") ?>", {
                     text: "<?= session()->getFlashdata('success') ?>" // Notification detail text
                 });
             <?php endif; ?>
@@ -409,12 +409,12 @@ $content = $this->renderSection('content');
             // Error Notification
             // ----------------------------------------------------
             // If no success message is set but an error message exists,
-            // display an error notification using the hyper_swal error method.
+            // display an error notification using the hyper.factory.swal.error method.
             // The configuration customizes the appearance by overriding the confirm button color,
             // ensuring the confirm button is displayed and disabling the timer.
             <?php if (session()->getFlashdata('error')) : ?>
 
-                window.hyper_swal.error("<?= lang("Admin.error") ?>", {
+                window.hyper.factory.swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
                     confirmButtonColor: "var(--bulma-primary)",
                     showConfirmButton: true,

@@ -88,7 +88,7 @@
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                window.hyper_swal.success("<?= lang("Admin.success") ?>", {
+                window.hyper.factory.swal.success("<?= lang("Admin.success") ?>", {
                     text: "<?= session()->getFlashdata('success') ?>"
                 });
             });
@@ -97,7 +97,7 @@
         <!-- JavaScript for displaying success/error notifications -->
         <script>
             document.addEventListener('DOMContentLoaded', () => {
-                window.hyper_swal.error("<?= lang("Admin.error") ?>", {
+                window.hyper.factory.swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
                     confirmButtonColor: "var(--bulma-primary)",
                     showConfirmButton: true,

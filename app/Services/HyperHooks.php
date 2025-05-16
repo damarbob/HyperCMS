@@ -56,8 +56,9 @@ class HyperHooks
                             $output[] = $result;
                         }
                     } catch (\Throwable $e) {
-                        // Log or handle errors silently
+                        // Log and throw errors
                         error_log("Hook '$hook' error: " . $e->getMessage());
+                        log_message("error", "Hook '$hook' error: " . $e->getMessage());
                         throw $e;
                     }
                 }
@@ -85,8 +86,9 @@ class HyperHooks
                     try {
                         call_user_func_array($callback, $params);
                     } catch (\Throwable $e) {
-                        // Log or handle errors silently
+                        // Log and throw errors
                         error_log("Hook '$hook' error: " . $e->getMessage());
+                        log_message("error", "Hook '$hook' error: " . $e->getMessage());
                         throw $e;
                     }
                 }
@@ -105,7 +107,8 @@ class HyperHooks
                     try {
                         $value = call_user_func_array($callback, array_merge([$value], $params));
                     } catch (\Throwable $e) {
-                        // Log to CodeIgniter's log for visibility
+                        // Log and throw errors
+                        error_log("Filter '$hook' error: " . $e->getMessage());
                         log_message('error', "Filter '$hook' error: " . $e->getMessage());
                         throw $e;
                     }

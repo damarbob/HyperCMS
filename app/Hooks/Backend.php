@@ -21,5 +21,9 @@ return [
 
     // Filters
     'controller:menu:data' => new HyperHook('backend:controller:menu:data', 'Menu Data on Base Controller', ''),
+    
+    'controller:model:index:data' => new HyperHook('backend:controller:model:index:data', 'Data on Index Model Controller', ''),
+    
+    'controller:entries:index:data' => new HyperHook('backend:controller:entries:index:data', 'Data on Index Entries Controller', ''),
     'controller:entries:edit:data' => new HyperHook('backend:controller:entries:edit:data', 'Data on Edit Entries Controller', ''),
 ];

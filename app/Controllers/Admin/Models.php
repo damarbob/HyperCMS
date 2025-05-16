@@ -13,7 +13,7 @@ class Models extends BaseController
 
         $this->data['title'] = lang('Admin.models');
 
-        return view('admin/models', $this->data);
+        return render('admin/models', $this->data);
     }
 
     public function new(): string
@@ -22,13 +22,13 @@ class Models extends BaseController
         $this->data['title'] = lang('Admin.newModel');
 
         $this->hooks->register(hook('backend.view:models:new'), function () {
-            return view('admin/partials/models_form', [
+            return render('admin/partials/models_form', [
                 'action' => 'new',
                 'formAction' => base_url('admin/models'),
             ]);
         });
 
-        return view(
+        return render(
             'admin/models_action',
             array_merge($this->data, [
                 'action' => 'new',
@@ -47,14 +47,14 @@ class Models extends BaseController
         }
 
         $this->hooks->register(hook('backend.view:models:edit'), function () use ($model) {
-            return view('admin/partials/models_form', [
+            return render('admin/partials/models_form', [
                 'action' => 'edit',
                 'formAction' => base_url('admin/models/' . $model['id']),
                 'model' => $model
             ]);
         });
 
-        return view('admin/models_action', array_merge($this->data, [
+        return render('admin/models_action', array_merge($this->data, [
             'action' => 'edit',
             'model' => $model,
         ]));

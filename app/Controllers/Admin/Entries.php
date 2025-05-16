@@ -21,7 +21,7 @@ class Entries extends BaseController
         // Do Not Edit This Line
         parent::initController($request, $response, $logger);
 
-        $this->syntaxProcessor = new SyntaxProcessor();
+        $this->syntaxProcessor = syntax_processor();
     }
 
     public function index(): string
@@ -29,9 +29,17 @@ class Entries extends BaseController
         // $this->modelsModel->test();
 
         $this->data['title'] = lang('Admin.entries');
-        // $this->data['models'] = $this->modelsModel->get()->get()->getResultArray(); // Get all models (already did in the BaseController)
+        $this->data['links'] = [
+            'new' => base_url('admin/entries/new?model_id=') . '{id}', // The ID must be separated from the base URL to prevent it from being URL-encoded.
+            'edit' => base_url('admin/entries/') . '{id}/edit',
+            'delete' => base_url('admin/entries/delete'),
+            'restore' => base_url('admin/entries/restore'),
+            'purge' => base_url('admin/entries/purge-deleted'),
+        ];
 
-        return view('admin/entries', $this->data);
+        $this->data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $this->data);
+
+        return render('admin/entries', $this->data);
     }
 
     public function new()
@@ -40,6 +48,11 @@ class Entries extends BaseController
         $action = 'new';
 
         $modelId = $this->request->getGet('model_id');
+
+        // Check if the model ID is empty
+        if (empty($modelId))
+            return $this->respond(lang('Admin.noModelFound'), success: false);
+
         $model = $this->modelsManager->find($modelId);
 
         // Check if the model does not exist
@@ -54,7 +67,7 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:new'), function () use ($model, $action) {
-            return view('admin/partials/entries_form', [
+            return render('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries'),
                 'model' => $model
@@ -63,7 +76,7 @@ class Entries extends BaseController
 
         /* End of register views */
 
-        return view('admin/entries_action', array_merge($this->data, [
+        return render('admin/entries_action', array_merge($this->data, [
             'action' => 'new'
         ]));
     }
@@ -121,7 +134,7 @@ class Entries extends BaseController
         /* Register views */
 
         $hooks->register(hook('backend.view:entries:edit'), function () use ($entry, $action) {
-            return view('admin/partials/entries_form', [
+            return render('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries/' . $entry['id']),
                 'entry' => $entry
@@ -130,7 +143,7 @@ class Entries extends BaseController
 
         /* End of register views */
 
-        return view('admin/entries_action', array_merge($this->data, [
+        return render('admin/entries_action', array_merge($this->data, [
             'action' => 'edit'
         ]));
     }

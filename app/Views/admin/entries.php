@@ -1,4 +1,6 @@
 <?php
+helper('hyper_text');
+
 $context = 'user:' . user_id();
 $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPerPage', $context) ?: 10;
 ?>
@@ -39,7 +41,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                     <ul class="list menu-list">
                         <?php foreach ($models as $model) : ?>
                             <li>
-                                <a href="<?= $uri . 'new?model_id=' . $model['id'] ?>" class="is-flex is-gap-1">
+                                <a href="<?= replace_placeholders($links['new'], ['id' => $model['id']]) ?>" class="is-flex is-gap-1">
                                     <span class="icon">
                                         <i class="<?= !empty($model['icon']) ? $model['icon'] : 'fa-solid fa-box-open' ?>"></i>
                                     </span>
@@ -140,7 +142,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
 <script type="text/javascript">
     /* Configs */
-    var lang = '<?= $lang ?>'; // Get lang from the backend
+    var lang = '<?= $locale ?>'; // Get lang from the backend
 
     // CSRF
     var csrfName = '<?= csrf_token() ?>';
@@ -257,7 +259,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         className: 'is-danger hyper-purge-deleted',
                         action: function(e, dt, node, config) {
                             // Confirm empty trash
-                            window.hyper_swal.confirm().then((result) => {
+                            window.hyper.factory.swal.confirm().then((result) => {
                                 if (result.isConfirmed) {
                                     emptyTrash();
                                 }
@@ -293,7 +295,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         titleAttr: '<?= lang('Admin.refresh') ?>',
                         action: function(e, dt, node, config) {
                             dt.ajax.reload(function() {
-                                window.hyper_swal.success('<?= lang('Admin.successfullyRefreshed') ?>');
+                                window.hyper.factory.swal.success('<?= lang('Admin.successfullyRefreshed') ?>');
                             });
                         }
                     },
@@ -335,7 +337,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
                                 deleteEntries(ids);
                             } else {
-                                window.hyper_swal.error('<?= lang('Admin.selectToDelete') ?>');
+                                window.hyper.factory.swal.error('<?= lang('Admin.selectToDelete') ?>');
                             }
                         }
                     },
@@ -360,7 +362,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
                                 restoreEntries(ids);
                             } else {
-                                window.hyper_swal.error('<?= lang('Admin.selectToRestore') ?>');
+                                window.hyper.factory.swal.error('<?= lang('Admin.selectToRestore') ?>');
                             }
                         }
                     },
@@ -385,7 +387,10 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
         rowCallback: function(row, data, index) {
             $(row).on('dblclick', function() {
                 var id = data.id;
-                window.location.href = "<?= base_url('admin/entries/') ?>" + id + "/edit";
+
+                window.location.href = window.hyper.util.text.replacePlaceholders("<?= $links['edit'] ?>", {
+                    id: id
+                });
             });
         },
 
@@ -564,19 +569,19 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 
     function emptyTrash() {
         $.ajax({
-            url: '<?= base_url('admin/entries/purge-deleted') ?>',
+            url: '<?= $links['purge'] ?>',
             type: 'POST',
             data: {
                 [csrfName]: csrfHash
             }, // Include CSRF token for security
             dataType: 'json', // Expecting JSON response from the server
             success: function(response) {
-                window.hyper_swal.success(response.success);
+                window.hyper.factory.swal.success(response.success);
                 hyperTable.ajax.reload();
             },
             error: function(xhr, status, error) {
                 // Handle errors
-                window.hyper_swal.error(error);
+                window.hyper.factory.swal.error(error);
             }
         });
     }
@@ -584,7 +589,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
     // AJAX request to delete entries (POSTing the ids array)
     function deleteEntries(ids) {
         $.ajax({
-            url: '<?= base_url('admin/entries/delete') ?>',
+            url: '<?= $links['delete'] ?>',
             type: 'POST',
             data: {
                 ids: ids,
@@ -592,7 +597,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             }, // Include CSRF token for security
             dataType: 'json', // Expecting JSON response from the server
             success: function(response) {
-                window.hyper_swal.success(response.success, {
+                window.hyper.factory.swal.success(response.success, {
                     showConfirmButton: true,
                     confirmButtonText: "<?= lang('Admin.undo') ?>",
                 }).then((result) => {
@@ -604,7 +609,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             },
             error: function(xhr, status, error) {
                 // Handle errors here
-                window.hyper_swal.error(error);
+                window.hyper.factory.swal.error(error);
             }
         });
     }
@@ -612,7 +617,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
     // AJAX request to restore entries (POSTing the ids array)
     function restoreEntries(ids) {
         $.ajax({
-            url: '<?= base_url('admin/entries/restore') ?>',
+            url: '<?= $links['restore'] ?>',
             type: 'POST',
             data: {
                 ids: ids,
@@ -620,12 +625,12 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
             }, // Include CSRF token for security
             dataType: 'json', // Expecting JSON response from the server
             success: function(response) {
-                window.hyper_swal.success(response.success);
+                window.hyper.factory.swal.success(response.success);
                 hyperTable.ajax.reload();
             },
             error: function(xhr, status, error) {
                 // Handle errors here
-                window.hyper_swal.error(error);
+                window.hyper.factory.swal.error(error);
             }
         });
     }

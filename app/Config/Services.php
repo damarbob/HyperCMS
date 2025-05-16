@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Services\EntriesManager;
+use App\Services\FileServer;
 use App\Services\HyperHooks;
 use App\Services\ModelsManager;
 use CodeIgniter\Config\BaseService;
@@ -64,5 +65,19 @@ class Services extends BaseService
             return static::getSharedInstance('entriesManager');
         }
         return EntriesManager::getInstance();
+    }
+
+    /**
+     * FileServer service.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return FileServer
+     */
+    public static function fileServer(bool $getShared = true): FileServer
+    {
+        if ($getShared) {
+            return static::getSharedInstance('fileServer');
+        }
+        return new FileServer();
     }
 }

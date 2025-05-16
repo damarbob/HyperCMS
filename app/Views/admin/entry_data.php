@@ -71,7 +71,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
 <script type="text/javascript">
     /* Configs */
 
-    var lang = '<?= $lang ?>';
+    var lang = '<?= $locale ?>';
 
     // CSRF
     var csrfName = '<?= csrf_token() ?>';
@@ -148,7 +148,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         text: '<span class="icon"><i class="fa-solid fa-check"></i></span><span><?= lang('Admin.useData') ?></span>',
                         className: 'is-primary is-in-iframe',
                         action: function(e, dt, node, config) {
-                            window.hyper_swal.confirm({
+                            window.hyper.factory.swal.confirm({
                                 text: "<?= lang('Admin.thisActionWillOverwriteCurrentInput') ?>",
                             }).then((result) => {
                                 if (result.isConfirmed) {
@@ -178,7 +178,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         titleAttr: '<?= lang('Admin.refresh') ?>',
                         action: function(e, dt, node, config) {
                             dt.ajax.reload(function() {
-                                window.hyper_swal.success('<?= lang('Admin.successfullyRefreshed') ?>');
+                                window.hyper.factory.swal.success('<?= lang('Admin.successfullyRefreshed') ?>');
                             });
                         }
                     },
@@ -188,7 +188,7 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                         className: 'is-danger',
                         titleAttr: '<?= lang('Admin.clearHistory') ?>',
                         action: function(e, dt, node, config) {
-                            window.hyper_swal.confirm({
+                            window.hyper.factory.swal.confirm({
                                 text: "<?= lang('Admin.thisActionPermanentlyDeleteAllHistorical') ?>",
                             }).then((result) => {
                                 if (result.isConfirmed) {
@@ -201,12 +201,12 @@ $datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPe
                                         }, // Include CSRF token for security
                                         dataType: 'json', // Expecting JSON response from the server (if you modify your backend to return JSON)
                                         success: function(response) {
-                                            window.hyper_swal.success(response.success);
+                                            window.hyper.factory.swal.success(response.success);
                                             dt.ajax.reload();
                                         },
                                         error: function(xhr, status, error) {
                                             // Handle errors here
-                                            window.hyper_swal.error(error);
+                                            window.hyper.factory.swal.error(error);
                                         }
                                     });
                                 }

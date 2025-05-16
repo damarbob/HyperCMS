@@ -27,7 +27,7 @@ class ModelData extends BaseController
         $this->data['model'] = $model;
         $this->data['title'] = lang('Admin.modelxHistory', ['x' => $model['name']]);
 
-        return view('admin/model_data', $this->data);
+        return render('admin/model_data', $this->data);
     }
 
     public function clearHistory($modelId = null)

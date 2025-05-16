@@ -118,7 +118,7 @@ class EntryData extends BaseController
 
         $this->data['title'] = lang('Admin.entryxData', ['x' => $entryId]);
 
-        return view('admin/entry_data', $this->data);
+        return render('admin/entry_data', $this->data);
     }
 
     public function clearHistory($entryId = null)
