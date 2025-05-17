@@ -228,7 +228,7 @@ $requester = hex_encode($uri);
         const fd = new FormData(this);
 
         /** @type {FormData} */
-        const newFormData = window.hyper_encodeFormInputsToJson("fields", this);
+        const newFormData = window.hyper.util.form.encodeFormInputsToJson("fields", this);
         newFormData.append('<?= csrf_token() ?>', '<?= csrf_hash() ?>');
 
         <?php if ($action === 'new'): ?>

@@ -48,6 +48,7 @@ export default class FileManager {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
         },
         body: JSON.stringify(clipboard),
       }
@@ -79,6 +80,7 @@ export default class FileManager {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
+        [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
       },
       body: JSON.stringify({
         destination: this.currentPath,
@@ -614,6 +616,7 @@ export default class FileManager {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
               },
               body: JSON.stringify({
                 path: this.currentPath,
@@ -672,6 +675,7 @@ export default class FileManager {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
               },
               body: JSON.stringify({
                 path: this.currentPath,
@@ -730,6 +734,7 @@ export default class FileManager {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
               },
               body: JSON.stringify({
                 oldPath: oldPath,
@@ -824,6 +829,7 @@ export default class FileManager {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
         },
         body: JSON.stringify({
           path: encodeURIComponent(window.hyper.util.hex.encode(path)), // Encode the file path
@@ -881,6 +887,7 @@ export default class FileManager {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
+                [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
               },
               body: JSON.stringify({
                 files: selectedFiles,
@@ -941,6 +948,7 @@ export default class FileManager {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
         },
         body: JSON.stringify({
           files: selectedFiles,
@@ -993,6 +1001,7 @@ export default class FileManager {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
         },
         body: JSON.stringify({
           path: selectedFiles[0],
@@ -1050,6 +1059,7 @@ export default class FileManager {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
         },
         body: JSON.stringify({
           files,
