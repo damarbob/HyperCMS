@@ -95,8 +95,9 @@ class Model extends BaseController
             'date_field_ids' => json_encode($dateFieldIds),
             'fields' => $fields,
             'invisible_fields' => $invisibleFields,
-            'title' => $model->name,
             'id' => $id,
+            'pageLength' => service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10,
+            'title' => $model->name,
             'links' => [
                 'new' => base_url("admin/entries/new?model_id=$id"),
                 'edit' => base_url('admin/entries/') . '{id}/edit', // The ID must be separated from the base URL to prevent it from being URL-encoded.

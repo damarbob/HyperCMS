@@ -152,6 +152,7 @@ return [
     'loading' => 'Loading...',
 
     'fileNotFound' => 'File not found',
+    'filexNotFound' => 'File {x} not found',
 
     'size' => 'Size',
     'permission' => 'Permission',

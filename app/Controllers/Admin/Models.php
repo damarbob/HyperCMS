@@ -9,7 +9,7 @@ class Models extends BaseController
 {
     public function index(): string
     {
-        // $this->modelsModel->test();
+        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
 
         $this->data['title'] = lang('Admin.models');
 

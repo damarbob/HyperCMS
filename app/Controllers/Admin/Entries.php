@@ -26,8 +26,7 @@ class Entries extends BaseController
 
     public function index(): string
     {
-        // $this->modelsModel->test();
-
+        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
         $this->data['title'] = lang('Admin.entries');
         $this->data['links'] = [
             'new' => base_url('admin/entries/new?model_id=') . '{id}', // The ID must be separated from the base URL to prevent it from being URL-encoded.
@@ -37,7 +36,11 @@ class Entries extends BaseController
             'purge' => base_url('admin/entries/purge-deleted'),
         ];
 
+        /* Filters */
+
         $this->data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $this->data);
+
+        /* End of filters */
 
         return render('admin/entries', $this->data);
     }
@@ -66,7 +69,7 @@ class Entries extends BaseController
 
         /* Register views */
 
-        $hooks->register(hook('backend.view:entries:new'), function () use ($model, $action) {
+        $hooks->register(hook('Backend.view:entries:new'), function () use ($model, $action) {
             return render('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries'),
@@ -123,23 +126,26 @@ class Entries extends BaseController
 
         // Filtered data
         // Passes controller data to the hook
-        $this->data = $hooks->filter(hook('backend.controller:entries:edit:data'), $this->data);
+        $this->data = $hooks->filter(hook('Backend.controller:entries:edit:data'), $this->data);
 
         // Hook for entry edit
         // Passes the model and entry data to the hook
-        $hooks->trigger(hook('backend.controller:entries:edit'), [$this->data]);
+        $hooks->trigger(hook('Backend.controller:entries:edit'), [$this->data]);
 
         /* End of hooks */
 
         /* Register views */
 
-        $hooks->register(hook('backend.view:entries:edit'), function () use ($entry, $action) {
+        $hooks->register(hook('Backend.view:entries:edit'), function () use ($entry, $action) {
             return render('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries/' . $entry['id']),
                 'entry' => $entry
             ]);
         });
+        // dd(array_merge($this->data, [
+        //     'action' => 'edit'
+        // ]));
 
         /* End of register views */
 

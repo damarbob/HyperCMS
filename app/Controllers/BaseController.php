@@ -90,8 +90,10 @@ abstract class BaseController extends Controller
         $this->data['hyper']['config'] = [
             "baseUrl" => base_url(),
             "environment" => ENVIRONMENT,
+            "csrfHeader" => csrf_header(),
             "csrfToken" => csrf_token(),
             "csrfHash" => csrf_hash(),
+            "locale" => service('request')->getLocale(),
         ];
         $this->data['hyper']['lang'] = dump_language_keys_grouped();
 

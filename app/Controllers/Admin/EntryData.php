@@ -116,6 +116,8 @@ class EntryData extends BaseController
         $this->data['date_field_ids'] = json_encode($date_field_ids);
         $this->data['invisible_fields'] = $invisibleFields;
 
+        $this->data['pageLenth'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
+
         $this->data['title'] = lang('Admin.entryxData', ['x' => $entryId]);
 
         return render('admin/entry_data', $this->data);

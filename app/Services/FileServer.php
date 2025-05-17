@@ -43,15 +43,14 @@ class FileServer
 
         // Validate that at least one of these paths exists and is within the allowed directories.
         if (
-            (
-                !validate_directory($developmentFullPath, ROOTPATH) || !file_exists($developmentFullPath)
-            ) && (
-                !validate_directory($productionFullPath, FCPATH) || !file_exists($productionFullPath)
-            ) && (
-                !validate_directory_within_base($productionPublicHtmlFullPath, FCPATH) || !file_exists($productionPublicHtmlFullPath)
-            )
+            (!validate_directory($developmentFullPath, ROOTPATH) || !file_exists($developmentFullPath))
+            && (!validate_directory($productionFullPath, FCPATH) || !file_exists($productionFullPath))
+            && (!validate_directory_within_base($productionPublicHtmlFullPath, FCPATH) || !file_exists($productionPublicHtmlFullPath))
         ) {
-            throw PageNotFoundException::forPageNotFound(lang('Admin.fileNotFound'));
+            // Extract the base file name (including extension) from the decoded path.
+            $fileName = pathinfo($path, PATHINFO_BASENAME);
+            // Show error message
+            throw PageNotFoundException::forPageNotFound(lang('Admin.filexNotFound', ['x' => $fileName]));
         }
 
         // Choose a valid path—development takes precedence.

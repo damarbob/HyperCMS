@@ -2,12 +2,10 @@
 
 use Config\Hyper;
 
-$locale = service('request')->getLocale();
-
 $content = $this->renderSection('content');
 ?>
 <!DOCTYPE html>
-<html lang="<?= $locale ?>" class="not-loaded">
+<html lang="<?= $hyper['config']['locale'] ?>" class="not-loaded">
 <!-- data-theme="light" -->
 <!-- data-theme="dark" -->
 
