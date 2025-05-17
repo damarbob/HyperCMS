@@ -25,6 +25,7 @@ class ModelData extends BaseController
         /* End of model */
 
         $this->data['model'] = $model;
+        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
         $this->data['title'] = lang('Admin.modelxHistory', ['x' => $model['name']]);
 
         return render('admin/model_data', $this->data);
