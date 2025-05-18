@@ -3,10 +3,6 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
-use App\Models\EntriesModel;
-use App\Models\EntryDataModel;
-use App\Models\ModelsModel;
-use CodeIgniter\HTTP\Files\UploadedFile;
 
 class Entries extends ApiController
 {
@@ -15,8 +11,11 @@ class Entries extends ApiController
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
+        $id = $data['id'] ?? null; // Entry id
+        $ids = $data['ids'] ?? null; // Entry ids
+        $modelId = $data['model_id'] ?? null; // Model id
         $draw   = $data['draw'] ?? 1;;
-        $start  = $data['start'] ?? null;    // Offset]
+        $start  = $data['start'] ?? null; // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
         $order  = $data['order'] ?? null;
@@ -33,9 +32,19 @@ class Entries extends ApiController
             $modelBuilder = $model->getDeletedCustomBuilder();
         }
 
+        // Filter by entry id if provided:
+        if (!empty($id)) {
+            $modelBuilder->where('id', $id);
+        }
+
+        // Filter by entry ids if provided:
+        if (!empty($ids)) {
+            $modelBuilder->whereIn('id', $ids);
+        }
+
         // Filter by model_id if provided:
-        if (!empty($data['model_id'])) {
-            $modelBuilder->where('model_id', $data['model_id']);
+        if (!empty($modelId)) {
+            $modelBuilder->where('model_id', $modelId);
         }
 
         // 1. Get the total count with no filtering.
@@ -81,6 +90,5 @@ class Entries extends ApiController
         ];
 
         return $this->response->setJSON($output);
-        // return $this->response->setJSON($data('draw'));
     }
 }
