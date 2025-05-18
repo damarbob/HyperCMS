@@ -144,7 +144,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
         });
 
         // For non-main hooks, simply register the page's HTML content.
-        if ($pageHook !== $frontendMainHook) {
+        if (!empty($pageHook) && $pageHook !== $frontendMainHook) {
             HyperHooks::getInstance()->register($pageHook, function () use ($pageHtml) {
                 return $pageHtml;
             });
