@@ -128,12 +128,12 @@ var options = {
             if (isTrash) {
               $(node).addClass("is-active");
               $(node).html(
-                `<span class="icon"><i class="fa-solid fa-xmark"></i></span><span>${hyper.lang.Admin.exit}/span>`
+                `<span class="icon"><i class="fa-solid fa-xmark"></i></span><span>${hyper.lang.Admin.exit}</span>`
               );
             } else {
               $(node).removeClass("is-active");
               $(node).html(
-                `<span class="icon"><i class="fa-solid fa-recycle"></i></span><span>${hyper.lang.Admin.trash}/span>`
+                `<span class="icon"><i class="fa-solid fa-recycle"></i></span><span>${hyper.lang.Admin.trash}</span>`
               );
             }
           },

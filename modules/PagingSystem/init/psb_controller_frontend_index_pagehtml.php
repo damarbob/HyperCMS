@@ -5,6 +5,12 @@ use Masterminds\HTML5;
 
 // Page HTML data filter on Frontend controller
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:frontend:index:pagehtml'), function ($pageHtml) {
+
+    // Return if no HTML is provided
+    if (empty($pageHtml)) {
+        return $pageHtml; // No HTML to process
+    }
+
     // Initialize HTML5 parser
     $html5 = new HTML5([
         'disable_html_ns' => true, // Better for modern HTML
