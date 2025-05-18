@@ -161,6 +161,10 @@ class CreateHyperTables extends Migration
                 'type'            => 'LONGTEXT',
                 'null'            => false,
             ],
+            'icon' => [
+                'type'            => 'TEXT',
+                'null'            => true,
+            ],
             'creator_id' => [
                 'type'            => 'INT',
                 'constraint'      => 11,
