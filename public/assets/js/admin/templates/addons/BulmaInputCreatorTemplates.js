@@ -1,14 +1,14 @@
-import {replaceEnvironmentSyntax} from "../../use-case/EnvironmentSyntaxParser.js";
+import { replaceEnvironmentSyntax } from "../../use-case/EnvironmentSyntaxParser.js";
 
 /* ---------------------------------------------------------------------------
    Define Bulma-based template set.
 --------------------------------------------------------------------------- */
 export const bulmaInputCreatorTemplates = {
-    text: ({ id, label, type, required, value, helper, className }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  text: ({ id, label, type, required, value, helper, className, options }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
@@ -18,19 +18,26 @@ export const bulmaInputCreatorTemplates = {
                     class="input ${className}"
                     value="${value || ""}"
                     ${required ? "required" : ""}
+                    ${options && options.step ? "step='" + options.step + "'" : ""}
+                    ${options && options.min ? "min='" + options.min + "'" : ""}
+                    ${options && options.max ? "max='" + options.max + "'" : ""}
                 />
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    datetime: ({ id, label, type, required, value, helper }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  datetime: ({ id, label, type, required, value, helper }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
@@ -42,17 +49,21 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    color: ({ id, label, type, required, value, helper }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  color: ({ id, label, type, required, value, helper }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
@@ -65,17 +76,21 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    textarea: ({ id, label, required, value, helper, className }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  textarea: ({ id, label, required, value, helper, className }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <textarea
@@ -85,17 +100,21 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 >${value || ""}</textarea>
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    checkbox: ({ id, label, required, checked, helper }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  checkbox: ({ id, label, required, checked, helper }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <div class="control">
                 <label class="checkbox">
                     <input
@@ -108,21 +127,26 @@ export const bulmaInputCreatorTemplates = {
                     ${label}
                 </label>
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    checkboxes: ({ id, options, required, helper }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+  checkboxes: ({ id, options, required, helper }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const field = document.createElement("div");
-        field.className = "field";
+    const field = document.createElement("div");
+    field.className = "field";
 
-        const checkboxesHTML = options
-            .map(
-                (option) => `
+    const checkboxesHTML = options
+      .map(
+        (option) => `
                 <label class="checkbox">
                     <input
                         type="checkbox"
@@ -135,28 +159,33 @@ export const bulmaInputCreatorTemplates = {
                     ${option.label || option.value}
                 </label>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-        field.innerHTML = `
+    field.innerHTML = `
             <div class="checkboxes">
                 ${checkboxesHTML}
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    radio: ({ id, options, required, helper }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+  radio: ({ id, options, required, helper }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const field = document.createElement("div");
-        field.className = "field";
+    const field = document.createElement("div");
+    field.className = "field";
 
-        const radiosHTML = options
-            .map(
-                (option) => `
+    const radiosHTML = options
+      .map(
+        (option) => `
                 <label class="radio">
                     <input
                         type="radio"
@@ -169,24 +198,28 @@ export const bulmaInputCreatorTemplates = {
                     ${option.label || option.value}
                 </label>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-        field.innerHTML = `
+    field.innerHTML = `
             <div class="radios">
                 ${radiosHTML}
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    range: ({ id, label, required, value, options, helper }) => {
-        const field = document.createElement("div");
-        field.className = `field ${helper ? "mb-4" : "mb-3"}`;
+  range: ({ id, label, required, value, options, helper }) => {
+    const field = document.createElement("div");
+    field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <input
@@ -200,18 +233,22 @@ export const bulmaInputCreatorTemplates = {
                     ${required ? "required" : ""}
                 />
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    file: ({ id, label, required, helper, multiple }) => {
-        const field = document.createElement("div");
-        field.id = `${id}_parent`;
-        field.className = "field";
+  file: ({ id, label, required, helper, multiple }) => {
+    const field = document.createElement("div");
+    field.id = `${id}_parent`;
+    field.className = "field";
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="file has-name is-fullwidth">
                 <label class="file-label">
@@ -231,22 +268,27 @@ export const bulmaInputCreatorTemplates = {
                     <span class="file-name"></span>
                 </label>
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
             <div class="is-flex is-flex-wrap-wrap mb-2" id="${id}_form-helper" style="gap: 0.5rem;"></div>
         `;
 
-        return field;
-    },
+    return field;
+  },
 
-    select: ({ id, label, required, value, options, helper }) => {
-        if (!options || !Array.isArray(options)) return document.createDocumentFragment();
+  select: ({ id, label, required, value, options, helper }) => {
+    if (!options || !Array.isArray(options))
+      return document.createDocumentFragment();
 
-        const field = document.createElement("div");
-        field.className = "field";
+    const field = document.createElement("div");
+    field.className = "field";
 
-        const optionsHTML = options
-            .map(
-                (item) => `
+    const optionsHTML = options
+      .map(
+        (item) => `
                 <option
                     value="${item.value}"
                     ${value && item.value == value ? "selected" : ""}
@@ -254,21 +296,27 @@ export const bulmaInputCreatorTemplates = {
                     ${item.label}
                 </option>
             `
-            )
-            .join("");
+      )
+      .join("");
 
-        field.innerHTML = `
+    field.innerHTML = `
             <label class="label" for="${id}">${label}</label>
             <div class="control">
                 <div class="select">
-                    <select id="${id}" name="${id}" ${required ? "required" : ""}>
+                    <select id="${id}" name="${id}" ${
+      required ? "required" : ""
+    }>
                         ${optionsHTML}
                     </select>
                 </div>
             </div>
-            ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+            ${
+              helper
+                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
+                : ""
+            }
         `;
 
-        return field;
-    },
+    return field;
+  },
 };

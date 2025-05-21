@@ -10,7 +10,7 @@ const defaultTemplates = {
     container.innerHTML = `<input type="hidden" id="${id}" name="${id}" value="${value}" />`;
     return container;
   },
-  text: ({ id, label, type, required, value, helper, className }) => {
+  text: ({ id, label, type, required, value, helper, className, options }) => {
     const container = document.createElement("div");
     container.className = `form-floating ${helper ? "mb-4" : "mb-3"}`;
 
@@ -22,6 +22,9 @@ const defaultTemplates = {
                 value="${value || ""}"
                 class="form-control ${className}"
                 ${required ? "required" : ""}
+                ${options && options.step ? "step='" + options.step + "'" : ""}
+                ${options && options.min ? "min='" + options.min + "'" : ""}
+                ${options && options.max ? "max='" + options.max + "'" : ""}
             />
             <label class="form-label" for="${id}">${label}</label>
             ${
