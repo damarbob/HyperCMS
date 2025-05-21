@@ -123,6 +123,7 @@ export default class InputCreator {
           value,
           helper,
           className,
+          options,
         });
         break;
       case "datetime-local":
