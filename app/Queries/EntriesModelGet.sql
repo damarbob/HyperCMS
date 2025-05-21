@@ -4,6 +4,7 @@ SELECT
     model_data.model_id as model_id,
     model_data.name as model_name,
     entry_data.fields,
+    model_data.fields AS model_fields,
     users.username AS created_by,
     editors.username AS edited_by,
     entries.created_at,
