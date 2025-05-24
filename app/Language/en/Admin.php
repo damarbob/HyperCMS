@@ -14,6 +14,7 @@ return [
 
     'admin' => 'Admin',
     'general' => 'General',
+    'ai' => 'AI',
     'others' => 'Others',
     'avatar' => 'Avatar',
     'profile' => 'Profile',

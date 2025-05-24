@@ -5,8 +5,6 @@ use App\Hyper\HyperHook;
 return [
 
     // Hooks
-    'part:view:sidebar:settings' => new HyperHook('backend:part:view:sidebar:settings', 'Settings Sidebar', ''),
-
     'view:models:new' => new HyperHook('backend:view:models:new', 'New Models View', ''),
     'view:models:edit' => new HyperHook('backend:view:models:edit', 'Edit Models View', ''),
 
@@ -21,9 +19,9 @@ return [
 
     // Filters
     'controller:menu:data' => new HyperHook('backend:controller:menu:data', 'Menu Data on Base Controller', ''),
-    
+
     'controller:model:index:data' => new HyperHook('backend:controller:model:index:data', 'Data on Index Model Controller', ''),
-    
+
     'controller:entries:index:data' => new HyperHook('backend:controller:entries:index:data', 'Data on Index Entries Controller', ''),
     'controller:entries:edit:data' => new HyperHook('backend:controller:entries:edit:data', 'Data on Edit Entries Controller', ''),
 ];
