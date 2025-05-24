@@ -3,6 +3,8 @@ SELECT
     models.id,
     model_data.name,
     model_data.fields,
+    model_data.group,
+    model_data.user_groups,
     model_data.icon,
     users.username AS created_by,
     editors.username AS edited_by,

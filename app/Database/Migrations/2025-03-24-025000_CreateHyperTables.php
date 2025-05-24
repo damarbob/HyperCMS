@@ -161,6 +161,14 @@ class CreateHyperTables extends Migration
                 'type'            => 'LONGTEXT',
                 'null'            => false,
             ],
+            'group' => [
+                'type'            => 'TEXT',
+                'null'            => true,
+            ],
+            'user_groups' => [
+                'type'            => 'TEXT',
+                'null'            => true,
+            ],
             'icon' => [
                 'type'            => 'TEXT',
                 'null'            => true,

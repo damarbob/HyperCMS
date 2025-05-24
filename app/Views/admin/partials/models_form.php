@@ -38,6 +38,39 @@ $fieldsError = validation_show_error('fields');
         <?php endif; ?>
     </div>
 
+    <!-- Group -->
+    <div class="field">
+        <label class="label"><?= lang('Admin.group') ?></label>
+        <div class="control has-icons-left">
+            <span class="icon is-small is-small"><i class="fa-solid fa-object-group"></i></span>
+            <input class="input" type="text" placeholder="<?= lang('Admin.group') ?>" name="group" value="<?= old('group') ?: (!empty($model['group']) ? $model['group'] : '') ?>" />
+        </div>
+        <p class="help">
+            <?= lang('Admin.optionalGroupingForBetterOrganization') ?>
+        </p>
+    </div>
+
+    <!-- User Groups -->
+    <?php $fieldUserGroups = old('user_groups') ??
+        (!empty($model['user_groups']) ?
+            json_decode($model['user_groups']) :
+            array_keys($groups)); ?>
+
+    <div class="field">
+        <label class="label"><?= lang('Admin.userGroups') ?></label>
+        <div class="checkboxes">
+            <?php foreach (array_keys($groups) as $group): ?>
+                <label class="checkbox">
+                    <input type="checkbox" name="user_groups[]" value="<?= $group ?>" <?= in_array($group, $fieldUserGroups) ? 'checked="checked"' : '' ?>>
+                    <?= ucfirst($group) ?>
+                </label>
+            <?php endforeach ?>
+        </div>
+        <p class="help">
+            <?= lang('Admin.modelWillVisibleToUsersInSelectedGroups') ?>
+        </p>
+    </div>
+
     <!-- Icon -->
     <div class="field">
         <label class="label"><?= lang('Admin.icon') ?></label>
