@@ -18,8 +18,13 @@ class Models extends BaseController
 
     public function new(): string
     {
+        /** @var \Config\AuthGroups */
+        $authGroups = config('AuthGroups');
 
-        $this->data['title'] = lang('Admin.newModel');
+        // Editable data
+        $this->data = array_merge($this->data, [
+            'title' => lang('Admin.newModel'),
+        ]);
 
         $this->hooks->register(hook('backend.view:models:new'), function () {
             return render('admin/partials/models_form', [
@@ -31,14 +36,22 @@ class Models extends BaseController
         return render(
             'admin/models_action',
             array_merge($this->data, [
+                // Noneditable data
                 'action' => 'new',
+                'groups' => $authGroups->groups,
             ])
         );
     }
 
     public function edit($id)
     {
-        $this->data['title'] = lang('Admin.editModel');
+        /** @var \Config\AuthGroups */
+        $authGroups = config('AuthGroups');
+
+        // Editable data
+        $this->data = array_merge($this->data, [
+            'title' => lang('Admin.editModel'),
+        ]);
 
         $model = $this->modelsManager->find($id);
 
@@ -55,8 +68,10 @@ class Models extends BaseController
         });
 
         return render('admin/models_action', array_merge($this->data, [
+            // Noneditable data
             'action' => 'edit',
             'model' => $model,
+            'groups' => $authGroups->groups,
         ]));
     }
 
@@ -73,6 +88,8 @@ class Models extends BaseController
         $rules = [
             'name' => 'required|min_length[3]|max_length[255]',
             'fields' => 'required',
+            'group' => 'permit_empty|min_length[3]|alpha_space',
+            'user_groups' => 'required',
             'icon' => ['permit_empty'],
         ];
 
@@ -87,6 +104,14 @@ class Models extends BaseController
         // Get the validated data.
         $validData = $this->validator->getValidated();
         $userId = auth()->user()->id; // Current authenticated user's ID
+
+        // Dynamic conversion of array inputs
+        // Loop through all validated fields. If any field is an array, convert it to JSON.
+        foreach ($validData as $key => $value) {
+            if (is_array($value)) {
+                $validData[$key] = json_encode($value);
+            }
+        }
 
         try {
             // Delegate the creation process to the service.
@@ -106,6 +131,8 @@ class Models extends BaseController
         $rules = [
             'name' => 'required|min_length[3]|max_length[255]',
             'fields' => 'required',
+            'group' => 'permit_empty|min_length[3]|alpha_space',
+            'user_groups' => 'required',
             'icon' => 'permit_empty',
         ];
 
@@ -117,6 +144,16 @@ class Models extends BaseController
 
         $validData = $this->validator->getValidated();
         $userId = auth()->user()->id;
+
+        // Dynamic conversion of array inputs
+        // Loop through all validated fields. If any field is an array, convert it to JSON.
+        foreach ($validData as $key => $value) {
+            if (is_array($value)) {
+                $validData[$key] = json_encode($value);
+            }
+        }
+
+        // dd($validData);
 
         try {
             $this->modelsManager->update($id, $validData, $userId);
