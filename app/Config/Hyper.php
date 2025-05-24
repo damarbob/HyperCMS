@@ -10,7 +10,7 @@ class Hyper extends BaseConfig
     public string $appVersion = '0.1.0-alpha.4';
 
     // Default modules
-    public array $activeModules = ['PagingSystem'];
+    public array $activeModules = ['UserManagement', 'PagingSystem'];
 
     // Development modules
     public array $activeDevModules = [];
