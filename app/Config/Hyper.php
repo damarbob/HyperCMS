@@ -9,102 +9,92 @@ class Hyper extends BaseConfig
     public string $appName = 'Hyper CMS';
     public string $appVersion = '0.4.0-alpha.4';
 
-    // Default modules
-    public array $activeModules = ['UserManagement', 'PagingSystem'];
+    // Default modules as a comma-separated list.
+    private string $defaultActiveModules = 'UserManagement,PagingSystem';
 
-    // Development modules
-    public array $activeDevModules = [];
+    // Active modules as a comma-separated list.
+    public string $activeModules = '';
 
-    // Disables ALL modules if true
+    // Active development modules as a comma-separated list.
+    public string $activeDevModules = '';
+
+    // If true, disables ALL modules.
     public bool $safeMode = false;
 
     public function __construct()
     {
         parent::__construct();
-        $this->loadOverrides(); // Apply runtime overrides
         log_message('debug', 'HyperCMS Config loaded.');
+
+        if (!$this->safeMode) {
+            if (empty($this->activeModules)) {
+                $this->activeModules = $this->defaultActiveModules;
+            } else {
+                // Merge default with custom active modules.
+                $defaultModules = array_filter(array_map('trim', explode(',', $this->defaultActiveModules)));
+                $customModules  = array_filter(array_map('trim', explode(',', $this->activeModules)));
+                $mergedModules  = array_unique(array_merge($defaultModules, $customModules));
+                $this->activeModules = implode(',', $mergedModules);
+            }
+        } else {
+            // In safe mode, development modules are disabled.
+            $this->activeDevModules = '';
+        }
     }
 
     /**
-     * Dynamically activate a module (persists for current request).
+     * Returns the active modules as an array.
+     *
+     * @return array The list of active module names.
      */
-    public function activateModule(string $moduleName): bool
+    public function getActiveModules(): array
     {
-        if ($this->safeMode) {
-            log_message('warning', "Safe mode: Cannot activate module '{$moduleName}'.");
-            return false;
-        }
-
-        if (!in_array($moduleName, $this->activeModules)) {
-            $this->activeModules[] = $moduleName;
-            log_message('info', "Module '{$moduleName}' activated.");
-        }
-        return true;
+        return array_filter(array_map('trim', explode(',', $this->activeModules)));
     }
 
     /**
-     * Dynamically deactivate a module.
+     * Returns the active development modules as an array.
+     *
+     * @return array The list of active development module names.
      */
-    public function deactivateModule(string $moduleName): bool
+    public function getActiveDevModules(): array
     {
-        $key = array_search($moduleName, $this->activeModules);
-        if ($key !== false) {
-            unset($this->activeModules[$key]);
-            log_message('info', "Module '{$moduleName}' deactivated.");
-        }
-        return true;
-    }
-
-    /**
-     * Load runtime overrides (e.g., from database or environment).
-     */
-    protected function loadOverrides(): void
-    {
-        // Override active modules from ENV (comma-separated)
-        if ($envModules = env('HYPER_ACTIVE_MODULES')) {
-            $this->activeModules = array_merge(
-                $this->activeModules,
-                explode(',', $envModules)
-            );
-        }
-
-        // Override active development modules from ENV (comma-separated)
-        if ($envModules = env('HYPER_ACTIVE_DEV_MODULES')) {
-            $this->activeDevModules = array_merge(
-                $this->activeDevModules,
-                explode(',', $envModules)
-            );
-        }
-
-        // Enable safe mode via ENV
-        $this->safeMode = (bool) env('HYPER_SAFE_MODE', false);
+        return array_filter(array_map('trim', explode(',', $this->activeDevModules)));
     }
 
     /**
      * Register module routes dynamically.
+     *
+     * This function scans through active modules and active development modules,
+     * then adds their route files (if available) to the beginning of the routing configuration.
+     *
+     * @return void
      */
-    public function registerModuleRoutes()
+    public function registerModuleRoutes(): void
     {
+        /** @var \Config\Routing */
+        $routing = config('routing');
 
-        foreach ($this->activeModules as $module) {
-            if ($module === '.' || $module === '..') continue;
+        foreach ($this->getActiveModules() as $module) {
+            if ($module === '.' || $module === '..') {
+                continue;
+            }
 
             $routesPath = MODULES_PATH . '/' . $module . '/Config/Routes.php';
-
             if (file_exists($routesPath)) {
-                // Insert $routesPath at the beginning of the routeFiles array to allow override.
-                array_unshift(config(Routing::class)->routeFiles, $routesPath);
+                // Prepend the module route file to allow override.
+                array_unshift($routing->routeFiles, $routesPath);
             }
         }
 
-        foreach ($this->activeDevModules as $module) {
-            if ($module === '.' || $module === '..') continue;
+        foreach ($this->getActiveDevModules() as $module) {
+            if ($module === '.' || $module === '..') {
+                continue;
+            }
 
             $routesPath = MODULES_PATH . '/.hyper-dev/' . $module . '/Config/Routes.php';
-
             if (file_exists($routesPath)) {
-                // Insert $routesPath at the beginning of the routeFiles array to allow override.
-                array_unshift(config(Routing::class)->routeFiles, $routesPath);
+                array_unshift($routing->routeFiles, $routesPath);
             }
         }
     }

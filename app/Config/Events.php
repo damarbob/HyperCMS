@@ -2,7 +2,6 @@
 
 namespace Config;
 
-use CodeIgniter\Autoloader\Autoloader;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Exceptions\FrameworkException;
 use CodeIgniter\HotReloader\HotReloader;
@@ -60,59 +59,61 @@ Events::on('pre_system', static function (): void {
  * Hyper Modules autoloading on pre_system
  * --------------------------------------------------------------------
  * Hyper Modules are loaded on the pre_system event.
- * This allows for modules to be loaded and hooks to be registered 
+ * This allows for modules to be loaded and hooks to be registered
  * before the system starts.
- * 
  */
-Events::on('pre_system', function () {
 
-    // Register module namespace to autoload
-    /** @var \CodeIgniter\Autoloader\Autoloader */
+Events::on('pre_system', function (): void {
+
+    // Load the autoloader service and Hyper configuration.
+    /** @var \CodeIgniter\Autoloader\Autoloader $autoloader */
     $autoloader = service('autoloader');
+    /** @var \Config\Hyper $hyper */
+    $hyper = config('Hyper');
 
-    // Autoload modules
-    $activeModules = config(Hyper::class)->activeModules;
+    // Log safe mode as a string.
+    log_message('info', 'Hyper safe mode: ' . ($hyper->safeMode ? 'true' : 'false'));
+
+    // Helper closure to autoload modules.
+    // $subFolder should be empty for regular modules, or e.g. '.hyper-dev' for development modules.
+    $autoloadModules = function (array $modules, string $subFolder = '') use ($autoloader): void {
+        foreach ($modules as $module) {
+            // Skip any accidental dot entries.
+            if ($module === '.' || $module === '..') {
+                continue;
+            }
+            // Build the full module path.
+            $modulePath = MODULES_PATH
+                . (!empty($subFolder) ? $subFolder . DIRECTORY_SEPARATOR : '')
+                . $module . DIRECTORY_SEPARATOR;
+            // Register the module's namespace.
+            $autoloader->addNamespace($module, $modulePath);
+
+            // If an init file exists, require it.
+            $initFile = $modulePath . 'init.php';
+            if (file_exists($initFile)) {
+                require_once $initFile;
+            }
+        }
+    };
+
+    // Autoload regular modules.
+    $activeModules = $hyper->getActiveModules();
     log_message('info', 'Active Modules: ' . implode(', ', $activeModules));
-    foreach ($activeModules as $module) {
+    $autoloadModules($activeModules);
 
-        $autoloader->addNamespace(
-            $module,
-            MODULES_PATH . "{$module}/"
-        );
-
-        // If the module init exists, load it
-        $initFile = MODULES_PATH . "{$module}/init.php";
-        if (file_exists($initFile)) {
-            require_once $initFile;
-        }
-    }
-
-    // Autoload development modules
-    $activeDevModules = config(Hyper::class)->activeDevModules;
+    // Autoload development modules.
+    $activeDevModules = $hyper->getActiveDevModules();
     log_message('info', 'Active dev Modules: ' . implode(', ', $activeDevModules));
-    foreach ($activeDevModules as $module) {
+    $autoloadModules($activeDevModules, '.hyper-dev');
 
-        $autoloader->addNamespace(
-            $module,
-            MODULES_PATH . ".hyper-dev/{$module}/"
-        );
-
-        // If the module init exists, load it
-        $initFile = MODULES_PATH . ".hyper-dev/{$module}/init.php";
-        if (file_exists($initFile)) {
-            require_once $initFile;
-        }
-    }
-
+    // Display the namespaces added to the autoloader.
     log_message('info', 'Namespaces autoloaded: ' . implode(', ', array_keys($autoloader->getNamespace())));
 
-    // Autoload module routes
-    // This is done to allow modules to register their own routes
-    // without having to modify the main routes file.
-    config(Hyper::class)->registerModuleRoutes();
+    // Register module routes so that modules can add their own routes.
+    $hyper->registerModuleRoutes();
     log_message('info', 'Module routes registered.');
 
-    // Modules init hook
-    // This is done to allow modules to register their own hooks on pre_system
+    // Trigger module initialization hooks so that modules can register hooks on pre_system.
     service('hooks')->trigger(hook('Core.modules:init'));
 });
