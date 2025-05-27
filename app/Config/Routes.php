@@ -45,11 +45,13 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         'websafe' => 1,
         'placeholder' => '(:num)',
         'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
-        'filter' => ['group:superadmin'],
+        'filter' => 'group:superadmin',
     ]);
-    $routes->post('models/delete', 'Models::delete');
-    $routes->post('models/purge-deleted', 'Models::purgeDeleted');
-    $routes->post('models/restore', 'Models::restore');
+    $routes->group('models', ['filter' => 'group:superadmin'], static function ($routes) {
+        $routes->post('delete', 'Models::delete');
+        $routes->post('purge-deleted', 'Models::purgeDeleted');
+        $routes->post('restore', 'Models::restore');
+    });
 
     // Model data
     $routes->resource('model-data', [
@@ -76,7 +78,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             $routes->post('delete', 'Entries::delete');
             $routes->post('restore', 'Entries::restore');
         });
-        $routes->post('purge-deleted', 'Entries::purgeDeleted', ['filter' => 'group:admin']);
+        $routes->post('purge-deleted', 'Entries::purgeDeleted', ['filter' => 'group:superadmin']);
     });
 
     // Entry data
