@@ -60,7 +60,7 @@ abstract class AdminController extends BaseController
                     'hint'              => lang('Admin.managex', ['x' => lang("Admin.entries")]),
                     'tooltip_content'   => lang("Admin.entries"),
                     'tooltip_placement' => 'right',
-                    // 'groups'            => 'superadmin,admin,developer'
+                    'groups'            => 'superadmin,admin,developer'
                 ],
             ],
             // This group contains a submenu (nested items)

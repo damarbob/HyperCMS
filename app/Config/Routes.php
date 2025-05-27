@@ -35,7 +35,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->group('(:num)', static function ($routes) {
             $routes->get('/', 'Model::index/$1');
             $routes->get('new', 'Entries::new');
-            $routes->get('(:num)/edit', 'Entries::edit/$2');
+            $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
         });
         $routes->addRedirect('/', 'admin/entries', 301);
     });
@@ -67,7 +67,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         'websafe' => 1,
         'placeholder' => '(:num)',
         'only' => ['index', 'create', 'update', 'delete'],
-        'filter' => 'model-user-group:entries',
+        'filter' => 'group:superadmin,admin,developer',
     ]);
     $routes->group('entries', static function ($routes) {
         $routes->group('(:num)', ['filter' => 'model-user-group:entries'], static function ($routes) {
