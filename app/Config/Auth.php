@@ -75,12 +75,12 @@ class Auth extends ShieldAuth
      */
     public array $redirects = [
         // @IMPORTANT: Update production redirects if dashboard is finished
-        'register'          => (ENVIRONMENT === 'development') ? '/admin/dashboard' : '/admin/models',
-        'login'             => (ENVIRONMENT === 'development') ? '/admin/dashboard' : '/admin/models',
+        'register'          => '/admin/dashboard',
+        'login'             => '/admin/dashboard',
         'logout'            => 'login',
         'force_reset'       => '/',
-        'permission_denied' => '/',
-        'group_denied'      => '/',
+        'permission_denied' => '/admin',
+        'group_denied'      => '/admin',
     ];
 
     /**

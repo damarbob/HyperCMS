@@ -29,8 +29,8 @@ class Entries extends AdminController
         $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
         $this->data['title'] = lang('Admin.entries');
         $this->data['links'] = [
-            'new' => base_url('admin/entries/new?model_id=') . '{id}', // The ID must be separated from the base URL to prevent it from being URL-encoded.
-            'edit' => base_url('admin/entries/') . '{id}/edit',
+            'new' => base_url('admin/entries') . '/{id}/new', // The ID must be separated from the base URL to prevent it from being URL-encoded.
+            'edit' => base_url('admin/entries') . '/{modelId}/{id}/edit',
             'delete' => base_url('admin/entries/delete'),
             'restore' => base_url('admin/entries/restore'),
             'purge' => base_url('admin/entries/purge-deleted'),
@@ -45,18 +45,23 @@ class Entries extends AdminController
         return render('admin/entries', $this->data);
     }
 
-    public function new()
+    public function new($model_id)
     {
         $hooks = $this->hooks;
         $action = 'new';
 
-        $modelId = $this->request->getGet('model_id');
+        $modelId = $model_id ?: $this->request->getGet('model_id');
 
         // Check if the model ID is empty
         if (empty($modelId))
             return $this->respond(lang('Admin.noModelFound'), success: false);
 
         $model = $this->modelsManager->find($modelId);
+
+        // Validate user group
+        if (!$this->validateUserGroup($model['user_groups'], auth()->user()->getGroups())) {
+            return $this->respond(lang('Auth.notEnoughPrivilege'), success: false);
+        }
 
         // Check if the model does not exist
         if (!$model)
@@ -84,7 +89,7 @@ class Entries extends AdminController
         ]));
     }
 
-    public function edit($id)
+    public function edit($modelId, $id)
     {
         $hooks = $this->hooks;
         $action = 'edit';
@@ -99,9 +104,14 @@ class Entries extends AdminController
 
         /* End of entry */
 
+        // Validate user group
+        if (!$this->validateUserGroup($entry['user_groups'], auth()->user()->getGroups())) {
+            return $this->respond(lang('Auth.notEnoughPrivilege'), success: false);
+        }
+
         /* Model */
 
-        $model = $this->modelsManager->find($entry['model_id']);
+        $model = $this->modelsManager->find($modelId);
 
         // Check if the model exists
         if (empty($model))
@@ -118,7 +128,6 @@ class Entries extends AdminController
 
         // Page title
         $this->data['title'] = lang('Admin.editx', ['x' => $entry['model_name']]);
-        // $this->data['type'] = $action;
 
         /* End of view data */
 
@@ -143,9 +152,6 @@ class Entries extends AdminController
                 'entry' => $entry
             ]);
         });
-        // dd(array_merge($this->data, [
-        //     'action' => 'edit'
-        // ]));
 
         /* End of register views */
 
@@ -397,7 +403,7 @@ class Entries extends AdminController
      *
      * @return array  [fileUrls, log]
      */
-    private function processUploadedFiles(): array
+    protected function processUploadedFiles(): array
     {
         $files    = $this->request->getFiles();
         $fileUrls = [];
@@ -461,7 +467,7 @@ class Entries extends AdminController
      *
      * @return string  Updated JSON-encoded meta data.
      */
-    private function updateMetaFields(?string $metaJson, array $fileUrls): string
+    protected function updateMetaFields(?string $metaJson, array $fileUrls): string
     {
         // Decode the original meta data.
         $fieldsArray   = json_decode($metaJson, true) ?? [];
@@ -489,5 +495,13 @@ class Entries extends AdminController
         // log_message('debug', "updateMetaFields: " . json_encode($finalFields, JSON_PRETTY_PRINT));
 
         return json_encode($finalFields);
+    }
+
+    protected function validateUserGroup($entryUserGroups, $userGroups): bool
+    {
+        $entryUserGroupsArray = json_decode($entryUserGroups ?? '', true);
+        if (empty($entryUserGroupsArray)) return true;
+
+        return !empty(array_intersect($entryUserGroupsArray, $userGroups));
     }
 }

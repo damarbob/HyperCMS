@@ -31,14 +31,21 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->get('dashboard', 'Dashboard');
 
     // Model
-    $routes->get('model/(:num)', 'Model::index/$1');
-    $routes->addRedirect('model', 'admin/entries', 301);
+    $routes->group('model', ['filter' => 'model-user-group:model'], static function ($routes) {
+        $routes->group('(:num)', static function ($routes) {
+            $routes->get('/', 'Model::index/$1');
+            $routes->get('new', 'Entries::new');
+            $routes->get('(:num)/edit', 'Entries::edit/$2');
+        });
+        $routes->addRedirect('/', 'admin/entries', 301);
+    });
 
     // Models
     $routes->resource('models', [
         'websafe' => 1,
         'placeholder' => '(:num)',
         'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
+        'filter' => ['group:superadmin'],
     ]);
     $routes->post('models/delete', 'Models::delete');
     $routes->post('models/purge-deleted', 'Models::purgeDeleted');
@@ -57,11 +64,20 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->resource('entries', [
         'websafe' => 1,
         'placeholder' => '(:num)',
-        'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
+        'only' => ['index', 'create', 'update', 'delete'],
+        'filter' => 'model-user-group:entries',
     ]);
-    $routes->post('entries/delete', 'Entries::delete');
-    $routes->post('entries/purge-deleted', 'Entries::purgeDeleted');
-    $routes->post('entries/restore', 'Entries::restore');
+    $routes->group('entries', static function ($routes) {
+        $routes->group('(:num)', ['filter' => 'model-user-group:entries'], static function ($routes) {
+            $routes->get('new', 'Entries::new/$1');
+            $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
+        });
+        $routes->group('/', ['filter' => 'group:superadmin,admin,developer'], static function ($routes) {
+            $routes->post('delete', 'Entries::delete');
+            $routes->post('restore', 'Entries::restore');
+        });
+        $routes->post('purge-deleted', 'Entries::purgeDeleted', ['filter' => 'group:admin']);
+    });
 
     // Entry data
     $routes->resource('entry-data', [
@@ -73,7 +89,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->post('entry-data/clear-history/(:num)', 'EntryData::clearHistory/$1');
 
     // File Manager
-    $routes->get('file-manager', 'FileManager');
+    $routes->get('file-manager', 'FileManager', ['filter' => 'group-not:user']);
+
+    // Profile
     $routes->resource('profile', [
         'websafe' => 1,
         'only' => ['index', 'update'],
@@ -85,7 +103,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         'only' => ['index'],
     ]);
     $routes->group('settings', static function ($routes) {
-        $routes->get('models', 'ModelsSettings');
+        $routes->get('models', 'ModelsSettings', ['filter' => 'group:superadmin']);
         $routes->post('update', 'Settings::update');
     });
 
