@@ -12,7 +12,7 @@ $routes->group('', ['namespace' => '\PagingSystem\Controllers'], static function
     $routes->get('^(?!test|public|auth|api|admin)(.*)$', 'Frontend');
 });
 
-$routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin'], static function ($routes) {
+$routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filter' => 'group:superadmin,developer'], static function ($routes) {
     $routes->get('editor', 'Editor');
 
     $routes->group('settings', ['namespace' => '\PagingSystem\Controllers\Admin'], static function ($routes) {

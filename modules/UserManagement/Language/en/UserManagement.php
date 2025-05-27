@@ -1,8 +1,8 @@
 <?php
 
 return [
-    "moduleName" => "User Management",
-    "moduleDescription" => "A module to manage users",
+    "moduleName" => "Users",
+    "moduleDescription" => "Manage user identities and privileges",
 
     "userSavedSuccessfully" => "User saved successfully",
     "userDeletedSuccessfully" => "User deleted successfully",

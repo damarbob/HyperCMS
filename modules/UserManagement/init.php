@@ -13,8 +13,10 @@ HyperHooks::getInstance()->register(hook('Backend.controller:menu:data'), functi
         'url' => base_url('admin/users'),
         'icon' => 'fa-solid fa-person',
         'text' => lang('UserManagement.moduleName'),
+        'hint' => lang('UserManagement.moduleDescription'),
         'tooltip_content' => lang('UserManagement.moduleName'),
         'tooltip_placement' => 'right',
+        'groups' => 'superadmin,admin,developer'
     ];
     return $additionalMenu;
 });

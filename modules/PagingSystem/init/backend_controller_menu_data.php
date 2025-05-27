@@ -9,6 +9,7 @@ HyperHooks::getInstance()->register(hook('Backend.controller:menu:data'), functi
         'text' => lang('PagingSystem.moduleName'),
         'tooltip_content' => lang('PagingSystem.moduleName'),
         'tooltip_placement' => 'right',
+        'groups' => 'superadmin,developer',
     ];
     return $additionalMenu;
 });
