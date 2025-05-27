@@ -34,7 +34,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     $routes->group('model', ['filter' => 'model-user-group:model'], static function ($routes) {
         $routes->group('(:num)', static function ($routes) {
             $routes->get('/', 'Model::index/$1');
-            $routes->get('new', 'Entries::new');
+            $routes->get('new', 'Entries::new/$1');
             $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
         });
         $routes->addRedirect('/', 'admin/entries', 301);

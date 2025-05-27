@@ -99,7 +99,7 @@ class Model extends AdminController
             'pageLength' => service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10,
             'title' => $model->name,
             'links' => [
-                'new' => base_url("admin/model/$id/new?model_id=$id"),
+                'new' => base_url("admin/model/$id/new"),
                 'edit' => base_url("admin/model/$id/") . '{id}/edit', // The ID must be separated from the base URL to prevent it from being URL-encoded.
                 'delete' => base_url('admin/entries/delete'),
                 'restore' => base_url('admin/entries/restore'),
