@@ -15,6 +15,7 @@ return [
     'admin' => 'Admin',
     'general' => 'General',
     'ai' => 'AI',
+    'data' => 'Data',
     'others' => 'Others',
     'avatar' => 'Avatar',
     'profile' => 'Profile',
@@ -24,8 +25,6 @@ return [
     'models' => 'Models',
     'entries' => 'Entries',
     'settings' => 'Settings',
-
-    'general' => 'General',
 
     'new' => 'New',
     'newx' => 'New {x}',
@@ -58,7 +57,10 @@ return [
     // --- Dashboard ---
     'welcomex' => 'Welcome, {x}!',
     'startSomethingBig' => 'Start something <b>big</b> today.',
+    'managex' => 'Manage {x}',
     'managexEntries' => 'Manage {x} entries',
+    'xEntry' => '{x} entry',
+    'xEntries' => '{x} entries',
 
     // --- Profile ---
     'username' => 'Username',
@@ -231,6 +233,7 @@ return [
     'serverErrorDuringUploadx' => 'Server error during upload. {x}',
 
     // --- Settings ---
+    'adjustSiteSettings' => 'Adjust site settings',
     'datatableEntriesPerPage' => 'Datatable entries per page',
     'howManyEntriesDisplay' => 'How many entries to display in datatable',
     'settingsSuccessfullySaved' => 'Settings successfully saved!',
