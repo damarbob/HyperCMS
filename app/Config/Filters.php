@@ -2,6 +2,8 @@
 
 namespace Config;
 
+use App\Filters\GroupNotFilter;
+use App\Filters\ModelUserGroupFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -34,6 +36,12 @@ class Filters extends BaseFilters
         'forcehttps'    => ForceHTTPS::class,
         'pagecache'     => PageCache::class,
         'performance'   => PerformanceMetrics::class,
+
+        // Hyper
+        'model-user-group'   => ModelUserGroupFilter::class,
+
+        // Shield extension filter
+        'group-not'     => GroupNotFilter::class,
     ];
 
     /**

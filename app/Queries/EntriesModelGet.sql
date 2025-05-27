@@ -5,6 +5,7 @@ SELECT
     model_data.name as model_name,
     entry_data.fields,
     model_data.fields AS model_fields,
+    model_data.user_groups,
     users.username AS created_by,
     editors.username AS edited_by,
     entries.created_at,

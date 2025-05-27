@@ -2,9 +2,9 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class Settings extends BaseController
+class Settings extends AdminController
 {
     public function index(): string
     {
@@ -24,35 +24,25 @@ class Settings extends BaseController
         return render('admin/settings', $this->data);
     }
 
-    public function update($_)
+    public function update()
     {
-        /** @var HyperHooks $hooks */
-        $hooks = service('hooks');
-
-        /** @var \CodeIgniter\Validation\ValidationInterface */
-        $validation = service('validation');
-
-        $context = 'user:' . user_id();
-
-        // Hook for update settings
-        // Passes the request to the hook
-        $updateResponse = $hooks->trigger(hook('Backend.controller:settings:update'), [$this->request]);
+        $context = 'user:' . user_id(); // Settings context
 
         $data = $this->request->getPost();
 
-        $validation->setRules([
+        $rules = [
             'general_datatable_entries_per_page' => [
                 'label' => lang('Admin.datatableEntriesPerPage'),
                 'rules' => 'required',
             ],
-        ]);
+        ];
 
-        if (!$validation->run($data)) {
-            return redirect()->back()->withInput();
+        if (!$this->validateData($data, $rules)) {
+            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
         }
 
         service('settings')->set('App.datatableEntriesPerPage', $data['general_datatable_entries_per_page'], $context);
 
-        return $updateResponse ?? redirect('admin/settings')->with('success', lang('Admin.settingsSuccessfullySaved'));
+        return $this->respond(lang('Admin.settingsSuccessfullySaved'), 'admin/settings');
     }
 }

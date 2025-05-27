@@ -14,7 +14,6 @@ return [
 
     'controller:settings' => new HyperHook('backend:controller:settings', 'Settings Controller', ''),
     'controller:settings:data' => new HyperHook('backend:controller:settings:data', 'Data on Settings Controller', ''),
-    'controller:settings:update' => new HyperHook('backend:controller:settings:update', 'Update Settings Controller', ''),
     'view:settings' => new HyperHook('backend:view:settings', 'Settings View', ''),
 
     // Filters
