@@ -2,9 +2,9 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class ModelData extends BaseController
+class ModelData extends AdminController
 {
 
     public function show($modelId)

@@ -1,6 +1,6 @@
 <?php
 
-namespace Modules\PagingSystem\Controllers;
+namespace PagingSystem\Controllers;
 
 use App\Controllers\BaseController;
 use App\Services\HyperHooks;

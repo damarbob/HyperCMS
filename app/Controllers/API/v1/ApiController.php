@@ -13,12 +13,12 @@ use Config\Services;
 use Psr\Log\LoggerInterface;
 
 /**
- * Class BaseController
+ * Class ApiController
  *
- * BaseController provides a convenient place for loading components
- * and performing functions that are needed by all your controllers.
- * Extend this class in any new controllers:
- *     class Home extends BaseController
+ * ApiController provides a convenient place for loading components
+ * and performing functions that are needed by all your API controllers.
+ * Extend this class in any new API controllers:
+ *     class Home extends ApiController
  *
  * For security be sure to declare any new methods as protected or private.
  */

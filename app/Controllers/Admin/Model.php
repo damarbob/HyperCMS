@@ -2,10 +2,10 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 use App\Constants\ModelStaticFields;
 
-class Model extends BaseController
+class Model extends AdminController
 {
 
     /**

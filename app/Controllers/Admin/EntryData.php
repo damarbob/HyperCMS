@@ -3,9 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Constants\EntryDataStaticFields;
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class EntryData extends BaseController
+class EntryData extends AdminController
 {
 
     public function show($entryId)

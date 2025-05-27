@@ -2,9 +2,9 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class FileManager extends BaseController
+class FileManager extends AdminController
 {
     protected $helpers = ['hyper_hex'];
 

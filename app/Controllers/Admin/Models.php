@@ -2,10 +2,10 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
-class Models extends BaseController
+class Models extends AdminController
 {
     public function index(): string
     {

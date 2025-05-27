@@ -82,10 +82,11 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
     // Settings
     $routes->resource('settings', [
         'websafe' => 1,
-        'only' => ['index', 'update'],
+        'only' => ['index'],
     ]);
     $routes->group('settings', static function ($routes) {
         $routes->get('models', 'ModelsSettings');
+        $routes->post('update', 'Settings::update');
     });
 
     // Admin api
