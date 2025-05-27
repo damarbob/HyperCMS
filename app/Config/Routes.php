@@ -114,7 +114,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         // $routes->resource('user', ['websafe' => 1]);
 
         // File manager
-        $routes->group('file-manager', static function ($routes) {
+        $routes->group('file-manager', ['filter' => 'group-not:user'], static function ($routes) {
             $routes->get('view-file/(:any)', 'FileManager::viewFile/$1');
             $routes->get('list-files/(:any)', 'FileManager::listFiles/$1');
             $routes->get('list-files', 'FileManager::listFiles');
