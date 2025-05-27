@@ -42,10 +42,13 @@ abstract class AdminController extends BaseController
                     'tooltip_content'   => lang("Admin.dashboard"),
                     'tooltip_placement' => 'right',
                 ],
+            ],
+            lang('Admin.data') => [
                 'models' => [
                     'url'               => base_url('admin/models'),
                     'icon'              => 'fa-solid fa-circle-nodes',
                     'text'              => lang("Admin.models"),
+                    'hint'              => lang('Admin.managex', ['x' => lang("Admin.models")]),
                     'tooltip_content'   => lang("Admin.models"),
                     'tooltip_placement' => 'right',
                     'groups'            => 'superadmin'
@@ -54,10 +57,14 @@ abstract class AdminController extends BaseController
                     'url'               => base_url('admin/entries'),
                     'icon'              => 'fa-solid fa-table-list',
                     'text'              => lang("Admin.entries"),
+                    'hint'              => lang('Admin.managex', ['x' => lang("Admin.entries")]),
                     'tooltip_content'   => lang("Admin.entries"),
                     'tooltip_placement' => 'right',
-                    'groups'            => 'superadmin,admin,developer'
+                    // 'groups'            => 'superadmin,admin,developer'
                 ],
+            ],
+            // This group contains a submenu (nested items)
+            lang('Admin.others') => [
                 'file-manager' => [
                     'url'               => base_url('admin/file-manager'),
                     'icon'              => 'fa-solid fa-folder-closed',
@@ -66,14 +73,12 @@ abstract class AdminController extends BaseController
                     'tooltip_placement' => 'right',
                     'groups_not'        => 'user'
                 ],
-            ],
-            // This group contains a submenu (nested items)
-            lang('Admin.others') => [
                 'settings' => [
                     // The parent link acting as a container (URL may be "#" or a clickable parent)
                     'url'               => base_url('admin/settings'),
                     'icon'              => 'fa-solid fa-cog',
                     'text'              => lang("Admin.settings"),
+                    'hint'              => lang('Admin.adjustSiteSettings'),
                     'tooltip_content'   => lang("Admin.settings"),
                     'tooltip_placement' => 'right',
                     'submenu' => [
@@ -99,8 +104,18 @@ abstract class AdminController extends BaseController
         $modelsMenu = [];
         foreach ($models as $model) {
 
+            $entriesCount = $this->entriesModel->getCustomBuilder()
+                ->where('model_id', $model['id'])
+                ->countAllResults();
+
+            $tag = $entriesCount === 0 ?
+                lang('Admin.(empty)') : ($entriesCount === 1 ?
+                    lang('Admin.xEntry', ['x' => "{$entriesCount}"]) :
+                    lang('Admin.xEntries', ['x' => "{$entriesCount}"])
+                );
+
             // Skip if the user does not have access to the model
-            $groupsArray = is_array($model['user_groups']) ? $model['user_groups'] : json_decode($model['user_groups']);
+            $groupsArray = is_array($model['user_groups']) ? $model['user_groups'] : json_decode($model['user_groups'] ?? '');
             if (!empty($groupsArray) && !auth()->user()->inGroup(...$groupsArray)) {
                 continue;
             }
@@ -109,6 +124,7 @@ abstract class AdminController extends BaseController
             $modelsMenu[$groupName]["model-{$model['id']}"] = [
                 'url' => base_url('admin/model/' . $model['id']),
                 'text' => $model['name'],
+                'tag' => $tag,
                 'icon' => $model['icon'],
                 'tooltip_content'  => $model['name'],
                 'tooltip_placement' => 'right'
@@ -131,7 +147,6 @@ abstract class AdminController extends BaseController
         $menu = $this->reorderMenuItemByIdAndKey($menu, lang('Admin.others'), 'settings', 'end'); // Always place settings menu at the very end
 
         $menu = $this->filterMenuByUserGroups($menu, auth()->user()->getGroups());
-        // dd(json_encode($menu), JSON_PRETTY_PRINT);
 
         /* View data */
 
@@ -297,15 +312,16 @@ abstract class AdminController extends BaseController
     /**
      * Recursively filters a nested menu array based on user group conditions.
      *
-     * Each menu item is checked for the existence of two keys:
-     *   - 'groups_not': If specified and if any of the current user's groups match,
-     *                   the item is removed.
-     *   - 'groups': If specified (and no groups_not prevented it), then at least one of the
-     *               current user's groups must exist in this list or the item is removed.
+     * At any level the function detects whether the array is "grouped" (the keys
+     * are group labels and the values are sub-arrays of menu items) or is simply a list
+     * of menu items. Then, for each menu item:
      *
-     * If neither key exists, the item is assumed to be unrestricted and is kept.
+     *   - If "groups_not" is defined and any of the user's groups match, the item is removed.
+     *   - If "groups" is defined (and groups_not did not trigger removal), then at least one
+     *     user group must be present in that list; otherwise the item is removed.
+     *   - If neither key exists, the item is assumed to be unrestricted and is kept.
      *
-     * The function is recursive and will also process a 'submenu' element if present.
+     * Submenus (with key 'submenu') are processed recursively.
      *
      * @param array $menu       The menu array to filter.
      * @param array $userGroups An array of current user groups.
@@ -314,36 +330,50 @@ abstract class AdminController extends BaseController
      */
     protected static function filterMenuByUserGroups(array $menu, array $userGroups): array
     {
-        // Loop through each top-level group.
-        foreach ($menu as $groupName => $items) {
+        // Determine if this level is grouped or a simple list.
+        // We assume that a grouped level does not have menu items with a 'url' key
+        // directly at the top level, whereas a list of items will have each item with a 'url'.
+        $isGrouped = false;
+        if (!empty($menu)) {
+            $first = reset($menu);
+            if (!is_array($first) || !isset($first['url'])) {
+                $isGrouped = true;
+            }
+        }
 
-            // Loop through the items within the group.
-            foreach ($items as $itemKey => $item) {
+        if ($isGrouped) {
+            // Process each group by filtering its items recursively.
+            foreach ($menu as $groupName => $items) {
+                $menu[$groupName] = self::filterMenuByUserGroups($items, $userGroups);
+                // Remove this group if it becomes empty.
+                if (empty($menu[$groupName])) {
+                    unset($menu[$groupName]);
+                }
+            }
+            return $menu;
+        } else {
+            // The array is a list of menu items.
+            foreach ($menu as $key => $item) {
                 $keep = true;
 
                 // Check "groups_not" condition first.
                 if (isset($item['groups_not'])) {
-                    // Convert comma-separated string to array and trim whitespace.
                     $groupsNot = array_map('trim', explode(',', $item['groups_not']));
-                    // If any of the user's groups is in groups_not, mark item for removal.
                     if (count(array_intersect($userGroups, $groupsNot)) > 0) {
                         $keep = false;
                     }
                 }
 
-                // Check "groups" condition only if the item wasn't removed by "groups_not".
-                // If the key does not exist, assume the item is accessible.
+                // Check "groups" condition (only if not removed by groups_not).
                 if ($keep && isset($item['groups'])) {
                     $requiredGroups = array_map('trim', explode(',', $item['groups']));
-                    // The item is kept only if at least one of the current user's groups exists in requiredGroups.
                     if (count(array_intersect($userGroups, $requiredGroups)) === 0) {
                         $keep = false;
                     }
                 }
 
-                // If the item doesn't pass the conditions, remove it.
                 if (!$keep) {
-                    unset($menu[$groupName][$itemKey]);
+                    unset($menu[$key]);
                     continue;
                 }
 
@@ -351,19 +381,13 @@ abstract class AdminController extends BaseController
                 if (isset($item['submenu']) && is_array($item['submenu'])) {
                     $filteredSubmenu = self::filterMenuByUserGroups($item['submenu'], $userGroups);
                     if (!empty($filteredSubmenu)) {
-                        $menu[$groupName][$itemKey]['submenu'] = $filteredSubmenu;
+                        $menu[$key]['submenu'] = $filteredSubmenu;
                     } else {
-                        unset($menu[$groupName][$itemKey]['submenu']);
+                        unset($menu[$key]['submenu']);
                     }
                 }
             }
-
-            // Remove group if it becomes empty after filtering.
-            if (empty($menu[$groupName])) {
-                unset($menu[$groupName]);
-            }
+            return $menu;
         }
-
-        return $menu;
     }
 }

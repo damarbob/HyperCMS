@@ -20,13 +20,15 @@ helper('hyper_url');
             </h1>
         </div>
         <?php foreach ($menu as $group => $items): ?>
-            <?php if (!empty($group)): ?>
-                <p class="menu-label">
-                    <?= $group ?>
-                </p>
-            <?php endif ?>
-
             <?php if (!empty($items)): ?>
+
+                <?php if (!empty($group)): ?>
+                    <!-- Show menu label if group and items exist -->
+                    <p class="menu-label">
+                        <?= $group ?>
+                    </p>
+                <?php endif ?>
+
                 <ul class="menu-list">
                     <?php foreach ($items as $id => $item): ?>
                         <?php $hasSubmenu = !empty($item['submenu']); ?>
