@@ -18,7 +18,7 @@ $datatableEntriesPerPageError = validation_show_error('general_datatable_entries
     <p class="subtitle">
         <?= lang('admin.general') ?>
     </p>
-    <form action="<?= base_url('admin/settings/update/1') ?>" method="POST">
+    <form action="<?= base_url('admin/settings/update') ?>" method="POST">
         <?= csrf_field() ?>
 
         <!-- Primary model selection -->

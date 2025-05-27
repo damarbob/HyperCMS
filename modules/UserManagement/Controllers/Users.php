@@ -2,10 +2,10 @@
 
 namespace UserManagement\Controllers;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 use CodeIgniter\Shield\Entities\User;
 
-class Users extends BaseController
+class Users extends AdminController
 {
     public function index()
     {

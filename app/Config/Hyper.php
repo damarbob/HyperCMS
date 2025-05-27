@@ -61,41 +61,4 @@ class Hyper extends BaseConfig
     {
         return array_filter(array_map('trim', explode(',', $this->activeDevModules)));
     }
-
-    /**
-     * Register module routes dynamically.
-     *
-     * This function scans through active modules and active development modules,
-     * then adds their route files (if available) to the beginning of the routing configuration.
-     *
-     * @return void
-     */
-    public function registerModuleRoutes(): void
-    {
-        /** @var \Config\Routing */
-        $routing = config('routing');
-
-        foreach ($this->getActiveModules() as $module) {
-            if ($module === '.' || $module === '..') {
-                continue;
-            }
-
-            $routesPath = MODULES_PATH . '/' . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                // Prepend the module route file to allow override.
-                array_unshift($routing->routeFiles, $routesPath);
-            }
-        }
-
-        foreach ($this->getActiveDevModules() as $module) {
-            if ($module === '.' || $module === '..') {
-                continue;
-            }
-
-            $routesPath = MODULES_PATH . '/.hyper-dev/' . $module . '/Config/Routes.php';
-            if (file_exists($routesPath)) {
-                array_unshift($routing->routeFiles, $routesPath);
-            }
-        }
-    }
 }

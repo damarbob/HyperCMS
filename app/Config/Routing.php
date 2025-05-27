@@ -137,4 +137,34 @@ class Routing extends BaseRouting
      * Default: false
      */
     public bool $translateUriToCamelCase = true;
+
+    /**
+     * Register module routes dynamically.
+     *
+     * This function scans through active modules and active development modules,
+     * then adds their route files (if available) to the beginning of the routing configuration.
+     */
+    public function __construct()
+    {
+        /** @var \Config\Hyper */
+        $hyper = config('hyper');
+
+        // Collect dev modules first
+        foreach ($hyper->getActiveDevModules() as $module) {
+            $path = MODULES_PATH . ".hyper-dev/{$module}/Config/Routes.php";
+            if (file_exists($path)) $moduleRoutes[] = $path;
+        }
+
+        // Then regular modules
+        foreach ($hyper->getActiveModules() as $module) {
+            $path = MODULES_PATH . "{$module}/Config/Routes.php";
+            if (file_exists($path)) $moduleRoutes[] = $path;
+        }
+
+        // Prepend to ensure module routes are registered FIRST
+        $this->routeFiles = array_merge($moduleRoutes, $this->routeFiles);
+        
+        // Register module routes so that modules can add their own routes.
+        log_message('info', 'Module routes registered.');
+    }
 }

@@ -2,15 +2,15 @@
 
 namespace App\Controllers\Admin;
 
+use App\Controllers\AdminController;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use App\Controllers\BaseController;
 use App\Libraries\SyntaxProcessor;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Psr\Log\LoggerInterface;
 
-class Entries extends BaseController
+class Entries extends AdminController
 {
 
     protected SyntaxProcessor $syntaxProcessor;

@@ -110,10 +110,6 @@ Events::on('pre_system', function (): void {
     // Display the namespaces added to the autoloader.
     log_message('info', 'Namespaces autoloaded: ' . implode(', ', array_keys($autoloader->getNamespace())));
 
-    // Register module routes so that modules can add their own routes.
-    $hyper->registerModuleRoutes();
-    log_message('info', 'Module routes registered.');
-
     // Trigger module initialization hooks so that modules can register hooks on pre_system.
     service('hooks')->trigger(hook('Core.modules:init'));
 });

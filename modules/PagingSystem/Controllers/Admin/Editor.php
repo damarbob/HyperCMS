@@ -1,10 +1,10 @@
 <?php
 
-namespace Modules\PagingSystem\Controllers\Admin;
+namespace PagingSystem\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class Editor extends BaseController
+class Editor extends AdminController
 {
     public function index()
     {

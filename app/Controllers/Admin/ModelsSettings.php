@@ -2,9 +2,9 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 
-class ModelsSettings extends BaseController
+class ModelsSettings extends AdminController
 {
     public function index(): string
     {

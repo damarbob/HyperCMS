@@ -2,10 +2,10 @@
 
 namespace App\Controllers\Admin;
 
-use App\Controllers\BaseController;
+use App\Controllers\AdminController;
 use Config\Services;
 
-class Dashboard extends BaseController
+class Dashboard extends AdminController
 {
     public function index(): string
     {
