@@ -10,8 +10,19 @@ class Models extends AdminController
     public function index(): string
     {
         $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
-
         $this->data['title'] = lang('Admin.models');
+        $this->data['links'] = [
+            'new' => base_url('admin/models/new'),
+            'edit' => base_url('admin/models') . '/{id}/edit', // The ID must be separated from the base URL to prevent it from being URL-encoded.
+            'delete' => base_url('admin/models/delete'),
+            'restore' => base_url('admin/models/restore'),
+        ];
+
+        /* Filters */
+
+        $this->data = $this->hooks->filter(hook('Backend.controller:models:index:data'), $this->data);
+
+        /* End of filters */
 
         return render('admin/models', $this->data);
     }

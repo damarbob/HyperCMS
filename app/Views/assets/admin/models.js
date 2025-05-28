@@ -108,7 +108,7 @@ var options = {
             text: `<span class="icon"><i class="fa-solid fa-plus"></i></span><span>${hyper.lang.Admin.new}</span>`,
             className: "is-primary hyper-new",
             action: function (e, dt, node, config) {
-              window.location.href = `${hyper.config.baseUrl}admin/models/new`;
+              window.location.href = `${hyper.data.links.new}`;
             },
           },
           {
@@ -245,7 +245,12 @@ var options = {
       var id = data.id;
 
       // Navigate to the Edit page
-      window.location.href = `${hyper.config.baseUrl}admin/models/${id}/edit`;
+      window.location.href = window.hyper.util.text.replacePlaceholders(
+        window.hyper.data.links.edit,
+        {
+          id: id,
+        }
+      );
     });
   },
 
@@ -410,7 +415,7 @@ function renderFieldTags(data) {
 // AJAX request to delete models (POSTing the ids array)
 function deleteModels(ids) {
   $.ajax({
-    url: `${hyper.config.baseUrl}admin/models/delete`,
+    url: `${hyper.data.links.delete}`,
     type: "POST",
     data: {
       ids: ids,
@@ -440,7 +445,7 @@ function deleteModels(ids) {
 // AJAX request to restore models (POSTing the ids array)
 function restoreModels(ids) {
   $.ajax({
-    url: `${hyper.config.baseUrl}admin/models/restore`,
+    url: `${hyper.data.links.restore}`,
     type: "POST",
     data: {
       ids: ids,

@@ -21,6 +21,8 @@ return [
 
     'controller:model:index:data' => new HyperHook('backend:controller:model:index:data', 'Data on Index Model Controller', ''),
 
+    'controller:models:index:data' => new HyperHook('backend:controller:models:index:data', 'Data on Index Models Controller', ''),
+
     'controller:entries:index:data' => new HyperHook('backend:controller:entries:index:data', 'Data on Index Entries Controller', ''),
     'controller:entries:edit:data' => new HyperHook('backend:controller:entries:edit:data', 'Data on Edit Entries Controller', ''),
 ];
