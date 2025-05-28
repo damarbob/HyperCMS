@@ -74,9 +74,12 @@ Events::on('pre_system', function (): void {
     // Log safe mode as a string.
     log_message('info', 'Hyper safe mode: ' . ($hyper->safeMode ? 'true' : 'false'));
 
+    // Array to collect init file paths.
+    $initFiles = [];
+
     // Helper closure to autoload modules.
     // $subFolder should be empty for regular modules, or e.g. '.hyper-dev' for development modules.
-    $autoloadModules = function (array $modules, string $subFolder = '') use ($autoloader): void {
+    $autoloadModules = function (array $modules, string $subFolder = '') use ($autoloader, &$initFiles): void {
         foreach ($modules as $module) {
             // Skip any accidental dot entries.
             if ($module === '.' || $module === '..') {
@@ -89,10 +92,11 @@ Events::on('pre_system', function (): void {
             // Register the module's namespace.
             $autoloader->addNamespace($module, $modulePath);
 
-            // If an init file exists, require it.
+            // Build the path to the init file.
             $initFile = $modulePath . 'init.php';
+            // Instead of requiring the init file immediately, store its path.
             if (file_exists($initFile)) {
-                require_once $initFile;
+                $initFiles[] = $initFile;
             }
         }
     };
@@ -109,6 +113,11 @@ Events::on('pre_system', function (): void {
 
     // Display the namespaces added to the autoloader.
     log_message('info', 'Namespaces autoloaded: ' . implode(', ', array_keys($autoloader->getNamespace())));
+
+    // Now run all collected init files.
+    foreach ($initFiles as $file) {
+        require_once $file;
+    }
 
     // Trigger module initialization hooks so that modules can register hooks on pre_system.
     service('hooks')->trigger(hook('Core.modules:init'));
