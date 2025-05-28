@@ -386,10 +386,22 @@ $content = $this->renderSection('content');
     <!-- Hyper CMS bootstrap JS -->
     <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
 
-    <!-- JavaScript for displaying success/error notifications -->
+    <!-- JavaScript for displaying notifications -->
     <script>
         // Wait until the DOM has fully loaded before running our notification logic.
         document.addEventListener('DOMContentLoaded', () => {
+
+            // ----------------------------------------------------
+            // Info Notification
+            // ----------------------------------------------------
+            // If an info message exists in the session flash data,
+            // use the global hyper.factory.swal wrapper to display an info toast.
+            // The title is localized using lang("Admin.info").
+            <?php if (session()->getFlashdata('info')) : ?>
+                window.hyper.factory.swal.info("<?= lang("Admin.info") ?>", {
+                    text: "<?= session()->getFlashdata('info') ?>" // Notification detail text
+                });
+            <?php endif; ?>
 
             // ----------------------------------------------------
             // Success Notification
