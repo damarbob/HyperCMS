@@ -95,7 +95,7 @@ export default class SwalWrapper {
    */
   toast(options = {}) {
     return this.fire({
-      position: "bottom-start",
+      position: "bottom",
       toast: true,
       showConfirmButton: false,
       timer: 3000,
@@ -104,6 +104,21 @@ export default class SwalWrapper {
         toast.addEventListener("mouseenter", Swal.stopTimer);
         toast.addEventListener("mouseleave", Swal.resumeTimer);
       },
+      ...options,
+    });
+  }
+
+  /**
+   * Displays a info toast notification.
+   *
+   * @param {string} message - The info message to display.
+   * @param {object} [options={}] - Additional options for the toast.
+   * @returns {Promise<object>} - A promise that resolves when the toast is closed.
+   */
+  info(message, options = {}) {
+    return this.toast({
+      icon: "info",
+      title: message,
       ...options,
     });
   }

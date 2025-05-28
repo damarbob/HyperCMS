@@ -4,6 +4,7 @@ return [
     'n/a' => 'N/A',
     '(empty)' => '(empty)',
 
+    'info' => 'Info',
     'success' => 'Success',
     'error' => 'Error',
 

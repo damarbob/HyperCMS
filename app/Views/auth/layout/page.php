@@ -87,28 +87,54 @@ use Config\Hyper;
     <!-- sweetalert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
-    <?php if (session()->getFlashdata('success')) : ?>
-        <!-- JavaScript for displaying success/error notifications -->
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
-                window.hyper.factory.swal.success("<?= lang("Admin.success") ?>", {
-                    text: "<?= session()->getFlashdata('success') ?>"
+    <!-- JavaScript for displaying notifications -->
+    <script>
+        // Wait until the DOM has fully loaded before running our notification logic.
+        document.addEventListener('DOMContentLoaded', () => {
+
+            // ----------------------------------------------------
+            // Info Notification
+            // ----------------------------------------------------
+            // If an info message exists in the session flash data,
+            // use the global hyper.factory.swal wrapper to display an info toast.
+            // The title is localized using lang("Admin.info").
+            <?php if (session()->getFlashdata('info')) : ?>
+                window.hyper.factory.swal.info("<?= lang("Admin.info") ?>", {
+                    text: "<?= session()->getFlashdata('info') ?>" // Notification detail text
                 });
-            });
-        </script>
-    <?php elseif (session()->getFlashdata('error')) : ?>
-        <!-- JavaScript for displaying success/error notifications -->
-        <script>
-            document.addEventListener('DOMContentLoaded', () => {
+            <?php endif; ?>
+
+            // ----------------------------------------------------
+            // Success Notification
+            // ----------------------------------------------------
+            // If a success message exists in the session flash data,
+            // use the global hyper.factory.swal wrapper to display a success toast.
+            // The title is localized using lang("Admin.success").
+            <?php if (session()->getFlashdata('success')) : ?>
+                window.hyper.factory.swal.success("<?= lang("Admin.success") ?>", {
+                    text: "<?= session()->getFlashdata('success') ?>" // Notification detail text
+                });
+            <?php endif; ?>
+
+            // ----------------------------------------------------
+            // Error Notification
+            // ----------------------------------------------------
+            // If no success message is set but an error message exists,
+            // display an error notification using the hyper.factory.swal.error method.
+            // The configuration customizes the appearance by overriding the confirm button color,
+            // ensuring the confirm button is displayed and disabling the timer.
+            <?php if (session()->getFlashdata('error')) : ?>
+
                 window.hyper.factory.swal.error("<?= lang("Admin.error") ?>", {
                     text: "<?= session()->getFlashdata('error') ?>",
                     confirmButtonColor: "var(--bulma-primary)",
                     showConfirmButton: true,
                     timer: false,
                 });
-            });
-        </script>
-    <?php endif; ?>
+            <?php endif; ?>
+
+        });
+    </script>
 
     <script>
         // Functions to open and close a modal
