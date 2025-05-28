@@ -1,10 +1,11 @@
 <?php
 
+helper('hyper_url');
+
 /** @var \Config\Hyper */
 $hyperConfig = config('hyper');
 /** @var \App\Services\HyperHooks */
 $hooks = service('hooks');
-helper('hyper_url');
 ?>
 <!-- Sidebar Column -->
 <aside class="column sidebar">
@@ -34,13 +35,16 @@ helper('hyper_url');
                         <?php $hasSubmenu = !empty($item['submenu']); ?>
                         <li class="<?= $hasSubmenu ? (url_contains(normalize_url($uri),  $item['url']) ? 'is-active' : '') : '' ?>">
                             <a
-                                class="<?= url_contains(normalize_url($uri), $item['url']) ? 'is-active' : '' ?> <?= $hasSubmenu ? 'has-submenu' : '' ?>"
+                                class="<?= implode(" ", [url_contains(normalize_url($uri), $item['url']) ? 'is-active' : '', $hasSubmenu ? 'has-submenu' : '']) ?>"
                                 <?= !$hasSubmenu ? "href='{$item['url']}'" : '' ?>
                                 data-tippy-content="<?= $item['tooltip_content'] ?>"
                                 data-tippy-placement="<?= $item['tooltip_placement'] ?>">
-                                <span class="icon">
-                                    <i class="<?= $item['icon'] ?>"></i>
-                                </span>
+                                <?php if (!empty($item['icon'])): ?>
+                                    <!-- Show icon if exists -->
+                                    <span class="icon">
+                                        <i class="<?= $item['icon'] ?>"></i>
+                                    </span>
+                                <?php endif ?>
                                 <span class="text">
                                     <?= $item['text'] ?>
                                 </span>
