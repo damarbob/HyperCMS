@@ -15,7 +15,11 @@ $routes->group('', ['namespace' => '\PagingSystem\Controllers'], static function
 $routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filter' => 'group:superadmin,developer'], static function ($routes) {
     $routes->get('editor', 'Editor');
 
-    $routes->group('settings', ['namespace' => '\PagingSystem\Controllers\Admin'], static function ($routes) {
+    $routes->group('ps', static function ($routes) {
+        $routes->get('entries/(:num)/new', 'Entries::new/$1');
+    });
+
+    $routes->group('settings', static function ($routes) {
         $routes->get('paging-system', 'Settings');
         $routes->post('paging-system/update', 'Settings::update');
     });
