@@ -171,6 +171,30 @@ if (!function_exists('map_entry_fields')) {
     }
 }
 
+if (! function_exists('unmap_entry_fields')) {
+    /**
+     * Converts an associative array of entry fields to a JSON string.
+     *
+     * This function expects an associative array where each key is a field ID and its value is the field value.
+     * It then builds an array of objects (each with 'id' and 'value' keys) and returns it as a JSON-encoded string.
+     *
+     * @param array<string, mixed> $fields Associative array mapping field IDs to field values.
+     *
+     * @return string JSON encoded string representing an array of field objects.
+     */
+    function unmap_entry_fields(array $fields): string
+    {
+        $result = [];
+        foreach ($fields as $id => $value) {
+            $result[] = [
+                'id'    => $id,
+                'value' => $value,
+            ];
+        }
+        return json_encode($result);
+    }
+}
+
 if (!function_exists('serve_file')) {
     /**
      * Serves a file from a specified file path.
