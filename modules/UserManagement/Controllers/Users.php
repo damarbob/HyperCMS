@@ -23,7 +23,7 @@ class Users extends AdminController
     {
         $db = db_connect();
         $user = $db->table('users')
-            ->select('users.id, username, secret as email, COALESCE(GROUP_CONCAT(auth_groups_users.group SEPARATOR ","), "") as groups')
+            ->select('users.id, username, secret as email, COALESCE(GROUP_CONCAT(auth_groups_users.group SEPARATOR ","), "") as `groups`')
             ->where('users.id', $id)
             ->join('auth_identities', 'auth_identities.user_id = users.id', 'left')
             ->join('auth_groups_users', 'auth_groups_users.user_id = users.id', 'left')
@@ -49,7 +49,7 @@ class Users extends AdminController
 
         // Build a base query.
         $builder = $db->table('users')
-            ->select('users.id, username, secret as email, COALESCE(GROUP_CONCAT(auth_groups_users.group SEPARATOR ","), "") as groups')
+            ->select('users.id, username, secret as email, COALESCE(GROUP_CONCAT(auth_groups_users.group SEPARATOR ","), "") as `groups`')
             ->join('auth_identities', 'auth_identities.user_id = users.id', 'left')
             ->join('auth_groups_users', 'auth_groups_users.user_id = users.id', 'left')
             ->groupBy('users.id');
