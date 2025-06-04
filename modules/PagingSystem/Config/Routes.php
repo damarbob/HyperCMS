@@ -9,7 +9,7 @@ $routes->group('', ['namespace' => '\PagingSystem\Controllers'], static function
     $routes->get('/', 'Frontend');
 
     // @IMPORTANT: Ensure restricted routes are updated in the regex negative lookahead paths list to prevent them from being treated as dynamic pages.
-    $routes->get('^(?!test|public|auth|api|admin)(.*)$', 'Frontend');
+    $routes->get(ENVIRONMENT === 'production' ? '^(?!test|public|auth|api|admin)(.*)$' : '^(?!test|public|auth|api|admin|.hyper-dev)(.*)$', 'Frontend');
 });
 
 $routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filter' => 'group:superadmin,developer'], static function ($routes) {

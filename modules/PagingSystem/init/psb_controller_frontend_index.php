@@ -41,7 +41,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
     /** @var array */
     $assetsEligibleModelIds = $assetsEligible['eligible'];
     $assetsModelId = $assetsEligible['primary'];
-    $assets = null;
+    $assets = [];
 
     // Validate that we have both eligible models and a primary model.
     if (is_array($assetsEligibleModelIds) && !empty($assetsEligibleModelIds) && !empty($assetsModelId)) {
