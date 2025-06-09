@@ -23,7 +23,7 @@ class Entries extends ApiController
         $trash = $data['trash'] ?? false;
 
         /** @var \App\Models\EntriesModel */
-        $model = model('entriesModel');
+        $model = model('EntriesModel');
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {

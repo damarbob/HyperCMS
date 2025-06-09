@@ -21,7 +21,7 @@ class Models extends ApiController
         $trash = $data['trash'] ?? false;
 
         /** @var ModelsModel */
-        $model = model('modelsModel');
+        $model = model('ModelsModel');
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {

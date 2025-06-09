@@ -81,10 +81,10 @@ abstract class BaseController extends Controller
         $this->entriesManager = service('entriesManager');
 
         // Models
-        $this->modelsModel = model('modelsModel');
-        $this->modelDataModel = model('modelDataModel');
-        $this->entriesModel = model('entriesModel');
-        $this->entryDataModel = model('entryDataModel');
+        $this->modelsModel = model('ModelsModel');
+        $this->modelDataModel = model('ModelDataModel');
+        $this->entriesModel = model('EntriesModel');
+        $this->entryDataModel = model('EntryDataModel');
     }
 
     /**

@@ -140,11 +140,11 @@ class SyntaxProcessor
         // For certain tables, use a custom builder from models.
         if ($table === 'models') {
             /** @var \App\Models\ModelsModel */
-            $model = model('modelsModel');
+            $model = model('ModelsModel');
             $builder = $model->getCustomBuilder();
         } elseif ($table === 'entries') {
             /** @var \App\Models\EntriesModel */
-            $model = model('entriesModel');
+            $model = model('EntriesModel');
             $builder = $model->getCustomBuilder();
         }
 

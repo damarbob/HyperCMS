@@ -18,10 +18,10 @@ class ModelsManager
     public static function getInstance()
     {
         if (is_null(static::$instance)) {
-            $modelsModel = model('modelsModel');
-            $modelDataModel = model('modelDataModel');
-            $entriesModel = model('entriesModel');
-            $entryDataModel = model('entryDataModel');
+            $modelsModel = model('ModelsModel');
+            $modelDataModel = model('ModelDataModel');
+            $entriesModel = model('EntriesModel');
+            $entryDataModel = model('EntryDataModel');
             static::$instance = new static(
                 $modelsModel,
                 $modelDataModel,

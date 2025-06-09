@@ -8,7 +8,7 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
 
     // Check which models are eligible for the page editor
     /** @var \App\Models\ModelsModel */
-    $modelsModel = model('modelsModel');
+    $modelsModel = model('ModelsModel');
 
     $modelsBuilder = $modelsModel->getCustomBuilder();
     $models = $modelsBuilder

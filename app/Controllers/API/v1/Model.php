@@ -90,7 +90,7 @@ class Model extends ApiController
      */
     protected function getModelInfo(int $modelId): array
     {
-        $modelsModel = model('modelsModel');
+        $modelsModel = model('ModelsModel');
         $model = $modelsModel->getCustomBuilder()->where('id', $modelId)->get()->getRow();
 
         if (!$model) {
@@ -128,7 +128,7 @@ class Model extends ApiController
     protected function buildBaseQuery(int $modelId, bool $trash)
     {
         /** @var \App\Models\EntriesModel */
-        $entriesModel = model('entriesModel');
+        $entriesModel = model('EntriesModel');
 
         if ($trash) {
             $entriesModelBuilder = $entriesModel->getCustomBuilder();
@@ -149,7 +149,7 @@ class Model extends ApiController
     protected function applyFindFilter(&$builder, ?array $find): void
     {
         /** @var \App\Models\EntriesModel */
-        $entriesModel = model('entriesModel');
+        $entriesModel = model('EntriesModel');
         if ($find && !empty($find['field']) && !empty($find['value'])) {
             $entriesModel->whereFields($builder, [$find]);
         }
