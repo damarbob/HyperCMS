@@ -86,7 +86,7 @@ $requester = hex_encode($uri);
                         const browseBtn = document.createElement('button');
                         browseBtn.type = 'button';
                         browseBtn.className = 'button mt-2'; // Adjust classes as needed.
-                        browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang("ADmin.fileManager") ?></span>';
+                        browseBtn.innerHTML = '<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span><?= lang("Admin.fileManager") ?></span>';
 
                         // Append the button immediately after the input element.
                         input.insertAdjacentElement('afterend', browseBtn);
