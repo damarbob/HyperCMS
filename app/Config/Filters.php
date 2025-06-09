@@ -117,11 +117,11 @@ class Filters extends BaseFilters
                 'admin/*',
             ]
         ],
-        'chain' => [
-            'before' => [
-                'api/*'
-            ]
-        ],
+        // 'chain' => [
+        //     'before' => [
+        //         'api/*'
+        //     ]
+        // ],
         'auth-rates' => [
             'before' => [
                 'auth/*'
