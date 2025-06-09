@@ -16,7 +16,7 @@ HyperHooks::getInstance()->register(hook('Backend.controller:menu:data'), functi
         'hint' => lang('UserManagement.moduleDescription'),
         'tooltip_content' => lang('UserManagement.moduleName'),
         'tooltip_placement' => 'right',
-        'groups' => 'superadmin,admin,developer'
+        'groups' => 'superadmin'
     ];
     return $additionalMenu;
 });
