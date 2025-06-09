@@ -55,10 +55,13 @@ class FileManager extends ApiController
      */
     public function __construct()
     {
+        /** @var \Config\FileManager */
+        $fileManagerConfig = config('fileManager');
+
         if (ENVIRONMENT === 'production') {
-            $this->baseDir = FCPATH; // For production use, FCPATH is typically the public folder.
+            $this->baseDir = $fileManagerConfig->productionPath;
         } else {
-            $this->baseDir = ROOTPATH; // For development use, ROOTPATH could reference the application root.
+            $this->baseDir = $fileManagerConfig->nonProductionPath;
         }
     }
 
