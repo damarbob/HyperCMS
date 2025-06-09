@@ -6,7 +6,7 @@ use App\Services\HyperHooks;
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:index:data'), function ($data) {
 
     /** @var \App\Models\EntriesModel */
-    $entriesModel = model('entriesModel');
+    $entriesModel = model('EntriesModel');
 
     /** @var array */
     $pagingSystemAssetsEligibleModelIds = HyperHooks::getInstance()->getState('paging_system_assets_eligible_model_ids');

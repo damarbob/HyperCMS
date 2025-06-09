@@ -22,7 +22,7 @@ class ModelData extends ApiController
         $columns = $data['columns'] ?? null;
 
         /** @var ModelDataModel */
-        $modelData = model('modelDataModel');
+        $modelData = model('ModelDataModel');
         $modelDataBuilder = $modelData->getCustomBuilder();
 
         // Get the total count with no filtering.

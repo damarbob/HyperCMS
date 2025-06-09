@@ -9,7 +9,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
     log_message('debug', 'Path: ' . $path);
 
     /** @var \App\Models\EntriesModel */
-    $entriesModel = model('entriesModel');
+    $entriesModel = model('EntriesModel');
 
     /* Page-eligible model check */
 
