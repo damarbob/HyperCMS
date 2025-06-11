@@ -32,6 +32,7 @@ var options = {
     // Map over the invisible fields
     ...hyper.data.invisible_fields.map((field) => ({
       title: field.title,
+      name: field.id,
       data: field.id,
       defaultContent: `<span class='tag is-warning'>${hyper.lang.Admin["n/a"]}</span>`,
       visible: false, // Do not display in the table
@@ -42,6 +43,7 @@ var options = {
     // Map over the visible fields
     ...hyper.data.fields.map((field) => ({
       title: field.label,
+      name: field.id,
       data: field.id,
       defaultContent: `<span class='tag is-warning'>${hyper.lang.Admin["n/a"]}</span>`,
       orderSequence: ["asc", "desc"],
@@ -79,6 +81,11 @@ var options = {
       targets: hyper.data.date_field_ids,
     },
   ],
+
+  order: {
+    name: "date_modified",
+    dir: "desc",
+  },
 
   // Layout
   layout: {
@@ -235,10 +242,6 @@ var options = {
   responsive: true, // Make the table responsive on various devices
   select: true, // Allow row selection
 };
-
-// Order descending by date_modified (last column). Assuming last column is always 'date_modified' column.
-// @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
-options.order = [[options.columns.length - 1, "desc"]];
 
 // Add language option only when locale is not 'en'
 if (lang !== "en") {

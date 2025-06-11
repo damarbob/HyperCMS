@@ -34,17 +34,20 @@ var options = {
   columns: [
     {
       title: hyper.lang.Admin.id,
+      name: "id",
       data: "id",
       visible: false,
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.name,
+      name: "name",
       data: "name",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.fields,
+      name: "fields",
       data: "fields",
       orderSequence: ["asc", "desc"],
       render: (data) => {
@@ -65,26 +68,31 @@ var options = {
     },
     {
       title: hyper.lang.Admin.createdBy,
+      name: "created_by",
       data: "created_by",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.editedBy,
+      name: "edited_by",
       data: "edited_by",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.createdAt,
+      name: "created_at",
       data: "created_at",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.dateModified,
+      name: "date_modified",
       data: "date_modified",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.deletedBy,
+      name: "deleted_by",
       data: "deleted_by",
       visible: false,
       orderSequence: ["asc", "desc"],
@@ -97,6 +105,11 @@ var options = {
       targets: [4, 5],
     },
   ],
+
+  order: {
+    name: "date_modified",
+    dir: "desc",
+  },
 
   // Layout
   layout: {
@@ -260,10 +273,6 @@ var options = {
   responsive: true, // Make the table responsive on various devices
   select: true, // Allow row selection
 };
-
-// Order descending by date_modified (second last column). Assuming last column is always 'date_modified' column.
-// @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
-options.order = [[options.columns.length - 2, "desc"]];
 
 // DataTables language
 // Add language option only when locale is not 'en'
