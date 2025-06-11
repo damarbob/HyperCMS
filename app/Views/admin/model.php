@@ -47,7 +47,5 @@
     }
 </script>
 
-<script type="text/javascript">
-    <?= (serve_file("app/Views/assets/admin/model.js")['body']) ?>
-</script>
+<script type="text/javascript" src="<?= base_url('assets/App/admin/model.js') ?>"></script>
 <?= $this->endSection() ?>
