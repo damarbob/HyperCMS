@@ -37,23 +37,27 @@ var options = {
   columns: [
     {
       title: lang.id,
+      name: "id",
       data: "id",
       visible: false,
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.modelId,
+      name: "model_id",
       data: "model_id",
       visible: false,
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.model,
+      name: "model_name",
       data: "model_name",
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.fields,
+      name: "fields",
       data: "fields",
       orderSequence: ["asc", "desc"],
       render: (data) => {
@@ -74,38 +78,43 @@ var options = {
     },
     {
       title: lang.createdBy,
+      name: "created_by",
       data: "created_by",
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.editedBy,
+      name: "edited_by",
       data: "edited_by",
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.createdAt,
+      name: "created_at",
       data: "created_at",
+      type: "date",
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.dateModified,
+      name: "date_modified",
       data: "date_modified",
+      type: "date",
       orderSequence: ["asc", "desc"],
     },
     {
       title: lang.deletedBy,
+      name: "deleted_by",
       data: "deleted_by",
       visible: false,
       orderSequence: ["asc", "desc"],
     },
   ],
 
-  columnDefs: [
-    {
-      type: "date",
-      targets: [4, 5],
-    },
-  ],
+  order: {
+    name: "date_modified",
+    dir: "desc",
+  },
 
   layout: {
     topStart: {
@@ -261,11 +270,13 @@ var options = {
 
   rowCallback: function (row, data, index) {
     $(row).on("dblclick", function () {
-      var id = data.id;
+      let modelId = data.model_id;
+      let id = data.id;
 
       window.location.href = window.hyper.util.text.replacePlaceholders(
         window.hyper.data.links.edit,
         {
+          modelId: modelId,
           id: id,
         }
       );
@@ -278,9 +289,6 @@ var options = {
   responsive: true,
   select: true,
 };
-
-// Order descending by date_modified (second last column). Assuming last column is always 'date_modified' column.
-options.order = [[options.columns.length - 2, "desc"]];
 
 // DataTables language
 if (locale !== "en") {

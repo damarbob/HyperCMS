@@ -28,6 +28,7 @@ var options = {
     // Invisible fields (not shown in the table)
     ...hyper.data.invisible_fields.map((field) => ({
       title: field.title,
+      name: field.id, // Add name to allow reference from datatables
       data: field.id,
       defaultContent:
         "<span class='tag is-warning'>" + hyper.lang.Admin.na + "</span>",
@@ -39,6 +40,7 @@ var options = {
     // Visible fields
     ...hyper.data.fields.map((field) => ({
       title: field.label,
+      name: field.id, // Add name to allow reference from datatables
       data: field.id,
       defaultContent:
         "<span class='tag is-warning'>" + hyper.lang.Admin["n/a"] + "</span>",
@@ -79,6 +81,12 @@ var options = {
       targets: hyper.data.date_field_ids,
     },
   ],
+
+  // Order descending by date_created
+  order: {
+    name: "date_created",
+    dir: "desc",
+  },
 
   // Layout
   layout: {
@@ -195,10 +203,6 @@ var options = {
   responsive: true, // Make the table responsive on various devices
   select: true, // Allow row selection
 };
-
-// Order descending by date_created (last column). Assuming last column is always 'date_created' column.
-// @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
-options.order = [[options.columns.length - 1, "desc"]];
 
 // Add language option only when locale is not 'en'
 if (lang !== "en") {

@@ -33,17 +33,20 @@ var options = {
   columns: [
     {
       title: hyper.lang.Admin.id,
+      name: "data_id",
       data: "data_id",
       visible: false,
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.name,
+      name: "name",
       data: "name",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.fields,
+      name: "fields",
       data: "fields",
       orderSequence: ["asc", "desc"],
       render: (data) => {
@@ -64,11 +67,13 @@ var options = {
     },
     {
       title: hyper.lang.Admin.createdBy,
+      name: "created_by",
       data: "created_by",
       orderSequence: ["asc", "desc"],
     },
     {
       title: hyper.lang.Admin.dateCreated,
+      name: "date_created",
       data: "date_created",
       orderSequence: ["asc", "desc"],
     },
@@ -80,6 +85,11 @@ var options = {
       targets: [4],
     },
   ],
+
+  order: {
+    name: "date_created",
+    dir: "desc",
+  },
 
   // Layout
   layout: {
@@ -200,10 +210,6 @@ var options = {
   responsive: true, // Make the table responsive on various devices
   select: true, // Allow row selection
 };
-
-// Order descending by date_created (last column). Assuming last column is always 'date_created' column.
-// @IMPORTANT: Changing the last column will require changing the index below regardless of column visibility (probably).
-options.order = [[options.columns.length - 1, "desc"]];
 
 // DataTables language
 // Add language option only when locale is not 'en'
