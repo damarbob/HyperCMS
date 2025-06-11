@@ -20,9 +20,7 @@
 <!-- Codicon for Monaco Editor -->
 <link href="https://cdn.jsdelivr.net/npm/vscode-codicons@0.0.17/dist/codicon.min.css" rel="stylesheet">
 
-<style type="text/css">
-    <?= (serve_file("app/Views/assets/admin/file_manager.css")['body']) ?>
-</style>
+<link rel="stylesheet" href="<?= base_url('assets/App/admin/file_manager.css') ?>">
 <?= $this->endSection() ?>
 
 <?= $this->section('content') ?>
@@ -193,7 +191,5 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('footer') ?>
-<script type="text/javascript">
-    <?= (serve_file("app/Views/assets/admin/file_manager.js")['body']) ?>
-</script>
+<script type="text/javascript" src="<?= base_url('assets/App/admin/file_manager.js') ?>"></script>
 <?= $this->endSection() ?>

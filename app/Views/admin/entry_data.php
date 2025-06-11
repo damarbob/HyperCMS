@@ -64,7 +64,5 @@
         openModal(modal);
     }
 </script>
-<script type="text/javascript">
-    <?= (serve_file("app/Views/assets/admin/entry_data.js")['body']) ?>
-</script>
+<script type="text/javascript" src="<?= base_url('assets/App/admin/entry_data.js') ?>"></script>
 <?= $this->endSection() ?>

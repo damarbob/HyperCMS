@@ -137,7 +137,5 @@ helper('hyper_text');
     var userList = new List('users', options);
 </script>
 
-<script type="text/javascript">
-    <?= (serve_file("app/Views/assets/admin/entries.js")['body']) ?>
-</script>
+<script type="text/javascript" src="<?= base_url('assets/App/admin/entries.js') ?>"></script>
 <?= $this->endSection() ?>
