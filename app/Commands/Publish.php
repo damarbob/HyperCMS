@@ -124,7 +124,12 @@ class Publish extends BaseCommand
             if ($dev || ENVIRONMENT !== 'production') {
                 $targetPath .= '.hyper-dev' . DIRECTORY_SEPARATOR;
             }
-            $targetPath .= 'modules' . DIRECTORY_SEPARATOR . $module;
+
+            if (strcasecmp($module, 'App') === 0) {
+                $targetPath .= $module; // public/assets/App
+            } else {
+                $targetPath .= 'modules' . DIRECTORY_SEPARATOR . $module;
+            }
 
             // Create the target directory if it does not exist.
             if (! is_dir($targetPath)) {
