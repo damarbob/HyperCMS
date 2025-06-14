@@ -153,6 +153,8 @@ abstract class AdminController extends BaseController
         $this->data = [
             'hyper' => [
                 'config' => [
+                    "appName"       => config(Hyper::class)->appName,
+                    "appVersion"    => config(Hyper::class)->appVersion,
                     "baseUrl"       => base_url(),
                     "environment"   => ENVIRONMENT,
                     "csrfHeader"    => csrf_header(),
