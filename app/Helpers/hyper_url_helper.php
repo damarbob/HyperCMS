@@ -1,5 +1,71 @@
 <?php
 
+/**
+ * Returns the URL to a module's published assets.
+ *
+ * @param string            $module    The module name (e.g. "Blog").
+ * @param string|array      $path      Optional sub‐path (e.g. "css/app.css" or ['css','app.css']).
+ * @param string|null       $scheme    URI scheme (http, https). Null = protocol‐relative.
+ *
+ * @return string
+ */
+if (! function_exists('module_assets_url')) {
+    function module_assets_url(string $module, $path = '', ?string $scheme = null): string
+    {
+        // Build the relative URI: /assets/modules/{Module}/{path}
+        $relative = 'assets/modules/'
+            . trim($module, '/')
+            . '/'
+            . (is_array($path) ? implode('/', $path) : ltrim($path, '/'));
+
+        // Delegate to base_url under the hood
+        return base_url($relative, $scheme);
+    }
+}
+
+/**
+ * Returns the URL to a module's dev‐mode published assets.
+ *
+ * @param string            $module    The module name (e.g. "Blog").
+ * @param string|array      $path      Optional sub‐path (e.g. "css/app.css" or ['css','app.css']).
+ * @param string|null       $scheme    URI scheme (http, https). Null = protocol‐relative.
+ *
+ * @return string
+ */
+if (! function_exists('module_dev_assets_url')) {
+    function module_dev_assets_url(string $module, $path = '', ?string $scheme = null): string
+    {
+        $relative = 'assets/.hyper-dev/modules/'
+            . trim($module, '/')
+            . '/'
+            . (is_array($path) ? implode('/', $path) : ltrim($path, '/'));
+
+        return base_url($relative, $scheme);
+    }
+}
+
+/**
+ * Environment‐aware URL to a module's assets:
+ * - In production -> module_assets_url()
+ * - Otherwise      -> module_dev_assets_url()
+ * 
+ * @param string            $module    The module name (e.g. "Blog").
+ * @param string|array      $path      Optional sub‐path (e.g. "css/app.css" or ['css','app.css']).
+ * @param string|null       $scheme    URI scheme (http, https). Null = protocol‐relative.
+ *
+ * @return string
+ */
+if (! function_exists('module_assets_url_env')) {
+    function module_assets_url_env(string $module, $path = '', ?string $scheme = null): string
+    {
+        if (ENVIRONMENT === 'production') {
+            return module_assets_url($module, $path, $scheme);
+        }
+
+        return module_dev_assets_url($module, $path, $scheme);
+    }
+}
+
 if (! function_exists('normalize_url')) {
     /**
      * Normalize a URL by removing '/index.php' and trailing slashes.
