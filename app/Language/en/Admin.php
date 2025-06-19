@@ -24,6 +24,7 @@ return [
 
     'dashboard' => 'Dashboard',
     'models' => 'Models',
+    'entry' => 'Entry',
     'entries' => 'Entries',
     'settings' => 'Settings',
 
@@ -36,6 +37,7 @@ return [
     'trash' => 'Trash',
     'restore' => 'Restore',
     'undo' => 'Undo',
+    'redo' => 'Redo',
     'emptyTrash' => 'Empty trash',
 
     'data' => 'Data',
@@ -117,6 +119,7 @@ return [
 
     'fieldsSyntax' => 'Field syntax',
     'save' => 'Save',
+    'saveAs' => 'Save as',
 
     'areYouSure' => 'Are you sure?',
     'youWillNotBeAbleToRevertThis' => 'You will not be able to revert this!',
