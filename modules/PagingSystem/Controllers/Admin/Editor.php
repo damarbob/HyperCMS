@@ -6,6 +6,8 @@ use App\Controllers\AdminController;
 
 class Editor extends AdminController
 {
+    protected $helpers = ['hyper_url'];
+
     public function index()
     {
         $data = $this->request->getGet(); // Get data from get
