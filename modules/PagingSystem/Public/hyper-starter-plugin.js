@@ -1,5 +1,4 @@
 import jquery from "https://cdn.jsdelivr.net/npm/jquery@3.7.1/+esm";
-import { config } from "../../../../js/Config.js";
 
 /**
  * Hyper Starter Plugin for GrapesJS
@@ -8,6 +7,8 @@ import { config } from "../../../../js/Config.js";
  * allowing users to select a model and display its data in the editor.
  */
 grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
+  const config = window.hyper.config;
+
   // Arrays to store retrieved data
   let models = []; // Stores all model objects from the API
   let modelsForProp = []; // Stores models in {value, name} format for dropdowns
@@ -18,7 +19,7 @@ grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
    */
   function fetchModelsData() {
     jquery.ajax({
-      url: `${config.baseUrl}api/test/models/dt`,
+      url: `${config.baseUrl}api/v1/models/`,
       type: "POST",
       dataType: "json",
       data: {},
@@ -129,7 +130,7 @@ grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
   const script = function (props) {
     const { baseUrl, modelProp, titleProp } = props;
 
-    const API_URL = `${baseUrl}api/test/model/dt`;
+    const API_URL = `${baseUrl}api/v1/model/`;
     const MODEL_ID = modelProp;
 
     // Show loading state
