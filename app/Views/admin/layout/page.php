@@ -323,6 +323,9 @@ $content = $this->renderSection('content');
         window.hyper_inIframe = window.self !== window.top; // Check if loaded inside an iframe
     </script>
 
+    <!-- Hyper CMS bootstrap JS -->
+    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
+
     <?= $this->renderSection('head') ?>
 </head>
 
@@ -382,9 +385,6 @@ $content = $this->renderSection('content');
 
     <!-- Flatpickr JS -->
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-
-    <!-- Hyper CMS bootstrap JS -->
-    <script type="module" src="<?= base_url('assets/js/main.js') ?>"></script>
 
     <!-- JavaScript for displaying notifications -->
     <script>
