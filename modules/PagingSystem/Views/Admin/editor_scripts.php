@@ -1,7 +1,4 @@
-<!-- <script src="https://cdn.jsdelivr.net/npm/grapesjs@0.22.5/dist/grapes.min.js" integrity="sha256-/WoKyVG/rkPGHHHqcWUCUrZEAv4MNxbHL1wcN7Y5o30=" crossorigin="anonymous"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/grapesjs@0.22.8/dist/grapes.min.js" integrity="sha256-n+3Ev4VhpTpZdsfDDNafUvZJAo1iLiZeFbHGgHqkVB0=" crossorigin="anonymous"></script>
-<!-- <script src="https://cdn.jsdelivr.net/npm/grapesjs-blocks-flexbox@1.0.1/dist/index.min.js"></script> -->
-<!-- <script src="https://cdn.jsdelivr.net/npm/grapesjs-blocks-basic@1.0.2/dist/index.min.js"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/grapesjs-custom-code@1.0.2/dist/index.min.js"></script>
 <script type="text/javascript" src="<?= module_assets_url('PagingSystem', 'grapesjs-hyper-editor.js') ?>"></script>
 <script type="text/javascript" src="<?= module_assets_url('PagingSystem', 'grapesjs-hyper-dependencies.js') ?>"></script>
@@ -40,12 +37,14 @@ $requester = hex_encode($uri);
 // Can be overridden in the override file
 $editorPlugins = [
   'grapesjs-hyper-editor',
-  'grapesjs-hyper-dependencies',
+  /** 
+   * The grapesjs-hyper-dependencies plugin loads dependencies similar to those used by Hyper CMS, 
+   * which include Bulma. For now, we will use Bootstrap components instead.
+   */
+  // 'grapesjs-hyper-dependencies', 
   'grapesjs-hyper-assets-injector',
   'grapesjs-hyper-components',
   'grapesjs-hyper-custom-editor',
-  // 'grapesjs-blocks-flexbox',
-  // 'gjs-blocks-basic',
   'grapesjs-blocks-bootstrap-5',
   'grapesjs-bootstrap-grid-system',
   'grapesjs-bootstrap-typography',
@@ -65,6 +64,7 @@ $editorPlugins = [
   'grapesjs-style-gradient',
   'grapesjs-style-filter',
   'grapesjs-import-code',
+  'hyper-starter-plugin',
 ];
 
 // Plugin options
