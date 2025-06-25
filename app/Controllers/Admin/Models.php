@@ -37,7 +37,7 @@ class Models extends AdminController
             'title' => lang('Admin.newModel'),
         ]);
 
-        $this->hooks->register(hook('backend.view:models:new'), function () {
+        $this->hooks->register(hook('Backend.view:models:new'), function () {
             return render('admin/partials/models_form', [
                 'action' => 'new',
                 'formAction' => base_url('admin/models'),
@@ -70,7 +70,7 @@ class Models extends AdminController
             return $this->respond(lang('Admin.modelNotFound'), 'admin/models', 400, success: false);
         }
 
-        $this->hooks->register(hook('backend.view:models:edit'), function () use ($model) {
+        $this->hooks->register(hook('Backend.view:models:edit'), function () use ($model) {
             return render('admin/partials/models_form', [
                 'action' => 'edit',
                 'formAction' => base_url('admin/models/' . $model['id']),
