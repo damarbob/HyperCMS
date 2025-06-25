@@ -8,10 +8,10 @@ $context = 'user:' . user_id();
 <?= $this->section('content') ?>
 <div class="block">
     <h1 class="title">
-        <?= lang('admin.settings') ?>
+        <?= lang('Admin.settings') ?>
     </h1>
     <p class="subtitle">
-        <?= lang('admin.models') ?>
+        <?= lang('Admin.models') ?>
     </p>
     <!-- Empty trash button -->
     <div class="field">

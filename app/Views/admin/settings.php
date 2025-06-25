@@ -13,10 +13,10 @@ $datatableEntriesPerPageError = validation_show_error('general_datatable_entries
 <?= service('hooks')->trigger(hook('Backend.view:settings')) ?>
 <div class="block">
     <h1 class="title">
-        <?= lang('admin.settings') ?>
+        <?= lang('Admin.settings') ?>
     </h1>
     <p class="subtitle">
-        <?= lang('admin.general') ?>
+        <?= lang('Admin.general') ?>
     </p>
     <form action="<?= base_url('admin/settings/update') ?>" method="POST">
         <?= csrf_field() ?>
