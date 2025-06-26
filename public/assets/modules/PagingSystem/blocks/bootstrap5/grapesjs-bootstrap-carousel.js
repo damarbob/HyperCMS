@@ -245,8 +245,8 @@ grapesjs.plugins.add("grapesjs-bootstrap-carousel", function (editor, opts = {})
     // Add the carousel component to the Blocks panel
     editor.Blocks.add("bs-carousel", {
         label: "Carousel",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 512">
                 <path d="M96 192h448a16 16 0 0 1 9.7 29.7l-224 192a16 16 0 0 1-19.4 0l-224-192A16 16 0 0 1 96 192z"/>
               </svg>`,
         content: { type: "bs-carousel" }

@@ -378,7 +378,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-navbar", function (editor, opts = {}) {
     BlockManager.add("bs-navbar", {
         label: "Navbar",
         category: "Bootstrap Navbar",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>`,
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3V6m0 5h18v2H3v-2m0 5h18v2H3v-2Z"/></svg>`,
         content: { type: "bs-navbar" }
     });
 
