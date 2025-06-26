@@ -255,8 +255,8 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
     // Add buttons to blocks panel
     editor.Blocks.add("bs-button", {
         label: "Button",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z"/></svg>`,
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M384 32C419.3 32 448 60.65 448 96V416C448 451.3 419.3 480 384 480H64C28.65 480 0 451.3 0 416V96C0 60.65 28.65 32 64 32H384zM384 80H64C55.16 80 48 87.16 48 96V416C48 424.8 55.16 432 64 432H384C392.8 432 400 424.8 400 416V96C400 87.16 392.8 80 384 80z"/></svg>`,
         content: {
             type: "bs-button",
             content: options.defaultText
@@ -265,8 +265,8 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
 
     editor.Blocks.add("bs-button-group", {
         label: "Button Group",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M192 32C209.7 32 224 46.33 224 64V448C224 465.7 209.7 480 192 480H64C46.33 480 32 465.7 32 448V64C32 46.33 46.33 32 64 32H192zM384 32C401.7 32 416 46.33 416 64V448C416 465.7 401.7 480 384 480H256C238.3 480 224 465.7 224 448V64C224 46.33 238.3 32 256 32H384z"/></svg>`,
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M192 32C209.7 32 224 46.33 224 64V448C224 465.7 209.7 480 192 480H64C46.33 480 32 465.7 32 448V64C32 46.33 46.33 32 64 32H192zM384 32C401.7 32 416 46.33 416 64V448C416 465.7 401.7 480 384 480H256C238.3 480 224 465.7 224 448V64C224 46.33 238.3 32 256 32H384z"/></svg>`,
         content: { type: "bs-button-group" }
     });
 

@@ -525,16 +525,16 @@ grapesjs.plugins.add("grapesjs-bootstrap-accordion", function (editor, opts = {}
     // Add to Blocks Panel
     editor.Blocks.add("bs-image-accordion", {
         label: "Image Accordion",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M384 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H544c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64H384zM256 160H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zM0 32C0 14.3 14.3 0 32 0H544c17.7 0 32 14.3 32 32V96c0 17.7-14.3 32-32 32H32C14.3 128 0 113.7 0 96V32z"/></svg>`,
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M384 160c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H544c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64H384zM256 160H64c-35.3 0-64 28.7-64 64V448c0 35.3 28.7 64 64 64H256c35.3 0 64-28.7 64-64V224c0-35.3-28.7-64-64-64zM0 32C0 14.3 14.3 0 32 0H544c17.7 0 32 14.3 32 32V96c0 17.7-14.3 32-32 32H32C14.3 128 0 113.7 0 96V32z"/></svg>`,
         content: { type: "bs-image-accordion" }
     });
 
     // Add to blocks panel
     editor.Blocks.add("bs-accordion", {
         label: "Accordion",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zm64 64v64H448V160H64zm0 128v64H448V288H64z"/></svg>`,
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 96C0 60.7 28.7 32 64 32H448c35.3 0 64 28.7 64 64V416c0 35.3-28.7 64-64 64H64c-35.3 0-64-28.7-64-64V96zm64 64v64H448V160H64zm0 128v64H448V288H64z"/></svg>`,
         content: { type: "bs-accordion" }
     });
 });

@@ -118,7 +118,7 @@ grapesjs.plugins.add(
                     });
 
                     // Add as a component
-                    editor.Components.addComponent({
+                    editor.getSelected().addComponent({
                         type: 'image',
                         src: file,
                         style: {
@@ -161,7 +161,9 @@ grapesjs.plugins.add(
             const iframe = document.getElementById('fileManagerIframe');
 
             if (modal && iframe) {
-                iframe.src = `${config.baseUrl}admin/file-manager?requester_id=${config.requester}`;
+                if (!iframe.getAttribute('src')) {
+                    iframe.src = `${config.baseUrl}admin/file-manager?requester_id=${config.requester}`;
+                }
                 modal.classList.add('is-active');
             }
         };
@@ -358,7 +360,6 @@ grapesjs.plugins.add(
                     title: `${window.hyper.lang.PagingSystem.swVisibility}`
                 },
                 context: 'sw-visibility',
-                active: true,
             });
             panels.addButton('options', {
                 id: 'gjs-open-import-code',
@@ -419,10 +420,10 @@ grapesjs.plugins.add(
             $('.devices-panel').append(`
                 <div class="select is-small is-primary">
                     <select id="deviceSelector">
-                        <option value="desktop" selected>Desktop</option>
-                        <option value="tablet">Tablet</option>
-                        <option value="mobile-landscape">Mobile Landscape</option>
-                        <option value="mobile-portrait">Mobile Portrait</option>
+                        <option value="desktop" selected>${window.hyper.lang.PagingSystem.desktop}</option>
+                        <option value="tablet">${window.hyper.lang.PagingSystem.tablet}</option>
+                        <option value="mobile-landscape">${window.hyper.lang.PagingSystem.mobileLandscape}</option>
+                        <option value="mobile-portrait">${window.hyper.lang.PagingSystem.mobilePortrait}</option>
                     </select>
                 </div>`
             );
@@ -494,74 +495,86 @@ grapesjs.plugins.add(
          * Set up UI interactions (tabs, buttons, etc.)
          */
         const setupUiInteractions = () => {
-            // Cache elements for Left Panel Management
-            const leftContent = document.querySelector('.left-panel-content');
-            const leftContentPanes = document.querySelectorAll('.left-panel-content-pane');
-            const panelButtons = document.querySelectorAll('.panel-button');
+            // Cache DOM elements
+            const $leftContent = $('.left-panel-content');
+            const $leftContentPanes = $('.left-panel-content-pane');
+            const $panelButtons = $('.panel-button');
+            const $header = $('#leftPanelHeader');
+            const $searchInput = $('#blocksSearchInput');
+            const $tabButtons = $('.tab-button');
+            const $rightPanes = $('.right-panel-content-pane');
+            const $appVersion = $('#appVersion');
 
-            panelButtons.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const targetId = btn.dataset.target;
-                    if (!targetId) return; // in case dataset.target is missing
-                    const targetEl = document.getElementById(targetId);
+            // Left Panel Management
+            $panelButtons.on('click', function () {
+                const $btn = $(this);
+                const targetId = $btn.data('target');
 
-                    // Toggle off if the target pane is already active
-                    if (targetEl && targetEl.classList.contains('is-active')) {
-                        targetEl.classList.remove('is-active');
-                        btn.classList.remove('is-active', 'has-text-primary-invert');
-                        leftContent.style.display = 'none';
-                        return;
-                    }
+                if (!targetId) return;
 
-                    // Show the left content wrapper
-                    leftContent.style.display = 'flex';
+                const $targetEl = $(`#${targetId}`);
+                const wasActive = $targetEl.hasClass('is-active'); // Selected target currently active
+                const anyActive = $leftContentPanes.hasClass('is-active'); // Any panes currently active
 
-                    // Remove active classes from all left panes and buttons
-                    leftContentPanes.forEach(pane => pane.classList.remove('is-active'));
-                    panelButtons.forEach(button => button.classList.remove('is-active', 'has-text-primary-invert'));
+                // Remove active class
+                $leftContentPanes.removeClass('is-active');
+                $panelButtons.removeClass('is-active has-text-primary-invert');
 
-                    // Activate the selected pane and button
-                    if (targetEl) {
-                        targetEl.classList.add('is-active');
-                    }
-                    btn.classList.add('is-active', 'has-text-primary-invert');
+                if (wasActive) {
+                    // If selected target currently active, hide left panel
+                    $targetEl.fadeOut(200, () => {
+                        $leftContent.hide(300);
+                        $appVersion.show(300);
+                    });
 
-                    // Update header text
-                    const header = document.getElementById('leftPanelHeader');
-                    if (header) {
-                        header.textContent = btn.title;
-                    }
+                } else if (anyActive) {
+                    // If selected target not active but there is active pane, hide panes and show the target pane
+                    $leftContentPanes.fadeOut(200);
 
-                    // Show search input for blocks
-                    const searchInput = document.getElementById('blocksSearchInput');
-                    if (searchInput && targetId === 'blocks-manager') {
-                        searchInput.style.display = 'block';
-                    } else if (searchInput) {
-                        searchInput.style.display = 'none';
-                    }
-                });
+                    $targetEl.fadeIn(200);
+                    $targetEl.addClass('is-active');
+
+                    $btn.addClass('is-active has-text-primary-invert');
+
+                } else {
+                    // If no active pane, show pane
+                    $leftContent.show(300, () => {
+                        $targetEl.fadeIn(200);
+                        $targetEl.addClass('is-active');
+                    });
+                    $btn.addClass('is-active has-text-primary-invert');
+
+                    $appVersion.hide(300);
+                }
+                // Update header text
+                if ($header.length) {
+                    $header.text($btn.attr('title') || '');
+                }
+
+                // Toggle search input
+                if ($searchInput.length) {
+                    (targetId === 'blocks-manager') ? $searchInput.fadeIn(200) : $searchInput.fadeOut(200);
+                }
             });
 
-            // Right panel tabs
-            document.querySelectorAll('.tab-button').forEach(tab => {
-                tab.addEventListener('click', () => {
-                    const targetId = tab.dataset.target;
-                    if (!targetId) return;
+            // Right Panel Tabs
+            $tabButtons.on('click', function () {
+                const $tab = $(this);
+                const targetId = $tab.data('target');
 
-                    // Update active tab
-                    document.querySelectorAll('.tab-button').forEach(t =>
-                        t.classList.toggle('is-active', t === tab)
-                    );
+                if (!targetId) return;
 
-                    // Show corresponding pane
-                    document.querySelectorAll('.right-panel-content-pane').forEach(pane =>
-                        pane.classList.toggle('is-active', pane.id === targetId)
-                    );
-                });
+                // Update active tab
+                $tabButtons.removeClass('is-active');
+                $tab.addClass('is-active');
+
+                // Show corresponding pane
+                $rightPanes.removeClass('is-active');
+                $(`#${targetId}`).addClass('is-active');
             });
 
             // Close modal button
-            document.querySelector('.modal-close').addEventListener('click', closeFileManagerModal);
+            $('.modal-close').on('click', closeFileManagerModal);
 
             // Selector mode
             // Delegated event listener for buttons within the container "selector-mode-buttons"
@@ -593,194 +606,151 @@ grapesjs.plugins.add(
 
         };
 
-        /**
-         * Show the no component selected state
-         */
+        // In your plugin file (GrapesJS plugin)
+        const ATTRIBUTES_PANEL_ID = 'attributes-panel';
+        const NO_TRAIT_STATE_ID = 'no-trait-state';
+
         const showNoComponentState = () => {
-            const attributesContent = document.getElementById(ATTRIBUTES_CONTENT_ID);
-
-            if (attributesContent) {
-                attributesContent.innerHTML = `
-                        <div class="no-component">
-                            <i class="fas fa-mouse-pointer"></i>
-                            <h3>Select a Component</h3>
-                            <p>Click on any component in the editor to manage its attributes</p>
-                        </div>
-                    `;
-            }
-
+            $(`#${NO_TRAIT_STATE_ID}`).show();
+            $(`#${ATTRIBUTES_PANEL_ID}`).hide();
             currentComponent = null;
-            attributeRows = [];
         };
 
-        /**
-         * Render the attributes panel for a component
-         * @param {Component} component The selected component
-         */
         const renderAttributesPanel = (component) => {
             currentComponent = component;
+
+            // Hide "no component" state and show attributes panel
+            $(`#${NO_TRAIT_STATE_ID}`).hide();
+            $(`#${ATTRIBUTES_PANEL_ID}`).show();
+
+            // Update component info
+            $('#component-type-name').text(component.getName() || component.get('type'));
+            $('#component-id').text(`(#${component.getId()})`);
+
+            // Clear existing attributes
+            $('#attributesList').empty();
+
             const attrs = component.getAttributes();
 
-            const attributesContent = document.getElementById(ATTRIBUTES_CONTENT_ID);
-
-            if (!attributesContent) return;
-
-            // Create panel content
-            attributesContent.innerHTML = `
-                    <div class="component-info">
-                        <div class="component-type">
-                            <i class="fas fa-cube"></i> ${component.getName() || component.get('type')} <span class="has-text-weight-light">(#${component.getId()})</span>
-                        </div>
-                    </div>
-                    
-                    <div class="section-title">
-                        <i class="fas fa-list"></i> ${window.hyper.lang.PagingSystem.customAttributes}
-                    </div>
-                    
-                    <div class="custom-attributes is-flex is-flex-direction-column">                        
-                        <div class="attributes-list" id="attributesList"></div>
-                        <button class="add-attribute is-align-self-flex-end mt-2" id="addAttribute" title="${window.hyper.lang.PagingSystem.addAttribute}">
-                            <i class="fas fa-plus"></i>
-                        </button>
-                    </div>
-                    
-                    <button class="update-btn button is-primary is-fullwidth mt-3" id="updateAttributes" disabled>
-                        <span class="icon">
-                            <i class="fas fa-sync-alt"></i>
-                        </span>
-                        <span>
-                            ${window.hyper.lang.PagingSystem.updateAttribute}
-                        </span>
-                    </button>
-                `;
-
-            const attrsList = document.getElementById('attributesList');
-
             // Create attribute rows
-            attributeRows = [];
-            for (const [index, [key, value]] of Object.entries(Object.entries(attrs))) {
-                if (key === 'id' || key === 'class') continue; // Skip built-in attributes
-                addAttributeRow(attrsList, key, value, parseInt(index) + 1);
+            for (const [key, value] of Object.entries(attrs)) {
+                if (key === 'id' || key === 'class') continue;
+                addAttributeRow(key, value);
             }
 
-            // Add empty row at the end
-            addAttributeRow(attrsList);
-
-            // Add event listeners
-            document.getElementById('addAttribute').addEventListener('click', addNewAttribute);
-            document.getElementById('updateAttributes').addEventListener('click', saveAttributes);
+            // Add empty row for new attribute
+            addAttributeRow();
         };
 
-        /**
-         * Add an attribute row to the attributes list
-         * @param {HTMLElement} container The container element
-         * @param {string} key The attribute key
-         * @param {string} value The attribute value
-         */
-        const addAttributeRow = (container, key = '', value = '', index = null) => {
-            const row = document.createElement('div');
-            row.className = 'attribute-row';
-
-            const rowHeader = document.createElement('div');
-            rowHeader.className = 'row-header';
-            rowHeader.innerHTML = `Attribute ${index ? index : container.children.length + 1}`;
-            rowHeader.style.display = 'flex';
-            rowHeader.style.alignItems = 'center';
-            rowHeader.style.justifyContent = 'space-between';
-            rowHeader.style.width = '100%';
-            row.appendChild(rowHeader);
-
-            const keyInput = document.createElement('input');
-            keyInput.type = 'text';
-            keyInput.className = 'attr-key input';
-            keyInput.placeholder = `${window.hyper.lang.PagingSystem.attribute}`;
-            keyInput.value = key;
-
-            const valueInput = document.createElement('input');
-            valueInput.type = 'text';
-            valueInput.className = 'attr-value input';
-            valueInput.placeholder = `${window.hyper.lang.PagingSystem.value}`;
-            valueInput.value = value;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-attribute';
-            removeBtn.title = `${window.hyper.lang.PagingSystem.removeAttribute}`;
-            removeBtn.innerHTML = '<i class="fas fa-times"></i>';
-
-            row.appendChild(keyInput);
-            row.appendChild(valueInput);
-
-            rowHeader.appendChild(removeBtn);
-
-            // Add remove button functionality
-            removeBtn.addEventListener('click', () => {
-                row.remove();
-                attributeRows = attributeRows.filter(r => r !== row);
-                document.getElementById('updateAttributes').disabled = false;
-            });
-
-
-            container.appendChild(row);
-            attributeRows.push(row);
-
-            // Add change events
-            const updateBtn = document.getElementById('updateAttributes');
-            keyInput.addEventListener('input', (e) => {
-                if (e.target.value.trim() === '') {
-                    // Disable update button if key is empty
-                    updateBtn.disabled = true;
-                } else {
-                    // Enable update button if key is not empty
-                    updateBtn.disabled = false;
-                }
-            });
-        };
-
-        /**
-         * Add a new attribute row
-         */
-        const addNewAttribute = () => {
-            const attrsList = document.getElementById('attributesList');
-            const lastRow = attributeRows[attributeRows.length - 1];
-            const keyInput = lastRow.querySelector('.attr-key');
-            const valueInput = lastRow.querySelector('.attr-value');
-
-            // Only add if last row is not empty
-            if (keyInput.value.trim() || valueInput.value.trim()) {
-                addAttributeRow(attrsList);
-            }
-        };
-
-        /**
-         * Save attributes to the component
-         */
         const saveAttributes = () => {
             if (!currentComponent) return;
 
             const attributes = {};
+            let isValid = true;
 
-            attributeRows.forEach(row => {
-                const keyInput = row.querySelector('.attr-key');
-                const valueInput = row.querySelector('.attr-value');
-                const key = keyInput.value.trim();
-                const value = valueInput.value.trim();
+            $('.attribute-row').each(function () {
+                const key = $(this).find('.attr-key').val().trim();
+                const value = $(this).find('.attr-value').val().trim();
 
                 if (key) {
-                    if (value === '') {
-                        // If value is empty add only the key (like disabled)
-                        attributes[key] = '';
-                    } else {
-                        attributes[key] = value;
-                    }
+                    attributes[key] = value;
+                } else if ($(this).find('.attr-value').val().trim()) {
+                    isValid = false;
                 }
             });
 
-            // Update component attributes
-            currentComponent.setAttributes(attributes);
+            if (!isValid) {
+                alert('Please enter attribute names for all values');
+                return;
+            }
 
-            // Disable update button
-            document.getElementById('updateAttributes').disabled = true;
+            currentComponent.setAttributes(attributes);
+            $('#updateAttributes').prop('disabled', true);
         };
+
+        const addNewAttribute = () => {
+            const $rows = $attributesList.children();
+            if ($rows.length === 0) return addAttributeRow();
+
+            const $lastRow = $rows.last();
+            const key = $lastRow.find('.attr-key').val().trim();
+            const value = $lastRow.find('.attr-value').val().trim();
+
+            if (key || value) addAttributeRow();
+        };
+
+        // Cache frequently used elements
+        const $attributesList = $('#attributesList');
+        const $updateButton = $('#updateAttributes');
+        const $addButton = $('#addAttribute');
+
+        // Centralized validation for all rows
+        const validateAllAttributes = () => {
+            let allValid = true;
+            $attributesList.find('.attribute-row').each(function () {
+                if ($(this).find('.attr-key').val().trim() === '') {
+                    allValid = false;
+                    return false; // Break early
+                }
+            });
+            $updateButton.prop('disabled', !allValid);
+        };
+
+        // Renumber rows sequentially
+        const renumberRows = () => {
+            $attributesList.find('.attribute-row').each(function (index) {
+                $(this).find('.attribute-header-text')
+                    .text(`${window.hyper.lang.PagingSystem.attribute} ${index + 1}`);
+            });
+        };
+
+        // Event delegation for dynamic elements
+        $attributesList
+            .on('click', '.remove-attribute', function () {
+                $(this).closest('.attribute-row').remove();
+                renumberRows();
+                validateAllAttributes();
+            })
+            .on('input', '.attr-key, .attr-value', validateAllAttributes);
+
+        // Static event bindings
+        $addButton.on('click', addNewAttribute);
+        $updateButton.on('click', saveAttributes); // Your save function
+
+        const addAttributeRow = (key = '', value = '') => {
+            const rowHTML = `
+        <div class="attribute-row">
+            <div class="row-header is-flex is-align-items-center is-justify-content-space-between" style="width:100%">
+                <span class="attribute-header-text">${window.hyper.lang.PagingSystem.attribute} TEMP</span>
+                <button class="remove-attribute" title="${window.hyper.lang.PagingSystem.removeAttribute}">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <input type="text" class="attr-key input" 
+                   placeholder="${window.hyper.lang.PagingSystem.attribute}" 
+                   value="${escapeHTML(key)}">
+            <input type="text" class="attr-value input" 
+                   placeholder="${window.hyper.lang.PagingSystem.value}" 
+                   value="${escapeHTML(value)}">
+        </div>`;
+
+            $attributesList.append(rowHTML);
+            renumberRows(); // Renumber all rows after adding
+            validateAllAttributes(); // Validate after adding
+        };
+
+        // XSS protection
+        const escapeHTML = str => str.replace(/[&<>"']/g,
+            m => ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            }[m]));
+
+        // Initial validation
+        validateAllAttributes();
 
         const renderBlocksManager = () => {
             const blocksManagerEl = document.getElementById('blocks-manager');
