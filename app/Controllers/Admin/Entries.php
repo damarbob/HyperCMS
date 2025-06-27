@@ -12,36 +12,60 @@ use Psr\Log\LoggerInterface;
 
 class Entries extends AdminController
 {
-
+    // Instance of SyntaxProcessor for handling code or text formatting
     protected SyntaxProcessor $syntaxProcessor;
-    protected string $uploadDestination = '.hyper-dev' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
 
+    // Path where uploaded files will be stored, varies by environment
+    protected string $uploadDestination;
+
+    // Initialize controller, helpers, and environment-specific settings
     public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
     {
-        // Do Not Edit This Line
+        // Do Not Edit This Line: Call parent initialization
         parent::initController($request, $response, $logger);
 
+        // Retrieve the syntax processor helper instance
         $this->syntaxProcessor = syntax_processor();
+
+        // Determine upload directory based on current environment
+        if (ENVIRONMENT === 'production') {
+            $this->uploadDestination = 'uploads' . DIRECTORY_SEPARATOR;
+        } else {
+            $this->uploadDestination = '.hyper-dev' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
+        }
     }
 
+    // Show the entries list page with pagination and action links
     public function index(): string
     {
-        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
+        // Get the user's preferred page length for the entries datatable (default to 10)
+        $this->data['pageLength'] = service('settings')
+            ->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
+
+        // Set the page title using the language file
         $this->data['title'] = lang('Admin.entries');
+
+        // Define action URLs for new, edit, delete, restore, and purge operations
         $this->data['links'] = [
-            'new' => base_url('admin/entries') . '/{id}/new', // The ID must be separated from the base URL to prevent it from being URL-encoded.
-            'edit' => base_url('admin/entries') . '/{modelId}/{id}/edit',
-            'delete' => base_url('admin/entries/delete'),
+            // The ID placeholder must be separate from the base URL to avoid URL encoding
+            'new'     => base_url('admin/entries') . '/{id}/new',
+            'edit'    => base_url('admin/entries') . '/{modelId}/{id}/edit',
+            'delete'  => base_url('admin/entries/delete'),
             'restore' => base_url('admin/entries/restore'),
-            'purge' => base_url('admin/entries/purge-deleted'),
+            'purge'   => base_url('admin/entries/purge-deleted'),
         ];
 
         /* Filters */
 
-        $this->data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $this->data);
+        // Allow other modules or hooks to modify the data before rendering
+        $this->data = $this->hooks->filter(
+            hook('Backend.controller:entries:index:data'),
+            $this->data
+        );
 
         /* End of filters */
 
+        // Render the entries view template with the prepared data
         return render('admin/entries', $this->data);
     }
 
