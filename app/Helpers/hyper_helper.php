@@ -30,7 +30,9 @@ if (!function_exists('hook')) {
         $files = $locator->search('Hooks/' . $group . '.php');
 
         if (empty($files)) {
-            log_message('error', 'Hook file not found for group ' . $group . ':' . json_encode($files));
+            // Retrieve the stack trace to help locate the caller.
+            $trace = debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS);
+            log_message('error', 'Hook file not found for group ' . $group . '. Stack trace: ' . json_encode($trace, JSON_PRETTY_PRINT));
             return ''; // Hook group file not found in any namespace
         }
 
