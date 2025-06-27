@@ -44,6 +44,11 @@ $hooks = service('hooks');
                                     <span class="icon">
                                         <i class="<?= $item['icon'] ?>"></i>
                                     </span>
+                                <?php else: ?>
+                                    <!-- Use default icon -->
+                                    <span class="icon">
+                                        <i class="fa-solid fa-question"></i>
+                                    </span>
                                 <?php endif ?>
                                 <span class="text">
                                     <?= $item['text'] ?>
