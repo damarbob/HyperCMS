@@ -164,9 +164,16 @@ export default class InputPopulator {
 
       // Insert file link HTML from our template.
       value.forEach((fileUrl) => {
+        // matches “http://…”, “https://…”, “//…”, or “www.…”
+        const isAbsolute = /^(?:https?:\/\/|\/\/|www\.)/i.test(fileUrl);
+
+        const url = isAbsolute
+          ? fileUrl
+          : window.hyper.config.baseUrl + fileUrl;
+
         filesFormHelper.append(
           InputPopulatorTemplates.fileLink({
-            url: window.hyper.config.baseUrl + fileUrl,
+            url,
             filename: fileUrl,
           })
         );
