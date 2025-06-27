@@ -179,41 +179,6 @@ grapesjs.plugins.add("grapesjs-bootstrap-card", function (editor, opts = {}) {
                         highlightable: true
                     }
                 ],
-                //         styles: `
-                //     .card { 
-                //       margin-bottom: 1rem; 
-                //       transition: all 0.3s ease;
-                //     }
-                //     .card-img-top, .card-img-bottom {
-                //       width: 100%;
-                //       height: auto;
-                //     }
-                //     .card-body {
-                //       padding: 1.25rem;
-                //     }
-                //     .card-title {
-                //       margin-bottom: 0.75rem;
-                //       font-size: 1.25rem;
-                //       font-weight: 500;
-                //     }
-                //     .card-subtitle {
-                //       margin-top: -0.375rem;
-                //       margin-bottom: 0.5rem;
-                //     }
-                //     .card-text:last-child {
-                //       margin-bottom: 0;
-                //     }
-                //     .card-link + .card-link {
-                //       margin-left: 1.25rem;
-                //     }
-                //     .card-header, .card-footer {
-                //       padding: 0.75rem 1.25rem;
-                //       background-color: rgba(0,0,0,0.03);
-                //     }
-                //     .card-header:first-child, .card-footer:last-child {
-                //       border-radius: calc(0.25rem - 1px) calc(0.25rem - 1px) 0 0;
-                //     }
-                //   `
             },
 
             init() {
@@ -408,8 +373,8 @@ grapesjs.plugins.add("grapesjs-bootstrap-card", function (editor, opts = {}) {
     // Add to blocks panel
     editor.Blocks.add("grapesjs-bootstrap-card", {
         label: "Card",
-        category: "Bootstrap",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 256h64c44.2 0 80 35.8 80 80c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16c0-44.2 35.8-80 80-80zm96-96c0 35.3-28.7 64-64 64s-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64zm128-32H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>`,
+        category: "Bootstrap Component",
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 576 512"><path d="M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H512c35.3 0 64-28.7 64-64V96c0-35.3-28.7-64-64-64H64zm80 256h64c44.2 0 80 35.8 80 80c0 8.8-7.2 16-16 16H80c-8.8 0-16-7.2-16-16c0-44.2 35.8-80 80-80zm96-96c0 35.3-28.7 64-64 64s-64-28.7-64-64s28.7-64 64-64s64 28.7 64 64zm128-32H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16zm0 64H496c8.8 0 16 7.2 16 16s-7.2 16-16 16H368c-8.8 0-16-7.2-16-16s7.2-16 16-16z"/></svg>`,
         content: { type: "grapesjs-bootstrap-card" },
         activate: true
     });

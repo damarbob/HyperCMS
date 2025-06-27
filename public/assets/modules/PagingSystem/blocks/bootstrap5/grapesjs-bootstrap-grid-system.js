@@ -350,7 +350,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
     editor.Blocks.add("bs-container", {
         label: "Container",
         category: "Bootstrap Grid",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96C512 60.65 483.3 32 448 32zM64 432c-8.836 0-16-7.164-16-16V96c0-8.836 7.164-16 16-16h384c8.836 0 16 7.164 16 16v320c0 8.836-7.164 16-16 16H64z"/></svg>`,
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96C512 60.65 483.3 32 448 32zM64 432c-8.836 0-16-7.164-16-16V96c0-8.836 7.164-16 16-16h384c8.836 0 16 7.164 16 16v320c0 8.836-7.164 16-16 16H64z"/></svg>`,
         content: { type: "bs-container" },
         activate: true
     });
@@ -358,7 +358,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
     editor.Blocks.add("bs-row", {
         label: "Row",
         category: "Bootstrap Grid",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96C512 60.65 483.3 32 448 32zM64 432c-8.836 0-16-7.164-16-16V96c0-8.836 7.164-16 16-16h384c8.836 0 16 7.164 16 16v320c0 8.836-7.164 16-16 16H64zM96 128h320c17.67 0 32 14.33 32 32v192c0 17.67-14.33 32-32 32H96c-17.67 0-32-14.33-32-32V160C64 142.3 78.33 128 96 128z"/></svg>`,
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M448 32H64C28.65 32 0 60.65 0 96v320c0 35.35 28.65 64 64 64h384c35.35 0 64-28.65 64-64V96C512 60.65 483.3 32 448 32zM64 432c-8.836 0-16-7.164-16-16V96c0-8.836 7.164-16 16-16h384c8.836 0 16 7.164 16 16v320c0 8.836-7.164 16-16 16H64zM96 128h320c17.67 0 32 14.33 32 32v192c0 17.67-14.33 32-32 32H96c-17.67 0-32-14.33-32-32V160C64 142.3 78.33 128 96 128z"/></svg>`,
         content: { type: "bs-row" },
         activate: true
     });
@@ -366,7 +366,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
     editor.Blocks.add("bs-col", {
         label: "Column",
         category: "Bootstrap Grid",
-        media: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 96C0 60.65 28.65 32 64 32h384c35.35 0 64 28.65 64 64v320c0 35.35-28.65 64-64 64H64c-35.35 0-64-28.65-64-64V96zM128 432c8.836 0 16-7.164 16-16V96c0-8.836-7.164-16-16-16H64c-8.836 0-16 7.164-16 16v320c0 8.836 7.164 16 16 16H128z"/></svg>`,
+        media: `<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><path d="M0 96C0 60.65 28.65 32 64 32h384c35.35 0 64 28.65 64 64v320c0 35.35-28.65 64-64 64H64c-35.35 0-64-28.65-64-64V96zM128 432c8.836 0 16-7.164 16-16V96c0-8.836-7.164-16-16-16H64c-8.836 0-16 7.164-16 16v320c0 8.836 7.164 16 16 16H128z"/></svg>`,
         content: { type: "bs-col" },
         activate: true
     });

@@ -194,7 +194,7 @@ if (file_exists($editorScriptsOverrideFile)) {
 
                           // Search Input
                           $('<div>', {
-                            class: 'field',
+                            class: 'field px-2',
                             append: $('<div>', {
                               class: 'control',
                               append: $('<input>', {
@@ -210,10 +210,12 @@ if (file_exists($editorScriptsOverrideFile)) {
                           // Content Panes
                           $('<div>', {
                             id: 'blocks-manager',
+                            style: 'display: none;',
                             class: 'left-panel-content-pane'
                           }),
                           $('<div>', {
                             id: 'layers-manager',
+                            style: 'display: none;',
                             class: 'left-panel-content-pane'
                           })
                         ]
@@ -237,17 +239,14 @@ if (file_exists($editorScriptsOverrideFile)) {
                             append: [
                               $('<a>', {
                                 class: 'title is-6 m-0 mr-2', // Added right margin for spacing
-                                text: `${window.hyper.config.appName}`,
+                                text: `${(window.hyper.config.appName).charAt(0)}`,
                                 href: `${window.hyper.config.baseUrl}admin`,
                                 target: '_blank'
                               }),
                               $('<div>', {
-                                class: 'tags has-addons',
+                                class: 'tags',
+                                id: 'appVersion',
                                 append: [
-                                  // $('<span>', {
-                                  //   class: 'tag',
-                                  //   text: 'v'
-                                  // }),
                                   $('<span>', {
                                     class: 'tag is-primary',
                                     text: `v${window.hyper.config.appVersion}`
@@ -386,6 +385,7 @@ if (file_exists($editorScriptsOverrideFile)) {
                           ]
                         }),
 
+                        // In your view file (CodeIgniter view)
                         $('<div>', {
                           id: 'trait-manager-container',
                           class: 'right-panel-content-pane',
@@ -398,19 +398,79 @@ if (file_exists($editorScriptsOverrideFile)) {
                               append: $('<div>', {
                                 class: 'attributes-panel',
                                 append: [
+                                  // No component state
                                   $('<div>', {
-                                    id: 'attributesContent',
-                                    append: $('<div>', {
-                                      class: 'no-component',
-                                      append: [
-                                        $('<i>', {
-                                          class: 'fas fa-mouse-pointer'
-                                        }),
-                                        $('<h3>', {
-                                          text: `${window.hyper.lang.PagingSystem.selectAComponentToEditAttributes}`
-                                        }),
-                                      ]
-                                    })
+                                    id: 'no-trait-state',
+                                    class: 'no-component',
+                                    append: [
+                                      $('<i>', {
+                                        class: 'fas fa-mouse-pointer'
+                                      }),
+                                      $('<h3>', {
+                                        text: `${window.hyper.lang.PagingSystem.selectAComponentToEditAttributes}`
+                                      })
+                                    ]
+                                  }),
+
+                                  // Attributes panel (initially hidden)
+                                  $('<div>', {
+                                    id: 'attributes-panel',
+                                    style: 'display: none;',
+                                    append: [
+                                      $('<div>', {
+                                        class: 'component-info',
+                                        append: $('<div>', {
+                                          class: 'component-type',
+                                          append: [
+                                            $('<i>', {
+                                              class: 'fas fa-cube'
+                                            }), ' ',
+                                            $('<span>', {
+                                              id: 'component-type-name'
+                                            }), ' ',
+                                            $('<span>', {
+                                              id: 'component-id',
+                                              class: 'has-text-weight-light'
+                                            }),
+                                          ],
+                                        })
+                                      }),
+                                      $('<div>', {
+                                        class: 'section-title',
+                                        html: `<i class="fas fa-list"></i> ${window.hyper.lang.PagingSystem.customAttributes}`
+                                      }),
+                                      $('<div>', {
+                                        class: 'custom-attributes is-flex is-flex-direction-column',
+                                        append: [
+                                          $('<div>', {
+                                            class: 'attributes-list',
+                                            id: 'attributesList'
+                                          }),
+                                          $('<button>', {
+                                            class: 'add-attribute is-align-self-flex-end mt-2',
+                                            id: 'addAttribute',
+                                            title: `${window.hyper.lang.PagingSystem.addAttribute}`,
+                                            html: '<i class="fas fa-plus"></i>'
+                                          })
+                                        ]
+                                      }),
+                                      $('<button>', {
+                                        class: 'update-btn button is-primary is-fullwidth mt-3',
+                                        id: 'updateAttributes',
+                                        disabled: true,
+                                        append: [
+                                          $('<span>', {
+                                            class: 'icon',
+                                            append: $('<i>', {
+                                              class: 'fas fa-sync-alt'
+                                            })
+                                          }),
+                                          $('<span>', {
+                                            text: `${window.hyper.lang.PagingSystem.updateAttribute}`
+                                          })
+                                        ],
+                                      })
+                                    ]
                                   })
                                 ]
                               })
@@ -481,10 +541,12 @@ if (file_exists($editorScriptsOverrideFile)) {
       });
     });
 
-    editor.on('update', () => {
-      console.log('old: ', window.hyper.data.mapped_entry_fields.hyper_page_project_data);
-      console.log('new: ', editor.getProjectData());
-    });
+    if (window.hyper.config.environment !== 'production') {
+      editor.on('update', () => {
+        console.log('old: ', window.hyper.data.mapped_entry_fields.hyper_page_project_data);
+        console.log('new: ', editor.getProjectData());
+      });
+    }
 
   }
 

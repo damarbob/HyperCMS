@@ -27,6 +27,9 @@ return [
     'toggleSelectorMode' => 'Toggle Selector Mode',
     'styles' => 'Styles',
     'properties' => 'Properties',
+    'selectAComponent' => 'Select a component.',
+    'clickOnAnyComponentInTheEditorToManageItsAttributes' => 'Click on any component in the editor to manage its attributes.',
+    'clickOnAnyComponentInTheEditorToManageItsStyles' => 'Click on any component in the editor to manage its styles.',
     'selectAComponentToEditAttributes' => 'Select a component to edit its attributes',
     'selectAComponentToEditStyles' => 'Select a component to edit its styles',
     'customAttributes' => 'Custom Attributes',
@@ -39,4 +42,9 @@ return [
     'component' => 'Component',
     'class' => 'Class',
     'toggleDarkMode' => 'Toggle Dark Mode',
+
+    'desktop' => 'Desktop',
+    'tablet' => 'Tablet',
+    'mobilePortrait' => 'Mobile Portrait',
+    'MobileLandscape' => 'Mobile Desktop',
 ];

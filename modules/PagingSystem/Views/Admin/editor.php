@@ -243,19 +243,18 @@
     }
 
     .component-info {
-        background: var(--gjs-main-dark-color);
+        background: var(--gjs-primary-color);
         border-radius: 8px;
         padding-top: 8px;
         padding-bottom: 8px;
         margin-bottom: 20px;
-        box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 2px 5px hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.2);
         /* border: 1px solid var(--gjs-light-border); */
     }
 
     .component-type {
         font-size: 14px;
         font-weight: 600;
-        margin-bottom: 8px;
         text-align: center;
         gap: 8px;
     }
@@ -319,33 +318,6 @@
         background: var(--gjs-color-red);
     }
 
-    /* .update-btn {
-        background: var(--gjs-tertiary-color);
-        color: var(--gjs-font-color);
-        border: none;
-        border-radius: 4px;
-        padding: 10px 15px;
-        font-weight: 500;
-        cursor: pointer;
-        transition: background 0.3s;
-        margin-top: 20px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-        width: 100%;
-    }
-
-    .update-btn:hover {
-        background: var(--gjs-quaternary-color);
-    }
-
-    .update-btn:disabled {
-        background: var(--gjs-secondary-color);
-        color: var(--gjs-primary-color);
-        cursor: not-allowed;
-    } */
-
     .code-preview {
         background: var(--gjs-primary-color);
         border-radius: 8px;
@@ -365,6 +337,10 @@
         border-radius: 4px;
     }
 
+    .panel-button:hover {
+        background: var(--bulma-primary-soft);
+    }
+
     /* .tab-button.is-active, */
     .panel-button.is-active {
         background: var(--bulma-primary);
@@ -372,7 +348,13 @@
         display: '';
     }
 
-    .left-panel-content-pane:not(.is-active),
+    .panel-button.is-active:hover {
+        background: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.8);
+        /* color: var(--gjs-font-color); */
+        display: '';
+    }
+
+    /* .left-panel-content-pane:not(.is-active), */
     .right-panel-content-pane:not(.is-active),
     .modal:not(.is-active) {
         display: none;
@@ -421,6 +403,10 @@
 
     .tabs:not(:last-child) {
         margin-bottom: 0 !important;
+    }
+
+    .tabs li.is-active a {
+        color: var(--bulma-primary-40);
     }
 
     .gjs-sm-sector-title {
@@ -507,6 +493,19 @@
         top: 50vh !important;
         transform: translateY(-50%) !important;
         /* left: auto; */
+    }
+
+    .gjs-pn-btn.gjs-pn-active {
+        background-color: var(--bulma-primary);
+        color: var(--bulma-primary-invert) !important;
+    }
+
+    .gjs-pn-btn.gjs-pn-active:hover {
+        background-color: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.8);
+    }
+
+    .gjs-pn-btn:hover {
+        background-color: var(--bulma-primary-soft);
     }
 </style>
 <?= $this->endSection() ?>
