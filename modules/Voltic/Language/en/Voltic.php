@@ -24,5 +24,7 @@ return [
 
     'volticUnableToRespondRightNow' => 'Voltic is unable to respond right now. Please try again.',
     'jsonCodeBlockNotFoundInResponse' => "JSON code block not found in the response",
-    'xUnableToParseVolticResponse' => "{x} is unable to parse Voltic's response"
+    'xUnableToParseVolticResponse' => "{x} is unable to parse Voltic's response",
+
+    'userDoesNotHaveSufficientPermission' => 'The user does not have sufficient permissions.',
 ];

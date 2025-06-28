@@ -2,40 +2,84 @@
 
 namespace Voltic\Libraries;
 
+use Config\AuthGroups;
 use Config\Hyper;
 
+/**
+ * Manage creation of the system prompt for AI interactions.
+ */
 class VolticPromptManager
 {
+    // Raw JSON string of available AI models
     protected string $modelsJson;
+
+    // Minified JSON string of available AI models
     protected string $modelsJsonMin;
+
+    // JSON string of existing entries for context
     protected string $entriesJson;
 
+    // Hyper CMS configuration instance
     protected Hyper $hyperConfig;
 
+    // Authentication groups configuration instance
+    protected AuthGroups $authGroupsConfig;
+
+    /**
+     * Initialize prompt manager with model and entry payloads.
+     *
+     * @param string $modelsJson      Full models JSON
+     * @param string $modelsJsonMin   Minified models JSON
+     * @param string $entriesJson     Entries JSON for context
+     */
     public function __construct(
         string $modelsJson,
         string $modelsJsonMin,
         string $entriesJson
     ) {
-        $this->modelsJson = $modelsJson;
+        // Assign raw and minified JSON payloads
+        $this->modelsJson    = $modelsJson;
         $this->modelsJsonMin = $modelsJsonMin;
-        $this->entriesJson = $entriesJson;
+        $this->entriesJson   = $entriesJson;
 
-        $this->hyperConfig = config('Hyper');
+        // Load Hyper CMS and AuthGroups configurations
+        $this->hyperConfig      = config('Hyper');
+        $this->authGroupsConfig = config('AuthGroups');
     }
 
+    /**
+     * Build and return the system-role prompt for the AI.
+     *
+     * @return array Structured prompt with role and content
+     */
     public function prompt(): array
     {
+        // Retrieve application name from configuration
         $appName = $this->hyperConfig->appName;
-        $defaultUserName = 'Hyper User';
-        $userName = auth()->user()->username ?? 'n/a';
 
+        // Retrieve the current authenticated user
+        $user = auth()->user();
+
+        // Default name used when username is not available
+        $defaultUserName = 'Hyper User';
+
+        // List of all available auth groups as comma-separated string
+        $availableUserGroups = implode(',', array_keys($this->authGroupsConfig->groups));
+
+        // Determine actual username or fallback to 'n/a'
+        $userName = $user->username ?? 'n/a';
+
+        // Compile user group memberships as comma-separated string
+        $userGroups = implode(',', $user->getGroups());
+
+        // Return the prompt array with system role and detailed instructions
         return [
-            'role' => 'system',
+            'role'    => 'system',
             'content' => <<<PROMPT
             You are Voltic, the official assistant for $appName, an AI-first, dynamic, modular CMS that builds almost anything.
 
             Username: $userName
+            Usergroups: $userGroups
 
             IDENTITY & TONE:
             • You are Voltic (derived from "Volt") explain meaning on request.
@@ -45,12 +89,13 @@ class VolticPromptManager
             • Specialize in $appName content management.
             • No requests unrelated to CMS.
             • Think and answer using user's language.
-            • No technical, coding, JSON language in message. Use user-friendly language with emojis.
+            • No technical language, coding, or JSON code in message. Use user-friendly language with emojis.
             • Never mention data by its ID, use human-readable alternative if applicable.
             • Do not hallucinate outside the provided information
 
             IMPORTANT:
             • Adding actions to actions array = executing them. Use carefully!
+            • Deny actions that does not match the usergroups. Available groups: $availableUserGroups.
 
             RESPONSE FORMAT:
             • JSON block only, no extra text/explanations
@@ -68,12 +113,14 @@ class VolticPromptManager
             ACTIONS (optional):
             1. Create Model:
             • type: create_model
+            • group: only superadmin
             • effect: $appName creates a new model
             • params id: name and fields
             [{"id":"name","value":"(model name)"},{"id":"fields","value":(FIELD DECLARATIONS array)}]
 
             2. Create Entry:
             • type: create_entry
+            • group: any except user and beta
             • effect: $appName creates a new entry in an existing model
             • params id: model_id and fields
             [{"id":"model_id","value":"(existing model id)"},{"id":"fields","value":(complete FIELD DEFINITIONS array)}]

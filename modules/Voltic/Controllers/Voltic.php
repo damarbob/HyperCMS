@@ -4,6 +4,7 @@ namespace Voltic\Controllers;
 
 use Exception;
 use App\Controllers\AdminController;
+use CodeIgniter\Shield\Exceptions\PermissionException;
 use Voltic\Libraries\VolticService;
 
 /**
@@ -43,9 +44,10 @@ class Voltic extends AdminController
         /** @var \App\Services\EntriesManager */
         $entriesManager = service('entriesManager');
 
+        // Get the current user
+        $user = auth()->user();
+
         $prompt = $this->request->getJSON();
-        // return $this->response->setJSON(['message' => json_encode($prompt)]);
-        // $prompt = $prompt->message;
 
         if (empty($prompt)) {
             return $this->response->setJSON([
@@ -94,6 +96,11 @@ class Voltic extends AdminController
                         switch ($x['type']) {
                             case "create_model":
 
+                                // Only superadmin allowed to create models
+                                if (!$user->inGroup('superadmin')) {
+                                    throw new PermissionException(lang('Voltic.userDoesNotHaveSufficientPermission'));
+                                }
+
                                 // Convert fields to string to insert into the database
                                 $insertData = $transformParams($x);
                                 $insertData['fields'] = json_encode($insertData['fields']);
@@ -120,6 +127,11 @@ class Voltic extends AdminController
                                     ];
                                 break;
                             case "create_entry":
+
+                                // User and beta are not allowed to create entry
+                                if ($user->inGroup('user', 'beta')) {
+                                    throw new PermissionException(lang('Voltic.userDoesNotHaveSufficientPermission'));
+                                }
 
                                 // Convert fields to string to insert into the database
                                 $insertData = $transformParams($x);
