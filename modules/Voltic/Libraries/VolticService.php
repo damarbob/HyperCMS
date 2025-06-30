@@ -35,7 +35,7 @@ class VolticService
 
     public function __construct()
     {
-        $this->config = config('voltic');
+        $this->config = config('Voltic');
         $this->hyperConfig = config('Hyper');
         /** @var \CodeIgniter\Log\Logger */
         $this->logger = service('logger');
