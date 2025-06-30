@@ -36,7 +36,7 @@ class Voltic extends AdminController
     public function ask()
     {
         /** @var \Voltic\Config\Voltic */
-        $config = config('voltic');
+        $config = config('Voltic');
 
         /** @var \App\Services\ModelsManager */
         $modelsManager = service('modelsManager');
