@@ -17,7 +17,7 @@ grapesjs.plugins.add(
 
       // Inject CSS dependencies specified in "window.hyper.data.styles.head"
       const cssHeadDependencies = window.hyper.data.styles.head;
-      cssHeadDependencies.forEach((item) => {
+      cssHeadDependencies?.forEach((item) => {
         // Only add the style if it isn't already present
         if (!editor.config.canvas.styles.includes(item)) {
           editor.config.canvas.styles.push(item);
@@ -26,7 +26,7 @@ grapesjs.plugins.add(
 
       // Inject JS dependencies specified in "window.hyper.data.scripts.head"
       const jsHeadDependencies = window.hyper.data.scripts.head;
-      jsHeadDependencies.forEach((item) => {
+      jsHeadDependencies?.forEach((item) => {
         if (!editor.config.canvas.scripts.includes(item)) {
           editor.config.canvas.scripts.push(item);
         }
@@ -42,7 +42,7 @@ grapesjs.plugins.add(
       const scriptsToInject = window.hyper.data.scripts.body;
 
       // Loop through each script URL
-      scriptsToInject.forEach((scriptUrl) => {
+      scriptsToInject?.forEach((scriptUrl) => {
         // Create a new <script> element with the corresponding URL
         const scriptEl = canvasDoc.createElement("script");
         scriptEl.src = scriptUrl;
