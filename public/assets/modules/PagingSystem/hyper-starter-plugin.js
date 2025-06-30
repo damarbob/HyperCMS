@@ -19,8 +19,8 @@ grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
    */
   function fetchModelsData() {
     jquery.ajax({
-      url: `${config.baseUrl}api/v1/models/`,
-      type: "POST",
+      url: `${config.baseUrl}api/v1/models`,
+      method: "POST",
       dataType: "json",
       data: {},
       success: (response) => {
@@ -130,7 +130,7 @@ grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
   const script = function (props) {
     const { baseUrl, modelProp, titleProp } = props;
 
-    const API_URL = `${baseUrl}api/v1/model/`;
+    const API_URL = `${baseUrl}api/v1/model`;
     const MODEL_ID = modelProp;
 
     // Show loading state
@@ -151,7 +151,7 @@ grapesjs.plugins.add("hyper-starter-plugin", function (editor, opts = {}) {
     // Fetch items data
     window._queryItemAjax = $.ajax({
       url: API_URL,
-      type: "POST",
+      method: "POST",
       dataType: "json",
       data: {
         draw: 1,
