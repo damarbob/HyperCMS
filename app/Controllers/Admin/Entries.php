@@ -169,10 +169,13 @@ class Entries extends AdminController
 
         /* Register views */
 
-        $hooks->register(hook('Backend.view:entries:edit'), function () use ($entry, $action) {
+        $hooks->register(hook('Backend.view:entries:edit'), function () use ($modelId, $entry, $action) {
+            $entryId = $entry['id'];
+
             return render('admin/partials/entries_form', [
                 'action' => $action,
                 'formAction' => base_url('admin/entries/' . $entry['id']),
+                'deleteFormAction' => base_url("admin/model/{$modelId}/{$entryId}/delete"),
                 'entry' => $entry
             ]);
         });
@@ -281,7 +284,7 @@ class Entries extends AdminController
         return $this->respond(lang('Admin.entryxSuccessfullySaved', ['x' => $id]), 'admin/entries');
     }
 
-    public function delete($id = null)
+    public function delete($modelId = null, $id = null)
     {
         /* Validation */
 
@@ -318,7 +321,7 @@ class Entries extends AdminController
 
         return $this->respond(
             $successMessage,
-            'admin/entries'
+            $modelId ? "admin/model/$modelId" : null
         );
 
         /* End of response */
