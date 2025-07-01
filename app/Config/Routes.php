@@ -36,6 +36,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             $routes->get('/', 'Model::index/$1');
             $routes->get('new', 'Entries::new/$1');
             $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
+            $routes->post('(:num)/delete', 'Entries::delete/$1/$2');
         });
         $routes->addRedirect('/', 'admin/entries', 301);
     });

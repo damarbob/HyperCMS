@@ -135,6 +135,7 @@ return [
 
     'noModelFoundWithIdx' => 'No model found with id {x}!',
 
+    'noEntrySelected' => 'No entry selected',
     'noEntryFound' => 'No entry found',
     'noEntryFoundWithIdx' => 'No entry found with id {x}!',
 

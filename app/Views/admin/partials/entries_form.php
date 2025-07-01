@@ -53,7 +53,7 @@ $fieldsError = validation_show_error('fields');
 
     <?php if ($action === 'edit'): ?>
         <!-- Add delete form on edit mode -->
-        <form id="deleteForm" method="POST" action="<?= base_url("admin/entries/{$entry['id']}/delete") ?>">
+        <form id="deleteForm" method="POST" action="<?= $deleteFormAction ?>">
             <?= csrf_field() ?>
         </form>
     <?php endif; ?>
