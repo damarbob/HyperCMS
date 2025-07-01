@@ -20,7 +20,7 @@
     <div class="modal-card">
         <header class="modal-card-head">
             <p class="modal-card-title"><?= lang('UserManagement.userForm') ?></p>
-            <button class="delete" onclick="closeModal('userModal')"></button>
+            <button class="delete"></button>
         </header>
 
         <form id="userForm">
@@ -136,8 +136,7 @@
                             text: `<span class="icon"><i class="fa-solid fa-plus"></i></span><span>${lang.new}</span>`,
                             className: "is-primary",
                             action: function(e, dt, node, config) {
-                                $('#userId').val('');
-                                openModal($('#userModal')[0]);
+                                newUser();
                             }
                         },
                         {
@@ -289,7 +288,25 @@
         });
     });
 
+    function newUser() {
+        // Clear inputs
+        $('#userId').val('');
+        $('[name="username"]').val('');
+        $('[name="email"]').val('');
+        $('[name="password"]').val('');
+
+        // Reset groups checkbox selection
+        $(`[name="groups[]"][value="user"]`).prop('checked', true); // Check the default role
+        $('[name="groups[]"]').not('[value="user"]').prop('checked', false); // Uncheck the rest
+
+        // Open user modal
+        openModal($('#userModal')[0]);
+    }
+
     function editUser(id) {
+        // Clear inputs
+        $('[name="password"]').val('');
+
         $.get('<?= base_url('admin/users/') ?>' + id, function(user) {
             console.log(user);
             $('#userId').val(user.id);
