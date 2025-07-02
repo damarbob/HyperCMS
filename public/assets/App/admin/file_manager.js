@@ -23,6 +23,28 @@ function confirmSelectedFiles() {
   }
 }
 
+function confirmCurrentFile() {
+  const currentFile = hyper.factory.fileManager.currentFile;
+
+  // Post the message with the deserialized data included
+  window.parent.postMessage(
+    {
+      action: `filesSelected_r${hyper.data.requesterId}`,
+      data: [currentFile],
+    },
+    hyper.config.baseUrl
+  );
+
+  // Post TinyMCE action
+  window.parent.postMessage(
+    {
+      mceAction: `filesSelected_r${hyper.data.requesterId}`, // Important for TinyMCE to read
+      data: [currentFile],
+    },
+    hyper.config.baseUrl
+  );
+}
+
 /**
  * Dropzone File Upload Handler & UI Management
  *

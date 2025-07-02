@@ -172,12 +172,24 @@
             <textarea id="fileEditor" class="textarea is-hidden" rows="10"></textarea>
         </section>
         <footer class="modal-card-foot is-justify-content-space-between">
+
+            <!-- Cancel button -->
             <button class="button is-light" data-dismiss="modal">
                 <span class="icon">
                     <i class="fas fa-chevron-left"></i>
                 </span>
                 <span><?= lang('Admin.cancel') ?></span>
             </button>
+
+            <!-- Select button -->
+            <button class="button is-primary is-in-iframe" onclick="confirmCurrentFile()">
+                <span class="icon">
+                    <i class="fas fa-check"></i>
+                </span>
+                <span><?= lang('Admin.select') ?></span>
+            </button>
+
+            <!-- Save button -->
             <button id="saveButton" class="button is-primary" style="display: none;">
                 <span class="icon">
                     <i class="fas fa-save"></i>
