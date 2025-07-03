@@ -2,13 +2,13 @@ grapesjs.plugins.add('grapesjs-bootstrap-badge', function (editor, opts = {}) {
     const defaults = { classes: ['text-bg-primary', 'text-bg-secondary', 'text-bg-success', 'text-bg-danger', 'text-bg-warning', 'text-bg-info', 'text-bg-light', 'text-bg-dark'], ...opts };
 
     editor.Components.addType('bs-badge', {
-        isComponent: el => el.tagName === 'SPAN' && el.classList.contains('badge'),
+        isComponent: el => el.tagName === 'SPAN' && el.classList.contains('bs-badge'),
         model: {
             defaults: {
                 type: 'text',
                 name: 'Badge',
                 tagName: 'span',
-                classes: ['badge', 'text-bg-primary'],
+                classes: ['bs-badge', 'badge', 'text-bg-primary'],
                 droppable: true,
                 editable: true,
                 textable: 1,

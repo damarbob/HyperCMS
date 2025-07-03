@@ -373,7 +373,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
 
     // Select Component with Dynamic Options
     Components.addType("bs-select", {
-        isComponent: el => el.tagName === 'SELECT' && el.classList.contains('form-select'),
+        isComponent: el => el.tagName === 'SELECT' && el.classList.contains('bs-form-select'),
 
         model: {
             defaults: {
@@ -381,7 +381,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 name: 'Form select',
                 draggable: true,
                 droppable: false,
-                attributes: { class: 'form-select' },
+                attributes: { class: 'bs-form-select form-select' },
                 traits: [
                     {
                         type: 'text',
@@ -507,7 +507,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
 
     // Checkbox Component
     Components.addType("bs-checkbox", {
-        isComponent: el => el.tagName === 'INPUT' && el.type === 'checkbox' && el.classList.contains('form-check-input'),
+        isComponent: el => el.tagName === 'INPUT' && el.type === 'checkbox' && el.classList.contains('bs-form-check-input'),
 
         model: {
             defaults: {
@@ -517,7 +517,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 droppable: false,
                 attributes: {
                     type: 'checkbox',
-                    class: 'form-check-input',
+                    class: 'bs-form-check-input form-check-input',
                     id: 'input-' + Math.random().toString(36).substr(2, 9), // Unique ID for the input
                     value: '',
                 },
@@ -536,7 +536,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
 
     // Radio Component
     Components.addType("bs-radio", {
-        isComponent: el => el.tagName === 'INPUT' && el.type === 'radio' && el.classList.contains('form-check-input'),
+        isComponent: el => el.tagName === 'INPUT' && el.type === 'radio' && el.classList.contains('bs-form-check-input'),
 
         model: {
             defaults: {
@@ -546,7 +546,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 droppable: false,
                 attributes: {
                     type: 'radio',
-                    class: 'form-check-input',
+                    class: 'bs-form-check-input form-check-input',
                     id: 'input-' + Math.random().toString(36).substr(2, 9), // Unique ID for the input
                 },
                 traits: [
@@ -564,7 +564,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
 
     // Radio & Checkbox Group Component
     const createChoiceGroup = (type) => ({
-        isComponent: el => el.tagName === 'DIV' && (el.classList?.contains(`bs-${type}-group`) || el.classList?.contains('form-check')),
+        isComponent: el => el.tagName === 'DIV' && (el.classList?.contains(`bs-${type}-group`) || el.classList?.contains('bs-form-check')),
 
         model: {
             defaults: {
@@ -572,7 +572,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 name: 'Form check',
                 draggable: true,
                 droppable: false,
-                attributes: { class: `bs-${type}-group form-check` },
+                attributes: { class: `bs-${type}-group bs-form-check form-check` },
                 traits: [
                     {
                         type: 'select',
@@ -681,7 +681,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
 
     // Input Group Component
     Components.addType("bs-input-group", {
-        isComponent: el => el.tagName === 'DIV' && el.classList.contains('input-group'),
+        isComponent: el => el.tagName === 'DIV' && el.classList.contains('bs-input-group'),
 
         model: {
             defaults: {
@@ -689,7 +689,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 name: 'Input group',
                 draggable: true,
                 droppable: true,
-                attributes: { class: 'input-group mb-3' },
+                attributes: { class: 'bs-input-group input-group mb-3' },
                 components: `
                     <span class="input-group-text" id="basic-addon1">@</span>
                     <input type="text" class="form-control" placeholder="Username" aria-label="Username" aria-describedby="basic-addon1">
@@ -738,7 +738,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 droppable: false,
                 attributes: {
                     type: 'button',
-                    class: 'btn btn-primary',
+                    class: 'btn btn-primary bs-form-action-button',
                     id: 'input-' + Math.random().toString(36).substr(2, 9) // Unique ID for the input
                 },
                 components: {
@@ -797,7 +797,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-forms", function (editor, opts = {}) {
                 name: 'Form validation',
                 draggable: '.form-group',
                 droppable: false,
-                attributes: { class: 'invalid-feedback' },
+                attributes: { class: 'invalid-feedback bs-validation' },
                 traits: [
                     {
                         type: 'select',

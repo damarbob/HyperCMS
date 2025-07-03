@@ -94,7 +94,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-carousel", function (editor, opts = {})
                 name: 'Carousel',
                 attributes: {
                     id: `carousel-${Math.random().toString(36).substring(2, 9)}`, // consider generating unique IDs for multiple carousels
-                    class: "carousel slide",
+                    class: "bs-carousel carousel slide",
                     "data-bs-ride": "carousel"
                 },
                 draggable: true,
@@ -236,7 +236,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-carousel", function (editor, opts = {})
         },
         // Identification function for existing DOM elements
         isComponent(el) {
-            if (el && el.classList && el.classList.contains("carousel") && el.classList.contains("slide")) {
+            if (el && el.classList && el.classList.contains("bs-carousel") && el.classList.contains("slide")) {
                 return { type: "bs-carousel" };
             }
         }

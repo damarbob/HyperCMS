@@ -30,7 +30,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
 
     // BUTTON COMPONENT
     editor.Components.addType("bs-button", {
-        isComponent: el => el.tagName === 'A' && el.classList.contains('btn'),
+        isComponent: el => el.tagName === 'A' && el.classList.contains('bs-button'),
 
         model: {
             defaults: {
@@ -40,7 +40,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
                 droppable: false,
                 editable: true,
                 attributes: {
-                    class: `btn btn-${options.defaultType}`,
+                    class: `btn btn-${options.defaultType} bs-button`,
                     href: '#'
                 },
                 components: {
@@ -177,7 +177,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
 
     // BUTTON GROUP COMPONENT (optional)
     editor.Components.addType("bs-button-group", {
-        isComponent: el => el.classList?.contains('btn-group'),
+        isComponent: el => el.classList?.contains('bs-btn-group'),
 
         model: {
             defaults: {
@@ -187,7 +187,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-button", function (editor, opts = {}) {
                 draggable: true,
                 removable: true,
                 copyable: true,
-                attributes: { class: 'btn-group', role: 'group' },
+                attributes: { class: 'bs-btn-group btn-group', role: 'group' },
                 traits: [
                     {
                         type: 'select',

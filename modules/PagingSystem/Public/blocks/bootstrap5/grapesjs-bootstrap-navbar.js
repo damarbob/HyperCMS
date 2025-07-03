@@ -210,7 +210,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-navbar", function (editor, opts = {}) {
 
     // Nav Item Component
     Components.addType("bs-nav-item", {
-        isComponent: el => el.classList?.contains('nav-item'),
+        isComponent: el => el.classList?.contains('bs-nav-item'),
 
         model: {
             defaults: {
@@ -218,7 +218,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-navbar", function (editor, opts = {}) {
                 name: 'Nav Item',
                 draggable: '.navbar-nav, .dropdown-menu',
                 droppable: false,
-                attributes: { class: 'nav-item' },
+                attributes: { class: 'nav-item bs-nav-item' },
                 traits: [
 
                     {
@@ -295,7 +295,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-navbar", function (editor, opts = {}) {
 
     // Dropdown Component
     Components.addType("bs-nav-dropdown", {
-        isComponent: el => el.classList?.contains('nav-item') && el.querySelector('.dropdown-toggle'),
+        isComponent: el => el.classList?.contains('bs-nav-item') && el.querySelector('.dropdown-toggle'),
 
         model: {
             defaults: {
@@ -303,7 +303,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-navbar", function (editor, opts = {}) {
                 name: 'Navbar Dropdown',
                 draggable: '.navbar-nav, .dropdown-menu',
                 droppable: false,
-                attributes: { class: 'nav-item dropdown' },
+                attributes: { class: 'bs-nav-item nav-item dropdown' },
                 traits: [
                     {
                         type: 'text',

@@ -6,12 +6,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-dropdown', function (editor, opts = {})
 
     // 1. Dropdown main container
     editor.Components.addType('bs-dropdown', {
-        isComponent: el => el.tagName === 'DIV' && (el.classList.contains('dropdown') || el.classList.contains('btn-group')),
+        isComponent: el => el.tagName === 'DIV' && (el.classList.contains('bs-dropdown') || el.classList.contains('bs-btn-group')),
         model: {
             defaults: {
                 tagName: 'div',
                 name: 'Dropdown',
-                classes: ['btn-group', 'dropdown'],
+                classes: ['btn-group', 'dropdown', 'bs-dropdown', 'bs-btn-group'],
                 droppable: true,
                 editable: true,
                 textable: 1,
@@ -55,12 +55,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-dropdown', function (editor, opts = {})
 
     // 2. Dropdown button
     editor.Components.addType('bs-dropdown-button', {
-        isComponent: el => el.tagName === 'BUTTON' && el.classList.contains('dropdown-toggle'),
+        isComponent: el => el.tagName === 'BUTTON' && el.classList.contains('bs-dropdown-toggle'),
         model: {
             defaults: {
                 tagName: 'button',
                 name: 'Dropdown button',
-                classes: ['btn', 'dropdown-toggle'],
+                classes: ['btn', 'bs-dropdown-toggle', 'dropdown-toggle'],
                 attributes: { type: 'button', 'data-bs-offset': '0,30', 'data-bs-reference': 'parent', 'data-bs-toggle': 'dropdown', 'aria-expanded': 'false', id: 'dropdownButton-' + Math.random().toString(36).substr(2, 9) },
                 editable: true,
                 draggable: false,
@@ -105,12 +105,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-dropdown', function (editor, opts = {})
 
     // 3. Dropdown menu
     editor.Components.addType('bs-dropdown-menu', {
-        isComponent: el => el.tagName === 'UL' && el.classList.contains('dropdown-menu'),
+        isComponent: el => el.tagName === 'UL' && el.classList.contains('bs-dropdown-menu'),
         model: {
             defaults: {
                 tagName: 'ul',
                 name: 'Dropdown menu',
-                classes: ['dropdown-menu'],
+                classes: ['bs-dropdown-menu', 'dropdown-menu'],
                 attributes: { 'data-bs-display': 'static' },
                 editable: true,
                 components: [
@@ -165,12 +165,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-dropdown', function (editor, opts = {})
 
     // 5. dropdown item link
     editor.Components.addType('bs-dropdown-item-link', {
-        isComponent: el => el.tagName === 'A' && el.classList.contains('dropdown-item'),
+        isComponent: el => el.tagName === 'A' && el.classList.contains('bs-dropdown-item'),
         model: {
             defaults: {
                 tagName: 'a',
                 name: 'Dropdown item link',
-                classes: ['dropdown-item'],
+                classes: ['dropdown-item', 'bs-dropdown-item'],
                 draggable: '.bs-dropdown-item',
                 attributes: { href: '#' },
                 editable: true,
@@ -195,12 +195,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-dropdown', function (editor, opts = {})
 
     // 5. dropdown item link (active)
     editor.Components.addType('bs-dropdown-item-link-active', {
-        isComponent: el => el.tagName === 'A' && el.classList.contains('active') && el.classList.contains('dropdown-item'),
+        isComponent: el => el.tagName === 'A' && el.classList.contains('active') && el.classList.contains('bs-dropdown-item'),
         model: {
             defaults: {
                 tagName: 'a',
                 name: 'Dropdown item link active',
-                classes: ['dropdown-item', 'active'],
+                classes: ['bs-dropdown-item', 'dropdown-item', 'active'],
                 draggable: '.bs-dropdown-item',
                 attributes: { href: '#' },
                 editable: true,

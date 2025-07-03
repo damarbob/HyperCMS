@@ -2,13 +2,13 @@ grapesjs.plugins.add('grapesjs-bootstrap-alert', function (editor, opts = {}) {
     const defaults = { classes: ['alert', 'alert-primary', 'alert-secondary', 'alert-success', 'alert-danger', 'alert-warning', 'alert-info', 'alert-light', 'alert-dark'], ...opts };
 
     editor.Components.addType('bs-alert', {
-        isComponent: el => el.tagName === 'DIV' && el.classList.contains('alert'),
+        isComponent: el => el.tagName === 'DIV' && el.classList.contains('bs-alert'),
         model: {
             defaults: {
                 type: 'text',
                 tagName: 'div',
                 name: 'Alert',
-                classes: ['alert', 'alert-primary'],
+                classes: ['bs-alert', 'alert', 'alert-primary'],
                 attributes: { role: 'alert' },
                 droppable: true,
                 editable: true,
@@ -59,12 +59,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-alert', function (editor, opts = {}) {
     });
 
     editor.Components.addType('bs-alert-link', {
-        isComponent: el => el.tagName === 'A' && el.classList.contains('alert-link'),
+        isComponent: el => el.tagName === 'A' && el.classList.contains('bs-alert-link'),
         model: {
             defaults: {
                 tagName: 'a',
                 name: 'Alert link',
-                classes: ['alert-link'],
+                classes: ['bs-alert-link', 'alert-link'],
                 droppable: false,
                 // draggable: '.alert',
                 attributes: { href: '#' },
@@ -88,12 +88,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-alert', function (editor, opts = {}) {
     });
 
     editor.Components.addType('bs-alert-heading', {
-        isComponent: el => el.tagName === 'H4' && el.classList.contains('alert-heading'),
+        isComponent: el => el.tagName === 'H4' && el.classList.contains('bs-alert-heading'),
         model: {
             defaults: {
                 tagName: 'h4',
                 name: 'Alert heading',
-                classes: ['alert-heading'],
+                classes: ['bs-alert-heading', 'alert-heading'],
                 droppable: false,
                 draggable: '.alert',
                 editable: true,

@@ -1,7 +1,7 @@
 grapesjs.plugins.add("grapesjs-bootstrap-accordion", function (editor, opts = {}) {
     // Regular Bootstrap Accordion
     editor.Components.addType("bs-accordion", {
-        isComponent: el => el.classList?.contains('accordion'),
+        isComponent: el => el.classList?.contains('bs-accordion'),
 
         model: {
             defaults: {
@@ -11,7 +11,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-accordion", function (editor, opts = {}
                 droppable: false,
                 removable: true,
                 copyable: true,
-                classes: ['accordion'],
+                classes: ['bs-accordion', 'accordion'],
                 attributes: {
                     id: 'accordion-' + Math.random().toString(36).substring(2, 9)
                 },
@@ -225,7 +225,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-accordion", function (editor, opts = {}
 
     // Image Accordion Component
     editor.Components.addType("bs-image-accordion", {
-        isComponent: el => el.classList?.contains('image-accordion'),
+        isComponent: el => el.classList?.contains('bs-image-accordion'),
 
         model: {
             defaults: {
@@ -236,7 +236,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-accordion", function (editor, opts = {}
                 removable: true,
                 copyable: true,
                 attributes: {
-                    class: 'image-accordion',
+                    class: 'bs-image-accordion image-accordion',
                     'data-accordion': true,
                 },
                 traits: [
