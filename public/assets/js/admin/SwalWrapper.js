@@ -205,6 +205,24 @@ export default class SwalWrapper {
       ...options,
     });
   }
+
+  /**
+   * Displays a loader.
+   *
+   * @param {object} [options={}] - Additional options for the prompt.
+   * @returns {Promise<object>} - A promise that resolves with the user's input.
+   */
+  loader(options = {}) {
+    return this.fire({
+      showConfirmButton: false,
+      didOpen: () => {
+        Swal.showLoading();
+      },
+      allowOutsideClick: () => !Swal.isLoading(),
+      backdrop: true,
+      ...options,
+    });
+  }
 }
 
 // For traditional modules usage (bindings provided above allow both ES modules
