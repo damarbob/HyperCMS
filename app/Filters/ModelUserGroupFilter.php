@@ -39,7 +39,7 @@ class ModelUserGroupFilter implements FilterInterface
         // Retrieve the model record as an associative array.
         $model = $modelsBuilder->where('id', $id)->get()->getRowArray();
 
-        log_message('debug', "Model: " . json_encode($model, JSON_PRETTY_PRINT));
+        // log_message('debug', "ModelUserGroupFilter: " . json_encode($model, JSON_PRETTY_PRINT));
 
         if (empty(json_decode($model['user_groups'] ?? '[]'))) {
             return;
