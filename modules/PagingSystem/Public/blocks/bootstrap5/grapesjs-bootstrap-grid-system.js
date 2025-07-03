@@ -22,7 +22,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
 
     // 1. CONTAINER COMPONENT ==================================
     editor.Components.addType("bs-container", {
-        isComponent: el => el.classList?.contains('container'),
+        isComponent: el => el.classList?.contains('bs-container'),
 
         model: {
             defaults: {
@@ -31,7 +31,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
                 removable: true,
                 copyable: true,
                 name: 'Container',
-                attributes: { class: 'container' },
+                attributes: { class: 'bs-container container' },
                 traits: [
                     {
                         type: 'select',
@@ -83,7 +83,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
 
     // 2. ROW COMPONENT =======================================
     editor.Components.addType("bs-row", {
-        isComponent: el => el.classList?.contains('row'),
+        isComponent: el => el.classList?.contains('bs-row'),
 
         model: {
             defaults: {
@@ -92,7 +92,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
                 draggable: true,
                 removable: true,
                 copyable: true,
-                attributes: { class: 'row' },
+                attributes: { class: 'bs-row row' },
                 traits: [
                     {
                         type: 'select',
@@ -207,8 +207,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
 
     // 3. ENHANCED COLUMN COMPONENT ============================
     editor.Components.addType("bs-col", {
-        isComponent: el => el.classList?.contains('col') ||
-            el.className?.match(/col-(xs|sm|md|lg|xl|xxl)/),
+        isComponent: el => el.classList?.contains('bs-col'),
 
         model: {
             defaults: {
@@ -218,7 +217,7 @@ grapesjs.plugins.add("grapesjs-bootstrap-grid-system", function (editor, opts = 
                 removable: true,
                 copyable: true,
                 editable: true,
-                attributes: { class: 'col' }, // Start with basic col class
+                attributes: { class: 'bs-col col' }, // Start with basic col class
                 traits: [
                     // Add width control for each breakpoint
                     ...options.breakpoints.map(bp => ({

@@ -2,12 +2,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-breadcrumb', function (editor, opts = {
     const defaults = { classes: ['breadcrumb', 'breadcrumb-item'], ...opts };
 
     editor.Components.addType('bs-breadcrumb-item-active', {
-        isComponent: el => el.tagName === 'LI' && el.classList.contains('breadcrumb-item') && el.classList.contains('active'),
+        isComponent: el => el.tagName === 'LI' && el.classList.contains('bs-breadcrumb-item-active'),
         model: {
             defaults: {
                 tagName: 'li',
                 name: 'Breadcrumb item active',
-                classes: ['breadcrumb-item', 'active'],
+                classes: ['bs-breadcrumb-item-active', 'breadcrumb-item', 'active'],
                 attributes: { 'aria-current': 'page' },
                 droppable: true,
                 editable: true,
@@ -24,12 +24,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-breadcrumb', function (editor, opts = {
     });
 
     editor.Components.addType('bs-breadcrumb-item', {
-        isComponent: el => el.tagName === 'LI' && el.classList.contains('breadcrumb-item'),
+        isComponent: el => el.tagName === 'LI' && el.classList.contains('bs-breadcrumb-item'),
         model: {
             defaults: {
                 tagName: 'li',
                 name: 'Breadcrumb item',
-                classes: ['breadcrumb-item'],
+                classes: ['bs-breadcrumb-item', 'breadcrumb-item'],
                 droppable: true,
                 editable: true,
                 textable: 1,
@@ -53,12 +53,12 @@ grapesjs.plugins.add('grapesjs-bootstrap-breadcrumb', function (editor, opts = {
     });
 
     editor.Components.addType('bs-breadcrumb', {
-        isComponent: el => el.tagName === 'OL' && el.classList.contains('breadcrumb'),
+        isComponent: el => el.tagName === 'OL' && el.classList.contains('bs-breadcrumb'),
         model: {
             defaults: {
                 tagName: 'ol',
                 name: 'Breadcrumb',
-                classes: ['breadcrumb'],
+                classes: ['bs-breadcrumb', 'breadcrumb'],
                 droppable: true,
                 editable: true,
                 textable: 1,
