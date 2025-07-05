@@ -27,7 +27,7 @@ export default class InputCreator {
   createInputs(fields) {
     this.clearContainer();
 
-    if (!fields || fields.length === 0) {
+    if (!fields || !Array.isArray(fields) || fields.length === 0) {
       this.displayNoMetaMessage();
       this.toggleMetaRequiredElements(false);
       return;
@@ -99,6 +99,7 @@ export default class InputCreator {
       checked,
       className,
       multiple,
+      data,
     } = item;
 
     let div = document.createElement("div");
@@ -154,6 +155,7 @@ export default class InputCreator {
           value,
           helper,
           className,
+          data,
         });
         break;
       case "checkbox":

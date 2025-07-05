@@ -110,8 +110,8 @@
 
         // Initialize the Monaco editor with specific options.
         const fieldsEditor = window.hyper.factory.monaco({
-            editorContainerId: "monaco",
-            textareaId: "fields",
+            editorContainerSelector: "#monaco",
+            textareaSelector: "#fields",
             language: "json",
             onSave: function(editor) {
                 const form = document.getElementById("formEditModel");

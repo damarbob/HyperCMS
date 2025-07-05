@@ -1,8 +1,9 @@
-import * as monaco from "https://cdn.jsdelivr.net/npm/monaco-editor@0.52/+esm";
+import * as monaco from "https://cdn.jsdelivr.net/npm/monaco-editor@0.52.2/+esm";
 import prettier from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/+esm";
 import * as parserHtml from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/plugins/html.mjs";
+import parserCss from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/plugins/postcss.mjs"; // CSS parser
 import parserBabel from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/plugins/babel.mjs"; // For JS formatting
-import parserEstree from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/plugins/estree.mjs"; // Add this right after your imports
+import parserEstree from "https://cdn.jsdelivr.net/npm/prettier@3.3.3/plugins/estree.mjs"; // ES Tree parser
 
 // Define custom themes once globally.
 monaco.editor.defineTheme("vs-dsm", {
@@ -27,16 +28,16 @@ monaco.editor.defineTheme("vs-dark-dsm", {
  * A reusable wrapper for creating and managing a Monaco Editor instance.
  *
  * Options:
- *   - editorContainerId: ID of the HTML element where the editor should be created.
- *   - textareaId: (Optional) ID of a hidden <textarea> to sync the editor content.
+ *   - editorContainerSelector: ID of the HTML element where the editor should be created.
+ *   - textareaSelector: (Optional) ID of a hidden <textarea> to sync the editor content.
  *   - onSave: (Optional) callback when user saves the editor content (Ctrl + S).
  *   - language: The language mode (default: 'json').
  *   - autoLayout: Boolean for automatic layout (default: true).
  */
 export default class MonacoEditorWrapper {
   constructor({
-    editorContainerId = "monaco",
-    textareaId = "monaco-textarea",
+    editorContainerSelector = "#monaco",
+    textareaSelector = "#monaco-textarea",
     onSave = (editor) => {
       // Default save action: just log the content.
       console.log("Save action triggered. Current content:", editor.getValue());
@@ -44,15 +45,17 @@ export default class MonacoEditorWrapper {
     language = "javascript",
     autoLayout = true,
   } = {}) {
-    this.editorContainer = document.getElementById(editorContainerId);
+    this.editorContainer = document.querySelector(editorContainerSelector);
     if (!this.editorContainer) {
       throw new Error(
-        `Editor container with id "${editorContainerId}" not found.`
+        `Editor container with id "${editorContainerSelector}" not found.`
       );
     }
 
+    console.log(monaco.languages.getLanguages());
+
     // Optional elements
-    this.textareaInput = document.getElementById(textareaId);
+    this.textareaInput = document.querySelector(textareaSelector);
     this.onSave = onSave;
 
     // Create model instance with the specified language.
@@ -62,6 +65,7 @@ export default class MonacoEditorWrapper {
     this.editor = monaco.editor.create(this.editorContainer, {
       // language: language,
       model: this.model,
+      // language: language,
       theme: window.hyper_isDarkMode ? "vs-dark-dsm" : "vs-dsm",
       automaticLayout: autoLayout,
     });
@@ -111,26 +115,38 @@ export default class MonacoEditorWrapper {
   // Register editor commands.
   #registerCommands() {
     // Toggle fullscreen (Ctrl/Cmd + Alt + Z)
-    this.editor.addCommand(
-      monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
-      () => {
+    this.editor.addAction({
+      id: "toggle-fullscreen",
+      label: "Toggle Fullscreen",
+      keybindings: [
+        monaco.KeyMod.CtrlCmd | monaco.KeyMod.Alt | monaco.KeyCode.KeyZ,
+      ],
+      keybindingContext: "editorTextFocus",
+      run: () => {
         if (!document.fullscreenElement) {
           this.editorContainer.requestFullscreen();
         } else {
           document.exitFullscreen();
         }
-      }
-    );
-
-    // Format JSON using Prettier when available,
-    // or fallback to native JSON formatting (Ctrl/Cmd + B)
-    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB, () => {
-      this.#formatCode(this.editor);
+      },
     });
 
-    // Submit the form (Ctrl/Cmd + S)
-    this.editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
-      this.onSave(this.editor);
+    // Format JSON using Prettier when available,
+    this.editor.addAction({
+      id: "format-code",
+      label: "Format Code",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyB],
+      keybindingContext: "editorTextFocus",
+      run: () => this.#formatCode(this.editor),
+    });
+
+    // Save the code (Ctrl/Cmd + S)
+    this.editor.addAction({
+      id: "save-content",
+      label: "Save Content",
+      keybindings: [monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS],
+      keybindingContext: "editorTextFocus",
+      run: () => this.onSave(this.editor),
     });
   }
 
@@ -160,6 +176,24 @@ export default class MonacoEditorWrapper {
           formatted = await prettier.format(content, {
             parser: "babel",
             plugins: [parserBabel, parserEstree],
+          });
+          break;
+        case "css":
+          formatted = await prettier.format(content, {
+            parser: "css",
+            plugins: [parserCss],
+          });
+          break;
+        case "scss":
+          formatted = await prettier.format(content, {
+            parser: "scss",
+            plugins: [parserCss],
+          });
+          break;
+        case "less":
+          formatted = await prettier.format(content, {
+            parser: "less",
+            plugins: [parserCss],
           });
           break;
         default:
