@@ -92,7 +92,17 @@ const defaultTemplates = {
     return container;
   },
 
-  textarea: ({ id, label, required, value, helper, className }) => {
+  textarea: ({ id, label, required, value, helper, className, data }) => {
+    // Build data-* attributes string
+    let dataAttrs = "";
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const attrName = `data-${key}`;
+        const attrValue = String(data[key]).replace(/"/g, "&quot;");
+        dataAttrs += ` ${attrName}="${attrValue}"`;
+      }
+    }
+
     const container = document.createElement("div");
     container.className = `form-floating ${helper ? "mb-4" : "mb-3"}`;
 
@@ -100,8 +110,9 @@ const defaultTemplates = {
             <textarea
                 id="${id}"
                 name="${id}"
-                class="form-control ${className}"
+                class="form-control ${className || ""}"
                 ${required ? "required" : ""}
+                ${dataAttrs}
             >${value || ""}</textarea>
             <label class="form-label" for="${id}">${label}</label>
             ${

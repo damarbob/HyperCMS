@@ -1,541 +1,409 @@
 /* Configs */
 var config = window.hyper.config; // Get the config object
-var locale = config.locale; // Get locale from the hyper data
 var lang = window.hyper.lang.Admin; // Get the language data for the 'Admin' section
 var data = window.hyper.data; // Get the data object
 
-// CSRF
-var csrfName = config.csrfToken;
-var csrfHash = config.csrfHash;
+$(document).ready(function () {
+  $("button.hyperHistory").on("click", function () {
+    showHistoryModal();
+  });
+  $("button.hyperDelete").on("click", function () {
+    deleteEntry();
+  });
 
-// States
-var activeModelFilter = null; // Hold the filter model_id; null means no filter
-var isTrash = true; // Set to true to show trashed entries.
+  function showHistoryModal() {
+    // Open the history modal.
+    openModal(document.getElementById("historyModal"));
 
-// DataTables options
-// Modify our DataTable options to supply additional data to the AJAX request:
-var options = {
-  processing: true,
-  serverSide: true,
-
-  pageLength: data.pageLength,
-
-  ajax: {
-    url: `${config.baseUrl}/api/v1/entries`,
-    type: "POST",
-    data: function (d) {
-      // Whether trash view is enabled
-      d.trash = isTrash;
-
-      // Include the filter model_id if it is active.
-      if (activeModelFilter) {
-        d.model_id = activeModelFilter;
-      }
-    },
-  },
-
-  columns: [
-    {
-      title: lang.id,
-      name: "id",
-      data: "id",
-      visible: false,
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.modelId,
-      name: "model_id",
-      data: "model_id",
-      visible: false,
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.model,
-      name: "model_name",
-      data: "model_name",
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.fields,
-      name: "fields",
-      data: "fields",
-      orderSequence: ["asc", "desc"],
-      render: (data) => {
-        return renderFieldTags(data);
-      },
-      createdCell: function (cell) {
-        // Initialize tooltips for this cell
-        $(cell)
-          .find(".field-tag")
-          .each(function () {
-            tippy(this, {
-              allowHTML: true,
-              interactive: true,
-              placement: "top-start",
-            });
-          });
-      },
-    },
-    {
-      title: lang.createdBy,
-      name: "created_by",
-      data: "created_by",
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.editedBy,
-      name: "edited_by",
-      data: "edited_by",
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.createdAt,
-      name: "created_at",
-      data: "created_at",
-      type: "date",
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.dateModified,
-      name: "date_modified",
-      data: "date_modified",
-      type: "date",
-      orderSequence: ["asc", "desc"],
-    },
-    {
-      title: lang.deletedBy,
-      name: "deleted_by",
-      data: "deleted_by",
-      visible: false,
-      orderSequence: ["asc", "desc"],
-    },
-  ],
-
-  order: {
-    name: "date_modified",
-    dir: "desc",
-  },
-
-  layout: {
-    topStart: {
-      buttons: [
-        {
-          // New button
-          text: `<span class="icon"><i class="fa-solid fa-plus"></i></span><span>${lang.new}</span>`,
-          className: "is-primary js-modal-trigger hyper-new",
-          attr: {
-            "data-target": "newModal",
-          },
-        },
-        {
-          // Empty trash button
-          text: `<span class="icon"><i class="fa-solid fa-face-tired"></i></span><span>${lang.emptyTrash}</span>`,
-          className: "is-danger hyper-purge-deleted",
-          action: function (e, dt, node, config) {
-            // Confirm empty trash
-            window.hyper.factory.swal.confirm().then((result) => {
-              if (result.isConfirmed) {
-                emptyTrash();
-              }
-            });
-          },
-        },
-        {
-          // Filter button
-          text: `<span class="icon"><i class="fa-solid fa-filter"></i></span><span>${lang.filter}</span>`,
-          className: "is-info js-modal-trigger",
-          attr: {
-            "data-target": "filterModal",
-          },
-        },
-        {
-          extend: "colvis", // Column visibility button
-          text: '<i class="fa-solid fa-table"></i>',
-          titleAttr: lang.data,
-        },
-        {
-          extend: "excelHtml5", // Export to Excel using HTML5 features
-          text: '<i class="fa-solid fa-download"></i>',
-          titleAttr: lang.excel,
-        },
-        {
-          extend: "print", // Print button
-          text: '<i class="fa-solid fa-print"></i>',
-          titleAttr: lang.print,
-        },
-        {
-          // Refresh button
-          text: '<i class="fa-solid fa-arrows-rotate"></i>',
-          titleAttr: lang.refresh,
-          action: function (e, dt, node, config) {
-            dt.ajax.reload(function () {
-              window.hyper.factory.swal.success(lang.successfullyRefreshed);
-            });
-          },
-        },
-        {
-          // Toggle trash view button
-          text: `<span class="icon"><i class="fa-solid fa-recycle"></i></span><span>${lang.trash}</span>`,
-          className: "is-warning",
-          action: function (e, dt, node, config) {
-            toggleTrashView(); // Call the function to toggle trash view
-
-            if (isTrash) {
-              $(node).addClass("is-active");
-              $(node).html(
-                `<span class="icon"><i class="fa-solid fa-xmark"></i></span><span>${lang.exit}</span>`
-              );
-            } else {
-              $(node).removeClass("is-active");
-              $(node).html(
-                `<span class="icon"><i class="fa-solid fa-recycle"></i></span><span>${lang.trash}</span>`
-              );
-            }
-          },
-        },
-        {
-          // Delete button
-          extend: "selected",
-          text: '<i class="fa-solid fa-trash"></i>',
-          titleAttr: lang.delete,
-          className: "is-danger hyper-delete",
-          action: function (e, dt, node, config) {
-            var selectedRows = dt
-              .rows({
-                selected: true,
-              })
-              .data()
-              .toArray();
-            if (selectedRows.length > 0) {
-              // Map the selected rows into an array of IDs
-              var ids = selectedRows.map(function (row) {
-                return row.id;
-              });
-
-              if (config.environment !== "production") {
-                console.log("Delete IDs:", ids);
-              }
-
-              deleteEntries(ids);
-            } else {
-              window.hyper.factory.swal.error(lang.selectToDelete);
-            }
-          },
-        },
-        {
-          // Restore button
-          extend: "selected",
-          text: `<span class="icon"><i class="fa-solid fa-rotate-left"></i></span><span>${lang.restore}</span>`,
-          className: "is-success hyper-restore",
-          action: function (e, dt, node, config) {
-            var selectedRows = dt
-              .rows({
-                selected: true,
-              })
-              .data()
-              .toArray();
-            if (selectedRows.length > 0) {
-              // Map the selected rows into an array of IDs
-              var ids = selectedRows.map(function (row) {
-                return row.id;
-              });
-
-              if (config.environment !== "production") {
-                console.log("Restore IDs:", ids);
-              }
-
-              restoreEntries(ids);
-            } else {
-              window.hyper.factory.swal.error(lang.selectToRestore);
-            }
-          },
-        },
-      ],
-    },
-    topEnd: {
-      pageLength: {
-        menu: [10, 25, 50, 100],
-      },
-      search: {
-        placeholder: lang.search,
-        text: "_INPUT_",
-      },
-    },
-    bottomEnd: {
-      paging: {
-        numbers: true,
-      },
-    },
-  },
-
-  rowCallback: function (row, data, index) {
-    $(row).on("dblclick", function () {
-      let modelId = data.model_id;
-      let id = data.id;
-
-      window.location.href = window.hyper.util.text.replacePlaceholders(
-        window.hyper.data.links.edit,
-        {
-          modelId: modelId,
-          id: id,
-        }
-      );
-    });
-  },
-
-  // Additional DataTable plugins
-  colReorder: true,
-  fixedHeader: true,
-  responsive: true,
-  select: true,
-};
-
-// DataTables language
-if (locale !== "en") {
-  var languageUrl;
-  switch (locale) {
-    case "id":
-      languageUrl = "https://cdn.datatables.net/plug-ins/2.2.2/i18n/id.json";
-      break;
-    default:
-      languageUrl = "https://cdn.datatables.net/plug-ins/2.2.2/i18n/en-GB.json";
+    // Lazy load the iframe source if it hasn't been loaded already.
+    const iframe = document.getElementById("historyIframe");
+    if (!iframe.getAttribute("src")) {
+      iframe.setAttribute("src", iframe.getAttribute("data-src"));
+    }
   }
-  options.language = {
-    url: languageUrl,
+
+  function deleteEntry() {
+    window.hyper.factory.swal
+      .confirm({
+        title: lang.areYouSure,
+        text: lang.youWillNotBeAbleToRevertThis,
+        confirmButtonColor: "var(--bulma-danger)",
+      })
+      .then((result) => {
+        if (result.isConfirmed) {
+          document.getElementById("deleteForm").submit();
+        }
+      });
+  }
+});
+
+/* Input creator */
+
+const hyperForm = document.getElementById("hyper-form");
+const hyperFormSubmit = hyperForm.querySelectorAll(
+  '#hyper-form input[type="submit"], #hyper-form button[type="submit"]'
+);
+const createdInputs = [];
+document.addEventListener("DOMContentLoaded", function () {
+  // Utils
+  var requester = window.hyper.util.hex.encode(data.uri);
+
+  const container = document.getElementById("hyper-fields-container");
+  const metaInputCreator = window.hyper.factory.inputCreator({
+    container: container,
+    onFieldCreated: (fieldId) => fieldCreationHandler(fieldId),
+  });
+
+  // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
+  metaInputCreator.create(JSON.parse(data.processed_model_fields));
+
+  window.hyper_recreateMetaInputs = function () {
+    // Destroy all TinyMCE instances before recreating inputs
+    destroyTinyMCEInstances(
+      document.querySelectorAll(".hyper-rich-text-field")
+    );
+
+    // Recreate the inputs
+    metaInputCreator.create(JSON.parse(data.processed_model_fields));
   };
-}
 
-/* End of configs */
-
-/* Init */
-
-// Initialize our DataTable (assuming our table has the ID "hyperTable")
-var hyperTable = new DataTable("#hyperTable", options);
-
-toggleTrashView(); // Initialize the trash view based on the default value
-
-/* End of init */
-
-/* Views */
-
-// Modal & filter logic
-
-// Handle filter button clicks within the filter modal:
-$(document).on("click", ".filter-model-btn", function () {
-  // Get the chosen model id
-  activeModelFilter = $(this).data("model-id");
-
-  // Toggle active state for UI feedback (using Bulma's "is-active" class)
-  $(".filter-model-btn").removeClass("is-active");
-  $(this).addClass("is-active");
-
-  // Close the modal using our modal-close method
-  closeModal(document.getElementById("filterModal"));
-  // Reload the DataTable so the ajax call sends the new filter parameter.
-  hyperTable.ajax.reload();
-});
-
-// Handle the "All" (reset) button:
-$(document).on("click", ".filter-model-reset", function () {
-  activeModelFilter = null;
-  $(".filter-model-btn").removeClass("is-active");
-  closeModal(document.getElementById("filterModal"));
-  hyperTable.ajax.reload();
-});
-
-// Function to toggle the trash view
-// and update the button visibility accordingly
-function toggleTrashView() {
-  isTrash = !isTrash; // Toggle the trash view
-  hyperTable.ajax.reload(); // Reload the table data
-
-  if (isTrash) {
-    $("button.hyper-new").hide(250);
-    $("button.hyper-delete").hide(250);
-    $("button.hyper-purge-deleted").show(250);
-    $("button.hyper-restore").show(250);
-  } else {
-    $("button.hyper-new").show(250);
-    $("button.hyper-delete").show(250);
-    $("button.hyper-purge-deleted").hide(250);
-    $("button.hyper-restore").hide(250);
-  }
-}
-
-function renderFieldTags(data) {
-  // Parse the data if it's a string
-  if (typeof data === "string") {
-    try {
-      data = JSON.parse(data);
-    } catch (err) {
-      return `<span class="tag is-light">${lang.invalidJson}</span>`;
-    }
-  }
-
-  // Return if data is not an object/array
-  if (typeof data !== "object" || data === null) {
-    return data;
-  }
-
-  // Define color classes for tags
-  const tagClasses = [
-    "is-primary",
-    "is-link",
-    "is-info",
-    "is-success",
-    "is-warning",
-    "is-danger",
-  ];
-  let output = '<div class="tags are-small" style="margin-bottom: 0;">';
-  let index = 0;
-
-  // Process each field
-  if (Array.isArray(data)) {
-    data.forEach((field) => {
-      if (field && typeof field === "object") {
-        const tagClass = tagClasses[index % tagClasses.length];
-        const fieldLabel = field.label || field.id || `Field ${index}`;
-        const fieldValue = field.value || "";
-
-        // Helper: encode and optionally truncate text
-        const formatText = (text, limit) =>
-          he.encode(
-            text.length > limit ? text.substring(0, limit - 3) + "..." : text
-          );
-
-        // Build tooltip content
-        const tooltipContent = `
-                        <div class="content" style="text-align: left; max-width: 300px;">
-                        <p><strong>${fieldLabel}</strong></p>
-                        ${
-                          fieldValue
-                            ? `<p style="overflow: hidden">${formatText(
-                                String(fieldValue),
-                                150
-                              )}</p>`
-                            : ""
-                        }
-                        </div>
-                    `;
-
-        // Build tag content
-        const tagContent = fieldValue
-          ? `<p style="overflow: hidden">${formatText(
-              String(fieldValue),
-              20
-            )}</p>`
-          : `(${fieldLabel})`;
-
-        // Append the tag with tooltip attributes to the output string.
-        output += `
-                        <span class="tag ${tagClass} field-tag"
-                        data-tippy-content="${he.encode(tooltipContent)}"
-                        style="margin-right: 5px; margin-bottom: 5px; cursor: help;">
-                            ${tagContent}
-                        </span>
-                    `;
-        index++;
-      }
+  // Disable save button if no inputs created
+  if (!createdInputs.length) {
+    // Disable all input type submit
+    hyperFormSubmit.forEach((el) => {
+      el.disabled = true;
     });
-  } else {
-    // Handle object case if needed
-    for (const key in data) {
-      if (data.hasOwnProperty(key)) {
-        const tagClass = tagClasses[index % tagClasses.length];
-        const value =
-          typeof data[key] === "object"
-            ? JSON.stringify(data[key])
-            : String(data[key]);
+  }
 
-        output += `
-                        <span class="tag ${tagClass}" 
-                            style="margin-right: 5px; margin-bottom: 5px;">
-                            ${key}: ${
-          value.length > 30 ? value.substring(0, 27) + "..." : value
+  // Populate inputs
+  window.hyper_populateMetaInputsWithHistory = function (data) {
+    inputPopulatorInst.populate(data);
+  };
+
+  const inputPopulatorInst = window.hyper.factory.inputPopulator(container);
+  inputPopulatorInst.populate(data.entry ? JSON.parse(data.entry.fields) : "");
+
+  // Form listener
+  hyperForm.addEventListener("submit", function (event) {
+    formHandler(event);
+  });
+});
+
+function fieldCreationHandler(fieldId) {
+  createdInputs.push(fieldId); // Store the field ID for later use.
+
+  // Instead of using DOMContentLoaded (which only fires once),
+  // we wait for the element to be available in the DOM.
+  waitForElement(fieldId, (input) => {
+    // At this point, input is guaranteed to exist.
+    if (!input) {
+      // (This check is extra safety – should not happen)
+      if (config.environment !== "production") {
+        console.warn(`Input with ID ${fieldId} not found.`);
+      }
+      return;
+    }
+
+    // Initialize TinyMCE if element has class 'hyper-rich-text-field'
+    if (input.classList.contains("hyper-rich-text-field")) {
+      initializeTinyMCE(fieldId);
+    }
+    // Initialize Monaco Editor if element has class 'hyper-code-field'
+    else if (input.classList.contains("hyper-code-field")) {
+      const language = input.dataset.language ?? "plaintext"; // Get the language from the dataset
+
+      if (config.environment !== "production") {
+        console.log("Found code field:", fieldId, language);
+      }
+
+      // Create Monaco container
+      const editorContainer = document.createElement("div");
+      editorContainer.id = `monaco-container-${fieldId}`;
+      editorContainer.style.height = "300px";
+      editorContainer.style.width = "100%";
+
+      // Insert container before textarea
+      input.parentNode.insertBefore(editorContainer, input);
+
+      // Initialize Monaco
+      const fieldsEditor = window.hyper.factory.monaco({
+        editorContainerSelector: `#monaco-container-${fieldId}`,
+        textareaSelector: `#${fieldId}`,
+        language: language,
+        onSave: function (editor) {
+          alert(`${fieldId}`);
+        },
+      });
+
+      // Hide the original textarea
+      input.style.display = "none";
+    }
+    // If element has type 'url' and class 'hyper-file-browse-field'
+    else if (
+      input.type === "url" &&
+      input.classList.contains("hyper-file-browse-field")
+    ) {
+      if (config.environment !== "production") {
+        console.log("Found file browse field:", fieldId);
+      }
+
+      // Create a new "Browse file" button with Bulma styling and a FA icon.
+      const browseBtn = document.createElement("button");
+      browseBtn.type = "button";
+      browseBtn.className = "button mt-2"; // Adjust classes as needed.
+      browseBtn.innerHTML = `<span class="icon"><i class="fa-solid fa-folder-open"></i></span><span>${lang.fileManager}</span>`;
+
+      // Append the button immediately after the input element.
+      input.insertAdjacentElement("afterend", browseBtn);
+
+      // Attach an event listener to the "Browse file" button.
+      browseBtn.addEventListener("click", function () {
+        // Open the file manager modal.
+        openModal(document.getElementById("fileManagerModal"));
+
+        // Lazy load the iframe source if it hasn't been loaded already.
+        const iframe = document.getElementById("fileManagerIframe");
+        if (!iframe.getAttribute("src")) {
+          iframe.setAttribute("src", iframe.getAttribute("data-src"));
         }
-                        </span>
-                    `;
-        index++;
+      });
+
+      // Listen for messages from the file manager. (Attach this listener globally if needed.)
+      window.addEventListener("message", function (event) {
+        // Validate event.origin for extra security.
+        if (!window.hyper.util.uri.areUrisEqual(event.origin, config.baseUrl))
+          return;
+
+        if (event.data && event.data.action === `filesSelected_r${requester}`) {
+          const selectedFiles = event.data.data; // Array of URL strings.
+          if (selectedFiles.length > 0) {
+            // Insert the first selected file URL into the input.
+            input.value = `${
+              config.baseUrl
+            }public/file-server/serve/${encodeURIComponent(
+              window.hyper.util.hex.encode(selectedFiles[0])
+            )}`;
+          }
+          // Close the modal after processing the selection.
+          closeModal(document.getElementById("fileManagerModal"));
+        }
+      });
+    }
+  });
+}
+
+/**
+ * Wait for an element with the given ID to be added to the DOM.
+ * @param {string} fieldId - The field id to wait for.
+ * @param {Function} callback - The callback to execute when the element is found.
+ * @param {number} timeout - Optional maximum time in milliseconds to wait (default 1000).
+ */
+function waitForElement(fieldId, callback, timeout = 1000) {
+  const interval = 50; // How frequently to check.
+  let elapsed = 0;
+
+  function check() {
+    const input = document.getElementById(fieldId);
+    if (input) {
+      callback(input);
+    } else {
+      elapsed += interval;
+      if (elapsed < timeout) {
+        setTimeout(check, interval);
+      } else {
+        console.warn(
+          `Input with ID ${fieldId} not found after waiting ${timeout}ms.`
+        );
       }
     }
   }
 
-  output += "</div>";
-  return output;
+  check();
 }
 
-/* End of views */
+/* End of input creator */
 
-/* Requests */
+/* Form listener */
 
-function emptyTrash() {
-  $.ajax({
-    url: data.links.purge,
-    type: "POST",
-    data: {
-      [csrfName]: csrfHash,
-    }, // Include CSRF token for security
-    dataType: "json", // Expecting JSON response from the server
-    success: function (response) {
-      window.hyper.factory.swal.success(response.success);
-      hyperTable.ajax.reload();
-    },
-    error: function (xhr, status, error) {
-      // Handle errors
-      window.hyper.factory.swal.error(error);
-    },
+// Intercept the form submission, compute meta data, inject it, then let it submit.
+function formHandler(event) {
+  event.preventDefault();
+
+  // Disable all input type submit
+  hyperFormSubmit.forEach((el) => {
+    el.disabled = true;
   });
+
+  // Before building FormData, force TinyMCE to save editor content back to the textarea.
+  tinymce.triggerSave();
+
+  // Create a FormData object from the form (this grabs all the form elements including files)
+  const fd = new FormData(hyperForm);
+
+  /** @type {FormData} */
+  const newFormData = window.hyper.util.form.encodeFormInputsToJson(
+    "fields",
+    hyperForm
+  );
+  newFormData.append(config.csrfToken, config.csrfHash);
+
+  if (data.action === "new") {
+    newFormData.append("model_id", data.model.id);
+  }
+
+  // Send the new FormData using fetch.
+  fetch(hyperForm.action, {
+    method: hyperForm.method,
+    headers: {
+      Accept: "application/json",
+    },
+    body: newFormData,
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Enable all input type submit
+      hyperFormSubmit.forEach((el) => {
+        el.disabled = false;
+      });
+
+      if (data.success) {
+        // If successful
+        window.hyper.factory.swal.success(lang.success, {
+          text: data.success,
+        }); // Show success message
+
+        if (data.action === "new") {
+          // Redirect the page after 1 second
+          setTimeout(() => {
+            window.location.href = config.baseUrl + "admin/entries";
+          }, 1000);
+        }
+      } else {
+        // If error
+        window.hyper.factory.swal.error(lang.error, {
+          text: data.error,
+        }); // Show error message
+      }
+    })
+    .catch((err) => console.error(err));
 }
 
-// AJAX request to delete entries (POSTing the ids array)
-function deleteEntries(ids) {
-  $.ajax({
-    url: data.links.delete,
-    type: "POST",
-    data: {
-      ids: ids,
-      [csrfName]: csrfHash,
-    }, // Include CSRF token for security
-    dataType: "json", // Expecting JSON response from the server
-    success: function (response) {
-      window.hyper.factory.swal
-        .success(response.success, {
-          showConfirmButton: true,
-          confirmButtonText: lang.undo,
-        })
-        .then((result) => {
-          if (result.isConfirmed) {
-            restoreEntries(ids);
-          }
+/* End of form listener */
+
+/* TinyMCE */
+
+/**
+ * Initializes TinyMCE for an editor input field.
+ * @param id - The ID of the textarea element.
+ */
+function initializeTinyMCE(id) {
+  if (tinymce.get(id)) {
+    tinymce.get(id)?.remove(); // Destroy existing instance
+  }
+
+  try {
+    tinymce.init({
+      skin: window.hyper_isDarkMode ? "oxide-dark" : "oxide",
+      content_css: window.hyper_isDarkMode ? "dark" : "default",
+      selector: `#${id}`,
+      license_key: "gpl",
+      relative_urls: false,
+      document_base_url: config.baseUrl,
+      external_plugins: {
+        fileinsert: `${config.baseUrl}assets/js/tinymce/fileinsert-plugin.js`,
+      },
+      plugins: [
+        "advlist",
+        "autolink",
+        "image",
+        "lists",
+        "link",
+        "charmap",
+        "preview",
+        "anchor",
+        "searchreplace",
+        "fullscreen",
+        "insertdatetime",
+        "table",
+        "help",
+        "wordcount",
+        "fileinsert",
+        "code",
+      ],
+      toolbar:
+        "fullscreen | fileinsert | undo redo | casechange blocks | bold italic backcolor | image | " +
+        "alignleft aligncenter alignright alignjustify | " +
+        "bullist numlist checklist outdent indent | removeformat | table | code | help",
+      promotion: false,
+      setup: function (editor) {
+        editor.on("change", function () {
+          editor.save();
         });
-      hyperTable.ajax.reload();
-    },
-    error: function (xhr, status, error) {
-      // Handle errors here
-      window.hyper.factory.swal.error(error);
-    },
+      },
+    });
+  } catch (e) {
+    console.error("TinyMCE initialization error:", e);
+  }
+}
+
+function destroyTinyMCEInstances(editors) {
+  editors.forEach((element) => {
+    if (tinymce.get(element.id)) {
+      tinymce.get(element.id)?.remove();
+    }
   });
 }
 
-// AJAX request to restore entries (POSTing the ids array)
-function restoreEntries(ids) {
-  $.ajax({
-    url: data.links.restore,
-    type: "POST",
-    data: {
-      ids: ids,
-      [csrfName]: csrfHash,
-    }, // Include CSRF token for security
-    dataType: "json", // Expecting JSON response from the server
-    success: function (response) {
-      window.hyper.factory.swal.success(response.success);
-      hyperTable.ajax.reload();
-    },
-    error: function (xhr, status, error) {
-      // Handle errors here
-      window.hyper.factory.swal.error(error);
-    },
-  });
+/* End of TinyMCE */
+
+/* Window message listener */
+
+// Listen for messages from the file manager. (Attach this listener globally if needed.)
+window.addEventListener("message", function (event) {
+  // Validate event.origin for extra security.
+  if (!window.hyper.util.uri.areUrisEqual(event.origin, config.baseUrl)) return;
+
+  if (event.data && event.data.action === "entryDataSelected") {
+    const selectedData = event.data.data; // Array of URL strings.
+    useData(selectedData);
+    // Close the modal after processing the selection.
+    closeModal(document.getElementById("historyModal"));
+  }
+});
+
+/**
+ * Transforms an object into an array of objects with "id" and "value" properties.
+ *
+ * @param {Object} data - The input object with key/value pairs.
+ * @returns {Array} Array of objects in the format [{ id: key, value: value }, ...]
+ */
+function transformData(data) {
+  return Object.entries(data).map(([key, value]) => ({
+    id: key,
+    value,
+  }));
 }
 
-/* End of requests */
+function useData(selectedData) {
+  // Check if any rows are selected
+  if (selectedData.length > 0) {
+    // Get the first selected row's ID and model name
+    var id = selectedData[0].id;
+    var modelName = selectedData[0].model_name;
+
+    // Recreate the meta inputs and populate them with the selected data
+    window.hyper_recreateMetaInputs();
+    window.hyper_populateMetaInputsWithHistory(transformData(selectedData[0]));
+
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth",
+    });
+
+    window.hyper.factory.swal.success(lang.success);
+  } else {
+    window.hyper.factory.swal.error(lang.selectRow);
+  }
+}
+
+/* End of window message listener */
