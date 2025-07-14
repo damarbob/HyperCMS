@@ -1,5 +1,8 @@
 <?php
+helper('hyper_hex');
 helper('form');
+
+$requester = hex_encode($uri);
 
 $fieldsError = validation_show_error('fields');
 ?>
@@ -29,7 +32,7 @@ $fieldsError = validation_show_error('fields');
 
                 <!-- History button -->
                 <div class="control is-flex-grow-1">
-                    <button type="button" class="button" onclick="showHistoryModal()" title="<?= lang('Admin.entryHistory') ?>">
+                    <button id="historyButton" type="button" class="button hyperHistory" title="<?= lang('Admin.entryHistory') ?>">
                         <span class="icon">
                             <i class="fas fa-clock-rotate-left"></i>
                         </span>
@@ -38,7 +41,7 @@ $fieldsError = validation_show_error('fields');
 
                 <!-- Delete button -->
                 <div class="control">
-                    <button type="button" class="button is-link is-danger" onclick="deleteEntry()">
+                    <button id="deleteButton" type="button" class="button is-link is-danger hyperDelete">
                         <span class="icon">
                             <i class="fas fa-trash"></i>
                         </span>
@@ -57,6 +60,33 @@ $fieldsError = validation_show_error('fields');
             <?= csrf_field() ?>
         </form>
     <?php endif; ?>
+</div>
+
+<!-- Modals -->
+
+<?php if (!empty($entry)): // For edit action
+?>
+    <!-- History modal -->
+    <div id="historyModal" class="modal">
+        <div class="modal-background"></div>
+        <div class="modal-card is-fullheight">
+            <section class="modal-card-body is-flex" style="--bulma-modal-card-body-padding: 0.5rem;">
+                <iframe id="historyIframe" class="is-flex-grow-1" data-src="<?= base_url('admin/entry-data/' . $entry['id']) ?>" frameborder="0"></iframe>
+            </section>
+        </div>
+        <button class="modal-close delete is-large" aria-label="close"></button>
+    </div>
+<?php endif; ?>
+
+<!-- Modal for File Manager -->
+<div id="fileManagerModal" class="modal">
+    <div class="modal-background"></div>
+    <div class="modal-card is-fullheight">
+        <div class="modal-card-body is-flex" style="--bulma-modal-card-body-padding: 0.5rem;">
+            <iframe id="fileManagerIframe" class="is-flex-grow-1" data-src="<?= base_url("admin/file-manager?requester_id={$requester}") ?>" frameborder="0"></iframe>
+        </div>
+    </div>
+    <button class="modal-close is-large" aria-label="close"></button>
 </div>
 
 <?php if (ENVIRONMENT === 'testing' && $action === 'edit'): ?>
@@ -85,7 +115,7 @@ $fieldsError = validation_show_error('fields');
                     </button>
                 </div>
                 <div class="control">
-                    <button type="button" class="button is-link is-danger" onclick="deleteModel()"><?= lang('Admin.delete') ?></button>
+                    <button type="button" class="button is-link is-danger hyperDelete"><?= lang('Admin.delete') ?></button>
                 </div>
             </div>
         </form>
@@ -93,5 +123,7 @@ $fieldsError = validation_show_error('fields');
 <?php endif; ?>
 
 <?= $this->section('footer') ?>
-<?= $this->include('admin/partials/entries_scripts') ?>
+<script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+<script src="<?= base_url('assets/js/vendor/tinymce/tinymce.min.js') ?>"></script>
+<script src="<?= base_url('assets/App/admin/entries.js') ?>"></script>
 <?= $this->endSection() ?>

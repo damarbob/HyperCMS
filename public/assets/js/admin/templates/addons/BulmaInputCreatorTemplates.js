@@ -18,7 +18,11 @@ export const bulmaInputCreatorTemplates = {
                     class="input ${className}"
                     value="${value || ""}"
                     ${required ? "required" : ""}
-                    ${options && options.step ? "step='" + options.step + "'" : ""}
+                    ${
+                      options && options.step
+                        ? "step='" + options.step + "'"
+                        : ""
+                    }
                     ${options && options.min ? "min='" + options.min + "'" : ""}
                     ${options && options.max ? "max='" + options.max + "'" : ""}
                 />
@@ -86,26 +90,33 @@ export const bulmaInputCreatorTemplates = {
     return field;
   },
 
-  textarea: ({ id, label, required, value, helper, className }) => {
+  textarea: ({ id, label, required, value, helper, className, data = {} }) => {
+    // Build data-* attributes string
+    let dataAttrs = "";
+    for (const key in data) {
+      if (data.hasOwnProperty(key)) {
+        const attrName = `data-${key}`;
+        const attrValue = String(data[key]).replace(/"/g, "&quot;");
+        dataAttrs += ` ${attrName}="${attrValue}"`;
+      }
+    }
+
     const field = document.createElement("div");
     field.className = `field ${helper ? "mb-4" : "mb-3"}`;
 
     field.innerHTML = `
-            <label class="label" for="${id}">${label}</label>
-            <div class="control">
-                <textarea
-                    id="${id}"
-                    name="${id}"
-                    class="textarea ${className}"
-                    ${required ? "required" : ""}
-                >${value || ""}</textarea>
-            </div>
-            ${
-              helper
-                ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>`
-                : ""
-            }
-        `;
+    <label class="label" for="${id}">${label}</label>
+    <div class="control">
+      <textarea
+        id="${id}"
+        name="${id}"
+        class="textarea ${className || ""}"
+        ${required ? "required" : ""}
+        ${dataAttrs}
+      >${value || ""}</textarea>
+    </div>
+    ${helper ? `<p class="help">${replaceEnvironmentSyntax(helper)}</p>` : ""}
+  `.trim();
 
     return field;
   },

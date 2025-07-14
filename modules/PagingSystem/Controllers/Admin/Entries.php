@@ -20,8 +20,7 @@ class Entries extends AdminController
         $eligibleModelIds = HyperHooks::getInstance()->getState('paging_system_eligible_model_ids');
 
         if (empty($eligibleModelIds) || !in_array($modelId, $eligibleModelIds)) {
-            log_message('debug', 'Model ID is not eligible for the page editor.');
-            session()->setFlashdata('info', 'Model ID is not eligible for the page editor.');
+            // log_message('debug', "Paging System: Model ID $modelId is not eligible for the page editor.");
             return redirect()->to("admin/model/$modelId/new");
         };
 
