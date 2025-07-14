@@ -17,6 +17,12 @@ $routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filt
 
     $routes->group('ps', static function ($routes) {
         $routes->get('entries/(:num)/new', 'Entries::new/$1');
+
+        $routes->group('api', ['namespace' => '\PagingSystem\Controllers\Admin\API'], static function ($routes) {
+            $routes->group('assets', ['filter' => 'group-not:user'], static function ($routes) {
+                $routes->post('upload', 'Assets::assetsUpload');
+            });
+        });
     });
 
     $routes->group('settings', static function ($routes) {
