@@ -209,8 +209,35 @@ grapesjs.plugins.add(
 
             editor.on('load', () => {
                 updateStyleManagerView(editor.getSelected());
+
+                // Initialize buttons and update state
+                updateUndoRedoButtons();
+
+                // Set up event listeners
+                editor.on('update undo redo', updateUndoRedoButtons);
+
+                // $('#undo-button, #redo-button').on('click', function () { updateUndoRedoButtons(); })
+                $('#undo-button, #redo-button').on('click', () => { updateUndoRedoButtons(); })
             });
+
         };
+
+        // Update button state
+        function updateUndoRedoButtons() {
+            const panels = editor.Panels;
+            const undoButton = panels.getButton('options', 'undo');
+            const redoButton = panels.getButton('options', 'redo');
+
+            if (!undoButton || !redoButton) return;
+
+            // Update undo button state
+            const hasUndo = editor.UndoManager.hasUndo();
+            undoButton.set('disable', !hasUndo);
+
+            // Update redo button state
+            const hasRedo = editor.UndoManager.hasRedo();
+            redoButton.set('disable', !hasRedo);
+        }
 
         /**
          * Add custom commands to the editor
@@ -289,6 +316,40 @@ grapesjs.plugins.add(
                     $('html').attr('data-theme', 'light');
                 }
             });
+
+            // Show project data command
+            commands.add('grapesjs-hyper-custom-editor:show-project-data', {
+                run(editor) {
+                    const codeViewer = this.getCodeViewer();
+                    const codeContent = JSON.stringify(editor.getProjectData(), null, 2);
+                    editor.Modal.open({
+                        title: `${window.hyper.lang.PagingSystem.projectData}`,
+                        content: codeViewer.getElement()
+                    }).onceClose(() => editor.stopCommand('grapesjs-hyper-custom-code:show-project-data'));
+                    codeViewer.setContent(codeContent ?? '');
+                    codeViewer.refresh();
+                    setTimeout(() => codeViewer.focus(), 0);
+                },
+
+                getCodeViewer() {
+                    if (!this.codeViewer) {
+                        this.codeViewer = editor.CodeManager.createViewer({
+                            codeName: 'htmlmixed',
+                            theme: 'hopscotch',
+                            readOnly: true,
+                            autoBeautify: true,
+                            autoCloseTags: true,
+                            autoCloseBrackets: true,
+                            lineWrapping: true,
+                            styleActiveLine: true,
+                            smartIndent: true,
+                            indentWithTabs: true
+                        });
+                    }
+
+                    return this.codeViewer;
+                },
+            });
         };
 
 
@@ -342,6 +403,18 @@ grapesjs.plugins.add(
         const addUiButtons = () => {
             const panels = editor.Panels;
 
+            if (window.hyper.config.environment !== 'production') {
+                panels.addButton('options', {
+                    id: 'grapesjs-hyper-custom-editor:show-project-data',
+                    className: 'fa-solid fa-file-code',
+                    command: 'grapesjs-hyper-custom-editor:show-project-data',
+                    attributes: {
+                        title: `${window.hyper.lang.PagingSystem.showProjectData}`
+                    },
+                    context: 'grapesjs-hyper-custom-editor:show-project-data',
+                });
+            }
+
             panels.addButton('options', {
                 id: 'grapesjs-hyper-custom-editor:toggle-dark-mode',
                 className: 'fa-solid fa-moon',
@@ -376,7 +449,8 @@ grapesjs.plugins.add(
                 command: 'core:undo',
                 context: 'core:undo',
                 attributes: {
-                    title: `${window.hyper.lang.Admin.undo}`
+                    title: `${window.hyper.lang.Admin.undo}`,
+                    id: 'undo-button'
                 }
             });
             panels.addButton('options', {
@@ -385,7 +459,8 @@ grapesjs.plugins.add(
                 command: 'core:redo',
                 context: 'core:redo',
                 attributes: {
-                    title: `${window.hyper.lang.Admin.redo}`
+                    title: `${window.hyper.lang.Admin.redo}`,
+                    id: 'redo-button'
                 }
             });
             panels.addButton('options', {
@@ -489,6 +564,9 @@ grapesjs.plugins.add(
             document.getElementById('selector-manager').style.display = selected ? '' : 'none';
             document.getElementById('selector-mode').style.display = selected ? '' : 'none';
             document.getElementById('no-select-state').style.display = selected ? 'none' : '';
+
+            // $('#component-editor').css('display', selected ? '' : 'none');
+            // $('#no-component-state').css('display', selected ? 'none' : '');
         };
 
         /**
@@ -571,6 +649,10 @@ grapesjs.plugins.add(
                 // Show corresponding pane
                 $rightPanes.removeClass('is-active');
                 $(`#${targetId}`).addClass('is-active');
+
+                if (targetId === 'component-editor-container') {
+                    editor.runCommand('open-code');
+                }
             });
 
             // Close modal button
@@ -637,9 +719,6 @@ grapesjs.plugins.add(
                 if (key === 'id' || key === 'class') continue;
                 addAttributeRow(key, value);
             }
-
-            // Add empty row for new attribute
-            addAttributeRow();
         };
 
         const saveAttributes = () => {

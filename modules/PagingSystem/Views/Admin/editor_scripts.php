@@ -1,4 +1,8 @@
-<script src="https://cdn.jsdelivr.net/npm/grapesjs@0.22.8/dist/grapes.min.js" integrity="sha256-n+3Ev4VhpTpZdsfDDNafUvZJAo1iLiZeFbHGgHqkVB0=" crossorigin="anonymous"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/grapesjs@0.22.8/dist/grapes.min.js" integrity="sha256-n+3Ev4VhpTpZdsfDDNafUvZJAo1iLiZeFbHGgHqkVB0=" crossorigin="anonymous"></script> -->
+
+<script src="https://cdn.jsdelivr.net/npm/grapesjs@0.22.5/dist/grapes.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/grapesjs-parser-postcss@1.0.3/dist/index.min.js"></script>
+<!-- <script src="https://cdn.jsdelivr.net/npm/grapesjs-component-code-editor@1.0.20/dist/grapesjs-component-code-editor.min.js" integrity="sha256-PDk/TC9IEWgNztB0sZnfkz6J07ZAZ8wal6NI4DOLd80=" crossorigin="anonymous"></script> -->
 <script src="https://cdn.jsdelivr.net/npm/grapesjs-custom-code@1.0.2/dist/index.min.js"></script>
 <script type="text/javascript" src="<?= module_assets_url('PagingSystem', 'grapesjs-hyper-editor.js') ?>"></script>
 <script type="text/javascript" src="<?= module_assets_url('PagingSystem', 'grapesjs-hyper-dependencies.js') ?>"></script>
@@ -42,6 +46,7 @@ $editorPlugins = [
    * which include Bulma. For now, we will use Bootstrap components instead.
    */
   // 'grapesjs-hyper-dependencies', 
+  'grapesjs-tui-image-editor',
   'grapesjs-hyper-assets-injector',
   'grapesjs-hyper-components',
   'grapesjs-hyper-custom-editor',
@@ -59,12 +64,13 @@ $editorPlugins = [
   'grapesjs-bootstrap-alert',
   'grapesjs-bootstrap-dropdown',
   'grapesjs-custom-code',
-  'grapesjs-tui-image-editor',
   'grapesjs-style-bg',
   'grapesjs-style-gradient',
   'grapesjs-style-filter',
   'grapesjs-import-code',
   'hyper-starter-plugin',
+  'grapesjs-parser-postcss',
+  // 'grapesjs-component-code-editor',
 ];
 
 // Plugin options
@@ -80,6 +86,11 @@ $editorPluginsOpts = [
     'baseUrl' => base_url(),
   ],
   'grapesjs-blocks-bootstrap-5' => [
+    'blocks' => [
+      'container' => false,
+      'row' => false,
+      'column' => false,
+    ],
     'gridDevices' => false,
     // 'gridDevicesPanel' => true,
     'formPredefinedActions' => null,
@@ -89,6 +100,23 @@ $editorPluginsOpts = [
     'modalImportTitle' => 'Import Code',
     'modalImportButton' => 'Import',
   ],
+  'grapesjs-custom-code' => [
+    'propsCustomCode' => [
+      'attributes' => [
+        'data-gjs-type' => 'custom-code'
+      ],
+    ]
+  ],
+  'grapesjs-tui-image-editor' => [
+    'upload' => true,
+  ],
+  // 'grapesjs-component-code-editor' => [
+  //   'panelId' => 'right-panel',
+  //   'appendTo' => '#component-editor',
+  //   'openState' => [],
+  //   'closedState' => [],
+  //   'preserveWidth' => true,
+  // ]
 ];
 
 // Selector manager
@@ -313,19 +341,23 @@ if (file_exists($editorScriptsOverrideFile)) {
                                   }),
                                 ]
                               })
-                            })
+                            }),
+                            // $('<li>', {
+                            //   class: 'tab-button',
+                            //   'data-target': 'component-editor-container',
+                            //   append: $('<a>', {
+                            //     append: [
+                            //       $('<span>', {
+                            //         class: 'icon is-small',
+                            //         append: $('<i>', {
+                            //           class: 'fas fa-laptop-code'
+                            //         })
+                            //       }),
+                            //     ]
+                            //   })
+                            // })
                           ]
                         })
-                        // $('<div>', {
-                        //   class: 'tab-button is-active',
-                        //   'data-target': 'style-manager-container',
-                        //   text: `${window.hyper.lang.PagingSystem.styles}`
-                        // }),
-                        // $('<div>', {
-                        //   class: 'tab-button',
-                        //   'data-target': 'trait-manager-container',
-                        //   text: `${window.hyper.lang.PagingSystem.properties}`
-                        // })
                       ]
                     }),
                     $('<div>', {
@@ -476,7 +508,33 @@ if (file_exists($editorScriptsOverrideFile)) {
                               })
                             })
                           ]
-                        })
+                        }),
+
+                        // // Component editor
+                        // $('<div>', {
+                        //   id: 'component-editor-container',
+                        //   class: 'right-panel-content-pane',
+                        //   append: [
+                        //     // No component state
+                        //     $('<div>', {
+                        //       id: 'no-component-state',
+                        //       class: 'no-component',
+                        //       style: 'display: none; padding: 20px;',
+                        //       append: [
+                        //         $('<i>', {
+                        //           class: 'fas fa-mouse-pointer'
+                        //         }),
+                        //         $('<h3>', {
+                        //           text: `${window.hyper.lang.PagingSystem.selectAComponentToEditCode}`
+                        //         })
+                        //       ]
+                        //     }),
+                        //     $('<div>', {
+                        //       id: 'component-editor',
+                        //       style: 'display: none;',
+                        //     }),
+                        //   ]
+                        // })
                       ]
                     })
                   ]
@@ -526,6 +584,12 @@ if (file_exists($editorScriptsOverrideFile)) {
       },
       traitManager: {
         appendTo: '#trait-manager'
+      },
+      assetManager: {
+        upload: `${window.hyper.config.baseUrl}admin/ps/api/assets/upload`,
+        params: {
+          [window.hyper.config.csrfToken]: window.hyper.config.csrfHash
+        }
       }
     });
 
@@ -542,11 +606,19 @@ if (file_exists($editorScriptsOverrideFile)) {
     });
 
     if (window.hyper.config.environment !== 'production') {
-      editor.on('update', () => {
-        console.log('old: ', window.hyper.data.mapped_entry_fields.hyper_page_project_data);
-        console.log('new: ', editor.getProjectData());
-      });
+      // editor.on('update', () => {
+      //   console.log('old: ', window.hyper.data.mapped_entry_fields.hyper_page_project_data);
+      //   console.log('new: ', editor.getProjectData());
+      // });
     }
+
+    editor.StyleManager.addProperty("extra", {
+      extend: "filter",
+    });
+    editor.StyleManager.addProperty("extra", {
+      extend: "filter",
+      property: "backdrop-filter",
+    });
 
   }
 

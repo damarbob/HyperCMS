@@ -25,6 +25,7 @@ return [
     'clickOnAnyComponentInTheEditorToManageItsStyles' => 'Click on any component in the editor to manage its styles.',
     'selectAComponentToEditAttributes' => 'Select a component to edit its attributes',
     'selectAComponentToEditStyles' => 'Select a component to edit its styles',
+    'selectAComponentToEditCode' => 'Select a component to edit its code',
     'customAttributes' => 'Custom Attributes',
     'attributesList' => 'Attributes List',
     'attribute' => 'Attribute',
@@ -35,6 +36,8 @@ return [
     'component' => 'Component',
     'class' => 'Class',
     'toggleDarkMode' => 'Toggle Dark Mode',
+    'showProjectData' => 'Show project data',
+    'projectData' => 'Project data',
 
     'desktop' => 'Desktop',
     'tablet' => 'Tablet',
@@ -53,4 +56,7 @@ return [
     'selectedModelWillServeAsPrimaryModelForServingAssets' => 'The selected model will serve as the primary model for serving assets on the frontend.',
     'meta' => 'Meta',
     'selectedMetaModelWillBeUsedToInject' => 'The selected meta model will be used to inject meta tags into pages.',
+
+    'saving' => 'Saving',
+    'pleaseWait' => 'Please wait...',
 ];

@@ -1,8 +1,11 @@
 <?= $this->extend('admin/layout/page_blank') ?>
 
 <?= $this->section('head') ?>
-<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.22.5/dist/css/grapes.min.css" integrity="sha256-1I3el0pvNWfTUd1SEXRESKNhHSpnELFugVLiTDt//cY=" crossorigin="anonymous"> -->
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.22.8/dist/css/grapes.min.css" integrity="sha256-Ht0gb7nkHGDXDGbP2y554rk1jfXJUjM6i1pqWYn4wtQ=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.22.5/dist/css/grapes.min.css" integrity="sha256-1I3el0pvNWfTUd1SEXRESKNhHSpnELFugVLiTDt//cY=" crossorigin="anonymous">
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs@0.22.8/dist/css/grapes.min.css" integrity="sha256-Ht0gb7nkHGDXDGbP2y554rk1jfXJUjM6i1pqWYn4wtQ=" crossorigin="anonymous"> -->
+
+<!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/grapesjs-component-code-editor@1.0.20/dist/grapesjs-component-code-editor.min.css" integrity="sha256-gH8DRO4UN0+fRV5Tb1zLFndmh9dGJcr263onBBI+y1w=" crossorigin="anonymous"> -->
+<!-- <link href="https://unpkg.com/grapesjs-code-editor/dist/style.css" rel="stylesheet"> -->
 
 <!-- Add gradient  -->
 <link href="https://unpkg.com/grapick/dist/grapick.min.css" rel="stylesheet">
@@ -381,10 +384,6 @@
         background: rgba(255, 255, 255, 0.2)
     }
 
-    /* .gjs-editor {
-        width: 100%;
-    } */
-
     /* Reset some default styling */
     .gjs-cv-canvas {
         top: 0;
@@ -395,11 +394,6 @@
     .modal-card.is-fullheight {
         height: 80%;
     }
-
-    /* .gjs-field {
-        background-color: hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-background-l) + var(--bulma-input-background-l-delta)));
-        border: 1px solid hsl(var(--bulma-input-h), var(--bulma-input-s), calc(var(--bulma-input-border-l) + var(--bulma-input-border-l-delta)));
-    } */
 
     .tabs:not(:last-child) {
         margin-bottom: 0 !important;
@@ -504,8 +498,12 @@
         background-color: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.8);
     }
 
-    .gjs-pn-btn:hover {
+    .gjs-pn-btn:hover:not(.gjs-disabled) {
         background-color: var(--bulma-primary-soft);
+    }
+
+    .gjs-pn-btn.gjs-disabled {
+        cursor: default;
     }
 </style>
 <?= $this->endSection() ?>
@@ -530,8 +528,6 @@
 
 <?= $this->section('footer') ?>
 <script src="https://code.jquery.com/jquery-3.7.1.min.js" integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
-
-
 
 <?= $this->include('\Modules\PagingSystem\Views\Admin\editor_scripts') ?>
 <?= $this->endSection() ?>

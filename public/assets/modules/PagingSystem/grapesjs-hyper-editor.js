@@ -26,14 +26,18 @@ grapesjs.plugins.add(
   ) {
     const lang = window.hyper.lang.Admin;
 
+    editor.Keymaps.add('gjs-save', '⌘+s, ctrl+s', 'gjs-save', {
+      prevent: true,
+    });
+
     // --- Extend StyleManager: Add custom properties for filter effects ---
-    editor.StyleManager.addProperty("extra", {
-      extend: "filter",
-    });
-    editor.StyleManager.addProperty("extra", {
-      extend: "filter",
-      property: "backdrop-filter",
-    });
+    // editor.StyleManager.addProperty("extra", {
+    //   extend: "filter",
+    // });
+    // editor.StyleManager.addProperty("extra", {
+    //   extend: "filter",
+    //   property: "backdrop-filter",
+    // });
 
     // --- Editor Appearance Adjustments ---
     // On load, add a save button to the options panel.
@@ -46,6 +50,7 @@ grapesjs.plugins.add(
           title: lang.save,
         },
       });
+
     });
 
     // --- Save Command Definition ---
@@ -54,7 +59,14 @@ grapesjs.plugins.add(
     // a payload matching the expected structure, includes CSRF tokens, and sends it via fetch.
     editor.Commands.add("gjs-save", {
       run(editor, sender) {
-        if (sender) sender.set("active", false);
+        const swal = window.hyper.factory.swal;
+        // Show loader
+        swal.loader({
+          title: window.hyper.lang.PagingSystem.saving,
+          text: window.hyper.lang.PagingSystem.pleaseWait,
+        })
+
+        if (sender && sender instanceof HTMLElement && sender.hasAttribute("active")) sender.set("active", false);
 
         // Gather outputs from the editor.
         let htmlOutput = editor.getHtml();
@@ -74,9 +86,9 @@ grapesjs.plugins.add(
         // Serialize cleaned HTML back.
         htmlOutput = doc.documentElement.outerHTML;
 
-        if (window.hyper.config.environment !== "production") {
-          console.log(htmlOutput);
-        }
+        // if (window.hyper.config.environment !== "production") {
+        //   console.log(htmlOutput);
+        // }
         /* --- End of HTML Cleanup --- */
 
         // Prepare data to be sent: set the override fields with the processed content.
@@ -115,10 +127,13 @@ grapesjs.plugins.add(
         )
           .then((response) => response.json())
           .then(function (data) {
+            // Close swal loader
+            swal.get().close();
+
             // On success, show a success alert and possibly redirect.
             if (data.success) {
               window.hyper.data.mapped_entry_fields.hyper_page_project_data = JSON.stringify(editor.getProjectData());
-              window.hyper.factory.swal.success(lang.success, {
+              swal.success(lang.success, {
                 text: data.success,
               });
               if (data.redirect) {
@@ -128,15 +143,18 @@ grapesjs.plugins.add(
               }
             } else {
               // On error, show an error alert.
-              window.hyper.factory.swal.error(lang.error, {
+              swal.error(lang.error, {
                 text: data.error,
               });
               throw new Error(data.error);
             }
           })
           .catch(function (error) {
+            // Close swal loader
+            swal.get().close();
+
             console.error("Error saving data:", error);
-            window.hyper.factory.swal.error(lang.error, {
+            swal.error(lang.error, {
               text: error,
             });
           });
