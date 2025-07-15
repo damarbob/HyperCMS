@@ -312,8 +312,8 @@ document.addEventListener("DOMContentLoaded", () => {
   // This initializes the Monaco editor with the provided configuration.
   // The onSave callback triggers a file save operation from the file manager.
   window.hyper_fileManagerMonaco = window.hyper.factory.monaco({
-    editorContainerId: "monaco", // The container element ID for Monaco
-    textareaId: "fileEditor", // The ID of the textarea linked to the editor
+    editorContainerSelector: "#monaco", // The container element ID for Monaco
+    textareaSelector: "#fileEditor", // The ID of the textarea linked to the editor
     onSave: function (editor) {
       // Save the currently open file when the editor triggers a save
       window.hyper.factory.fileManager.saveFile(
