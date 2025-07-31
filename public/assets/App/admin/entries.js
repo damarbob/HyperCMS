@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded", function () {
   const container = document.getElementById("hyper-fields-container");
   const metaInputCreator = window.hyper.factory.inputCreator({
     container: container,
-    onFieldCreated: (fieldId) => fieldCreationHandler(fieldId),
+    onFieldCreated: (fieldId) => fieldCreationHandler(fieldId, requester),
   });
 
   // Inject the fields as is. No need quotes mark. JS will treat the fields as arrays.
@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", function () {
   });
 });
 
-function fieldCreationHandler(fieldId) {
+function fieldCreationHandler(fieldId, requester = null) {
   createdInputs.push(fieldId); // Store the field ID for later use.
 
   // Instead of using DOMContentLoaded (which only fires once),

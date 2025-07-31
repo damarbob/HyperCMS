@@ -30,5 +30,5 @@
 <!-- HTML Entity -->
 <script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
 
-<script type="text/javascript" src="<?= base_url('assets/App/admin/model_data.js') ?>"></script>
+<script type="module" src="<?= base_url('assets/App/admin/model_data.js') ?>"></script>
 <?= $this->endSection() ?>

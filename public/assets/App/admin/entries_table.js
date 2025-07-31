@@ -285,7 +285,11 @@ var options = {
 
   // Additional DataTable plugins
   colReorder: true,
-  fixedHeader: true,
+  // Keep header fixed as we scroll
+  fixedHeader: {
+    header: true,
+    headerOffset: hyper.util.dimens.navbarHeight, // Use the navbar height
+  },
   responsive: true,
   select: true,
 };

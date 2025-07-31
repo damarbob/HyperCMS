@@ -199,7 +199,11 @@ var options = {
 
   // Enable additional DataTables plugins
   colReorder: true, // Allow column reordering
-  fixedHeader: true, // Keep header fixed as you scroll
+  // Keep header fixed as we scroll
+  fixedHeader: {
+    header: true,
+    headerOffset: hyper.util.dimens.navbarHeight, // Use the navbar height
+  },
   responsive: true, // Make the table responsive on various devices
   select: true, // Allow row selection
 };
