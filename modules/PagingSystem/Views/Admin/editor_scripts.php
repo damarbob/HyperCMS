@@ -110,6 +110,14 @@ $editorPluginsOpts = [
   'grapesjs-tui-image-editor' => [
     'upload' => true,
   ],
+  'grapesjs-blocks-bootstrap-5' => [
+    'blocks' => [
+      'container' => false,
+      'row' => false,
+      'column' => false,
+      'card' => false,
+    ],
+  ],
   // 'grapesjs-component-code-editor' => [
   //   'panelId' => 'right-panel',
   //   'appendTo' => '#component-editor',

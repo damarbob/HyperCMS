@@ -279,7 +279,11 @@ document.addEventListener("DOMContentLoaded", () => {
     pageLength: 100, // Default number of rows per page
     select: true, // Enable row selection (requires DataTables Select extension)
     colReorder: true, // Allow column reordering by the user
-    fixedHeader: true, // Keep the header fixed during scrolling
+    // Keep header fixed as we scroll
+    fixedHeader: {
+      header: true,
+      headerOffset: hyper.util.dimens.navbarHeight, // Use the navbar height
+    },
     responsive: true, // Enable responsive behavior for different devices
   });
 

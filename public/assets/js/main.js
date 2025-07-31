@@ -8,6 +8,7 @@ import { hexDecode, hexEncode } from "./admin/use-case/Hex.js";
 import FileManager from "./file-manager/FileManager.js";
 import { areUrisEqual } from "./admin/use-case/Url.js";
 import { replacePlaceholders } from "./admin/use-case/Text.js";
+import { getNavbarHeight } from "./admin/use-case/Dimens.js";
 
 // ============================================================================
 // Bootstrap Functions
@@ -41,6 +42,10 @@ function fileManager() {
 
 function textReplacePlaceholders(str, replacements) {
   return replacePlaceholders(str, replacements);
+}
+
+function dimensGetNavbarHeight() {
+  return getNavbarHeight();
 }
 
 // ============================================================================
@@ -94,6 +99,10 @@ if (typeof window !== "undefined") {
         ...window.hyper?.util?.hex,
         encode: hexEncode,
         decode: hexDecode,
+      },
+      dimens: {
+        ...window.hyper?.util?.dimens,
+        navbarHeight: dimensGetNavbarHeight(),
       },
     },
   };

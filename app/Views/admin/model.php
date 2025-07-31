@@ -47,5 +47,5 @@
     }
 </script>
 
-<script type="text/javascript" src="<?= base_url('assets/App/admin/model.js') ?>"></script>
+<script type="module" src="<?= base_url('assets/App/admin/model.js') ?>"></script>
 <?= $this->endSection() ?>

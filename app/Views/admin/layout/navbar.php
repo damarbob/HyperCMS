@@ -5,7 +5,7 @@ use Config\Hyper;
 helper('hyper_type_checking');
 ?>
 <!-- Navbar -->
-<nav class="navbar has-shadow py-3" role="navigation" aria-label="navbar" style="position: sticky; top: 0;">
+<nav id="navbar" class="navbar has-shadow py-3" role="navigation" aria-label="navbar" style="position: sticky; top: 0;">
     <div class="navbar-brand">
         <div class="navbar-item">
             <!-- Sidebar toggle button -->
