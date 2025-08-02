@@ -1,0 +1,14 @@
+{
+  "dependencies": {
+    "datatables.net-bm": "^2.3.2",
+    "datatables.net-buttons-bm": "^3.2.4",
+    "datatables.net-colreorder-bm": "^2.1.1",
+    "datatables.net-fixedheader-bm": "^4.0.3",
+    "datatables.net-responsive-bm": "^3.0.5",
+    "datatables.net-select-bm": "^3.0.1",
+    "jquery": "^3.7.1",
+    "jszip": "^3.10.1",
+    "pdfmake": "^0.2.20",
+    "tinymce": "^8.0.1"
+  }
+}
