@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
+use Config\Database;
 use Throwable;
 
 /**
@@ -13,22 +14,16 @@ class Setup extends BaseCommand
 {
     protected $group = 'Hyper';
     protected $name = 'hyper:setup';
-    protected $description = "Setup application environment, database, migrations, and assets.";
+    protected $description = "Initial setup for Hyper CMS application.";
 
     protected $usage = 'hyper:setup';
 
+    protected $envPath = ROOTPATH . '.env';
+
     public function run(array $params)
     {
-        // Create .env file
-        $createEnvFile = $this->createEnvFile();
-
-        // Configure database settings if .env was created
-        if ($createEnvFile) {
-            $dbConfig = $this->configureDatabase();
-
-            // Verify database connection
-            $this->verifyDatabase($dbConfig);
-        }
+        // Verify database connection
+        $this->verifyDatabase();
 
         // Configure user registration
         $this->configureRegistration();
@@ -43,125 +38,27 @@ class Setup extends BaseCommand
         $this->startServer();
     }
 
-    protected function createEnvFile()
-    {
-        $envPath = ROOTPATH . '.env';
-        $sourcePath = ROOTPATH . 'env';
-
-        if (!file_exists($sourcePath)) {
-            CLI::error('Source env file not found at: ' . $sourcePath);
-            exit(1);
-        }
-
-        if (!file_exists($envPath)) {
-            copy($sourcePath, $envPath);
-            CLI::write('Created .env file from env', 'green');
-        } else {
-            CLI::write('.env file already exists cannot create', 'yellow');
-            CLI::write('You can manually edit it at: ' . $envPath, 'yellow');
-            return false;
-        }
-
-        return true;
-    }
-
-    protected function configureDatabase(): array
-    {
-        $configs = [
-            'required' => [
-                'database.default.hostname' => ['prompt' => 'Database hostname', 'default' => 'localhost'],
-                'database.default.database' => ['prompt' => 'Database name', 'default' => 'hyper'],
-                'database.default.username' => ['prompt' => 'Database username', 'default' => 'root'],
-                'database.default.password' => ['prompt' => 'Database password', 'default' => 'root', 'secret' => true],
-            ],
-            'optional' => [
-                'database.default.DBDriver' => ['prompt' => 'Database driver', 'default' => 'MySQLi'],
-                'database.default.DBPrefix' => ['prompt' => 'Table prefix (leave blank for none)', 'default' => ''],
-                'database.default.port' => ['prompt' => 'Database port', 'default' => '3306'],
-            ]
-        ];
-
-        $envSettings = [];
-
-        foreach ($configs as $type => $items) {
-            CLI::newLine();
-            CLI::write(strtoupper($type . ' DATABASE SETTINGS'), 'white', 'blue');
-
-            foreach ($items as $key => $opts) {
-                $default = $opts['default'];
-
-                if (isset($opts['secret'])) {
-                    // Corrected secret input handling
-                    // $value = CLI::prompt($opts['prompt'], $default, ['mask' => '*']);
-                    $value = CLI::prompt($opts['prompt'], $default);
-                } else {
-                    $value = CLI::prompt($opts['prompt'], $default);
-                }
-
-                $envSettings[$key] = $value;
-                $this->updateEnvValue($key, $value);
-            }
-        }
-
-        return $envSettings;
-    }
-
-    protected function verifyDatabase(array $dbConfig)
+    protected function verifyDatabase()
     {
         CLI::newLine();
         CLI::write('Verifying database connection...', 'yellow');
 
-        // Prepare normalized config
-        $config = [
-            'hostname' => $dbConfig['database.default.hostname'],
-            'database' => $dbConfig['database.default.database'],
-            'username' => $dbConfig['database.default.username'],
-            'password' => $dbConfig['database.default.password'],
-            'DBDriver' => $dbConfig['database.default.DBDriver'] ?? 'MySQLi',
-            // 'charset'  => 'utf8mb4',
-            'port'     => is_numeric($dbConfig['database.default.port'] ?? null)
-                ? (int)$dbConfig['database.default.port']
-                : 3306,
-        ];
-
         try {
-            // Create connection directly without anonymous class
-            $customConfig = new \Config\Database();
-            $customConfig->default = $config;
-
-            $db = \Config\Database::connect($config);
+            // Attempt to connect to the database using the default group
+            $db = Database::connect();
             $db->reconnect();
 
             CLI::write('✓ Database connection successful!', 'green');
             $db->close();
             return;
         } catch (Throwable $e) {
-            // Create masked credentials for display
-            $displayConfig = $config;
-            $displayConfig['password'] = '******';
-
-            CLI::error('Database connection failed with configuration:');
-            CLI::print(json_encode($displayConfig, JSON_PRETTY_PRINT));
             CLI::error('Error message: ' . $e->getMessage());
 
-            $this->updateDatabaseCredentials();
+            CLI::error('Setup cannot continue without database connection.');
+            CLI::write('You can manually edit it at: ' . $this->envPath, 'yellow');
+            CLI::write('Restart setup later with: php spark hyper:setup', 'yellow');
+            exit(1);
         }
-    }
-
-    protected function updateDatabaseCredentials()
-    {
-        CLI::newLine();
-        $shouldUpdate = CLI::prompt('Update database settings?', ['yes', 'no']);
-
-        if ($shouldUpdate === 'yes') {
-            $dbConfig = $this->configureDatabase();
-            $this->verifyDatabase($dbConfig);
-            return;
-        }
-
-        CLI::error('Setup cannot continue without database connection');
-        CLI::write('Restart setup later with: php spark hyper:setup', 'yellow');
-        exit(1);
     }
 
     protected function configureRegistration()
