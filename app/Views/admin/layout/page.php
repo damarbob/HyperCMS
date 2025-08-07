@@ -374,9 +374,6 @@ $content = $this->renderSection('content');
         tippy('[data-tippy-content]');
     </script>
 
-    <!-- TinyMCE -->
-    <script src="<?= base_url('assets/js/vendor/tinymce/tinymce.min.js') ?>"></script>
-
     <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

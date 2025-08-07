@@ -78,9 +78,6 @@
 
     <!-- Dependencies -->
 
-    <!-- TinyMCE -->
-    <script src="<?= base_url('assets/js/vendor/tinymce/tinymce.min.js') ?>"></script>
-
     <!-- sweetalert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
