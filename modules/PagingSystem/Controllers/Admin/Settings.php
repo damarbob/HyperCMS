@@ -124,6 +124,9 @@ class Settings extends AdminController
                             "type" => "textarea",
                             "className" => "hyper-code-field",
                             "helper" => "Write your part's HTML code here or use Editor.",
+                            "data" => [
+                                "language" => "html",
+                            ]
                         ],
                         [
                             "id" => "hyper_css",
@@ -131,20 +134,29 @@ class Settings extends AdminController
                             "type" => "textarea",
                             "className" => "hyper-code-field",
                             "helper" => "Write your part's CSS code here or use Editor.",
+                            "data" => [
+                                "language" => "css",
+                            ]
                         ],
                         [
                             "id" => "hyper_component_elements",
                             "label" => "Component elements",
-                            "type" => "hidden",
+                            "type" => "textarea",
                             "className" => "hyper-code-field",
                             "helper" => "Will be filled automatically by the <b>Editor</b>.",
+                            "data" => [
+                                "language" => "json",
+                            ]
                         ],
                         [
                             "id" => "hyper_page_project_data",
                             "label" => "Project data",
-                            "type" => "hidden",
+                            "type" => "textarea",
                             "className" => "hyper-code-field",
                             "helper" => "Will be filled automatically by the <b>Editor</b>.",
+                            "data" => [
+                                "language" => "json",
+                            ]
                         ],
                     ]),
                 ],
