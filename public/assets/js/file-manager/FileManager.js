@@ -30,7 +30,7 @@ export default class FileManager {
 
   #downloadFile(path) {
     window.location.href =
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/download/"}` +
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/download"}` +
       encodeURIComponent(window.hyper.util.hex.encode(path));
   }
 
@@ -41,9 +41,7 @@ export default class FileManager {
     };
 
     fetch(
-      `${
-        window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard/"
-      }`,
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard"}`,
       {
         method: "POST",
         headers: {
@@ -76,7 +74,7 @@ export default class FileManager {
   }
 
   pasteFiles() {
-    fetch(`${window.hyper.config.baseUrl + "admin/api/file-manager/paste/"}`, {
+    fetch(`${window.hyper.config.baseUrl + "admin/api/file-manager/paste"}`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -609,8 +607,7 @@ export default class FileManager {
           }
           return fetch(
             `${
-              window.hyper.config.baseUrl +
-              "admin/api/file-manager/create-file/"
+              window.hyper.config.baseUrl + "admin/api/file-manager/create-file"
             }`,
             {
               method: "POST",
@@ -669,7 +666,7 @@ export default class FileManager {
           return fetch(
             `${
               window.hyper.config.baseUrl +
-              "admin/api/file-manager/create-folder/"
+              "admin/api/file-manager/create-folder"
             }`,
             {
               method: "POST",
@@ -729,7 +726,7 @@ export default class FileManager {
             return;
           }
           return fetch(
-            `${window.hyper.config.baseUrl + "admin/api/file-manager/rename/"}`,
+            `${window.hyper.config.baseUrl + "admin/api/file-manager/rename"}`,
             {
               method: "POST",
               headers: {
@@ -824,7 +821,7 @@ export default class FileManager {
 
     const updatedContent = this.fileEditor.value;
     fetch(
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/save-file/"}`,
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/save-file"}`,
       {
         method: "POST",
         headers: {
@@ -881,7 +878,7 @@ export default class FileManager {
           fetch(
             `${
               window.hyper.config.baseUrl +
-              "admin/api/file-manager/delete-files/"
+              "admin/api/file-manager/delete-files"
             }`,
             {
               method: "POST",
@@ -943,7 +940,7 @@ export default class FileManager {
     /* End of UI */
 
     fetch(
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/compress/"}`,
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/compress"}`,
       {
         method: "POST",
         headers: {
@@ -995,19 +992,16 @@ export default class FileManager {
     }
     /* End of UI */
 
-    fetch(
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/extract/"}`,
-      {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
-        },
-        body: JSON.stringify({
-          path: selectedFiles[0],
-        }),
-      }
-    )
+    fetch(`${window.hyper.config.baseUrl + "admin/api/file-manager/extract"}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        [window.hyper.config.csrfHeader]: window.hyper.config.csrfHash,
+      },
+      body: JSON.stringify({
+        path: selectedFiles[0],
+      }),
+    })
       .then((response) => response.json())
       .then((data) => {
         /* UI */
@@ -1052,9 +1046,7 @@ export default class FileManager {
 
   #setClipboard(files, action) {
     fetch(
-      `${
-        window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard/"
-      }`,
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/set-clipboard"}`,
       {
         method: "POST",
         headers: {

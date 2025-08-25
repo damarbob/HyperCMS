@@ -56,7 +56,7 @@ class FileManager extends ApiController
     public function __construct()
     {
         /** @var \Config\FileManager */
-        $fileManagerConfig = config('fileManager');
+        $fileManagerConfig = config('FileManager');
 
         if (ENVIRONMENT === 'production') {
             $this->baseDir = $fileManagerConfig->productionPath;

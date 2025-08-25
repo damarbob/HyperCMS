@@ -221,5 +221,6 @@
 <?= $this->endSection() ?>
 
 <?= $this->section('footer') ?>
-<script type="module" src="<?= base_url('assets/App/admin/file_manager.js') ?>"></script>
+<!-- TODO: Convert to module -->
+<script type="text/javascript" src="<?= base_url('assets/App/admin/file_manager.js') ?>"></script>
 <?= $this->endSection() ?>
