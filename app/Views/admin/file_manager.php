@@ -182,7 +182,7 @@
                 <span id="viewModalLabel"><?= lang('Admin.title') ?></span>
                 <span id="loaderModal" class="loader is-small ml-2 mr-2" style="display: none;"></span>
             </p>
-            <button class="delete" aria-label="close" data-dismiss="modal"></button>
+            <button class="delete" aria-label="close"></button>
         </header>
         <section class="modal-card-body">
             <div id="viewModalKonten">...</div>
@@ -192,7 +192,7 @@
         <footer class="modal-card-foot is-justify-content-space-between">
 
             <!-- Cancel button -->
-            <button class="button is-light" data-dismiss="modal">
+            <button class="button is-light dismiss">
                 <span class="icon">
                     <i class="fas fa-chevron-left"></i>
                 </span>
@@ -200,7 +200,7 @@
             </button>
 
             <!-- Select button -->
-            <button class="button is-primary is-in-iframe" onclick="confirmCurrentFile()">
+            <button class="button is-primary is-in-iframe dismiss" onclick="confirmCurrentFile()">
                 <span class="icon">
                     <i class="fas fa-check"></i>
                 </span>

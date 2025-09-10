@@ -523,7 +523,7 @@ $content = $this->renderSection('content');
             });
 
             // Close modals: Attach click events to elements that should close the modal.
-            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button') || []).forEach(($close) => {
+            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button.dismiss') || []).forEach(($close) => {
                 const $target = $close.closest('.modal');
 
                 $close.addEventListener('click', () => {
