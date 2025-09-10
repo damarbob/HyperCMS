@@ -115,7 +115,7 @@ export default class FileManager {
       this.monaco.classList.add("is-hidden");
     }
 
-    this.saveButton.onclick = function () {
+    this.saveButton.onclick = () => {
       this.saveFile(path);
     };
 

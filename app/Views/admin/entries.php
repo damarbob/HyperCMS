@@ -58,7 +58,7 @@ helper('hyper_text');
         </section>
         <footer class="modal-card-foot">
             <div class="buttons">
-                <button class="button"><?= lang('Admin.cancel') ?></button>
+                <button class="button dismiss"><?= lang('Admin.cancel') ?></button>
             </div>
         </footer>
     </div>
@@ -104,7 +104,7 @@ helper('hyper_text');
             </div>
         </section>
         <footer class="modal-card-foot">
-            <button type="button" class="button"><?= lang('Admin.cancel') ?></button>
+            <button type="button" class="button dismiss"><?= lang('Admin.cancel') ?></button>
         </footer>
     </div>
 </div>

@@ -73,7 +73,7 @@
                     <!-- Submit -->
                     <button type="submit" class="button is-primary"><?= lang('Admin.save') ?></button>
                     <!-- Cancel -->
-                    <button type="button" class="button"><?= lang('Admin.cancel') ?></button>
+                    <button type="button" class="button dismiss"><?= lang('Admin.cancel') ?></button>
                 </div>
             </footer>
         </form>
