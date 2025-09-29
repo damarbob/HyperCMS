@@ -283,6 +283,10 @@ var options = {
     });
   },
 
+  initComplete: function (settings, json) {
+    toggleTrashView(); // Initialize the trash view based on the default value
+  },
+
   // Additional DataTable plugins
   colReorder: true,
   // Keep header fixed as we scroll
@@ -315,8 +319,6 @@ if (locale !== "en") {
 
 // Initialize our DataTable (assuming our table has the ID "hyperTable")
 var hyperTable = new DataTable("#hyperTable", options);
-
-toggleTrashView(); // Initialize the trash view based on the default value
 
 /* End of init */
 

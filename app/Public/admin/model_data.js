@@ -204,6 +204,10 @@ var options = {
     });
   },
 
+  initComplete: function (settings, json) {
+    toggleTrashView(); // Initialize the trash view based on the default value
+  },
+
   // Enable additional DataTables plugins
   colReorder: true, // Allow column reordering
   // Keep header fixed as we scroll
@@ -242,8 +246,6 @@ if (lang !== "en") {
 /* Init */
 
 var hyperTable = new DataTable("#hyperTable", options);
-
-toggleTrashView(); // Initialize the trash view based on the default value
 
 /* End of init */
 
