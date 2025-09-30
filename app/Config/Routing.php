@@ -147,7 +147,7 @@ class Routing extends BaseRouting
     public function __construct()
     {
         /** @var \Config\Hyper */
-        $hyper = config('hyper');
+        $hyper = config('Hyper');
 
         // Collect dev modules first
         foreach ($hyper->getActiveDevModules() as $module) {
