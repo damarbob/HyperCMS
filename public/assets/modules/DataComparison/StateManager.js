@@ -286,6 +286,8 @@ export class StateManager {
         } else {
           try {
             parsedStates = JSON.parse(response.success);
+
+            // If parsedStates is not an object or is empty
             if (Object.keys(parsedStates).length === 0) {
               parseFailed = true;
             }
@@ -296,11 +298,8 @@ export class StateManager {
         }
         if (parseFailed) {
           if (this.comparisonTable.hConfig.environment !== "production") {
-            console.log("Falling back to localStorage for saved states.");
+            console.error("Falling back to localStorage for saved states.");
           }
-
-          // Show error message
-          window.hyper.factory.swal.error(this.lang.failedToFetchStates);
 
           this.loadStateList();
           onSuccess(this.savedStates);
