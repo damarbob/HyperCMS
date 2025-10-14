@@ -18,10 +18,14 @@ class Setup extends BaseCommand
 
     protected $usage = 'hyper:setup';
 
+    protected $docker = false; // Flag to indicate if running in Docker mode
+
     protected $envPath = ROOTPATH . '.env';
 
     public function run(array $params)
     {
+        $this->docker = array_key_exists('docker', $params) || CLI::getOption('docker') !== null;
+
         // Verify database connection
         $this->verifyDatabase();
 
@@ -64,7 +68,14 @@ class Setup extends BaseCommand
     protected function configureRegistration()
     {
         CLI::newLine();
-        $allow = CLI::prompt('Allow user registration? (yes|no)', 'yes');
+
+        if (!$this->docker) {
+            $allow = CLI::prompt('Allow user registration? (yes|no)', 'yes');
+        } else {
+            $allow = 'yes';
+            CLI::write('Docker mode detected, setting allowRegistration to yes', 'yellow');
+        }
+
         $value = (strtolower($allow) === 'yes') ? 'true' : 'false';
 
         $this->updateEnvValue('auth.allowRegistration', $value);
@@ -121,7 +132,13 @@ class Setup extends BaseCommand
     protected function startServer()
     {
         CLI::newLine(2);
-        $start = CLI::prompt('Start development server now?', ['yes', 'no']);
+
+        if (!$this->docker) {
+            $start = CLI::prompt('Start development server now?', ['yes', 'no']);
+        } else {
+            $start = 'no';
+            CLI::write('Docker mode detected, skipping server start prompt', 'yellow');
+        }
 
         if (strtolower($start) === 'yes') {
             CLI::write('Starting development server...', 'yellow');
