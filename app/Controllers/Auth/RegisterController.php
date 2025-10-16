@@ -59,6 +59,11 @@ class RegisterController extends ShieldRegisterController
         $newUserId = $users->getInsertID();         // The auto-increment PK
         $user      = $users->findById($newUserId);  // Full user entity
 
+        // If we can’t find the user, something went wrong.
+        if ($user === null) {
+            return $response;
+        }
+
         // --------------------------------------------------
         // 4) Determine which group to assign:
         //    – If no users existed, this is the first → “superadmin”
