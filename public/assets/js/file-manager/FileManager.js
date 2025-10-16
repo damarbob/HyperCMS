@@ -121,9 +121,11 @@ export default class FileManager {
 
     const fileName = path.split("/").pop(); // Get file extension
     const fileExtension = path.split(".").pop().toLowerCase(); // Get file extension
-    const imageUrl =
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/view-file/"}` +
-      encodeURIComponent(window.hyper.util.hex.encode(path));
+    const imageUrl = `${
+      window.hyper.config.baseUrl
+    }admin/api/file-manager/view-file${
+      path ? "/" + encodeURIComponent(window.hyper.util.hex.encode(path)) : ""
+    }`;
 
     // UI
     const viewModalKonten = this.viewModalKonten;
@@ -350,8 +352,9 @@ export default class FileManager {
     }
 
     fetch(
-      `${window.hyper.config.baseUrl + "admin/api/file-manager/list-files/"}` +
-        encodeURIComponent(window.hyper.util.hex.encode(path))
+      `${window.hyper.config.baseUrl + "admin/api/file-manager/list-files"}${
+        path ? "/" + encodeURIComponent(window.hyper.util.hex.encode(path)) : ""
+      }`
     )
       .then(async (response) => {
         if (!response.ok) {
