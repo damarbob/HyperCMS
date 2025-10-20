@@ -1,0 +1,62 @@
+services:
+  # PHP Application
+  app:
+    build: .
+    ports:
+      - "80:8080"
+    depends_on:
+      - db
+    env_file:
+      - .env
+    volumes:
+      # Only mount writable directory for logs, cache, and uploads
+      - ./writable/cache:/var/www/html/writable/cache
+      - ./writable/logs:/var/www/html/writable/logs
+      - ./writable/uploads:/var/www/html/writable/uploads
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f ${HYPER_SERVICE_URL} || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 512M
+        reservations:
+          memory: 256M
+
+  # MySQL Database
+  db:
+    image: mariadb:10.4.32
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${database_default_database}
+      MYSQL_USER: ${database_default_username}
+      MYSQL_PASSWORD: ${database_default_password}
+    volumes:
+      # Persist database data
+      - db_data:/var/lib/mysql
+      # Initial database setup script
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -u ${database_default_username} -p${database_default_password} || exit 1",
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+volumes:
+  db_data:

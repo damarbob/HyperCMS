@@ -16,6 +16,25 @@
 
 # CI_ENVIRONMENT = production
 
+# If your request requires a long timeout, change this setting.
+# CURLOPT_TIMEOUT = 120
+
+#--------------------------------------------------------------------
+# HYPER CMS
+#--------------------------------------------------------------------
+
+# Your app name, e.g., Hyper CMS.
+# hyper.appName = ''
+# Your app version, e.g., 1.0.0.
+# hyper.appVersion = ''
+
+# hyper.activeModules = 'Voltic'
+# hyper.safeMode = false
+
+# File Manager
+# fileManager.productionPath = '{FCPATH}uploads'
+# fileManager.nonProductionPath = '{ROOTPATH}'
+
 #--------------------------------------------------------------------
 # APP
 #--------------------------------------------------------------------
@@ -23,6 +42,9 @@
 # app.baseURL = ''
 # If you have trouble with `.`, you could also use `_`.
 # app_baseURL = ''
+
+# app.defaultLocale = en
+
 # app.forceGlobalSecureRequests = false
 # app.CSPEnabled = false
 
@@ -30,13 +52,15 @@
 # DATABASE
 #--------------------------------------------------------------------
 
-# database.default.hostname = localhost
-# database.default.database = ci4
-# database.default.username = root
-# database.default.password = root
-# database.default.DBDriver = MySQLi
-# database.default.DBPrefix =
-# database.default.port = 3306
+# If you use Docker, use underscores (_) in variable names instead of periods (.).
+# The following variables are used by Docker to build the image.
+# database_default_hostname = localhost
+# database_default_database = ci4
+# database_default_username = root
+# database_default_password = root
+# database_default_DBDriver = MySQLi
+# database_default_DBPrefix =
+# database_default_port = 3306
 
 # If you use MySQLi as tests, first update the values of Config\Database::$tests.
 # database.tests.hostname = localhost
@@ -62,8 +86,23 @@
 # session.driver = 'CodeIgniter\Session\Handlers\FileHandler'
 # session.savePath = null
 
+# If you run multiple instances on the same domain, 
+# ensure each instance uses a unique cookie name 
+# to avoid session conflicts.
+# session_cookieName = 'hyper_session'
+
 #--------------------------------------------------------------------
 # LOGGER
 #--------------------------------------------------------------------
 
 # logger.threshold = 4
+
+#--------------------------------------------------------------------
+# DOCKER
+#--------------------------------------------------------------------
+
+# The following variables are used by Docker to build the image.
+# If you run Hyper on a different port or address, change this setting.
+# HYPER_SERVICE_URL = 'http://localhost:8080'
+# Make sure to create a strong password for the root account and update it regularly.
+# MYSQL_ROOT_PASSWORD = hyper_root_12345

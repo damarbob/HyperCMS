@@ -59,6 +59,6 @@ For donation inquiries, contribution guidelines, and to report security issues, 
 
 ---
 
-© 2025 PT. Konstelasi Teknologi Internasional and Damar Syah Maulana. All rights reserved.
+© 2025 PT. Konstelasi Teknologi Internasional. All rights reserved.
 
 Licensed under the Apache License, Version 2.0. See [LICENSE](./LICENSE) for details.

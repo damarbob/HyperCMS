@@ -1,0 +1,42 @@
+# -------------------------
+# Security & Build Optimization
+# -------------------------
+.git/
+.gitignore
+.dockerignore
+README.md
+
+# Development dependencies (recreated during build)
+node_modules/
+vendor/
+public/assets/vendor/
+
+# Runtime data (mounted as volumes)
+writable/cache/*
+writable/logs/* 
+writable/uploads/*
+
+# IDE & OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Testing & Development
+tests/coverage*
+phpunit
+
+# Ignore the first-level .hyper-dev folder, but not any nested ones
+.hyper-dev/
+
+# Common exclusions
+.env*
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.cache/
+.nyc_output/
+coverage/
+.env.local
+.env.*.local

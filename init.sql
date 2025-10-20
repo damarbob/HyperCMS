@@ -1,0 +1,2 @@
+-- Write database initialization script here
+-- For example, create a table, insert initial data, adjust permissions, etc.
