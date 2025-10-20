@@ -10,12 +10,19 @@ class DataComparison extends AdminController
 
     public function index()
     {
+
+        /** @var \DataComparison\Config\DataComparison $config */
+        $config = config('DataComparison');
+
+        // Get default data sources from config
+        $defaultDataSources = $config->defaultDataSources ?: '[]';
+
         /** @var string|null $json */
         $json = service('settings')
             ->get('DataComparison.dataSources', 'user:' . user_id());
 
-        // Decode or start with empty array
-        $dataSources = json_decode($json ?: '[]', true);
+        // Decode or start with default data source
+        $dataSources = json_decode($json ?: $defaultDataSources, true);
 
         // Rewrite any relative URLs
         foreach ($dataSources as &$src) {

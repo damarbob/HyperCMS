@@ -10,9 +10,31 @@ class Settings extends AdminController
 
     public function index()
     {
+        /** @var \DataComparison\Config\DataComparison $config */
+        $config = config('DataComparison');
+
+        // Read raw JSON from config
+        $raw = trim($config->defaultDataSources ?? '');
+
+        // Fallback empty array if no value provided
+        if ($raw === '') {
+            $defaultDataSources = json_encode([], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        } else {
+            $decoded = json_decode($raw, true);
+
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                // Log invalid JSON and fall back to empty array
+                log_message('warning', 'Invalid JSON in defaultDataSources: ' . json_last_error_msg());
+                $defaultDataSources = json_encode([], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            } else {
+                // Re-encode with pretty print
+                $defaultDataSources = json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+            }
+        }
+
         $this->data['title'] = lang('Dc.moduleName') . ' ' . lang('Admin.settings');
 
-        $this->data['dataSources'] = service('settings')->get('DataComparison.dataSources', 'user:' . user_id()) ?: json_encode([]);
+        $this->data['dataSources'] = service('settings')->get('DataComparison.dataSources', 'user:' . user_id()) ?: $defaultDataSources;
 
         return render('\DataComparison\Views\settings', $this->data);
     }
