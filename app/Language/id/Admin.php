@@ -29,7 +29,7 @@ return [
     'settings' => 'Pengaturan',
 
     'new' => 'Baru',
-    'newx' => 'Baru {x}',
+    'newx' => '{x} baru',
     'edit' => 'Edit',
     'editx' => 'Edit {x}',
     'delete' => 'Hapus',
