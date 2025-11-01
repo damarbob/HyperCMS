@@ -502,33 +502,48 @@ $content = $this->renderSection('content');
                 sidebar.classList.add('transition-width');
             }, 1); // A short delay to apply the transition after the initial layout.
         }
+    </script>
+
+    <script type="text/javascript">
 
         // ==========================================================
-        // DOMContentLoaded: Set Up Event Listeners After DOM Parsing
+        // Set Up Event Listeners After DOM Parsing
         // ==========================================================
-
         document.addEventListener('DOMContentLoaded', () => {
+
             // -------------------------------
             // Modal Triggers & Closes
             // -------------------------------
 
-            // Open modals: Attach a click event for every element with the .js-modal-trigger class.
-            (document.querySelectorAll('.js-modal-trigger') || []).forEach(($trigger) => {
-                const modal = $trigger.dataset.target;
-                const $target = document.getElementById(modal);
+            // This single listener handles all modal triggers (open and close)
+            document.addEventListener('click', function(event) {
 
-                $trigger.addEventListener('click', () => {
-                    openModal($target);
-                });
-            });
+                // Logic to open a modal
+                // Check if the clicked element (or its parent) is an open trigger
+                const $openTrigger = event.target.closest('.js-modal-trigger');
 
-            // Close modals: Attach click events to elements that should close the modal.
-            (document.querySelectorAll('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button.dismiss') || []).forEach(($close) => {
-                const $target = $close.closest('.modal');
+                if ($openTrigger) {
+                    const modal = $openTrigger.dataset.target;
+                    const $target = document.getElementById(modal);
 
-                $close.addEventListener('click', () => {
-                    closeModal($target);
-                });
+                    if ($target) {
+                        openModal($target); // Assumes you have an openModal() function
+                    }
+                    return; // Stop processing, we found our action
+                }
+
+                // Logic to close a modal
+                // Check if the clicked element (or its parent) is a close trigger
+                const $closeTrigger = event.target.closest('.modal-background, .modal-close, .modal-card-head .delete, .modal-card-foot .button.dismiss');
+
+                if ($closeTrigger) {
+                    const $target = $closeTrigger.closest('.modal');
+
+                    if ($target) {
+                        closeModal($target); // Assumes you have a closeModal() function
+                    }
+                    return; // Stop processing, we found our action
+                }
             });
 
             // Close all modals on Escape key press.
