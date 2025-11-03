@@ -12,11 +12,13 @@ $routes->group('', ['namespace' => '\PagingSystem\Controllers'], static function
     $routes->get(ENVIRONMENT === 'production' ? '^(?!test|public|auth|api|admin)(.*)$' : '^(?!test|public|auth|api|admin|.hyper-dev)(.*)$', 'Frontend');
 });
 
-$routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filter' => 'group:superadmin,developer'], static function ($routes) {
+$routes->group('admin', ['namespace' => '\PagingSystem\Controllers\Admin', 'filter' => 'group:superadmin,admin,developer'], static function ($routes) {
     $routes->get('editor', 'Editor');
 
     $routes->group('ps', static function ($routes) {
-        $routes->get('entries/(:num)/new', 'Entries::new/$1');
+        $routes->group('entries', ['filter' => 'model-user-group:entries'], static function ($routes) {
+            $routes->get('(:num)/new', 'Entries::new/$1');
+        });
 
         $routes->group('api', ['namespace' => '\PagingSystem\Controllers\Admin\API'], static function ($routes) {
             $routes->group('assets', ['filter' => 'group-not:user'], static function ($routes) {
