@@ -19,6 +19,8 @@ class Entries extends AdminController
 
         $eligibleModelIds = HyperHooks::getInstance()->getState('paging_system_eligible_model_ids');
 
+        // Check if the model ID is eligible for Paging System
+        // If not eligible, redirect to the standard new entry page
         if (empty($eligibleModelIds) || !in_array($modelId, $eligibleModelIds)) {
             // log_message('debug', "Paging System: Model ID $modelId is not eligible for the page editor.");
             return redirect()->to("admin/model/$modelId/new");

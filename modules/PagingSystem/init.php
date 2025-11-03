@@ -45,6 +45,7 @@ HyperHooks::getInstance()->register(hook('Cml.view:entries:edit'), function ($mo
     endif;
 });
 
+// Paging System requires the 'new' link to point to its custom new entry route
 HyperHooks::getInstance()->register(hook('Backend.controller:model:index:data'), function ($data) {
     // Override default links
     $data['links']['new'] = base_url("admin/ps/entries/") . $data['id'] . '/new';
