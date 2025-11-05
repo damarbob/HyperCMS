@@ -7,6 +7,8 @@ use CodeIgniter\Shield\Entities\User;
 
 class Users extends AdminController
 {
+    protected $helpers = ['hyper_url'];
+
     public function index()
     {
         /** @var \Config\AuthGroups */
