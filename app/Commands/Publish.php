@@ -28,10 +28,11 @@ class Publish extends BaseCommand
         CLI::write("{$hyper->appName} {$hyper->appVersion} - Publisher", 'green');
         CLI::write('');
 
-        // 1) Read the options.
-        $force = (bool) (CLI::getOption('force') ?? CLI::getOption('f'));
-        $dev = (bool) (CLI::getOption('dev') ?? CLI::getOption('d'));
-        $list = (bool) (CLI::getOption('list') ?? CLI::getOption('ls'));
+        // Read the options.
+        $force = array_key_exists('f', $params) || array_key_exists('force', $params) || CLI::getOption('f') !== null || CLI::getOption('force') !== null;
+        $prod  = array_key_exists('p', $params) || array_key_exists('prod', $params)  || CLI::getOption('p') !== null  || CLI::getOption('prod') !== null;
+        $dev   = array_key_exists('d', $params) || array_key_exists('dev', $params)   || CLI::getOption('d') !== null   || CLI::getOption('dev') !== null;
+        $list  = array_key_exists('ls', $params) || array_key_exists('list', $params)  || CLI::getOption('ls') !== null || CLI::getOption('list') !== null;
 
         if ($list) {
             $activeModules = array_unique($hyper->getActiveModules());
@@ -61,14 +62,14 @@ class Publish extends BaseCommand
             return;
         }
 
-        CLI::write('Environment: ' . ($dev ? 'development' : ENVIRONMENT));
+        CLI::write('Environment: ' . ($dev ? 'development' : ($prod ? 'production' : ENVIRONMENT)));
         CLI::write('Force overwrite: ' . ($force ? 'Yes' : 'No'));
 
-        // 2) If a module name is provided as the first parameter, use it.
+        // If a module name is provided as the first parameter, use it.
         $moduleParam = isset($params[0]) ? trim($params[0]) : '';
 
-        // 3) Build the list of modules:
-        //    Start with the active modules and active dev modules…
+        // Build the list of modules:
+        // Start with the active modules and active dev modules…
         $modulesList = array_merge(
             $hyper->getActiveModules(),
             $hyper->getActiveDevModules()
@@ -93,7 +94,7 @@ class Publish extends BaseCommand
 
         CLI::write('Modules to publish: ' . implode(', ', $modulesList), 'blue');
 
-        // 4) Loop through each module (or namespace) to publish its assets.
+        // Loop through each module (or namespace) to publish its assets.
         foreach ($modulesList as $module) {
             // Determine the source assets folder.
             if (strcasecmp($module, 'App') === 0) {
@@ -121,7 +122,7 @@ class Publish extends BaseCommand
             $targetPath = FCPATH . 'assets' . DIRECTORY_SEPARATOR;
 
             // If dev option is activated or current environment is not production
-            if ($dev || ENVIRONMENT !== 'production') {
+            if (($dev || ENVIRONMENT !== 'production') && !$prod) {
                 $targetPath .= '.hyper-dev' . DIRECTORY_SEPARATOR;
             }
 
