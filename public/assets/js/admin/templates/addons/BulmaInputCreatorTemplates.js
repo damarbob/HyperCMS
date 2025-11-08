@@ -15,7 +15,7 @@ export const bulmaInputCreatorTemplates = {
                     type="${type}"
                     id="${id}"
                     name="${id}"
-                    class="input ${className}"
+                    class="input${className ? " " + className : ""}"
                     value="${value || ""}"
                     ${required ? "required" : ""}
                     ${
@@ -110,7 +110,7 @@ export const bulmaInputCreatorTemplates = {
       <textarea
         id="${id}"
         name="${id}"
-        class="textarea ${className || ""}"
+        class="textarea${className ? " " + className : ""}"
         ${required ? "required" : ""}
         ${dataAttrs}
       >${value || ""}</textarea>
