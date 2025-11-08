@@ -20,7 +20,7 @@ const defaultTemplates = {
                 id="${id}"
                 name="${id}"
                 value="${value || ""}"
-                class="form-control ${className}"
+                class="form-control${className ? " " + className : ""}"
                 ${required ? "required" : ""}
                 ${options && options.step ? "step='" + options.step + "'" : ""}
                 ${options && options.min ? "min='" + options.min + "'" : ""}
@@ -110,7 +110,7 @@ const defaultTemplates = {
             <textarea
                 id="${id}"
                 name="${id}"
-                class="form-control ${className || ""}"
+                class="form-control${className ? " " + className : ""}}"
                 ${required ? "required" : ""}
                 ${dataAttrs}
             >${value || ""}</textarea>
