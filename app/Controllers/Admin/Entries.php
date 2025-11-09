@@ -82,11 +82,6 @@ class Entries extends AdminController
 
         $model = $this->modelsManager->find($modelId);
 
-        // Validate user group
-        if (!$this->validateUserGroup($model['user_groups'], auth()->user()->getGroups())) {
-            return $this->respond(lang('Auth.notEnoughPrivilege'), success: false);
-        }
-
         // Check if the model does not exist
         if (!$model)
             return $this->respond(lang('Admin.noModelFoundWithIdx', ['x' => $modelId]), success: false);
@@ -127,11 +122,6 @@ class Entries extends AdminController
             return $this->respond(lang('Admin.noEntryFoundWithIdx', ['x' => $id]), success: false);
 
         /* End of entry */
-
-        // Validate user group
-        if (!$this->validateUserGroup($entry['user_groups'], auth()->user()->getGroups())) {
-            return $this->respond(lang('Auth.notEnoughPrivilege'), success: false);
-        }
 
         /* Model */
 
