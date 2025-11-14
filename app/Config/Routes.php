@@ -28,7 +28,7 @@ $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function 
 // Admin routes
 $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static function ($routes) {
     $routes->addRedirect('/', 'admin/dashboard', 301);
-    $routes->get('dashboard', 'Dashboard');
+    $routes->get('dashboard', 'Dashboard', ['as' => 'dashboard']);
 
     // Model
     $routes->group('model', ['filter' => 'model-user-group:model'], static function ($routes) {

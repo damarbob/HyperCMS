@@ -162,7 +162,8 @@ var options = {
                     },
                     error: function (xhr, status, error) {
                       // Handle errors here
-                      window.hyper.factory.swal.error(error);
+                      let message = xhr.responseJSON.error;
+                      window.hyper.factory.swal.error(message);
                     },
                   });
                 }

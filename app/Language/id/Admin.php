@@ -156,6 +156,7 @@ return [
     'thisActionPermanentlyDeleteAllHistorical' => 'Aksi ini akan menghapus semua riwayat untuk entri ini secara permanen, hanya menyimpan versi terbaru.',
 
     'historySuccessfullyCleared' => 'Riwayat berhasil dibersihkan',
+    'noHistoryFound' => 'Tidak ada riwayat ditemukan',
     'noHistoryCleared' => 'Tidak riwayat yang dibersihkan',
 
     // --- File Manager ---

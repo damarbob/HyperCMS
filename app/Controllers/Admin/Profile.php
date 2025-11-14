@@ -18,12 +18,22 @@ class Profile extends AdminController
     {
         $user = auth()->user();
         if (!$user) {
-            return redirect()->back()->with('error', lang('Admin.noUserFound'));
+            return $this->respond(
+                message: lang('Admin.noUserFound'),
+                statusCode: 404, // 404 (Not Found)
+                withInput: false,
+                success: false
+            );
         }
 
         // Check if the provided hash matches the stored hash for the current user
         if (!hash_equals($hash, hash('sha256', auth()->user()->username . auth()->user()->email))) {
-            return redirect()->back()->with('error', lang('Admin.invalidToken'));
+            return $this->respond(
+                message: lang('Admin.invalidToken'),
+                statusCode: 400, // 400 (Bad Request)
+                withInput: false,
+                success: false
+            );
         }
 
         $id = $user->id;
@@ -56,7 +66,11 @@ class Profile extends AdminController
         }
 
         if (!$this->validateData($userData, $validationRules)) {
-            return redirect()->back()->withInput();
+            return $this->respond(
+                message: implode(" ", $this->validator->getErrors()),
+                withInput: true,
+                success: false
+            );
         }
 
         // Get the User Provider (UserModel by default)
@@ -68,9 +82,18 @@ class Profile extends AdminController
         try {
             $users->save($user);
         } catch (DatabaseException $e) {
-            return redirect()->back()->withInput()->with('error', $e->getMessage());
+            return $this->respond(
+                message: $e->getMessage(),
+                statusCode: 500,
+                withInput: true,
+                success: false,
+            );
         }
 
-        return redirect()->to('/admin/profile')->with('success', lang('Admin.profileUpdatedSuccessfully'));
+        return $this->respond(
+            message: lang('Admin.profileUpdatedSuccessfully'),
+            redirectTo: '/admin/profile',
+            withInput: false
+        );;
     }
 }

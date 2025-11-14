@@ -69,7 +69,7 @@ class ModelUserGroupFilter implements FilterInterface
 
         // Redirect to login if not authenticated
         if (!$user) {
-            return redirect()->to(route_to('login'))->with('error', 'Please login');
+            return redirect()->route('login')->with('error', 'Please login');
         }
 
         // Extract filter arguments: [Model Class, ID Segment Index]
@@ -84,7 +84,7 @@ class ModelUserGroupFilter implements FilterInterface
         }
 
         if (empty($route)) {
-            return redirect()->back()->with('error', 'Invalid resource');
+            return redirect()->route('dashboard')->with('error', lang('Filter.invalidResource'));
         }
 
         /** @var \App\Models\ModelsModel */
@@ -105,7 +105,7 @@ class ModelUserGroupFilter implements FilterInterface
 
         if (!$isAllowed) {
             // User does not have permission to access this model.
-            return redirect()->back()
+            return redirect()->route('dashboard')
                 ->with('error', lang('Auth.notEnoughPrivilege'));
         }
     }

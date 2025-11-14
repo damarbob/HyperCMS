@@ -3,6 +3,7 @@
 namespace PagingSystem\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use CodeIgniter\Exceptions\PageNotFoundException;
 
 class Editor extends AdminController
 {
@@ -14,7 +15,9 @@ class Editor extends AdminController
 
         // Return if entry_id is empty
         if (!$data || empty($data['entry_id'])) {
-            return redirect()->back()->with('error', lang('Admin.noEntryFound'));
+            throw PageNotFoundException::forPageNotFound(
+                lang('Admin.noEntryFound')
+            );
         }
         $entryId = $data['entry_id']; // Assign entry id
 
@@ -22,7 +25,9 @@ class Editor extends AdminController
         $entry = $this->entriesManager->find($entryId);
 
         if (empty($entry)) {
-            return redirect()->back()->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $entryId]));
+            throw PageNotFoundException::forPageNotFound(
+                lang('Admin.noEntryFoundWithIdx', ['x' => $entryId])
+            );
         }
 
         // Map entry fields for easier access, e.g., hyper_component_elements, hyper_css, etc.
