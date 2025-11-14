@@ -127,11 +127,11 @@ class EntryData extends AdminController
     {
         // Check if the entry ID is provided.
         if (empty($entryId)) {
-            $errorResponse = ['error' => lang('Admin.noEntryFound')];
-            if ($this->request->isAJAX() || strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false) {
-                return $this->response->setStatusCode(400)->setJSON($errorResponse);
-            }
-            return redirect()->back()->with('error', lang('Admin.noEntryFound'));
+            return $this->respond(
+                message: lang('Admin.noEntryFound'),
+                statusCode: 400,
+                success: false
+            );
         }
 
         // Retrieve the newest record for this entry.
@@ -143,12 +143,14 @@ class EntryData extends AdminController
             ->get()
             ->getRow();
 
+        // Check if a record was found.
         if (empty($newestRecord)) {
-            $errorMessage = lang('Admin.noHistoryFound');
-            if ($this->request->isAJAX() || strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false) {
-                return $this->response->setStatusCode(404)->setJSON(['error' => $errorMessage]);
-            }
-            return redirect()->back()->with('error', $errorMessage);
+            return $this->respond(
+                message: lang('Admin.noHistoryFound'),
+                statusCode: 404,
+                withInput: false, // The original code didn't use withInput()
+                success: false    // This sets the key to 'error'
+            );
         }
 
         // Delete all history records for this entry but exclude the newest one.
@@ -163,11 +165,11 @@ class EntryData extends AdminController
             ? lang('Admin.historySuccessfullyCleared')
             : lang('Admin.noHistoryCleared');
 
-        // Respond as JSON if the request expects JSON, otherwise perform a redirect.
-        if ($this->request->isAJAX() || strpos($this->request->getHeaderLine('Accept'), 'application/json') !== false) {
-            return $this->response->setStatusCode(200)->setJSON(['success' => $message]);
-        }
-
-        return redirect('admin/entries')->with('success', $message);
+        // Using respond(): Respond as JSON if the request expects JSON, otherwise perform a redirect.
+        return $this->respond(
+            message: $message,
+            redirectTo: 'admin/entries',
+            withInput: false
+        );
     }
 }

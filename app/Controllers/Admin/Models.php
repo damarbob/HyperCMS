@@ -128,9 +128,10 @@ class Models extends AdminController
             // Delegate the creation process to the service.
             $modelId = $this->modelsManager->create($validData, $userId);
         } catch (DatabaseException $e) {
-            return redirect()->back()
-                ->withInput()
-                ->with('error', $e->getMessage());
+            return $this->respond(
+                message: $e->getMessage(),
+                success: false
+            );
         }
 
         return redirect('admin/models')

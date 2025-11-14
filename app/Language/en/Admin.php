@@ -156,6 +156,7 @@ return [
     'thisActionPermanentlyDeleteAllHistorical' => 'This action will permanently delete all historical records for this entry, retaining only the most recent version.',
 
     'historySuccessfullyCleared' => 'History successfully cleared',
+    'noHistoryFound' => 'No history found',
     'noHistoryCleared' => 'No history cleared',
 
     // --- File Manager ---
