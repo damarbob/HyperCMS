@@ -78,13 +78,15 @@ class Entries extends AdminController
 
         // Check if the model ID is empty
         if (empty($modelId))
-            return $this->respond(lang('Admin.noModelFound'), success: false);
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noModelFound'));
 
         $model = $this->modelsManager->find($modelId);
 
         // Check if the model does not exist
         if (!$model)
-            return $this->respond(lang('Admin.noModelFoundWithIdx', ['x' => $modelId]), success: false);
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelId]));
 
         $this->data['model'] = $model;
         $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']); // Process data syntax on the model fields
@@ -119,7 +121,8 @@ class Entries extends AdminController
 
         // Check if the entry exists
         if (!$entry)
-            return $this->respond(lang('Admin.noEntryFoundWithIdx', ['x' => $id]), success: false);
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $id]));
 
         /* End of entry */
 
@@ -129,7 +132,8 @@ class Entries extends AdminController
 
         // Check if the model exists
         if (empty($model))
-            return $this->respond(lang('Admin.noModelFoundWithIdx', ['x' => $model['name']]), success: false);
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelId]));
 
         /* End of model */
 

@@ -15,7 +15,8 @@ class Entries extends AdminController
     {
         // Check if the model ID is empty
         if (empty($modelId))
-            return $this->respond(lang('Admin.noModelFound'), success: false);
+            return redirect('admin/entries')
+                ->with('error', lang('Admin.noModelFound'));
 
         $eligibleModelIds = HyperHooks::getInstance()->getState('paging_system_eligible_model_ids');
 

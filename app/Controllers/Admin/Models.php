@@ -66,9 +66,9 @@ class Models extends AdminController
 
         $model = $this->modelsManager->find($id);
 
-        if (empty($model)) {
-            return $this->respond(lang('Admin.modelNotFound'), 'admin/models', 400, success: false);
-        }
+        if (empty($model))
+            return redirect('admin/models')
+                ->with('error', lang('Admin.modelNotFound'));
 
         $this->hooks->register(hook('Backend.view:models:edit'), function () use ($model) {
             return render('admin/partials/models_form', [
