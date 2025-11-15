@@ -65,7 +65,8 @@ class Settings extends AdminController
         // Run setup if necessary
         if ($setup && (!$eligibleModelExists || !$eligibleAssetsModelExists)) {
             $this->setup($eligibleModelExists, $eligibleAssetsModelExists);
-            return $this->respond(lang('PagingSystem.setUpModelsSuccessfully'), base_url("admin/settings/paging-system"));
+            return redirect('admin/settings/paging-system')
+                ->with('success', lang('PagingSystem.setUpModelsSuccessfully'));
         }
 
         $this->data['title'] = lang('PagingSystem.moduleName');
