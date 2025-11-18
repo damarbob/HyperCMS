@@ -102,9 +102,11 @@ abstract class BaseController extends Controller
 
             // Only rotate if the URL has actually changed
             if ($savedCurrent !== $currentUrlWithQuery) {
-                // 1. Move the 'current' to 'previous'
+                // @TODO: Consider expanding to a deeper history stack. 
+                // Unused for now, but may be useful later
+                // Move the 'current' to 'previous'
                 $this->session->set('_history_previous', $savedCurrent);
-                // 2. Set the new 'current'
+                // Set the new 'current'
                 $this->session->set('_history_current', $currentUrlWithQuery);
             }
         }
@@ -163,43 +165,5 @@ abstract class BaseController extends Controller
         }
 
         return $redirect->with($success ? 'success' : 'error', $message);
-    }
-
-    /**
-     * A reliable "Go Back" function that uses server-side session history.
-     *
-     * The fallback will first try to find a named route matching $fallbackRoute.
-     * If not found, it will treat $fallbackRoute as a standard URI path.
-     *
-     * @param string $fallbackRoute Named route or URI path (e.g., 'dashboard' or '/')
-     * @return \CodeIgniter\HTTP\RedirectResponse
-     */
-    protected function redirectBack(string $fallbackRoute = '/'): \CodeIgniter\HTTP\RedirectResponse
-    {
-        // Get the page visited BEFORE the current one
-        $previousUrl = $this->session->get('_history_previous');
-
-        // Get the *current* full URL with query to prevent self-loops
-        $currentUrlWithQuery = (string) $this->request->getUri()->setFragment('');
-
-        // Safety check:
-        // - If no history exists
-        // - OR if the previous URL is the same as the current one (loop protection)
-        if (empty($previousUrl) || $previousUrl === $currentUrlWithQuery) {
-
-            $fallbackUrl = '';
-            try {
-                // Try to treat $fallbackRoute as a NAMED route first
-                $fallbackUrl = route_to($fallbackRoute);
-            } catch (\CodeIgniter\Router\Exceptions\RouterException $e) {
-                // It's not a named route, so treat it as a standard URI path
-                $fallbackUrl = site_url($fallbackRoute);
-            }
-
-            return redirect()->to($fallbackUrl);
-        }
-
-        // We have a valid previous URL, so go there
-        return redirect()->to($previousUrl);
     }
 }
