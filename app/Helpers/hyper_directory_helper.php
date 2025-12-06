@@ -1,4 +1,5 @@
 <?php
+// hyper_directory_helper.php
 
 if (!function_exists('validate_directory')) {
     /**

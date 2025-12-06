@@ -1,4 +1,5 @@
 <?php
+// hyper_helper.php
 
 use App\Hyper\HyperHook;
 use Masterminds\HTML5;

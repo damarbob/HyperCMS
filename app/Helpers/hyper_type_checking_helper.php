@@ -1,4 +1,5 @@
 <?php
+// hyper_type_checking_helper.php
 
 if (!function_exists('isIntegerString')) {
     function isIntegerString($str) {
