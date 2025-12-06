@@ -1,4 +1,5 @@
 <?php
+// hyper_hex_helper.php
 
 /**
  * Hex Helper

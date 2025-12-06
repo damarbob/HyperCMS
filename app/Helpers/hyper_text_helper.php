@@ -1,4 +1,5 @@
 <?php
+// hyper_text_helper.php
 
 if (!function_exists('replace_placeholders')) {
     /**

@@ -1,4 +1,5 @@
 <?php
+// hyper_url_helper.php
 
 /**
  * Returns the URL to a module's published assets.
