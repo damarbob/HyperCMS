@@ -3,7 +3,7 @@
 namespace PagingSystem\Controllers\Admin;
 
 use App\Controllers\AdminController;
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 use App\Services\ModelsManager;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;

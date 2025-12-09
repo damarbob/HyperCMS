@@ -4,7 +4,7 @@ helper('hyper_url');
 
 /** @var \Config\Hyper */
 $hyperConfig = config('hyper');
-/** @var \App\Services\HyperHooks */
+/** @var \StarCore\Service\HyperHooks */
 $hooks = service('hooks');
 ?>
 <!-- Sidebar Column -->

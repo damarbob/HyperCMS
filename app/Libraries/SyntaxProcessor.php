@@ -2,9 +2,9 @@
 
 namespace App\Libraries;
 
-use App\Hyper\HyperHook;
 use CodeIgniter\Database\BaseConnection;
 use Config\Database;
+use StarCore\Star\HyperHook;
 
 class SyntaxProcessor
 {
