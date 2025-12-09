@@ -3,7 +3,7 @@
 namespace PagingSystem\Controllers;
 
 use App\Controllers\BaseController;
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 class Frontend extends BaseController
 {

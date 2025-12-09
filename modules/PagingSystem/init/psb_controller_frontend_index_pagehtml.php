@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 use Masterminds\HTML5;
 
 // Page HTML data filter on Frontend controller

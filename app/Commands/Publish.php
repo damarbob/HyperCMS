@@ -25,6 +25,9 @@ class Publish extends BaseCommand
         /** @var \Config\Hyper $hyper */
         $hyper = config('Hyper');
 
+        /** @var \StarCore\Config\Star $star */
+        $star = config('Star');
+
         CLI::write("{$hyper->appName} {$hyper->appVersion} - Publisher", 'green');
         CLI::write('');
 
@@ -35,8 +38,8 @@ class Publish extends BaseCommand
         $list  = array_key_exists('ls', $params) || array_key_exists('list', $params)  || CLI::getOption('ls') !== null || CLI::getOption('list') !== null;
 
         if ($list) {
-            $activeModules = array_unique($hyper->getActiveModules());
-            $activeDevModules = array_unique($hyper->getActiveDevModules());
+            $activeModules = array_unique($star->getActiveModules());
+            $activeDevModules = array_unique($star->getActiveDevModules());
 
             CLI::write('Modules: ' . implode(', ', array_merge($activeModules, $activeDevModules)), 'blue');
             CLI::write('');
@@ -71,8 +74,8 @@ class Publish extends BaseCommand
         // Build the list of modules:
         // Start with the active modules and active dev modules…
         $modulesList = array_merge(
-            $hyper->getActiveModules(),
-            $hyper->getActiveDevModules()
+            $star->getActiveModules(),
+            $star->getActiveDevModules()
         );
         // ...and also include the App's namespace.
         $modulesList[] = 'App';
@@ -102,7 +105,7 @@ class Publish extends BaseCommand
                 $assetsSource = APPPATH . 'Public' . DIRECTORY_SEPARATOR;
             } else {
                 // For modules, pick the base folder depending on if the module is active or dev:
-                if (in_array($module, $hyper->getActiveModules(), true)) {
+                if (in_array($module, $star->getActiveModules(), true)) {
                     $moduleBase = MODULES_PATH . $module . DIRECTORY_SEPARATOR;
                 } else {
                     $moduleBase = MODULES_PATH . '.hyper-dev' . DIRECTORY_SEPARATOR . $module . DIRECTORY_SEPARATOR;

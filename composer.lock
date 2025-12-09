@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f812653b8d2a7f0b1e6089b6fcbd219",
+    "content-hash": "8707df7db475f95924e3acd8362a73f8",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -208,6 +208,44 @@
                 "source": "https://github.com/codeigniter4/shield"
             },
             "time": "2024-06-13T08:54:48+00:00"
+        },
+        {
+            "name": "damarbob/starcore",
+            "version": "v0.1.0-alpha.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/damarbob/StarCore.git",
+                "reference": "493433222c8d159ae7fd9245fc6b08640ef4f5fb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/damarbob/StarCore/zipball/493433222c8d159ae7fd9245fc6b08640ef4f5fb",
+                "reference": "493433222c8d159ae7fd9245fc6b08640ef4f5fb",
+                "shasum": ""
+            },
+            "require": {
+                "codeigniter4/framework": "^4.0",
+                "php": "^8.1"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Helpers/star_helper.php"
+                ],
+                "psr-4": {
+                    "StarCore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "The HMVC and Hook Orchestration Kernel for CodeIgniter 4",
+            "support": {
+                "issues": "https://github.com/damarbob/StarCore/issues",
+                "source": "https://github.com/damarbob/StarCore/tree/v0.1.0-alpha.1"
+            },
+            "time": "2025-11-26T15:57:05+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
@@ -2251,7 +2289,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "damarbob/starcore": 15
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 use App\Controllers\API\v1\Model;
 use Masterminds\HTML5;
 

@@ -2,7 +2,7 @@
 
 namespace Modules\Voltic;
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 log_message('info', 'Voltic module initialized');
 
