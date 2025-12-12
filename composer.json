@@ -21,7 +21,7 @@
     "php": "^8.1",
     "codeigniter4/framework": "^4.0",
     "codeigniter4/shield": "^1.1",
-    "damarbob/starcore": "^0.1.0@alpha",
+    "damarbob/starcore": "^0.2.0@alpha",
     "masterminds/html5": "^2.9"
   },
   "require-dev": {
