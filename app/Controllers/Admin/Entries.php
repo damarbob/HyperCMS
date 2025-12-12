@@ -5,7 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\AdminController;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use App\Libraries\SyntaxProcessor;
+use StarDust\Libraries\SyntaxProcessor;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Psr\Log\LoggerInterface;
@@ -48,11 +48,11 @@ class Entries extends AdminController
         // Define action URLs for new, edit, delete, restore, and purge operations
         $this->data['links'] = [
             // The ID placeholder must be separate from the base URL to avoid URL encoding
-            'new'     => base_url('admin/entries') . '/{id}/new',
-            'edit'    => base_url('admin/entries') . '/{modelId}/{id}/edit',
-            'delete'  => base_url('admin/entries/delete'),
+            'new' => base_url('admin/entries') . '/{id}/new',
+            'edit' => base_url('admin/entries') . '/{modelId}/{id}/edit',
+            'delete' => base_url('admin/entries/delete'),
             'restore' => base_url('admin/entries/restore'),
-            'purge'   => base_url('admin/entries/purge-deleted'),
+            'purge' => base_url('admin/entries/purge-deleted'),
         ];
 
         /* Filters */
@@ -426,9 +426,9 @@ class Entries extends AdminController
      */
     protected function processUploadedFiles(): array
     {
-        $files    = $this->request->getFiles();
+        $files = $this->request->getFiles();
         $fileUrls = [];
-        $log      = [];
+        $log = [];
 
         if ($files) {
             foreach ($files as $fileInputName => $uploadedFiles) {
@@ -439,19 +439,19 @@ class Entries extends AdminController
 
                 foreach ($uploadedFiles as $file) {
                     if ($file instanceof UploadedFile) {
-                        if ($file->isValid() && ! $file->hasMoved()) {
+                        if ($file->isValid() && !$file->hasMoved()) {
                             // Log file details (for debugging purposes).
                             $log['file_details'][] = [
-                                'input_name'    => $fileInputName,
+                                'input_name' => $fileInputName,
                                 'original_name' => $file->getClientName(),
-                                'temp_path'     => $file->getTempName(),
-                                'file_size'     => $file->getSize(),
-                                'file_type'     => $file->getMimeType(),
+                                'temp_path' => $file->getTempName(),
+                                'file_size' => $file->getSize(),
+                                'file_type' => $file->getMimeType(),
                             ];
 
                             // Use a slugified original name and a random name component.
                             $originalName = url_title(pathinfo($file->getClientName(), PATHINFO_FILENAME), '-', false);
-                            $randomName   = $file->getRandomName();
+                            $randomName = $file->getRandomName();
 
                             // @TODO: Make the destination path configurable.
                             // Final destination path (adjust as necessary).
@@ -465,7 +465,7 @@ class Entries extends AdminController
                         } else {
                             // If the file is invalid, log the error.
                             $log['file_errors'][] = [
-                                'input_name'    => $fileInputName,
+                                'input_name' => $fileInputName,
                                 'error_message' => $file->getErrorString(),
                             ];
                         }
@@ -491,7 +491,7 @@ class Entries extends AdminController
     protected function updateMetaFields(?string $metaJson, array $fileUrls): string
     {
         // Decode the original meta data.
-        $fieldsArray   = json_decode($metaJson, true) ?? [];
+        $fieldsArray = json_decode($metaJson, true) ?? [];
         $metaDataAssoc = [];
 
         // Create an associative array for easy lookup.
@@ -508,7 +508,7 @@ class Entries extends AdminController
         $finalFields = [];
         foreach ($metaDataAssoc as $id => $value) {
             $finalFields[] = [
-                'id'    => $id,
+                'id' => $id,
                 'value' => $value,
             ];
         }
@@ -521,7 +521,8 @@ class Entries extends AdminController
     protected function validateUserGroup($entryUserGroups, $userGroups): bool
     {
         $entryUserGroupsArray = json_decode($entryUserGroups ?? '', true);
-        if (empty($entryUserGroupsArray)) return true;
+        if (empty($entryUserGroupsArray))
+            return true;
 
         return !empty(array_intersect($entryUserGroupsArray, $userGroups));
     }

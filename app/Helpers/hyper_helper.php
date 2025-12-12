@@ -3,22 +3,6 @@
 
 use Masterminds\HTML5;
 
-if (!function_exists('syntax_processor')) {
-    /**
-     * Returns a new instance of the SyntaxProcessor library.
-     *
-     * Usage:
-     *     $processor = syntax_processor();
-     *     $result = $processor->process($content);
-     *
-     * @return \App\Libraries\SyntaxProcessor
-     */
-    function syntax_processor()
-    {
-        return new \App\Libraries\SyntaxProcessor();
-    }
-}
-
 if (!function_exists('map_entry_fields')) {
     /**
      * Converts a JSON string of entry fields to an associative array.
@@ -38,7 +22,7 @@ if (!function_exists('map_entry_fields')) {
         $decoded = json_decode($fieldsJson, true);
 
         // Return an empty array if decoding fails or the result is not an array.
-        if (! is_array($decoded)) {
+        if (!is_array($decoded)) {
             return [];
         }
 
@@ -46,7 +30,7 @@ if (!function_exists('map_entry_fields')) {
     }
 }
 
-if (! function_exists('unmap_entry_fields')) {
+if (!function_exists('unmap_entry_fields')) {
     /**
      * Converts an associative array of entry fields to a JSON string.
      *
@@ -62,7 +46,7 @@ if (! function_exists('unmap_entry_fields')) {
         $result = [];
         foreach ($fields as $id => $value) {
             $result[] = [
-                'id'    => $id,
+                'id' => $id,
                 'value' => $value,
             ];
         }
@@ -148,7 +132,7 @@ if (!function_exists('render')) {
 
         // Initialize the HTML5 parser with options.
         $html5 = new HTML5([
-            'disable_html_ns'     => true,
+            'disable_html_ns' => true,
             'preserve_whitespace' => true,
         ]);
 
@@ -199,12 +183,12 @@ if (!function_exists('dump_language_keys')) {
 
         // Get the current locale (e.g., 'en' or 'fr')
         $language = \Config\Services::language();
-        $locale   = $language->getLocale();
+        $locale = $language->getLocale();
 
         // Use the locator service to list all PHP files in the language folder for the current locale.
         // Adjust this path if the language files reside in a custom location.
-        $locator  = service('locator');
-        $files    = $locator->listFiles("Language/{$locale}/");
+        $locator = service('locator');
+        $files = $locator->listFiles("Language/{$locale}/");
 
         $allTranslations = [];
 
@@ -247,14 +231,14 @@ if (!function_exists('dump_language_keys_grouped')) {
 
         // Get the current locale (e.g., 'en', 'fr').
         $language = \Config\Services::language();
-        $locale   = $language->getLocale();
+        $locale = $language->getLocale();
 
         // Retrieve the locator service.
-        $locator  = service('locator');
+        $locator = service('locator');
 
         // List all PHP files in the language folder for the current locale.
         // This assumes the language files are under "app/Language/{locale}/".
-        $files    = $locator->listFiles("Language/{$locale}/");
+        $files = $locator->listFiles("Language/{$locale}/");
 
         $allTranslations = [];
 
