@@ -8,8 +8,8 @@ use Masterminds\HTML5;
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:frontend:index'), function ($path) {
     log_message('debug', 'Path: ' . $path);
 
-    /** @var \App\Models\EntriesModel */
-    $entriesModel = model('EntriesModel');
+    /** @var \StarDust\Models\EntriesModel */
+    $entriesModel = model('entriesModel');
 
     /* Page-eligible model check */
 
@@ -54,10 +54,10 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
     /* End of assets-eligible model check */
 
     // Prepare some frequently used values.
-    $isPageExists        = false;
-    $frontendMainHook    = hook('Frontend.main');
-    $frontendHeadHook    = hook('Frontend.head');
-    $frontendFooterHook    = hook('Frontend.footer');
+    $isPageExists = false;
+    $frontendMainHook = hook('Frontend.main');
+    $frontendHeadHook = hook('Frontend.head');
+    $frontendFooterHook = hook('Frontend.footer');
 
     /* Loop assets */
     foreach ($assets as $asset) {
@@ -105,12 +105,12 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
         $fields = array_column(json_decode($page['fields']), 'value', 'id');
 
         // Retrieve mandatory fields.
-        $pageTitle = $fields['hyper_title']  ?? null;
-        $pageCss   = $fields['hyper_css']    ?? '';
-        $pageHtml  = $fields['hyper_html']   ?? '';
-        $pageUrl   = $fields['hyper_page_url'] ?? null;
+        $pageTitle = $fields['hyper_title'] ?? null;
+        $pageCss = $fields['hyper_css'] ?? '';
+        $pageHtml = $fields['hyper_html'] ?? '';
+        $pageUrl = $fields['hyper_page_url'] ?? null;
         // Optional field.
-        $pageHook  = $fields['hyper_page_hook_id'] ?? null;
+        $pageHook = $fields['hyper_page_hook_id'] ?? null;
 
         // If the page uses the Frontend.main hook, perform URL/title matching.
         if ($pageHook === $frontendMainHook) {
@@ -156,7 +156,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
 
         // Initialize HTML5 parser with appropriate options.
         $html5 = new HTML5([
-            'disable_html_ns'   => true,
+            'disable_html_ns' => true,
             'preserve_whitespace' => true,
         ]);
 
@@ -210,7 +210,7 @@ function pagingSystemGetEligible(string $stateKey, string $settingKey): array
     // Ensure we have a valid, non-empty array of eligible model IDs.
     if (!is_array($eligibleModelIds) || empty($eligibleModelIds)) {
         return [
-            'primary'  => null,
+            'primary' => null,
             'eligible' => []
         ];
     }
@@ -221,13 +221,13 @@ function pagingSystemGetEligible(string $stateKey, string $settingKey): array
     // Validate that the primary model ID exists within the eligible model IDs.
     if (!in_array($primaryModelId, $eligibleModelIds, true)) {
         return [
-            'primary'  => null,
+            'primary' => null,
             'eligible' => $eligibleModelIds,
         ];
     }
 
     return [
-        'primary'  => $primaryModelId,
+        'primary' => $primaryModelId,
         'eligible' => $eligibleModelIds,
     ];
 }
@@ -263,9 +263,9 @@ function pagingSystemProcessDynamicMetaTags($dom): void
         }
 
         // Retrieve the data attributes.
-        $modelId     = $meta->getAttribute('data-hyper-query-model-id');
-        $findField   = $meta->getAttribute('data-hyper-query-find-field');
-        $findValue   = $meta->getAttribute('data-hyper-query-find-value');
+        $modelId = $meta->getAttribute('data-hyper-query-model-id');
+        $findField = $meta->getAttribute('data-hyper-query-find-field');
+        $findValue = $meta->getAttribute('data-hyper-query-find-value');
         $returnField = $meta->getAttribute('data-hyper-query-return-field');
 
         // Replace placeholder value with the appropriate value from the GET query.
@@ -275,7 +275,7 @@ function pagingSystemProcessDynamicMetaTags($dom): void
 
         // Prepare the data for the model lookup.
         $postData = [
-            'id'   => $modelId,
+            'id' => $modelId,
             'find' => [
                 'field' => $findField,
                 'value' => $findValue,

@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use App\Libraries\SyntaxProcessor;
+use StarDust\Libraries\SyntaxProcessor;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Config\Hyper;
@@ -36,64 +36,64 @@ abstract class AdminController extends BaseController
         $menu = [
             lang('Admin.general') => [
                 'dashboard' => [
-                    'url'               => base_url('admin/dashboard'),
-                    'icon'              => 'fa-solid fa-house',
-                    'text'              => lang("Admin.dashboard"),
-                    'tooltip_content'   => lang("Admin.dashboard"),
+                    'url' => base_url('admin/dashboard'),
+                    'icon' => 'fa-solid fa-house',
+                    'text' => lang("Admin.dashboard"),
+                    'tooltip_content' => lang("Admin.dashboard"),
                     'tooltip_placement' => 'right',
                 ],
             ],
             lang('Admin.data') => [
                 'models' => [
-                    'url'               => base_url('admin/models'),
-                    'icon'              => 'fa-solid fa-circle-nodes',
-                    'text'              => lang("Admin.models"),
-                    'hint'              => lang('Admin.managex', ['x' => lang("Admin.models")]),
-                    'tooltip_content'   => lang("Admin.models"),
+                    'url' => base_url('admin/models'),
+                    'icon' => 'fa-solid fa-circle-nodes',
+                    'text' => lang("Admin.models"),
+                    'hint' => lang('Admin.managex', ['x' => lang("Admin.models")]),
+                    'tooltip_content' => lang("Admin.models"),
                     'tooltip_placement' => 'right',
-                    'groups'            => 'superadmin'
+                    'groups' => 'superadmin'
                 ],
                 'entries' => [
-                    'url'               => base_url('admin/entries'),
-                    'icon'              => 'fa-solid fa-table-list',
-                    'text'              => lang("Admin.entries"),
-                    'hint'              => lang('Admin.managex', ['x' => lang("Admin.entries")]),
-                    'tooltip_content'   => lang("Admin.entries"),
+                    'url' => base_url('admin/entries'),
+                    'icon' => 'fa-solid fa-table-list',
+                    'text' => lang("Admin.entries"),
+                    'hint' => lang('Admin.managex', ['x' => lang("Admin.entries")]),
+                    'tooltip_content' => lang("Admin.entries"),
                     'tooltip_placement' => 'right',
-                    'groups'            => 'superadmin,admin,developer'
+                    'groups' => 'superadmin,admin,developer'
                 ],
             ],
             // This group contains a submenu (nested items)
             lang('Admin.others') => [
                 'file-manager' => [
-                    'url'               => base_url('admin/file-manager'),
-                    'icon'              => 'fa-solid fa-folder-closed',
-                    'text'              => lang("Admin.fileManager"),
-                    'tooltip_content'   => lang("Admin.fileManager"),
+                    'url' => base_url('admin/file-manager'),
+                    'icon' => 'fa-solid fa-folder-closed',
+                    'text' => lang("Admin.fileManager"),
+                    'tooltip_content' => lang("Admin.fileManager"),
                     'tooltip_placement' => 'right',
-                    'groups_not'        => 'user'
+                    'groups_not' => 'user'
                 ],
                 'settings' => [
                     // The parent link acting as a container (URL may be "#" or a clickable parent)
-                    'url'               => base_url('admin/settings'),
-                    'icon'              => 'fa-solid fa-cog',
-                    'text'              => lang("Admin.settings"),
-                    'hint'              => lang('Admin.adjustSiteSettings'),
-                    'tooltip_content'   => lang("Admin.settings"),
+                    'url' => base_url('admin/settings'),
+                    'icon' => 'fa-solid fa-cog',
+                    'text' => lang("Admin.settings"),
+                    'hint' => lang('Admin.adjustSiteSettings'),
+                    'tooltip_content' => lang("Admin.settings"),
                     'tooltip_placement' => 'right',
                     'submenu' => [
                         'settings-general' => [
-                            'url'               => base_url('admin/settings'),
-                            'text'              => lang("Admin.general"),
-                            'tooltip_content'   => lang("Admin.general"),
+                            'url' => base_url('admin/settings'),
+                            'text' => lang("Admin.general"),
+                            'tooltip_content' => lang("Admin.general"),
                             'tooltip_placement' => 'right'
                         ],
                         'settings-models' => [
-                            'url'               => base_url('admin/settings/models'),
-                            'text'              => lang("Admin.models"),
-                            'tooltip_content'   => lang("Admin.models"),
+                            'url' => base_url('admin/settings/models'),
+                            'text' => lang("Admin.models"),
+                            'tooltip_content' => lang("Admin.models"),
                             'tooltip_placement' => 'right',
-                            'groups'            => 'superadmin'
+                            'groups' => 'superadmin'
                         ],
                         // You can also add additional submenu items or merge hook-driven items.
                     ]
@@ -126,7 +126,7 @@ abstract class AdminController extends BaseController
                 'text' => $model['name'],
                 'tag' => $tag,
                 'icon' => $model['icon'],
-                'tooltip_content'  => $model['name'],
+                'tooltip_content' => $model['name'],
                 'tooltip_placement' => 'right'
             ];
         }
@@ -153,23 +153,23 @@ abstract class AdminController extends BaseController
         $this->data = [
             'hyper' => [
                 'config' => [
-                    "appName"       => config(Hyper::class)->appName,
-                    "appVersion"    => config(Hyper::class)->appVersion,
-                    "baseUrl"       => base_url(),
-                    "environment"   => ENVIRONMENT,
-                    "csrfHeader"    => csrf_header(),
-                    "csrfToken"     => csrf_token(),
-                    "csrfHash"      => csrf_hash(),
-                    "locale"        => service('request')->getLocale(),
+                    "appName" => config(Hyper::class)->appName,
+                    "appVersion" => config(Hyper::class)->appVersion,
+                    "baseUrl" => base_url(),
+                    "environment" => ENVIRONMENT,
+                    "csrfHeader" => csrf_header(),
+                    "csrfToken" => csrf_token(),
+                    "csrfHash" => csrf_hash(),
+                    "locale" => service('request')->getLocale(),
                 ],
                 'lang' => dump_language_keys_grouped(),
             ],
-            'title'       => config(Hyper::class)->appName,
-            'locale'      => service('request')->getLocale(),
-            'uri'         => $request->getUri() . '/',
+            'title' => config(Hyper::class)->appName,
+            'locale' => service('request')->getLocale(),
+            'uri' => $request->getUri() . '/',
             'uriSegments' => $request->getUri()->getSegments(),
-            'models'      => $models,
-            'menu'        => $menu,
+            'models' => $models,
+            'menu' => $menu,
         ];
 
         /* End of view data */
@@ -231,7 +231,7 @@ abstract class AdminController extends BaseController
             return array_merge($menu, [$groupKey => $element]);
         } elseif (is_numeric($position)) {
             // Make sure position is an integer (zero-based index).
-            $position = (int)$position;
+            $position = (int) $position;
             // If the position is zero or less, treat it as 'start'.
             if ($position <= 0) {
                 return array_merge([$groupKey => $element], $menu);
@@ -299,10 +299,10 @@ abstract class AdminController extends BaseController
             // Append: merge at the end.
             $items = $items + $element;
         } elseif (is_numeric($position)) {
-            $position = (int)$position;
+            $position = (int) $position;
             // Use array_slice to preserve keys.
             $begin = array_slice($items, 0, $position, true);
-            $end   = array_slice($items, $position, null, true);
+            $end = array_slice($items, $position, null, true);
             $items = $begin + $element + $end;
         }
 

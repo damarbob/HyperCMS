@@ -7,8 +7,8 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
     log_message('debug', 'Paging System module init hook triggered.');
 
     // Check which models are eligible for the page editor
-    /** @var \App\Models\ModelsModel */
-    $modelsModel = model('ModelsModel');
+    /** @var \StarDust\Models\ModelsModel */
+    $modelsModel = model('modelsModel');
 
     $modelsBuilder = $modelsModel->getCustomBuilder();
     $models = $modelsBuilder
@@ -27,7 +27,8 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
     foreach ($models as $model) {
         $fields = json_decode($model['fields'], true);
 
-        if (empty($fields) || !is_array($fields)) continue;
+        if (empty($fields) || !is_array($fields))
+            continue;
 
         // Build a mapping: key -> content array
         $fieldsById = [];
@@ -45,16 +46,16 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
         // - hyper_component_elements
         // - hyper_page_project_data
         // All of them must contain a hyper-code-field className
-        $hasHtml  = isset($fieldsById['hyper_html']) && $fieldsById['hyper_html']['className'] === 'hyper-code-field';
-        $hasCss  = isset($fieldsById['hyper_css']) && $fieldsById['hyper_css']['className'] === 'hyper-code-field';
-        $hasComponentElements  = isset($fieldsById['hyper_component_elements']) && $fieldsById['hyper_component_elements']['className'] === 'hyper-code-field';
-        $hasPageProjectData  = isset($fieldsById['hyper_page_project_data']) && $fieldsById['hyper_page_project_data']['className'] === 'hyper-code-field';
+        $hasHtml = isset($fieldsById['hyper_html']) && $fieldsById['hyper_html']['className'] === 'hyper-code-field';
+        $hasCss = isset($fieldsById['hyper_css']) && $fieldsById['hyper_css']['className'] === 'hyper-code-field';
+        $hasComponentElements = isset($fieldsById['hyper_component_elements']) && $fieldsById['hyper_component_elements']['className'] === 'hyper-code-field';
+        $hasPageProjectData = isset($fieldsById['hyper_page_project_data']) && $fieldsById['hyper_page_project_data']['className'] === 'hyper-code-field';
 
         // Meta eligible models must have the following fields:
         // - meta_name
         // - meta_content
-        $hasMetaContent  = isset($fieldsById['meta_content']) && $fieldsById['meta_content'];
-        $hasMetaPageId  = isset($fieldsById['meta_name']) && $fieldsById['meta_name'];
+        $hasMetaContent = isset($fieldsById['meta_content']) && $fieldsById['meta_content'];
+        $hasMetaPageId = isset($fieldsById['meta_name']) && $fieldsById['meta_name'];
 
         // Assets eligible models must have the following fields:
         // - asset_url

@@ -14,16 +14,17 @@ class Entries extends ApiController
         $id = $data['id'] ?? null; // Entry id
         $ids = $data['ids'] ?? null; // Entry ids
         $modelId = $data['model_id'] ?? null; // Model id
-        $draw   = $data['draw'] ?? 1;;
-        $start  = $data['start'] ?? null; // Offset
+        $draw = $data['draw'] ?? 1;
+        ;
+        $start = $data['start'] ?? null; // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'] ?? null;
+        $order = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
         $trash = $data['trash'] ?? false;
 
-        /** @var \App\Models\EntriesModel */
-        $model = model('EntriesModel');
+        /** @var \StarDust\Models\EntriesModel */
+        $model = model('entriesModel');
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {

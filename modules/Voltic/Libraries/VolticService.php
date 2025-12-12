@@ -2,7 +2,7 @@
 
 namespace Voltic\Libraries;
 
-use App\Models\ModelsModel;
+use StarDust\Models\ModelsModel;
 use Config\Hyper;
 use Voltic\Config\Voltic as ConfigVoltic;
 
@@ -41,7 +41,7 @@ class VolticService
         $this->logger = service('logger');
 
         /** @var ModelsModel */
-        $this->modelsModel = model('ModelsModel');
+        $this->modelsModel = model('modelsModel');
 
         // Reference data
         $models = service('modelsManager')->get();
@@ -102,9 +102,9 @@ class VolticService
                 $decodedFields = json_decode($result['fields'], true);
 
                 if (
-                    ! empty($decodedFields) &&
+                    !empty($decodedFields) &&
                     is_array($decodedFields) &&
-                    ! empty($decodedFields[0]['value'])
+                    !empty($decodedFields[0]['value'])
                 ) {
                     $value = $decodedFields[0]['value'];
 
@@ -272,7 +272,7 @@ class VolticService
                 $this->logger->error('Normal markdown code block not found in response. Returning raw content.');
 
                 return [
-                    "model" =>  $model,
+                    "model" => $model,
                     "message" => $rawContent,
                     "reasoning" => $rawReasoning,
                     "error" => [
@@ -290,7 +290,7 @@ class VolticService
             $errorMsg = 'Voltic: Response JSON parse error. ' . json_last_error_msg();
             $this->logger->error($errorMsg);
             return [
-                "model" =>  $model,
+                "model" => $model,
                 "message" => $rawContent,
                 "reasoning" => $rawReasoning,
                 "error" => [
@@ -347,7 +347,7 @@ class VolticService
         $remainingModels = array_slice($remainingModels, 0, $limit);
 
         return [
-            'chosen'    => $chosenModel,
+            'chosen' => $chosenModel,
             'remaining' => $remainingModels
         ];
     }

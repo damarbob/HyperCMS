@@ -16,7 +16,7 @@ class Data extends AdminController
         $entryIds = $data['entry_ids'] ?? null; // Entry ids
         $modelId = $data['model_id'] ?? null; // Model id
 
-        /** @var \App\Models\EntriesModel */
+        /** @var \StarDust\Models\EntriesModel */
         $model = model('entriesModel');
 
         $modelBuilder = $model->getCustomBuilder();
@@ -68,7 +68,7 @@ class Data extends AdminController
             $fields = array_column($flat, 'value', 'id');
 
             return [
-                'id'     => $row['id'],
+                'id' => $row['id'],
                 'fields' => $fields,
             ];
         }, $rows);

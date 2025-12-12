@@ -4,8 +4,8 @@ namespace App\Controllers\API\v1;
 
 use App\Constants\ModelStaticFields;
 use App\Controllers\API\v1\ApiController;
-use App\Models\EntriesModel;
-use App\Models\ModelsModel;
+use StarDust\Models\EntriesModel;
+use StarDust\Models\ModelsModel;
 
 class Model extends ApiController
 {
@@ -34,14 +34,14 @@ class Model extends ApiController
     public function getModelData(array $params): array
     {
         $modelId = $params['id'] ?? null;
-        $draw    = $params['draw'] ?? 1;
-        $start   = $params['start'] ?? 0;
-        $length  = $params['length'] ?? 10;
-        $search  = $params['search']['value'] ?? ($params['search'] ?? '');
-        $order   = $params['order'] ?? null;
+        $draw = $params['draw'] ?? 1;
+        $start = $params['start'] ?? 0;
+        $length = $params['length'] ?? 10;
+        $search = $params['search']['value'] ?? ($params['search'] ?? '');
+        $order = $params['order'] ?? null;
         $columns = $params['columns'] ?? null;
-        $find    = $params['find'] ?? null;
-        $trash   = $params['trash'] ?? false;
+        $find = $params['find'] ?? null;
+        $trash = $params['trash'] ?? false;
 
         // Validate model ID
         if (!$modelId) {
@@ -90,7 +90,7 @@ class Model extends ApiController
      */
     protected function getModelInfo(int $modelId): array
     {
-        $modelsModel = model('ModelsModel');
+        $modelsModel = model('modelsModel');
         $model = $modelsModel->getCustomBuilder()->where('id', $modelId)->get()->getRow();
 
         if (!$model) {
@@ -127,8 +127,8 @@ class Model extends ApiController
      */
     protected function buildBaseQuery(int $modelId, bool $trash)
     {
-        /** @var \App\Models\EntriesModel */
-        $entriesModel = model('EntriesModel');
+        /** @var \StarDust\Models\EntriesModel */
+        $entriesModel = model('entriesModel');
 
         if ($trash) {
             $entriesModelBuilder = $entriesModel->getCustomBuilder();
@@ -148,8 +148,8 @@ class Model extends ApiController
      */
     protected function applyFindFilter(&$builder, ?array $find): void
     {
-        /** @var \App\Models\EntriesModel */
-        $entriesModel = model('EntriesModel');
+        /** @var \StarDust\Models\EntriesModel */
+        $entriesModel = model('entriesModel');
         if ($find && !empty($find['field']) && !empty($find['value'])) {
             $entriesModel->whereFields($builder, [$find]);
         }
@@ -172,8 +172,8 @@ class Model extends ApiController
     {
         if (!empty($order)) {
             $orderColumnIndex = $order[0]['column'];
-            $orderDir         = $order[0]['dir'];
-            $orderColumn      = $columns[$orderColumnIndex]['data'];
+            $orderDir = $order[0]['dir'];
+            $orderColumn = $columns[$orderColumnIndex]['data'];
 
             if (in_array($orderColumn, ModelStaticFields::FIELD_LIST)) {
                 $builder->orderBy($orderColumn, $orderDir);

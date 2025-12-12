@@ -15,7 +15,7 @@ use CodeIgniter\HTTP\ResponseInterface;
  *  - Ensure the request is authenticated. If not authenticated, redirect to the login route
  *    with an error message.
  *  - Extract a resource ID from the request URI at a configurable segment index.
- *  - Load the corresponding model record (via App\Models\ModelsModel->getCustomBuilder()) and
+ *  - Load the corresponding model record (via StarDust\Models\ModelsModel->getCustomBuilder()) and
  *    read its "user_groups" JSON field.
  *  - If the model defines user group restrictions, verify the current user's groups intersect
  *    with the model's allowed groups. If there is no intersection, deny access by redirecting
@@ -60,7 +60,7 @@ class ModelUserGroupFilter implements FilterInterface
      *
      * Side effects:
      *  - Reads a URI segment to determine the resource ID.
-     *  - Loads the model via model('App\Models\ModelsModel') and uses getCustomBuilder() to fetch the row.
+     *  - Loads the model via model('StarDust\Models\ModelsModel') and uses getCustomBuilder() to fetch the row.
      *  - Decodes 'user_groups' from the model and compares against $user->getGroups().
      */
     public function before(RequestInterface $request, $arguments = null)
@@ -87,8 +87,8 @@ class ModelUserGroupFilter implements FilterInterface
             return redirect()->route('dashboard')->with('error', lang('Filter.invalidResource'));
         }
 
-        /** @var \App\Models\ModelsModel */
-        $modelsModel = model('App\Models\ModelsModel');
+        /** @var \StarDust\Models\ModelsModel */
+        $modelsModel = model('StarDust\Models\ModelsModel');
         $modelsBuilder = $modelsModel->getCustomBuilder();
 
         // Retrieve the model record as an associative array.
