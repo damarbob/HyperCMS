@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "f837d4993797920a5f2752f9d1666017",
+    "content-hash": "dab513066101f09e2b30a68f7b0d7c22",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -249,6 +249,48 @@
                 "source": "https://github.com/damarbob/StarCore/tree/v0.2.0-alpha.2"
             },
             "time": "2025-12-11T22:35:16+00:00"
+        },
+        {
+            "name": "damarbob/stardust",
+            "version": "v0.1.0-alpha.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/damarbob/StarDust.git",
+                "reference": "881b73a6d63541756f226fc6f32af70f9ea98f99"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/damarbob/StarDust/zipball/881b73a6d63541756f226fc6f32af70f9ea98f99",
+                "reference": "881b73a6d63541756f226fc6f32af70f9ea98f99",
+                "shasum": ""
+            },
+            "require": {
+                "codeigniter4/framework": "^4.0",
+                "damarbob/starcore": "^0.2.0@alpha",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Helpers/stardust_helper.php"
+                ],
+                "psr-4": {
+                    "StarDust\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "The EAV-over-JSON Library for CodeIgniter 4",
+            "support": {
+                "issues": "https://github.com/damarbob/StarDust/issues",
+                "source": "https://github.com/damarbob/StarDust/tree/v0.1.0-alpha.1"
+            },
+            "time": "2025-12-12T14:01:11+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
@@ -2293,7 +2335,8 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "damarbob/starcore": 15
+        "damarbob/starcore": 15,
+        "damarbob/stardust": 15
     },
     "prefer-stable": true,
     "prefer-lowest": false,

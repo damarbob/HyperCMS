@@ -3,8 +3,8 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
-use App\Models\ModelDataModel;
-use App\Models\ModelsModel;
+use StarDust\Models\ModelDataModel;
+use StarDust\Models\ModelsModel;
 
 class ModelData extends ApiController
 {
@@ -14,15 +14,15 @@ class ModelData extends ApiController
         $data = $this->request->getPost();
 
         $modelId = $data['id'] ?? null;
-        $draw   = $data['draw'] ?? 1;
-        $start  = $data['start'] ?? null;    // Offset
+        $draw = $data['draw'] ?? 1;
+        $start = $data['start'] ?? null;    // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'] ?? null;
+        $order = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
 
         /** @var ModelDataModel */
-        $modelData = model('ModelDataModel');
+        $modelData = model('modelDataModel');
         $modelDataBuilder = $modelData->getCustomBuilder();
 
         // Get the total count with no filtering.

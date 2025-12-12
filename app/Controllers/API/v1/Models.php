@@ -3,7 +3,7 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
-use App\Models\ModelsModel;
+use StarDust\Models\ModelsModel;
 
 class Models extends ApiController
 {
@@ -12,16 +12,16 @@ class Models extends ApiController
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getPost();
 
-        $draw   = $data['draw'] ?? 1;
-        $start  = $data['start'] ?? null;    // Offset
+        $draw = $data['draw'] ?? 1;
+        $start = $data['start'] ?? null;    // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'] ?? null;
+        $order = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
         $trash = $data['trash'] ?? false;
 
         /** @var ModelsModel */
-        $model = model('ModelsModel');
+        $model = model('modelsModel');
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {

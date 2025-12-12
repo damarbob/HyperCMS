@@ -5,8 +5,8 @@ use StarCore\Service\HyperHooks;
 // Editor controller index data filter
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:index:data'), function ($data) {
 
-    /** @var \App\Models\EntriesModel */
-    $entriesModel = model('EntriesModel');
+    /** @var \StarDust\Models\EntriesModel */
+    $entriesModel = model('entriesModel');
 
     /** @var array */
     $pagingSystemAssetsEligibleModelIds = HyperHooks::getInstance()->getState('paging_system_assets_eligible_model_ids');

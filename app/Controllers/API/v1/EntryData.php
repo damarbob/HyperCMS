@@ -4,8 +4,8 @@ namespace App\Controllers\API\v1;
 
 use App\Constants\EntryDataStaticFields;
 use App\Controllers\API\v1\ApiController;
-use App\Models\EntryDataModel;
-use App\Models\ModelsModel;
+use StarDust\Models\EntryDataModel;
+use StarDust\Models\ModelsModel;
 
 class EntryData extends ApiController
 {
@@ -15,11 +15,11 @@ class EntryData extends ApiController
         $data = $this->request->getPost();
 
         $entryId = $data['id'] ?? null;
-        $draw   = $data['draw'] ?? 1;
-        $start  = $data['start'] ?? 0; // Offset
+        $draw = $data['draw'] ?? 1;
+        $start = $data['start'] ?? 0; // Offset
         $length = $data['length'] ?? 10; // Number of records per page
         $search = $data['search']['value'] ?? '';
-        $order  = $data['order'] ?? null;
+        $order = $data['order'] ?? null;
         $columns = $data['columns'] ?? null;
 
         // Additional features
@@ -33,7 +33,7 @@ class EntryData extends ApiController
 
         // Get the entry data
         /** @var EntryDataModel */
-        $entryDataModel = model('EntryDataModel');
+        $entryDataModel = model('entryDataModel');
         $entryData = $entryDataModel
             ->getCustomBuilder()
             ->where('entry_id', $entryId)
@@ -49,7 +49,7 @@ class EntryData extends ApiController
 
         // Get the model
         /** @var ModelsModel */
-        $modelsModel = model('ModelsModel');
+        $modelsModel = model('modelsModel');
         $model = $modelsModel->getCustomBuilder()->where('id', $entryData->model_id)->get()->getRow();
 
         if (!$model) {
@@ -123,8 +123,8 @@ class EntryData extends ApiController
         // 4. Apply ordering, if provided.
         if (!empty($order)) {
             $orderColumnIndex = $order[0]['column'];
-            $orderDir         = $order[0]['dir'];
-            $orderColumn      = $columns[$orderColumnIndex]['data']; // This is the field key for dynamic fields
+            $orderDir = $order[0]['dir'];
+            $orderColumn = $columns[$orderColumnIndex]['data']; // This is the field key for dynamic fields
 
             if (in_array($orderColumn, EntryDataStaticFields::FIELD_LIST)) {
                 $entryDataModelBuilder->orderBy($orderColumn, $orderDir);

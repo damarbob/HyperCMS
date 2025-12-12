@@ -1,13 +1,12 @@
 <?php
 
 namespace App\Controllers;
-
-use App\Models\EntriesModel;
-use App\Models\EntryDataModel;
-use App\Models\ModelDataModel;
-use App\Models\ModelsModel;
-use App\Services\EntriesManager;
-use App\Services\ModelsManager;
+use StarDust\Models\EntriesModel;
+use StarDust\Models\EntryDataModel;
+use StarDust\Models\ModelDataModel;
+use StarDust\Models\ModelsModel;
+use StarDust\Services\EntriesManager;
+use StarDust\Services\ModelsManager;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -79,10 +78,10 @@ abstract class BaseController extends Controller
         $this->entriesManager = service('entriesManager');
 
         // Models
-        $this->modelsModel = model('ModelsModel');
-        $this->modelDataModel = model('ModelDataModel');
-        $this->entriesModel = model('EntriesModel');
-        $this->entryDataModel = model('EntryDataModel');
+        $this->modelsModel = model('modelsModel');
+        $this->modelDataModel = model('modelDataModel');
+        $this->entriesModel = model('entriesModel');
+        $this->entryDataModel = model('entryDataModel');
 
         /**
          * Store the URL history in the session on every non-AJAX,

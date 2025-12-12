@@ -34,28 +34,6 @@ class Services extends BaseService
      */
 
     /**
-     * Returns an instance of the ModelsManager class.
-     */
-    public static function modelsManager(bool $getShared = true): ModelsManager
-    {
-        if ($getShared) {
-            return static::getSharedInstance('modelsManager');
-        }
-        return ModelsManager::getInstance();
-    }
-
-    /**
-     * Returns an instance of the EntriesManager class.
-     */
-    public static function entriesManager(bool $getShared = true): EntriesManager
-    {
-        if ($getShared) {
-            return static::getSharedInstance('entriesManager');
-        }
-        return EntriesManager::getInstance();
-    }
-
-    /**
      * FileServer service.
      *
      * @param bool $getShared Whether to return a shared instance.
