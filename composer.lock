@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "8707df7db475f95924e3acd8362a73f8",
+    "content-hash": "f837d4993797920a5f2752f9d1666017",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -211,21 +211,24 @@
         },
         {
             "name": "damarbob/starcore",
-            "version": "v0.1.0-alpha.1",
+            "version": "v0.2.0-alpha.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/damarbob/StarCore.git",
-                "reference": "493433222c8d159ae7fd9245fc6b08640ef4f5fb"
+                "reference": "c6e5b60cefc4c244976a611e3d5187e85880e2ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/damarbob/StarCore/zipball/493433222c8d159ae7fd9245fc6b08640ef4f5fb",
-                "reference": "493433222c8d159ae7fd9245fc6b08640ef4f5fb",
+                "url": "https://api.github.com/repos/damarbob/StarCore/zipball/c6e5b60cefc4c244976a611e3d5187e85880e2ed",
+                "reference": "c6e5b60cefc4c244976a611e3d5187e85880e2ed",
                 "shasum": ""
             },
             "require": {
                 "codeigniter4/framework": "^4.0",
                 "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.5"
             },
             "type": "library",
             "autoload": {
@@ -243,9 +246,9 @@
             "description": "The HMVC and Hook Orchestration Kernel for CodeIgniter 4",
             "support": {
                 "issues": "https://github.com/damarbob/StarCore/issues",
-                "source": "https://github.com/damarbob/StarCore/tree/v0.1.0-alpha.1"
+                "source": "https://github.com/damarbob/StarCore/tree/v0.2.0-alpha.2"
             },
-            "time": "2025-11-26T15:57:05+00:00"
+            "time": "2025-12-11T22:35:16+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
