@@ -1,6 +1,6 @@
 <?php
 
-/** @var App\Services\HyperHooks */
+/** @var StarCore\Service\HyperHooks */
 $hooks = service('hooks');
 ?>
 <?= $this->extend('admin/layout/page') ?>

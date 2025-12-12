@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 // Init
 HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {

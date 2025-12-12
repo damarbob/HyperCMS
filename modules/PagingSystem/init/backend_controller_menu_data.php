@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 // Sidebar Paging System settings menu
 HyperHooks::getInstance()->register(hook('Backend.controller:menu:data'), function ($additionalMenu) {

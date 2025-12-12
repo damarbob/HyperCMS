@@ -1,6 +1,6 @@
 <?php
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 // Editor controller index data filter
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:index:data'), function ($data) {

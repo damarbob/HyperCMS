@@ -2,7 +2,7 @@
 
 namespace Modules\PagingSystem;
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 log_message('debug', 'Paging System module initialized.');
 

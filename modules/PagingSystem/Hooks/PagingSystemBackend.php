@@ -1,6 +1,6 @@
 <?php
 
-use App\Hyper\HyperHook;
+use StarCore\Star\HyperHook;
 
 return [
 

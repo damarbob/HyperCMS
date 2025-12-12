@@ -7,7 +7,6 @@ use App\Models\EntryDataModel;
 use App\Models\ModelDataModel;
 use App\Models\ModelsModel;
 use App\Services\EntriesManager;
-use App\Services\HyperHooks;
 use App\Services\ModelsManager;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
@@ -15,6 +14,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
+use StarCore\Service\HyperHooks;
 
 /**
  * Class BaseController

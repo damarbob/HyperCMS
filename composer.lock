@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "5f812653b8d2a7f0b1e6089b6fcbd219",
+    "content-hash": "f837d4993797920a5f2752f9d1666017",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -208,6 +208,47 @@
                 "source": "https://github.com/codeigniter4/shield"
             },
             "time": "2024-06-13T08:54:48+00:00"
+        },
+        {
+            "name": "damarbob/starcore",
+            "version": "v0.2.0-alpha.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/damarbob/StarCore.git",
+                "reference": "c6e5b60cefc4c244976a611e3d5187e85880e2ed"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/damarbob/StarCore/zipball/c6e5b60cefc4c244976a611e3d5187e85880e2ed",
+                "reference": "c6e5b60cefc4c244976a611e3d5187e85880e2ed",
+                "shasum": ""
+            },
+            "require": {
+                "codeigniter4/framework": "^4.0",
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "^10.5"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "src/Helpers/star_helper.php"
+                ],
+                "psr-4": {
+                    "StarCore\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "The HMVC and Hook Orchestration Kernel for CodeIgniter 4",
+            "support": {
+                "issues": "https://github.com/damarbob/StarCore/issues",
+                "source": "https://github.com/damarbob/StarCore/tree/v0.2.0-alpha.2"
+            },
+            "time": "2025-12-11T22:35:16+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
@@ -2251,7 +2292,9 @@
     ],
     "aliases": [],
     "minimum-stability": "dev",
-    "stability-flags": {},
+    "stability-flags": {
+        "damarbob/starcore": 15
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

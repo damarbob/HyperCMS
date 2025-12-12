@@ -102,5 +102,8 @@ defined('MODULE_NAMESPACE') || define('MODULE_NAMESPACE', 'Modules');
  | CodeIgniter to refer to the Module directory. Change
  | this constant to change the path that all module
  | classes should use.
+ | 
+ | @TODO: Refactor usages to use the new module system.
+ | Refactor Publish and Pull command to use Namespace instead of path.
  */
 defined('MODULES_PATH') || define('MODULES_PATH', ROOTPATH . 'modules' . DIRECTORY_SEPARATOR);

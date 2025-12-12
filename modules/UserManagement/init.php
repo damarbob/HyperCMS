@@ -2,7 +2,7 @@
 
 namespace DataComparison;
 
-use App\Services\HyperHooks;
+use StarCore\Service\HyperHooks;
 
 log_message('info', 'User management module initialized');
 

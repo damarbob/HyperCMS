@@ -94,7 +94,7 @@ class Autoload extends AutoloadConfig
 
     public function __construct()
     {
-        // Add any custom autoload settings here
+        // Add any custom autoload settings here @TODO: Decide whether to remove or not
         $this->psr4 = array_merge($this->psr4, [
             MODULE_NAMESPACE => MODULES_PATH,
         ]);

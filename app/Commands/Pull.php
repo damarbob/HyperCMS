@@ -25,6 +25,9 @@ class Pull extends BaseCommand
         /** @var \Config\Hyper $hyper */
         $hyper = config('Hyper');
 
+        /** @var \StarCore\Config\Star $star */
+        $star = config('Star');
+
         CLI::write("{$hyper->appName} {$hyper->appVersion} - Asset Pull", 'green');
         CLI::write('');
 
@@ -34,8 +37,8 @@ class Pull extends BaseCommand
 
         if ($list) {
             $modules = array_merge(
-                $hyper->getActiveModules(),
-                $hyper->getActiveDevModules(),
+                $star->getActiveModules(),
+                $star->getActiveDevModules(),
                 ['App']
             );
             $modules = array_unique($modules);
@@ -64,8 +67,8 @@ class Pull extends BaseCommand
 
         $moduleParam = $params[0] ?? null;
         $modules = array_merge(
-            $hyper->getActiveModules(),
-            $hyper->getActiveDevModules(),
+            $star->getActiveModules(),
+            $star->getActiveDevModules(),
             ['App']
         );
         $modules = array_unique($modules);
@@ -98,8 +101,8 @@ class Pull extends BaseCommand
             if ($module === 'App') {
                 $targetPath = APPPATH . 'Public' . DIRECTORY_SEPARATOR;
             } else {
-                $activeModules = $hyper->getActiveModules();
-                $devModules = $hyper->getActiveDevModules();
+                $activeModules = $star->getActiveModules();
+                $devModules = $star->getActiveDevModules();
                 $inBoth = in_array($module, $activeModules) && in_array($module, $devModules);
 
                 if ($inBoth) {
