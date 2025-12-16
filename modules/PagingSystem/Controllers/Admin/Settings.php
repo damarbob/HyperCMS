@@ -4,7 +4,7 @@ namespace PagingSystem\Controllers\Admin;
 
 use App\Controllers\AdminController;
 use StarCore\Service\HyperHooks;
-use App\Services\ModelsManager;
+use StarDust\Services\ModelsManager;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;

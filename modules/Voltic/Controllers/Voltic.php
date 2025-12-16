@@ -38,10 +38,10 @@ class Voltic extends AdminController
         /** @var \Voltic\Config\Voltic */
         $config = config('Voltic');
 
-        /** @var \App\Services\ModelsManager */
+        /** @var \StarDust\Services\ModelsManager */
         $modelsManager = service('modelsManager');
 
-        /** @var \App\Services\EntriesManager */
+        /** @var \StarDust\Services\EntriesManager */
         $entriesManager = service('entriesManager');
 
         // Get the current user
