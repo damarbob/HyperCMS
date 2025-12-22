@@ -214,9 +214,17 @@ class Model extends ApiController
                 $fieldsArray = json_decode($row['fields'], true);
 
                 if (is_array($fieldsArray)) {
-                    foreach ($fieldsArray as $field) {
-                        if (isset($field['id']) && isset($field['value'])) {
-                            $row['' . $field['id']] = $field['value'];
+                    // Check if it's the legacy list of objects format (indexed array)
+                    if (array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
+                        foreach ($fieldsArray as $field) {
+                            if (isset($field['id']) && isset($field['value'])) {
+                                $row['' . $field['id']] = $field['value'];
+                            }
+                        }
+                    } else {
+                        // It represents a key-value pair object (associative array)
+                        foreach ($fieldsArray as $key => $value) {
+                            $row['' . $key] = $value;
                         }
                     }
                 }
