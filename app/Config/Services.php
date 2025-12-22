@@ -2,9 +2,7 @@
 
 namespace Config;
 
-use App\Services\EntriesManager;
 use App\Services\FileServer;
-use App\Services\ModelsManager;
 use CodeIgniter\Config\BaseService;
 
 /**
