@@ -7,9 +7,9 @@ if (!function_exists('map_entry_fields')) {
     /**
      * Converts a JSON string of entry fields to an associative array.
      *
-     * This function expects a JSON-encoded string that represents an array of objects,
-     * each containing an 'id' and a 'value' key. It then returns an associative array mapping
-     * each field's id to its corresponding value.
+     * This function supports two formats:
+     * - Legacy format: Array of objects with 'id' and 'value' keys [{"id": "key", "value": "val"}]
+     * - New format: Key-value pairs {"key": "val"}
      *
      * If the JSON string cannot be decoded or does not produce an array, this function returns an empty array.
      *
@@ -26,7 +26,13 @@ if (!function_exists('map_entry_fields')) {
             return [];
         }
 
-        return array_column($decoded, 'value', 'id');
+        // Check if it's the legacy list of objects format
+        if (array_is_list($decoded) && !empty($decoded) && isset($decoded[0]['id'])) {
+            return array_column($decoded, 'value', 'id');
+        }
+
+        // New format: already key-value pairs
+        return $decoded;
     }
 }
 
@@ -34,23 +40,17 @@ if (!function_exists('unmap_entry_fields')) {
     /**
      * Converts an associative array of entry fields to a JSON string.
      *
-     * This function expects an associative array where each key is a field ID and its value is the field value.
-     * It then builds an array of objects (each with 'id' and 'value' keys) and returns it as a JSON-encoded string.
+     * This function now produces the new key-value pair format {"key": "val"}
+     * instead of the legacy array format.
      *
      * @param array<string, mixed> $fields Associative array mapping field IDs to field values.
      *
-     * @return string JSON encoded string representing an array of field objects.
+     * @return string JSON encoded string in key-value format.
      */
     function unmap_entry_fields(array $fields): string
     {
-        $result = [];
-        foreach ($fields as $id => $value) {
-            $result[] = [
-                'id' => $id,
-                'value' => $value,
-            ];
-        }
-        return json_encode($result);
+        // Simply encode the associative array as-is (new format)
+        return json_encode($fields);
     }
 }
 
