@@ -490,32 +490,17 @@ class Entries extends AdminController
      */
     protected function updateMetaFields(?string $metaJson, array $fileUrls): string
     {
-        // Decode the original meta data.
-        $fieldsArray = json_decode($metaJson, true) ?? [];
-        $metaDataAssoc = [];
-
-        // Create an associative array for easy lookup.
-        foreach ($fieldsArray as $meta) {
-            $metaDataAssoc[$meta['id']] = $meta['value'];
-        }
+        // Decode the original meta data (now already in key-value format).
+        $metaDataAssoc = json_decode($metaJson, true) ?? [];
 
         // Overwrite or add file URLs.
         foreach ($fileUrls as $fileInputName => $urls) {
             $metaDataAssoc[$fileInputName] = $urls;
         }
 
-        // Convert back to a simple indexed array.
-        $finalFields = [];
-        foreach ($metaDataAssoc as $id => $value) {
-            $finalFields[] = [
-                'id' => $id,
-                'value' => $value,
-            ];
-        }
+        // log_message('debug', "updateMetaFields: " . json_encode($metaDataAssoc, JSON_PRETTY_PRINT));
 
-        // log_message('debug', "updateMetaFields: " . json_encode($finalFields, JSON_PRETTY_PRINT));
-
-        return json_encode($finalFields);
+        return json_encode($metaDataAssoc);
     }
 
     protected function validateUserGroup($entryUserGroups, $userGroups): bool
