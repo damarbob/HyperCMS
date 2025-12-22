@@ -61,11 +61,15 @@ class Data extends AdminController
     protected function sendFieldsOnlyResponse(array $rows)
     {
         return array_map(function (array $row) {
-            // Decode the JSON string into an array of ['id'=>…,'value'=>…]
+            // Decode the JSON string
             $flat = json_decode($row['fields'] ?? '[]', true) ?: [];
 
-            // Turn it into [ fieldId => value, … ]
-            $fields = array_column($flat, 'value', 'id');
+            // Handle both old format [{'id': x, 'value': y}] and new format {x: y}
+            if (is_array($flat) && array_is_list($flat) && !empty($flat) && isset($flat[0]['id'])) {
+                $fields = array_column($flat, 'value', 'id');
+            } else {
+                $fields = $flat;
+            }
 
             return [
                 'id' => $row['id'],
