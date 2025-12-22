@@ -18,22 +18,40 @@ export default class InputPopulator {
   /**
    * Populates the form fields within the modal using meta data.
    *
-   * @param {Array} meta - An array of meta data objects.
+   * @param {Array|Object} meta - An array of meta data objects (legacy) or an object with key-value pairs (new format).
    */
   populate(meta) {
     if (!meta) return;
-    meta.forEach((item) => {
-      const id = item.id;
-      const element =
-        this.container.querySelector(`#${id}`) ||
-        this.container.querySelectorAll(`[name="${id}"]`);
 
-      if (element) {
-        this.populateElement(element, item);
-      } else {
-        console.error(`Element with ID or Name ${id} not found.`);
-      }
-    });
+    // Check if it's the legacy array format [{id, value}, ...]
+    if (Array.isArray(meta)) {
+      meta.forEach((item) => {
+        const id = item.id;
+        const element =
+          this.container.querySelector(`#${id}`) ||
+          this.container.querySelectorAll(`[name="${id}"]`);
+
+        if (element) {
+          this.populateElement(element, item);
+        } else {
+          console.error(`Element with ID or Name ${id} not found.`);
+        }
+      });
+    }
+    // New format: key-value pairs {key: value, ...}
+    else if (typeof meta === "object") {
+      Object.entries(meta).forEach(([id, value]) => {
+        const element =
+          this.container.querySelector(`#${id}`) ||
+          this.container.querySelectorAll(`[name="${id}"]`);
+
+        if (element) {
+          this.populateElement(element, { id, value });
+        } else {
+          console.error(`Element with ID or Name ${id} not found.`);
+        }
+      });
+    }
   }
 
   /**
