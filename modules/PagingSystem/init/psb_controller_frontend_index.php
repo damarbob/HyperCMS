@@ -67,7 +67,13 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
             continue;
         }
 
-        $fields = array_column(json_decode($asset['fields'], JSON_UNESCAPED_SLASHES), 'value', 'id');
+        $fieldsArray = json_decode($asset['fields'], JSON_UNESCAPED_SLASHES);
+        // Handle both old format [{'id': x, 'value': y}] and new format {x: y}
+        if (is_array($fieldsArray) && array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
+            $fields = array_column($fieldsArray, 'value', 'id');
+        } else {
+            $fields = $fieldsArray;
+        }
 
         $type = $fields['asset_type'];
         $url = $fields['asset_url'];
@@ -102,7 +108,13 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
         }
 
         // Decode fields JSON and map field values by their IDs.
-        $fields = array_column(json_decode($page['fields']), 'value', 'id');
+        $fieldsArray = json_decode($page['fields'], true);
+        // Handle both old format [{'id': x, 'value': y}] and new format {x: y}
+        if (is_array($fieldsArray) && array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
+            $fields = array_column($fieldsArray, 'value', 'id');
+        } else {
+            $fields = $fieldsArray;
+        }
 
         // Retrieve mandatory fields.
         $pageTitle = $fields['hyper_title'] ?? null;
