@@ -35,8 +35,13 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:
     if ($assets) {
         foreach ($assets as $asset) {
 
-            // Map fields
-            $fields = array_column(json_decode($asset['fields'], JSON_UNESCAPED_SLASHES), 'value', 'id');
+            // Map fields - handle both old and new formats
+            $fieldsArray = json_decode($asset['fields'], JSON_UNESCAPED_SLASHES);
+            if (is_array($fieldsArray) && array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
+                $fields = array_column($fieldsArray, 'value', 'id');
+            } else {
+                $fields = $fieldsArray;
+            }
 
             $url = $fields['asset_url'];
             $type = $fields['asset_type'];

@@ -65,9 +65,17 @@ class Editor extends AdminController
                 if (isset($row['fields'])) {
                     $fieldsArray = json_decode($row['fields'], true);
                     if (is_array($fieldsArray)) {
-                        foreach ($fieldsArray as $field) {
-                            if (isset($field['id']) && isset($field['value'])) {
-                                $row[$field['id']] = $field['value'];
+                        // Check if it's the legacy list of objects format
+                        if (array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
+                            foreach ($fieldsArray as $field) {
+                                if (isset($field['id']) && isset($field['value'])) {
+                                    $row[$field['id']] = $field['value'];
+                                }
+                            }
+                        } else {
+                            // New format: key-value pairs
+                            foreach ($fieldsArray as $key => $value) {
+                                $row[$key] = $value;
                             }
                         }
                     }
