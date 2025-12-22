@@ -371,19 +371,6 @@ window.addEventListener("message", function (event) {
   }
 });
 
-/**
- * Transforms an object into an array of objects with "id" and "value" properties.
- *
- * @param {Object} data - The input object with key/value pairs.
- * @returns {Array} Array of objects in the format [{ id: key, value: value }, ...]
- */
-function transformData(data) {
-  return Object.entries(data).map(([key, value]) => ({
-    id: key,
-    value,
-  }));
-}
-
 function useData(selectedData) {
   // Check if any rows are selected
   if (selectedData.length > 0) {
@@ -393,7 +380,7 @@ function useData(selectedData) {
 
     // Recreate the meta inputs and populate them with the selected data
     window.hyper_recreateMetaInputs();
-    window.hyper_populateMetaInputsWithHistory(transformData(selectedData[0]));
+    window.hyper_populateMetaInputsWithHistory(selectedData[0]);
 
     window.scrollTo({
       top: 0,

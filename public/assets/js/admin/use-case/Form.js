@@ -14,7 +14,7 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
   // console.log(name, form, formData);
 
   const inputs = form.querySelectorAll("input, textarea, select");
-  let meta = [];
+  let meta = {};
   let processedNames = new Set(); // For radio button group names
 
   inputs.forEach((input) => {
@@ -37,32 +37,26 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
             formData.append(inputName, inputFiles[i]);
           }
           const fileArray = Array.from(inputFiles).map((file) => file.name);
-          meta.push({ id, value: fileArray });
+          meta[id] = fileArray;
         } else {
           const oldFiles = document.getElementById(id + "_old").value;
-          meta.push({
-            id,
-            value: isValidJson(oldFiles) ? JSON.parse(oldFiles) : "",
-          });
+          meta[id] = isValidJson(oldFiles) ? JSON.parse(oldFiles) : "";
         }
       } else {
         if (inputFiles && inputFiles.length > 0) {
           formData.append(inputName, inputFiles[0]);
           const fileArray = Array.from(inputFiles).map((file) => file.name);
-          meta.push({ id, value: fileArray });
+          meta[id] = fileArray;
         } else {
           const oldFiles = document.getElementById(id + "_old").value;
-          meta.push({
-            id,
-            value: isValidJson(oldFiles) ? JSON.parse(oldFiles) : "",
-          });
+          meta[id] = isValidJson(oldFiles) ? JSON.parse(oldFiles) : "";
         }
       }
     }
     // Handle radio buttons: only add the checked one and avoid duplicates
     else if (type === "radio") {
       if (checked && !processedNames.has(inputName)) {
-        meta.push({ id: inputName, value });
+        meta[inputName] = value;
         processedNames.add(inputName);
       }
     }
@@ -71,18 +65,17 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
       if (inputName.endsWith("[]")) {
         if (!checked) return;
         const originalName = inputName.slice(0, -2);
-        let existingItem = meta.find((item) => item.id === originalName);
-        if (existingItem) {
-          if (Array.isArray(existingItem.value)) {
-            existingItem.value.push(value);
+        if (meta[originalName]) {
+          if (Array.isArray(meta[originalName])) {
+            meta[originalName].push(value);
           } else {
-            existingItem.value = [existingItem.value, value];
+            meta[originalName] = [meta[originalName], value];
           }
         } else {
-          meta.push({ id: originalName, value });
+          meta[originalName] = value;
         }
       } else {
-        meta.push({ id, value: checked ? "on" : "off" });
+        meta[id] = checked ? "on" : "off";
       }
     }
     // Skip hidden inputs
@@ -91,7 +84,7 @@ export function encodeFormInputsToJson(name = "meta", form, formData) {
     }
     // Handle all other input types (text, textarea, select, etc.)
     else {
-      meta.push({ id, value });
+      meta[id] = value;
     }
   });
 
