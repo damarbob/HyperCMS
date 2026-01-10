@@ -35,6 +35,14 @@
 # fileManager.productionPath = '{FCPATH}uploads'
 # fileManager.nonProductionPath = '{ROOTPATH}'
 
+# StarDust
+# StarDust.usersTable = 'users'
+# StarDust.usersIdColumn = 'id'
+# StarDust.usersUsernameColumn = 'username'
+# StarDust.asyncIndexing = true
+# StarDust.workerToken = 'hyper'
+
+
 #--------------------------------------------------------------------
 # APP
 #--------------------------------------------------------------------
