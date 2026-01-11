@@ -19,7 +19,7 @@ class Data extends AdminController
         /** @var \StarDust\Models\EntriesModel */
         $model = model('entriesModel');
 
-        $modelBuilder = $model->getCustomBuilder();
+        $modelBuilder = $model->stardust()->withLegacyAliases(true);
 
         // Filter by entry id if provided:
         if (!empty($entryId)) {

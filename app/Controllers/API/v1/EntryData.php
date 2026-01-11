@@ -35,7 +35,7 @@ class EntryData extends ApiController
         /** @var EntryDataModel */
         $entryDataModel = model('entryDataModel');
         $entryData = $entryDataModel
-            ->getCustomBuilder()
+            ->stardust()->withLegacyAliases(true)
             ->where('entry_id', $entryId)
             ->orderBy('date_created', 'DESC')
             ->get()
@@ -50,7 +50,7 @@ class EntryData extends ApiController
         // Get the model
         /** @var ModelsModel */
         $modelsModel = model('modelsModel');
-        $model = $modelsModel->getCustomBuilder()->where('id', $entryData->model_id)->get()->getRow();
+        $model = $modelsModel->stardust()->withLegacyAliases(true)->where('id', $entryData->model_id)->get()->getRow();
 
         if (!$model) {
             return $this->response
@@ -73,7 +73,7 @@ class EntryData extends ApiController
             }
         }
 
-        $entryDataModelBuilder = $entryDataModel->getCustomBuilder();
+        $entryDataModelBuilder = $entryDataModel->stardust()->withLegacyAliases(true);
 
         // Get the total count with no filtering.
         $totalRecords = $entryDataModelBuilder->countAllResults(false);
@@ -89,12 +89,12 @@ class EntryData extends ApiController
                 LOWER(
                     JSON_UNQUOTE(
                         JSON_EXTRACT(
-                            fields,
+                            entry_data.fields,
                             CONCAT(
                                 '$[',
                                 SUBSTRING_INDEX(
                                     SUBSTRING_INDEX(
-                                        JSON_SEARCH(fields, 'one', '" . $find['field'] . "', NULL, '$[*].id'),
+                                        JSON_SEARCH(entry_data.fields, 'one', '" . $find['field'] . "', NULL, '$[*].id'),
                                         '[',
                                         -1
                                     ),
@@ -114,7 +114,7 @@ class EntryData extends ApiController
 
         // 3. Apply search filter if provided.
         if (!empty($search)) {
-            $entryDataModelBuilder->where("LOWER(CAST(fields AS CHAR)) LIKE '%" . strtolower(esc($search)) . "%'");
+            $entryDataModelBuilder->where("LOWER(CAST(entry_data.fields AS CHAR)) LIKE '%" . strtolower(esc($search)) . "%'");
         }
 
         // Count the filtered results.
@@ -131,15 +131,15 @@ class EntryData extends ApiController
             } else {
                 if (in_array($orderColumn, $dateFields)) {
                     // Build dynamic ordering expression for date fields:
-                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
+                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
                     $entryDataModelBuilder->orderBy($orderExpr, $orderDir, false);
                 } elseif (in_array($orderColumn, $numericFields)) {
                     // For numeric fields, cast as decimal.
-                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
+                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
                     $entryDataModelBuilder->orderBy($orderExpr, $orderDir, false);
                 } else {
                     // For regular text, remove HTML tags as before.
-                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
+                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
                     $entryDataModelBuilder->orderBy($orderExpr, $orderDir, false);
                 }
             }

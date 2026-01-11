@@ -25,9 +25,9 @@ class Models extends ApiController
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {
-            $modelBuilder = $model->getCustomBuilder();
+            $modelBuilder = $model->stardust()->withLegacyAliases(true);
         } else {
-            $modelBuilder = $model->getDeletedCustomBuilder();
+            $modelBuilder = $model->stardust(true)->withLegacyAliases(true);
         }
 
         // 1. Get the total count with no filtering.

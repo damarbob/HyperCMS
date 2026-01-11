@@ -89,7 +89,7 @@ class ModelUserGroupFilter implements FilterInterface
 
         /** @var \StarDust\Models\ModelsModel */
         $modelsModel = model('StarDust\Models\ModelsModel');
-        $modelsBuilder = $modelsModel->getCustomBuilder();
+        $modelsBuilder = $modelsModel->stardust()->withLegacyAliases(true);
 
         // Retrieve the model record as an associative array.
         $model = $modelsBuilder->where('id', $id)->get()->getRowArray();

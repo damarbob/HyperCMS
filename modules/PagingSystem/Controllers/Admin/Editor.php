@@ -60,7 +60,7 @@ class Editor extends AdminController
     {
         // Get test user-created components for editor plugin blocks
         if (ENVIRONMENT !== 'production') {
-            $testComponents = $this->entriesModel->getCustomBuilder()->where('model_name', 'Component')->get()->getResultArray();
+            $testComponents = $this->entriesModel->stardust()->withLegacyAliases(true)->where('model_name', 'Component')->get()->getResultArray();
             foreach ($testComponents as &$row) {
                 if (isset($row['fields'])) {
                     $fieldsArray = json_decode($row['fields'], true);

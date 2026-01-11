@@ -23,7 +23,7 @@ class ModelData extends ApiController
 
         /** @var ModelDataModel */
         $modelData = model('modelDataModel');
-        $modelDataBuilder = $modelData->getCustomBuilder();
+        $modelDataBuilder = $modelData->stardust()->withLegacyAliases(true);
 
         // Get the total count with no filtering.
         $totalRecords = $modelDataBuilder->countAllResults(false);
