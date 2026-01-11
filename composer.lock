@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "dab513066101f09e2b30a68f7b0d7c22",
+    "content-hash": "ad0757b9ea3cd8c552a7328878cf95bf",
     "packages": [
         {
             "name": "codeigniter4/framework",
@@ -79,6 +79,72 @@
                 "source": "https://github.com/codeigniter4/CodeIgniter4"
             },
             "time": "2025-01-19T18:31:34+00:00"
+        },
+        {
+            "name": "codeigniter4/queue",
+            "version": "dev-develop",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/codeigniter4/queue.git",
+                "reference": "3acaa081701b44aaab3ffe8ad6740d138c949e4b"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/codeigniter4/queue/zipball/3acaa081701b44aaab3ffe8ad6740d138c949e4b",
+                "reference": "3acaa081701b44aaab3ffe8ad6740d138c949e4b",
+                "shasum": ""
+            },
+            "require": {
+                "php": "^8.1"
+            },
+            "require-dev": {
+                "codeigniter4/devkit": "^1.3",
+                "codeigniter4/framework": "^4.3",
+                "php-amqplib/php-amqplib": "^3.7",
+                "phpstan/phpstan-strict-rules": "^2.0",
+                "predis/predis": "^2.0"
+            },
+            "suggest": {
+                "ext-redis": "If you want to use RedisHandler",
+                "php-amqplib/php-amqplib": "If you want to use RabbitMQHandler",
+                "predis/predis": "If you want to use PredisHandler"
+            },
+            "default-branch": true,
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "CodeIgniter\\Queue\\": "src"
+                },
+                "exclude-from-classmap": [
+                    "**/Database/Migrations/**"
+                ]
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "michalsn",
+                    "homepage": "https://github.com/michalsn",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Queues for CodeIgniter 4 framework",
+            "homepage": "https://github.com/codeigniter4/queue",
+            "keywords": [
+                "codeigniter",
+                "codeigniter4",
+                "database",
+                "predis",
+                "queue",
+                "redis"
+            ],
+            "support": {
+                "issues": "https://github.com/codeigniter4/queue/issues",
+                "source": "https://github.com/codeigniter4/queue/tree/develop"
+            },
+            "time": "2025-12-18T07:26:23+00:00"
         },
         {
             "name": "codeigniter4/settings",
@@ -252,25 +318,28 @@
         },
         {
             "name": "damarbob/stardust",
-            "version": "v0.1.0-alpha.1",
+            "version": "v0.2.0-alpha.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/damarbob/StarDust.git",
-                "reference": "881b73a6d63541756f226fc6f32af70f9ea98f99"
+                "reference": "18677efb3c83f77b2514ba9854193c03b72fe7a8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/damarbob/StarDust/zipball/881b73a6d63541756f226fc6f32af70f9ea98f99",
-                "reference": "881b73a6d63541756f226fc6f32af70f9ea98f99",
+                "url": "https://api.github.com/repos/damarbob/StarDust/zipball/18677efb3c83f77b2514ba9854193c03b72fe7a8",
+                "reference": "18677efb3c83f77b2514ba9854193c03b72fe7a8",
                 "shasum": ""
             },
             "require": {
                 "codeigniter4/framework": "^4.0",
-                "damarbob/starcore": "^0.2.0@alpha",
+                "damarbob/starcore": "^0.2.0",
                 "php": "^8.1"
             },
             "require-dev": {
                 "phpunit/phpunit": "^10.5"
+            },
+            "suggest": {
+                "codeigniter4/queue": "Required for using asynchronous indexing in production."
             },
             "type": "library",
             "autoload": {
@@ -288,9 +357,9 @@
             "description": "The EAV-over-JSON Library for CodeIgniter 4",
             "support": {
                 "issues": "https://github.com/damarbob/StarDust/issues",
-                "source": "https://github.com/damarbob/StarDust/tree/v0.1.0-alpha.1"
+                "source": "https://github.com/damarbob/StarDust/tree/v0.2.0-alpha.2"
             },
-            "time": "2025-12-12T14:01:11+00:00"
+            "time": "2026-01-11T13:50:28+00:00"
         },
         {
             "name": "laminas/laminas-escaper",
@@ -2335,8 +2404,7 @@
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": {
-        "damarbob/starcore": 15,
-        "damarbob/stardust": 15
+        "codeigniter4/queue": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
