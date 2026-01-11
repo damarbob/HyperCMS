@@ -144,14 +144,14 @@ class Model extends ApiController
     /**
      * Apply find filter if specified
      * @todo In the future, handle multiple find conditions
-     * as the entriesModel's whereFields supports multiple conditions
+     * as the builder's likeFields supports multiple conditions
      */
     protected function applyFindFilter(&$builder, ?array $find): void
     {
         /** @var \StarDust\Models\EntriesModel */
         $entriesModel = model('entriesModel');
         if ($find && !empty($find['field']) && !empty($find['value'])) {
-            $entriesModel->whereFields($builder, [$find]);
+            $builder->likeFields([$find]);
         }
     }
 
