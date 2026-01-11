@@ -27,7 +27,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:
         return $data;
     }
 
-    $assets = $entriesModel->getCustomBuilder()
+    $assets = $entriesModel->stardust()->withLegacyAliases(true)
         ->where('model_id', $assetsModelId)
         ->get()
         ->getResultArray();

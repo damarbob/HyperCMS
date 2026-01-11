@@ -91,7 +91,7 @@ class Model extends ApiController
     protected function getModelInfo(int $modelId): array
     {
         $modelsModel = model('modelsModel');
-        $model = $modelsModel->getCustomBuilder()->where('id', $modelId)->get()->getRow();
+        $model = $modelsModel->stardust()->withLegacyAliases(true)->where('id', $modelId)->get()->getRow();
 
         if (!$model) {
             throw new \InvalidArgumentException("Model with id $modelId not found.");
@@ -131,9 +131,9 @@ class Model extends ApiController
         $entriesModel = model('entriesModel');
 
         if ($trash) {
-            $entriesModelBuilder = $entriesModel->getCustomBuilder();
+            $entriesModelBuilder = $entriesModel->stardust()->withLegacyAliases(true);
         } else {
-            $entriesModelBuilder = $entriesModel->getDeletedCustomBuilder();
+            $entriesModelBuilder = $entriesModel->stardust(true)->withLegacyAliases(true);
         }
 
         $entriesModelBuilder->where('model_id', $modelId);
@@ -161,7 +161,7 @@ class Model extends ApiController
     protected function applySearchFilter(&$builder, string $search): void
     {
         if (!empty($search)) {
-            $builder->where("LOWER(CAST(fields AS CHAR)) LIKE '%" . strtolower($search) . "%'");
+            $builder->where("LOWER(CAST(entry_data.fields AS CHAR)) LIKE '%" . strtolower($search) . "%'");
         }
     }
 
@@ -179,13 +179,13 @@ class Model extends ApiController
                 $builder->orderBy($orderColumn, $orderDir);
             } else {
                 if (in_array($orderColumn, $dateFields)) {
-                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
+                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
                     $builder->orderBy($orderExpr, $orderDir, false);
                 } elseif (in_array($orderColumn, $numericFields)) {
-                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
+                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
                     $builder->orderBy($orderExpr, $orderDir, false);
                 } else {
-                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
+                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', '" . $orderColumn . "', NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
                     $builder->orderBy($orderExpr, $orderDir, false);
                 }
             }

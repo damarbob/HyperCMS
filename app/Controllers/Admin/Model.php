@@ -28,7 +28,7 @@ class Model extends AdminController
         }
 
         // Retrieve model record(s) using a custom query builder.
-        $models = $this->modelsModel->getCustomBuilder()
+        $models = $this->modelsModel->stardust()->withLegacyAliases(true)
             ->where('id', $id)
             ->get()
             ->getResult();

@@ -14,8 +14,7 @@ class Entries extends ApiController
         $id = $data['id'] ?? null; // Entry id
         $ids = $data['ids'] ?? null; // Entry ids
         $modelId = $data['model_id'] ?? null; // Model id
-        $draw = $data['draw'] ?? 1;
-        ;
+        $draw = $data['draw'] ?? 1;;
         $start = $data['start'] ?? null; // Offset
         $length = $data['length'] ?? -1;   // Number of records per page
         $search = $data['search']['value'] ?? '';
@@ -28,9 +27,9 @@ class Entries extends ApiController
 
         // Apply trash filter
         if (!$trash || $trash == 'false') {
-            $modelBuilder = $model->getCustomBuilder();
+            $modelBuilder = $model->stardust()->withLegacyAliases(true);
         } else {
-            $modelBuilder = $model->getDeletedCustomBuilder();
+            $modelBuilder = $model->stardust(true)->withLegacyAliases(true);
         }
 
         // Filter by entry id if provided:

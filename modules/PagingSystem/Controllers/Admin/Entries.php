@@ -28,7 +28,7 @@ class Entries extends AdminController
         };
 
         $entry = $this->entriesModel
-            ->getCustomBuilder()
+            ->stardust()->withLegacyAliases(true)
             ->where('model_id', $modelId)
             // Where the fields is null, empty, or empty JSON
             ->groupStart()

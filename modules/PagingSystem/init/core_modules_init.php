@@ -10,7 +10,7 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
     /** @var \StarDust\Models\ModelsModel */
     $modelsModel = model('modelsModel');
 
-    $modelsBuilder = $modelsModel->getCustomBuilder();
+    $modelsBuilder = $modelsModel->stardust()->withLegacyAliases(true);
     $models = $modelsBuilder
         ->get()
         ->getResultArray();

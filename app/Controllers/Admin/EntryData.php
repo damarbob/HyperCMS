@@ -15,7 +15,7 @@ class EntryData extends AdminController
 
         /* Entry */
 
-        $entriesResult = $this->entriesModel->getCustomBuilder()->where('id', $id)->limit(1)->get()->getResultArray();
+        $entriesResult = $this->entriesModel->stardust()->withLegacyAliases(true)->where('id', $id)->limit(1)->get()->getResultArray();
 
         // Check if the entry exists
         if (!$entriesResult)
@@ -27,7 +27,7 @@ class EntryData extends AdminController
 
         /* Model */
 
-        $modelResult = $this->modelsModel->getCustomBuilder()->where('id', $entry['model_id'])->limit(1)->get()->getResultArray();
+        $modelResult = $this->modelsModel->stardust()->withLegacyAliases(true)->where('id', $entry['model_id'])->limit(1)->get()->getResultArray();
 
         // Check if the model exists
         if (empty($modelResult))
@@ -88,7 +88,7 @@ class EntryData extends AdminController
         /* Entry history */
 
         // Entry history
-        $entriesHistory = $this->entryDataModel->getCustomBuilder()
+        $entriesHistory = $this->entryDataModel->stardust()->withLegacyAliases(true)
             ->where('entry_id', $id)
             ->offset(1)  // Skip the first record.
             ->get()

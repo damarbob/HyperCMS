@@ -26,7 +26,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
     }
 
     // Instantiate EntriesModel and retrieve pages for eligible model IDs.
-    $pages = $entriesModel->getCustomBuilder()
+    $pages = $entriesModel->stardust()->withLegacyAliases(true)
         ->whereIn('model_id', $pagingSystemEligibleModelIds)
         ->get()
         ->getResultArray();
@@ -45,7 +45,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
 
     // Validate that we have both eligible models and a primary model.
     if (is_array($assetsEligibleModelIds) && !empty($assetsEligibleModelIds) && !empty($assetsModelId)) {
-        $assets = $entriesModel->getCustomBuilder()
+        $assets = $entriesModel->stardust()->withLegacyAliases(true)
             ->whereIn('model_id', $assetsEligibleModelIds)
             ->get()
             ->getResultArray();

@@ -14,7 +14,7 @@ class ModelData extends AdminController
 
         /* Model */
 
-        $modelResult = $this->modelsModel->getCustomBuilder()->where('id', $id)->limit(1)->get()->getResultArray();
+        $modelResult = $this->modelsModel->stardust()->withLegacyAliases(true)->where('id', $id)->limit(1)->get()->getResultArray();
 
         // Check if the model exists
         if (empty($modelResult))
