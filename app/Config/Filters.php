@@ -77,7 +77,7 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'csrf' => ['except' => ['api/*']],
+            'csrf' => ['except' => ['api/*', 'admin/access-token/*']],
             // 'honeypot',
             // 'invalidchars',
         ],
@@ -112,11 +112,11 @@ class Filters extends BaseFilters
      * @var array<string, array<string, list<string>>>
      */
     public array $filters = [
-        'session' => [
-            'before' => [
-                'admin/*',
-            ]
-        ],
+        // 'session' => [
+        //     'before' => [
+        //         'admin/*',
+        //     ]
+        // ],
         // 'chain' => [
         //     'before' => [
         //         'api/*'
