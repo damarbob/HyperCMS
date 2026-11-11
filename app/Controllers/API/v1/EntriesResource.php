@@ -9,7 +9,8 @@ use CodeIgniter\RESTful\ResourceController;
  * Read-only REST access to entries.
  *
  * The routes in `Routes.php` put this behind the `tokens` filter, so a request needs a valid
- * `Authorization: Bearer <token>` header. The token must also carry the `entries.read` scope.
+ * `Authorization: Bearer <token>` header. The token must also carry the `entries.read` scope,
+ * and its user must be in a group that may open the admin entries pages.
  * Writing entries is not supported here yet.
  */
 class EntriesResource extends ResourceController
@@ -28,6 +29,11 @@ class EntriesResource extends ResourceController
     ];
 
     /**
+     * Groups that may read entries. These match the `group` filter on the admin entries routes.
+     */
+    private const READER_GROUPS = ['superadmin', 'admin', 'developer'];
+
+    /**
      * List entries, newest edit first by default.
      *
      * Query parameters: `limit` (1 to 100, default 20), `page`, `sort`, `order`,
@@ -35,7 +41,7 @@ class EntriesResource extends ResourceController
      */
     public function index()
     {
-        if ($denied = $this->denyWithoutScope()) {
+        if ($denied = $this->denyUnlessAllowed()) {
             return $denied;
         }
 
@@ -101,7 +107,7 @@ class EntriesResource extends ResourceController
      */
     public function show($id = null)
     {
-        if ($denied = $this->denyWithoutScope()) {
+        if ($denied = $this->denyUnlessAllowed()) {
             return $denied;
         }
 
@@ -118,14 +124,15 @@ class EntriesResource extends ResourceController
     }
 
     /**
-     * Return a 403 response unless the access token carries the `entries.read` scope.
+     * Return a 403 response unless the token has the `entries.read` scope
+     * and its user is in one of the reader groups.
      */
-    private function denyWithoutScope(): ?ResponseInterface
+    private function denyUnlessAllowed(): ?ResponseInterface
     {
         $user = auth('tokens')->user();
 
-        if ($user === null || $user->tokenCant('entries.read')) {
-            return $this->failForbidden('This access token cannot read entries.');
+        if ($user === null || $user->tokenCant('entries.read') || ! $user->inGroup(...self::READER_GROUPS)) {
+            return $this->failForbidden('This account or token cannot read entries.');
         }
 
         return null;
