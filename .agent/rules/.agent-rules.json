@@ -1,0 +1,12 @@
+{
+  "source": "damarbob/agent-rules",
+  "version": "v1.1.0",
+  "files": {
+    "ai-patterns-guide.md": "31e4c03d2e6493275273b00704c6498988ceeda2e2426ad34f86d9e47982ecd5",
+    "attribution-guide.md": "c60ad8adedf16ba4a5e1bfbbbdb1eb79063917b396cbe4d549e8fbfefba5aed7",
+    "changelog-guide.md": "0144b99a1cc42d8b657b3dc0d13130370a5c8844f8346b4934f4f6e635985aaf",
+    "commit-style-guide.md": "36579c1f801b027b1ab4632b4b2f5e4565a121904f88a4ced4ef5f06549adf8e",
+    "core.md": "386144b21cda74c09ac94c03fbef0a7bf7f724a90cec898ae964de94b12a2706",
+    "writing-style-guide.md": "409222c19be7b89f53cab6cc8e26a0309f6f5e5a07adc361c2204455e6be152e"
+  }
+}

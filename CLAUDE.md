@@ -1,0 +1,1 @@
+@.agent/rules/core.md
