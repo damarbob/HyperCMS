@@ -39,6 +39,10 @@ class EntriesResource extends ResourceController
             return $denied;
         }
 
+        // Read the query string once and drop values that are not plain strings, such as `sort[]=id`.
+        // Validate this same array and take every value from it, so what is checked is what is used.
+        $params = array_filter($this->request->getGet() ?? [], 'is_string');
+
         $rules = [
             'limit'    => 'if_exist|integer|greater_than[0]|less_than_equal_to[100]',
             'page'     => 'if_exist|integer|greater_than[0]',
@@ -47,16 +51,16 @@ class EntriesResource extends ResourceController
             'model_id' => 'if_exist|integer',
         ];
 
-        if (! $this->validate($rules)) {
+        if (! $this->validateData($params, $rules)) {
             return $this->fail($this->validator->getErrors());
         }
 
-        $limit   = (int) ($this->request->getGet('limit') ?? 20);
-        $page    = (int) ($this->request->getGet('page') ?? 1);
-        $sort    = $this->request->getGet('sort') ?? 'updated_at';
-        $order   = strtoupper($this->request->getGet('order') ?? 'DESC');
-        $search  = $this->request->getGet('q');
-        $modelId = $this->request->getGet('model_id');
+        $limit   = max(1, min(100, (int) ($params['limit'] ?? 20)));
+        $page    = max(1, (int) ($params['page'] ?? 1));
+        $sort    = array_key_exists($params['sort'] ?? '', self::SORTABLE) ? $params['sort'] : 'updated_at';
+        $order   = strtoupper($params['order'] ?? '') === 'ASC' ? 'ASC' : 'DESC';
+        $search  = $params['q'] ?? null;
+        $modelId = $params['model_id'] ?? null;
 
         /** @var \StarDust\Models\EntriesModel $model */
         $model   = $this->model;
