@@ -184,5 +184,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
         $routes->post('entry-data', 'EntryData');
         $routes->post('entries', 'Entries');
         $routes->post('model', 'Model');
+
+        $routes->group('auth', static function ($routes) {
+            $routes->post('login', 'Auth::login');
+        });
     });
 });

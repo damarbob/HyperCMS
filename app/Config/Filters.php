@@ -124,7 +124,8 @@ class Filters extends BaseFilters
         // ],
         'auth-rates' => [
             'before' => [
-                'auth/*'
+                'auth/*',
+                'api/v1/auth/*',
             ]
         ]
     ];
