@@ -53,8 +53,8 @@ class Auth extends ResourceController
         }
 
         // 4. Generate the Access Token
-        // You can name the token anything, e.g., 'mobile-app'
-        $token = $user->generateAccessToken('api-login');
+        // The token may only read entries. Add a scope here when the API grows.
+        $token = $user->generateAccessToken('api-login', ['entries.read']);
 
         // 5. Return the Raw Token
         return $this->respond([

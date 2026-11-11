@@ -2,13 +2,15 @@
 
 namespace App\Controllers\API\v1;
 
+use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
 /**
  * Read-only REST access to entries.
  *
  * The routes in `Routes.php` put this behind the `tokens` filter, so a request needs a valid
- * `Authorization: Bearer <token>` header. Writing entries is not supported here yet.
+ * `Authorization: Bearer <token>` header. The token must also carry the `entries.read` scope.
+ * Writing entries is not supported here yet.
  */
 class EntriesResource extends ResourceController
 {
@@ -33,6 +35,10 @@ class EntriesResource extends ResourceController
      */
     public function index()
     {
+        if ($denied = $this->denyWithoutScope()) {
+            return $denied;
+        }
+
         $rules = [
             'limit'    => 'if_exist|integer|greater_than[0]|less_than_equal_to[100]',
             'page'     => 'if_exist|integer|greater_than[0]',
@@ -91,6 +97,10 @@ class EntriesResource extends ResourceController
      */
     public function show($id = null)
     {
+        if ($denied = $this->denyWithoutScope()) {
+            return $denied;
+        }
+
         /** @var \StarDust\Models\EntriesModel $model */
         $model = $this->model;
 
@@ -101,5 +111,19 @@ class EntriesResource extends ResourceController
         }
 
         return $this->respond($entry);
+    }
+
+    /**
+     * Return a 403 response unless the access token carries the `entries.read` scope.
+     */
+    private function denyWithoutScope(): ?ResponseInterface
+    {
+        $user = auth('tokens')->user();
+
+        if ($user === null || $user->tokenCant('entries.read')) {
+            return $this->failForbidden('This access token cannot read entries.');
+        }
+
+        return null;
     }
 }
