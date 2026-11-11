@@ -188,5 +188,10 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
         $routes->group('auth', static function ($routes) {
             $routes->post('login', 'Auth::login');
         });
+
+        // Read-only entries, access token required
+        $routes->group('', ['filter' => 'tokens'], static function ($routes) {
+            $routes->resource('entries-resource', ['controller' => 'EntriesResource', 'only' => ['index', 'show']]);
+        });
     });
 });
