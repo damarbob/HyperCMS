@@ -81,7 +81,7 @@ class Entries extends AdminController
             return redirect('admin/entries')
                 ->with('error', lang('Admin.noModelFound'));
 
-        $model = $this->modelsManager->find($modelId);
+        $model = service('modelStore')->findArray($modelId);
 
         // Check if the model does not exist
         if (!$model)
@@ -117,7 +117,7 @@ class Entries extends AdminController
 
         /* Entry */
 
-        $entry = $this->entriesManager->find($id);
+        $entry = service('entryStore')->findArray($id);
 
         // Check if the entry exists
         if (!$entry)
@@ -128,7 +128,7 @@ class Entries extends AdminController
 
         /* Model */
 
-        $model = $this->modelsManager->find($modelId);
+        $model = service('modelStore')->findArray($modelId);
 
         // Check if the model exists
         if (empty($model))
@@ -222,7 +222,7 @@ class Entries extends AdminController
             $finalData['fields'] = $this->updateMetaFields($validData['fields'], $fileUrls);
 
             // Delegate the creation process to the service
-            $entryId = $this->entriesManager->create($finalData, $userId);
+            $entryId = service('entryStore')->create($finalData, $userId);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
@@ -270,7 +270,7 @@ class Entries extends AdminController
             $finalData['fields'] = $this->updateMetaFields($validData['fields'], $fileUrls);
 
             // Delegate the creation process to the service
-            $this->entriesManager->update($id, $finalData, $userId);
+            service('entryStore')->update($id, $finalData, $userId);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
@@ -299,7 +299,7 @@ class Entries extends AdminController
 
         try {
             // Delete entries and data
-            $this->entriesManager->deleteEntries($ids, $deleterId);
+            service('entryStore')->trash($ids, $deleterId);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
@@ -308,7 +308,7 @@ class Entries extends AdminController
 
         /* Response */
 
-        $deletedEntries = $this->entriesManager->findDeletedEntries($ids);
+        $deletedEntries = service('entryStore')->trashed($ids);
 
         // Build a success response.
         $successMessage = (count($deletedEntries) > 1) ? lang('Admin.entriesSuccessfullyDeleted') : lang('Admin.entryxSuccessfullyDeleted', ['x' => $deletedEntries[0]['model_name']]);
@@ -326,7 +326,7 @@ class Entries extends AdminController
 
         /* Validation */
 
-        $deleteableEntries = $this->entriesManager->countDeleted();
+        $deleteableEntries = service('entryStore')->countTrashed();
 
         if (!$deleteableEntries) {
             return $this->response->setStatusCode(400, lang('Admin.trashIsEmpty'));
@@ -337,7 +337,7 @@ class Entries extends AdminController
         /* Action */
 
         try {
-            $this->entriesManager->purgeDeleted();
+            service('entryStore')->emptyTrash();
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
@@ -364,7 +364,7 @@ class Entries extends AdminController
         }
 
         // List all deleted entries
-        $entries = $this->entriesManager->findDeletedEntries($ids);
+        $entries = service('entryStore')->trashed($ids);
 
         // List restorable entry ids
         $restorableEntryIds = [];
@@ -375,7 +375,7 @@ class Entries extends AdminController
         foreach ($entries as $entry) {
             $modelId = $entry['model_id'];
 
-            $model = $this->modelsModel->where('id', $modelId)->findAll();
+            $model = service('modelStore')->exists($modelId);
 
             // If the model exists, restore the entry
             if ($model) {
@@ -394,7 +394,7 @@ class Entries extends AdminController
         /* Action */
 
         try {
-            $this->entriesManager->restore($ids);
+            service('entryStore')->restore($ids);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }

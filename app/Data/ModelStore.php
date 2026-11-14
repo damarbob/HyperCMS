@@ -116,6 +116,14 @@ class ModelStore
     }
 
     /**
+     * Tell whether a live model with this id exists. A trashed model does not count.
+     */
+    public function exists(int|string $id): bool
+    {
+        return !empty($this->models->where('id', $id)->findAll());
+    }
+
+    /**
      * Read every live model as an array of rows.
      */
     public function all(): array

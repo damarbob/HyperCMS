@@ -7,6 +7,7 @@ use App\Constants\ModelStaticFields;
 use App\Libraries\SortColumn;
 use StarDust\Models\EntriesModel;
 use StarDust\Models\EntryDataModel;
+use StarDust\Services\EntriesManager;
 
 /**
  * The one place that reads and writes entries.
@@ -20,7 +21,72 @@ class EntryStore
         private EntriesModel $entries,
         private EntryDataModel $entryData,
         private ModelStore $models,
+        private EntriesManager $manager,
     ) {
+    }
+
+    /**
+     * Read one live entry as a row with StarDust's own column names, or false when there is none.
+     */
+    public function findArray(int $id): array|false
+    {
+        return $this->manager->find($id);
+    }
+
+    /**
+     * Create an entry and return its id.
+     */
+    public function create(array $data, int $userId): int
+    {
+        return $this->manager->create($data, $userId);
+    }
+
+    /**
+     * Save a new version of an entry.
+     */
+    public function update(int $id, array $data, int $userId): void
+    {
+        $this->manager->update($id, $data, $userId);
+    }
+
+    /**
+     * Move entries to the trash.
+     */
+    public function trash(array $ids, int $userId): void
+    {
+        $this->manager->deleteEntries($ids, $userId);
+    }
+
+    /**
+     * Read the trashed entries among the given ids, or false when there are none.
+     */
+    public function trashed(array $ids): array|false
+    {
+        return $this->manager->findDeletedEntries($ids);
+    }
+
+    /**
+     * Count the entries in the trash.
+     */
+    public function countTrashed(): int|string
+    {
+        return $this->manager->countDeleted();
+    }
+
+    /**
+     * Delete the trashed entries for good.
+     */
+    public function emptyTrash(): void
+    {
+        $this->manager->purgeDeleted();
+    }
+
+    /**
+     * Bring entries back from the trash.
+     */
+    public function restore(array $ids): void
+    {
+        $this->manager->restore($ids);
     }
 
     /**
