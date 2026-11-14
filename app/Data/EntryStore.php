@@ -2,9 +2,11 @@
 
 namespace App\Data;
 
+use App\Constants\EntryDataStaticFields;
 use App\Constants\ModelStaticFields;
 use App\Libraries\SortColumn;
 use StarDust\Models\EntriesModel;
+use StarDust\Models\EntryDataModel;
 
 /**
  * The one place that reads and writes entries.
@@ -14,8 +16,11 @@ use StarDust\Models\EntriesModel;
  */
 class EntryStore
 {
-    public function __construct(private EntriesModel $entries, private ModelStore $models)
-    {
+    public function __construct(
+        private EntriesModel $entries,
+        private EntryDataModel $entryData,
+        private ModelStore $models,
+    ) {
     }
 
     /**
@@ -298,5 +303,140 @@ class EntryStore
         }
 
         return $data;
+    }
+
+    /**
+     * Answer one DataTables request for the saved versions of one entry.
+     *
+     * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns, find).
+     * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
+     * @throws LookupException When the entry id is missing or names no entry, or the entry names no model.
+     */
+    public function versionsDataTable(array $post): array
+    {
+        $entryId = $post['id'] ?? null;
+        $draw = $post['draw'] ?? 1;
+        $start = $post['start'] ?? 0;
+        $length = $post['length'] ?? 10;
+        $search = $post['search']['value'] ?? '';
+        $order = $post['order'] ?? null;
+        $columns = $post['columns'] ?? null;
+        $find = $post['find'] ?? null;
+
+        if (!$entryId) {
+            throw new LookupException("No entry id provided.");
+        }
+
+        $latest = $this->entryData
+            ->stardust()->withLegacyAliases(true)
+            ->where('entry_id', $entryId)
+            ->orderBy('date_created', 'DESC')
+            ->get()
+            ->getRow();
+
+        if (!$latest) {
+            throw new LookupException("Entry with id $entryId not found.");
+        }
+
+        $model = $this->models->find($latest->model_id);
+
+        if (!$model) {
+            throw new LookupException("Model with id $latest->model_id not found.");
+        }
+
+        $modelFields = json_decode($model->fields);
+        $dateFields = [];
+        $numericFields = [];
+        $codeFields = [];
+
+        foreach ($modelFields as $field) {
+            if ($field->type == 'datetime-local') {
+                $dateFields[] = $field->id;
+            } elseif ($field->type == 'number') {
+                $numericFields[] = $field->id;
+            } elseif ($field->type == 'code') {
+                $codeFields[] = $field->id;
+            }
+        }
+
+        $builder = $this->entryData->stardust()->withLegacyAliases(true);
+
+        if (!empty($entryId)) {
+            $builder->where('entry_id', $entryId);
+        }
+
+        if ($find && !empty($find['field']) && !empty($find['value'])) {
+            // The field id and the value go into a SQL string below, so escape both first.
+            $db = db_connect();
+            $builder->where("
+                LOWER(
+                    JSON_UNQUOTE(
+                        JSON_EXTRACT(
+                            entry_data.fields,
+                            CONCAT(
+                                '$[',
+                                SUBSTRING_INDEX(
+                                    SUBSTRING_INDEX(
+                                        JSON_SEARCH(entry_data.fields, 'one', " . $db->escape((string) $find['field']) . ", NULL, '$[*].id'),
+                                        '[',
+                                        -1
+                                    ),
+                                    ']',
+                                    1
+                                ),
+                                '].value'
+                            )
+                        )
+                    )
+                ) LIKE '%" . $db->escapeLikeString(strtolower((string) $find['value'])) . "%'
+            ");
+        }
+
+        // The total counts this entry's versions after the find filter, before the search.
+        $totalRecords = $builder->countAllResults(false);
+
+        if (!empty($search)) {
+            $builder->where("LOWER(CAST(entry_data.fields AS CHAR)) LIKE '%" . strtolower(esc($search)) . "%'");
+        }
+
+        $recordsFiltered = $builder->countAllResults(false);
+
+        if (!empty($order)) {
+            $orderColumnIndex = $order[0]['column'];
+            $orderDir = $order[0]['dir'];
+            $orderColumn = $columns[$orderColumnIndex]['data']; // The field key for dynamic fields.
+
+            // The field id goes into a SQL string below, so quote and escape it first.
+            $quoted = db_connect()->escape((string) $orderColumn);
+
+            if (in_array($orderColumn, EntryDataStaticFields::FIELD_LIST)) {
+                $builder->orderBy($orderColumn, $orderDir);
+            } else {
+                if (in_array($orderColumn, $dateFields)) {
+                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
+                    $builder->orderBy($orderExpr, $orderDir, false);
+                } elseif (in_array($orderColumn, $numericFields)) {
+                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
+                    $builder->orderBy($orderExpr, $orderDir, false);
+                } else {
+                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
+                    $builder->orderBy($orderExpr, $orderDir, false);
+                }
+            }
+        } else {
+            $builder->orderBy('date_created', 'DESC');
+        }
+
+        // A length of -1 means no limit.
+        if ($length != -1) {
+            $builder->limit(intval($length), intval($start));
+        }
+
+        return [
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $this->pivotRows($builder->get()->getResultArray(), $codeFields),
+        ];
     }
 }
