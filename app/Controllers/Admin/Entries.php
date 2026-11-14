@@ -5,7 +5,7 @@ namespace App\Controllers\Admin;
 use App\Controllers\AdminController;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
-use StarDust\Libraries\SyntaxProcessor;
+use App\Libraries\SyntaxProcessor;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Psr\Log\LoggerInterface;
@@ -25,7 +25,7 @@ class Entries extends AdminController
         parent::initController($request, $response, $logger);
 
         // Retrieve the syntax processor helper instance
-        $this->syntaxProcessor = syntax_processor();
+        $this->syntaxProcessor = new SyntaxProcessor();
 
         // Determine upload directory based on current environment
         if (ENVIRONMENT === 'production') {

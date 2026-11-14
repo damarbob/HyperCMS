@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use StarDust\Libraries\SyntaxProcessor;
+use App\Libraries\SyntaxProcessor;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Config\Hyper;

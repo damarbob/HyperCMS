@@ -124,6 +124,16 @@ class ModelStore
     }
 
     /**
+     * Compile the SQL that reads every live model as a flat table, without running it.
+     *
+     * The syntax processor wraps this SQL as a subquery so a form field can list models.
+     */
+    public function compiledSelect(): string
+    {
+        return $this->models->stardust()->getCompiledSelect();
+    }
+
+    /**
      * Read every live model as an array of rows.
      */
     public function all(): array

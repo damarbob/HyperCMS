@@ -90,6 +90,16 @@ class EntryStore
     }
 
     /**
+     * Compile the SQL that reads every live entry as a flat table, without running it.
+     *
+     * The syntax processor wraps this SQL as a subquery so a form field can list entries.
+     */
+    public function compiledSelect(): string
+    {
+        return $this->entries->stardust()->getCompiledSelect();
+    }
+
+    /**
      * Answer one DataTables request for entries across all models.
      *
      * @param array $post The POST values DataTables sent (id, ids, model_id, draw, start, length, search, order, columns, trash).
