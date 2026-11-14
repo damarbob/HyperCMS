@@ -18,7 +18,8 @@
                     "data": "id"
                 }
             ]
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

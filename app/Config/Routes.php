@@ -179,19 +179,28 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
     // $routes->resource('models', ['websafe' => 1]);
 
     $routes->group('v1', ['filter' => 'cors'], static function ($routes) {
-        $routes->post('models', 'Models');
-        $routes->post('model-data', 'ModelData');
-        $routes->post('entry-data', 'EntryData');
-        $routes->post('entries', 'Entries');
-        $routes->post('model', 'Model');
-
         $routes->group('auth', static function ($routes) {
             $routes->post('login', 'Auth::login');
         });
 
-        // Read-only entries, access token required
-        $routes->group('', ['filter' => 'tokens'], static function ($routes) {
+        // Every route below needs a signed-in admin session or an access token.
+
+        // Model definitions and their saved versions
+        $routes->group('', ['filter' => 'api-auth:models.read'], static function ($routes) {
+            $routes->post('models', 'Models');
+            $routes->post('model-data', 'ModelData');
+        });
+
+        // Entries and their saved versions
+        $routes->group('', ['filter' => 'api-auth:entries.read'], static function ($routes) {
+            $routes->post('entries', 'Entries');
+            $routes->post('entry-data', 'EntryData');
             $routes->resource('entries-resource', ['controller' => 'EntriesResource', 'only' => ['index', 'show']]);
+        });
+
+        // The entries of one model. A visitor without a login may read a model that is marked public.
+        $routes->group('', ['filter' => 'api-auth:entries.read,optional'], static function ($routes) {
+            $routes->post('model', 'Model');
         });
     });
 });

@@ -3,11 +3,17 @@
 namespace DataComparison\Controllers\API\v1;
 
 use App\Controllers\AdminController;
+use App\Filters\ApiAuthFilter;
 
 class Data extends AdminController
 {
     public function index()
     {
+        // Only the groups that see this module in the admin menu may read its data.
+        if (! ApiAuthFilter::caller()->inGroup(...ApiAuthFilter::STAFF_GROUPS)) {
+            return $this->response->setStatusCode(403)->setJSON(['message' => lang('Auth.notEnoughPrivilege')]);
+        }
+
         // Retrieve standard DataTables POST parameters
         $data = $this->request->getVar();
 

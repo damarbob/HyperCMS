@@ -139,17 +139,44 @@ $save = function (string $name, array $request, int $status, string $body) use (
     $summary[] = [$name, $status, strlen($body), $rows, is_array($payload) ? ($payload['recordsTotal'] ?? '') : '', is_array($payload) ? ($payload['recordsFiltered'] ?? '') : ''];
 };
 
-foreach ($post as $name => [$path, $form]) {
-    [$status, $body] = call('POST', $base . $path, $form);
-    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form], $status, $body);
-}
-
-// token API
+// Sign in first. Every list endpoint needs a login or a token.
 [$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_admin@example.test', 'password' => 'Capture-Admin-2026']);
 $save('auth_login', ['method' => 'POST', 'path' => 'api/v1/auth/login'], $s, $body);
 $token = json_decode($body, true)['access_token'] ?? '';
 [$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_admin@example.test', 'password' => 'wrong']);
 $save('auth_login_bad', ['method' => 'POST', 'path' => 'api/v1/auth/login'], $s, $body);
+
+foreach ($post as $name => [$path, $form]) {
+    [$status, $body] = call('POST', $base . $path, $form, null, ['Authorization: Bearer ' . $token]);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'bearer'], $status, $body);
+}
+
+// What a caller without a login gets. Model 2 is the public one.
+$anon = [
+    'anon_models'              => ['api/v1/models', $dt()],
+    'anon_model_data'          => ['api/v1/model-data', $dt(['id' => 1])],
+    'anon_entries'             => ['api/v1/entries', $dt()],
+    'anon_entry_data'          => ['api/v1/entry-data', $dt(['id' => 1])],
+    'anon_model1'              => ['api/v1/model', $m1()],
+    'anon_model_noid'          => ['api/v1/model', $dt()],
+    'anon_model2_public'       => ['api/v1/model', $m1(['id' => 2, 'length' => -1])],
+    'anon_model2_public_trash' => ['api/v1/model', $m1(['id' => 2, 'length' => -1, 'trash' => 'true'])],
+];
+foreach ($anon as $name => [$path, $form]) {
+    [$status, $body] = call('POST', $base . $path, $form);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'none'], $status, $body);
+}
+[$s, $body] = call('POST', $base . 'api/v1/models', $dt(), null, ['Authorization: Bearer not-a-real-token']);
+$save('badtoken_models', ['method' => 'POST', 'path' => 'api/v1/models', 'form' => $dt(), 'auth' => 'bad token'], $s, $body);
+
+// A token works only for the staff groups. capture_user can log in, and its token is refused.
+[$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_user@example.test', 'password' => 'Capture-User-2026']);
+$save('user_login', ['method' => 'POST', 'path' => 'api/v1/auth/login', 'account' => 'capture_user'], $s, $body);
+$userToken = json_decode($body, true)['access_token'] ?? '';
+[$s, $body] = call('POST', $base . 'api/v1/models', $dt(), null, ['Authorization: Bearer ' . $userToken]);
+$save('user_models', ['method' => 'POST', 'path' => 'api/v1/models', 'form' => $dt(), 'auth' => 'bearer of capture_user'], $s, $body);
+[$s, $body] = call('GET', $base . 'api/v1/entries-resource', null, null, ['Authorization: Bearer ' . $userToken]);
+$save('user_res_list', ['method' => 'GET', 'path' => 'api/v1/entries-resource', 'auth' => 'bearer of capture_user'], $s, $body);
 
 $get = [
     'res_list'          => 'api/v1/entries-resource',

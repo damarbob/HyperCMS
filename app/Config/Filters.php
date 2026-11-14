@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Filters\ApiAuthFilter;
 use App\Filters\GroupNotFilter;
 use App\Filters\ModelUserGroupFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
@@ -39,6 +40,7 @@ class Filters extends BaseFilters
 
         // Hyper
         'model-user-group'   => ModelUserGroupFilter::class,
+        'api-auth'           => ApiAuthFilter::class,
 
         // Shield extension filter
         'group-not'     => GroupNotFilter::class,

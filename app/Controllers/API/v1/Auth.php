@@ -53,8 +53,8 @@ class Auth extends ResourceController
         }
 
         // 4. Generate the Access Token
-        // The token may only read entries. Add a scope here when the API grows.
-        $token = $user->generateAccessToken('api-login', ['entries.read']);
+        // The token may read entries and model definitions. Add a scope here when the API grows.
+        $token = $user->generateAccessToken('api-login', ['entries.read', 'models.read']);
 
         // 5. Return the Raw Token
         return $this->respond([

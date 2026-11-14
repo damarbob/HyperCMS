@@ -6,6 +6,6 @@
     },
     "status": 401,
     "body": {
-        "message": "Akses token tidak sah."
+        "message": "Login dulu atau kirim access token untuk memakai endpoint ini."
     }
 }

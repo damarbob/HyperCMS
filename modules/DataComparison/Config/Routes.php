@@ -19,7 +19,8 @@ $routes->group('admin', ['namespace' => '\DataComparison\Controllers'], static f
     });
 });
 $routes->group('api', static function ($routes) {
-    $routes->group('v1', ['namespace' => '\DataComparison\Controllers\API\v1'], static function ($routes) {
+    // The comparison data is entries from every model, so it follows the same rule as `api/v1/entries`.
+    $routes->group('v1', ['namespace' => '\DataComparison\Controllers\API\v1', 'filter' => 'api-auth:entries.read'], static function ($routes) {
         $routes->post('data-comparison/data', 'Data');
         $routes->post('data-comparison/entries', 'Data');
     });

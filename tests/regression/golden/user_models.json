@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/models",
+        "form": {
+            "draw": 1
+        },
+        "auth": "bearer of capture_user"
+    },
+    "status": 403,
+    "body": {
+        "message": "Akun atau token ini tidak diizinkan memakai endpoint ini."
+    }
+}

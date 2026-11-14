@@ -15,7 +15,8 @@
                     "data": "name"
                 }
             ]
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

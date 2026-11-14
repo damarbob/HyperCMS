@@ -182,6 +182,36 @@ foreach ($pages as $i => $p) {
     $save($name, ['request' => "GET $p"] + $page($r, $name));
 }
 
+// The list endpoints as the admin screens call them, with the session cookie and no token.
+$apiCalls = [
+    'a01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
+    'a02_api_model_data'       => ['POST', 'api/v1/model-data', ['draw' => 1, 'id' => 1, 'order' => [['column' => 0, 'dir' => 'asc']], 'columns' => [['data' => 'name']]]],
+    'a03_api_entries'          => ['POST', 'api/v1/entries', ['draw' => 1, 'start' => 0, 'length' => 2]],
+    'a04_api_entry_data'       => ['POST', 'api/v1/entry-data', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
+    'a05_api_model'            => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
+    'a06_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
+];
+foreach ($apiCalls as $name => [$method, $path, $form]) {
+    [$status, $body] = $c->request($method, $path, $form, true);
+    $save($name, ['request' => ['method' => $method, 'path' => $path, 'form' => $form], 'status' => $status, 'body' => json_decode($body, true)]);
+}
+
+// The same endpoints for a signed-in account outside the staff groups. Model 5 is restricted to developers.
+$u = new Client($base);
+$u->request('GET', 'auth/login');
+$u->request('POST', 'auth/login', ['email' => 'capture_user@example.test', 'password' => 'Capture-User-2026']);
+$userCalls = [
+    'u01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
+    'u02_api_entries'          => ['POST', 'api/v1/entries', ['draw' => 1, 'start' => 0, 'length' => 2]],
+    'u03_api_model1'           => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
+    'u04_api_model5'           => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 5, 'start' => 0, 'length' => 2]],
+    'u05_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
+];
+foreach ($userCalls as $name => [$method, $path, $form]) {
+    [$status, $body] = $u->request($method, $path, $form, true);
+    $save($name, ['request' => ['method' => $method, 'path' => $path, 'form' => $form, 'account' => 'capture_user'], 'status' => $status, 'body' => json_decode($body, true)]);
+}
+
 // write flows, each followed by the rows it changed
 $j = fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 $productFields = fn(string $sku) => $j(['sku' => $sku, 'price' => '5.00', 'category' => 'a', 'added' => '2026-04-01T08:00']);

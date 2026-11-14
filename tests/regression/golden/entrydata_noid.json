@@ -4,7 +4,8 @@
         "path": "api/v1/entry-data",
         "form": {
             "draw": 1
-        }
+        },
+        "auth": "bearer"
     },
     "status": 400,
     "body": {

@@ -25,7 +25,7 @@ CREATE TABLE `auth_groups_users` (
 
 LOCK TABLES `auth_groups_users` WRITE;
 /*!40000 ALTER TABLE `auth_groups_users` DISABLE KEYS */;
-INSERT INTO `auth_groups_users` VALUES (1,1,'superadmin','2026-11-14 11:13:34');
+INSERT INTO `auth_groups_users` VALUES (1,1,'superadmin','2026-11-14 11:13:34'),(2,2,'user','2026-11-14 19:25:15'),(3,3,'developer','2026-11-14 19:25:15');
 /*!40000 ALTER TABLE `auth_groups_users` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `auth_identities`;
@@ -53,7 +53,7 @@ CREATE TABLE `auth_identities` (
 
 LOCK TABLES `auth_identities` WRITE;
 /*!40000 ALTER TABLE `auth_identities` DISABLE KEYS */;
-INSERT INTO `auth_identities` VALUES (1,1,'email_password',NULL,'capture_admin@example.test','$2y$12$s.1kadlkphT/Q/ojvRZrGORjTdMFv/oBFsLMcvlOGveO74KnQPBRK',NULL,NULL,0,NULL,'2026-11-14 11:13:34','2026-11-14 11:13:34'),(2,1,'access_token','api-login','b03e3b724a361de13db8e601fa318ffd9fbc937863cf920932a7dd8709becc7b',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:15:28','2026-11-14 11:15:24','2026-11-14 11:15:28'),(3,1,'access_token','api-login','a95a229edce81046258897e900bd4145e6d01f20cd14054cd7053e0c9339e250',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:15:53','2026-11-14 11:15:50','2026-11-14 11:15:53'),(4,1,'access_token','api-login','398d146a0b95a85a3f6e24bbfdea71c8024f4147d31cb1178d319482657d1ffd',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:16:35','2026-11-14 11:16:32','2026-11-14 11:16:35'),(5,1,'access_token','api-login','7b74e7e95af0021594c3a8e74600c3e23e66907d9fef9cd76fc50b97c1a4a4bd',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:16:51','2026-11-14 11:16:47','2026-11-14 11:16:51');
+INSERT INTO `auth_identities` VALUES (1,1,'email_password',NULL,'capture_admin@example.test','$2y$12$s.1kadlkphT/Q/ojvRZrGORjTdMFv/oBFsLMcvlOGveO74KnQPBRK',NULL,NULL,0,NULL,'2026-11-14 11:13:34','2026-11-14 11:13:34'),(2,1,'access_token','api-login','b03e3b724a361de13db8e601fa318ffd9fbc937863cf920932a7dd8709becc7b',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:15:28','2026-11-14 11:15:24','2026-11-14 11:15:28'),(3,1,'access_token','api-login','a95a229edce81046258897e900bd4145e6d01f20cd14054cd7053e0c9339e250',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:15:53','2026-11-14 11:15:50','2026-11-14 11:15:53'),(4,1,'access_token','api-login','398d146a0b95a85a3f6e24bbfdea71c8024f4147d31cb1178d319482657d1ffd',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:16:35','2026-11-14 11:16:32','2026-11-14 11:16:35'),(5,1,'access_token','api-login','7b74e7e95af0021594c3a8e74600c3e23e66907d9fef9cd76fc50b97c1a4a4bd',NULL,NULL,'a:1:{i:0;s:12:\"entries.read\";}',0,'2026-11-14 11:16:51','2026-11-14 11:16:47','2026-11-14 11:16:51'),(6,2,'email_password',NULL,'capture_user@example.test','$2y$12$J66mDV26Ns.LAin/EGfSoePFZFofC7LKpw/5JVd0xObsq76oWBi/O',NULL,NULL,0,NULL,'2026-11-14 19:25:15','2026-11-14 19:25:15'),(7,3,'email_password',NULL,'capture_dev@example.test','$2y$12$gdR0mysSzZB.UAGOBGdO9e6a8/dbMHRBZEibGRU6tei4OY2D8WGOC',NULL,NULL,0,NULL,'2026-11-14 19:25:15','2026-11-14 19:25:15');
 /*!40000 ALTER TABLE `auth_identities` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `auth_logins`;
@@ -335,7 +335,7 @@ CREATE TABLE `users` (
 
 LOCK TABLES `users` WRITE;
 /*!40000 ALTER TABLE `users` DISABLE KEYS */;
-INSERT INTO `users` VALUES (1,'capture_admin',NULL,NULL,1,'2026-11-14 11:16:51','2026-11-14 11:13:33','2026-11-14 11:13:34',NULL);
+INSERT INTO `users` VALUES (1,'capture_admin',NULL,NULL,1,'2026-11-14 11:16:51','2026-11-14 11:13:33','2026-11-14 11:13:34',NULL),(2,'capture_user',NULL,NULL,1,NULL,'2026-11-14 19:25:14','2026-11-14 19:25:15',NULL),(3,'capture_dev',NULL,NULL,1,NULL,'2026-11-14 19:25:15','2026-11-14 19:25:15',NULL);
 /*!40000 ALTER TABLE `users` ENABLE KEYS */;
 UNLOCK TABLES;
 /*!40103 SET TIME_ZONE=@OLD_TIME_ZONE */;
