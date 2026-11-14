@@ -6,6 +6,10 @@ use App\Data\EntryStore;
 use App\Data\ModelStore;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
+use StarDust\Models\EntriesModel;
+use StarDust\Models\EntryDataModel;
+use StarDust\Models\ModelDataModel;
+use StarDust\Models\ModelsModel;
 
 /**
  * Services Configuration file.
@@ -58,7 +62,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('entryStore');
         }
-        return new EntryStore(model('entriesModel'), model('entryDataModel'), static::modelStore(), service('entriesManager'));
+        return new EntryStore(model(EntriesModel::class), model(EntryDataModel::class), static::modelStore(), service('entriesManager'));
     }
 
     /**
@@ -72,6 +76,6 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('modelStore');
         }
-        return new ModelStore(model('modelsModel'), model('modelDataModel'), service('modelsManager'));
+        return new ModelStore(model(ModelsModel::class), model(ModelDataModel::class), service('modelsManager'));
     }
 }
