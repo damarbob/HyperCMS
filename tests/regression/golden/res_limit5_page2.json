@@ -1,0 +1,93 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource?limit=5&page=2",
+        "auth": "bearer"
+    },
+    "status": 200,
+    "body": {
+        "data": [
+            {
+                "id": "36",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "2",
+                "model_name": "Product",
+                "model_fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "user_groups": "[\"superadmin\"]",
+                "fields": "{\"sku\":\"SKU-011\",\"price\":\"38.50\",\"category\":\"a\",\"added\":\"2026-03-11T08:00\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "36",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "29",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "2",
+                "model_name": "Product",
+                "model_fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "user_groups": "[\"superadmin\"]",
+                "fields": "{\"sku\":\"SKU-004\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-04T08:00\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "29",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "38",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "3",
+                "model_name": "Linked",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                "user_groups": "[]",
+                "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "38",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "30",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "2",
+                "model_name": "Product",
+                "model_fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "user_groups": "[\"superadmin\"]",
+                "fields": "{\"sku\":\"SKU-005\",\"price\":\"17.50\",\"category\":\"a\",\"added\":\"2026-03-05T08:00\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "30",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "39",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "3",
+                "model_name": "Linked",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                "user_groups": "[]",
+                "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "39",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            }
+        ],
+        "pager": {
+            "current_page": 2,
+            "total_pages": 8,
+            "total_items": 38,
+            "per_page": 5
+        }
+    }
+}

@@ -1,0 +1,63 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource?q=capture_admin&limit=3",
+        "auth": "bearer"
+    },
+    "status": 200,
+    "body": {
+        "data": [
+            {
+                "id": "1",
+                "created_at": "2026-11-14 11:13:35",
+                "date_deleted": null,
+                "model_id": "1",
+                "model_name": "Article",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "user_groups": "[]",
+                "fields": "{\"title\":\"Getting started with HyperCMS (edited twice)\",\"body\":\"<p>v3</p>\",\"views\":\"16\",\"published_at\":\"2026-01-05T09:30\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\"}",
+                "date_modified": "2026-11-14 11:13:38",
+                "data_id": "45",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "2",
+                "created_at": "2026-11-14 11:13:36",
+                "date_deleted": null,
+                "model_id": "1",
+                "model_name": "Article",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "user_groups": "[]",
+                "fields": "{\"title\":\"apple pie recipe v2\",\"body\":\"changed\",\"views\":\"25\",\"published_at\":\"\",\"tags\":[],\"cover\":\"\"}",
+                "date_modified": "2026-11-14 11:13:38",
+                "data_id": "46",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
+                "id": "27",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "2",
+                "model_name": "Product",
+                "model_fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "user_groups": "[\"superadmin\"]",
+                "fields": "{\"sku\":\"SKU-002\",\"price\":\"7.00\",\"category\":\"b\",\"added\":\"2026-03-02T08:00\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "27",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            }
+        ],
+        "pager": {
+            "current_page": 1,
+            "total_pages": 13,
+            "total_items": 38,
+            "per_page": 3
+        }
+    }
+}

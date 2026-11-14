@@ -1,0 +1,17 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model-data",
+        "form": {
+            "draw": 1,
+            "search": {
+                "value": "Art"
+            }
+        }
+    },
+    "status": 500,
+    "body": {
+        "type": "CodeIgniter\\Database\\Exceptions\\DatabaseException",
+        "message": "Unknown column 'date_modified' in 'order clause'"
+    }
+}

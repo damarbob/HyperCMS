@@ -1,0 +1,22 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1,
+            "id": 1,
+            "start": 0,
+            "length": 10,
+            "search": {
+                "value": "zzznomatch"
+            }
+        }
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 23,
+        "recordsFiltered": 0,
+        "data": []
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource/9999",
+        "auth": "bearer"
+    },
+    "status": 404,
+    "body": {
+        "status": 404,
+        "error": 404,
+        "messages": {
+            "error": "Entry not found."
+        }
+    }
+}

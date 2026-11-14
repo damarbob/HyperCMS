@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/entries/1/1/edit",
+    "status": 200,
+    "location": null,
+    "title": "Edit Article",
+    "bytes": 133654,
+    "sha1": "8a8998b06c3317da493337a9d9a4370111ee4341"
+}

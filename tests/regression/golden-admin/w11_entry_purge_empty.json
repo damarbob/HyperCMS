@@ -1,0 +1,11 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/purge-deleted",
+        "form": []
+    },
+    "status": 400,
+    "location": null,
+    "body": "",
+    "changes": []
+}

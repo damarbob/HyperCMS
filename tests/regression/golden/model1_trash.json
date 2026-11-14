@@ -1,0 +1,55 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1,
+            "id": 1,
+            "start": 0,
+            "length": 10,
+            "trash": "true"
+        }
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 2,
+        "recordsFiltered": 2,
+        "data": [
+            {
+                "id": "24",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": "2026-11-14 11:13:38",
+                "model_id": "1",
+                "model_name": "Article",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "user_groups": "[]",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "24",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": "capture_admin",
+                "title": "Sample post 24",
+                "views": "240",
+                "body": "Plain body 24"
+            },
+            {
+                "id": "25",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": "2026-11-14 11:13:38",
+                "model_id": "1",
+                "model_name": "Article",
+                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "user_groups": "[]",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "25",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": "capture_admin",
+                "title": "Sample post 25",
+                "views": "250",
+                "body": "<p>Body of post 25 with <em>markup</em> and a \"quote\" and a back\\slash ?</p>"
+            }
+        ]
+    }
+}

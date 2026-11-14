@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1
+        }
+    },
+    "status": 500,
+    "body": {
+        "type": "InvalidArgumentException",
+        "message": "No model id provided."
+    }
+}

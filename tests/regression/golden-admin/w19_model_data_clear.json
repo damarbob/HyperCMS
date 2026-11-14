@@ -1,0 +1,30 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/model-data/clear-history/1",
+        "form": []
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Riwayat berhasil dibersihkan"
+    },
+    "changes": {
+        "model_data": {
+            "removed": [
+                {
+                    "id": 1,
+                    "model_id": 1,
+                    "name": "Article",
+                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                    "group": "Content",
+                    "user_groups": "[]",
+                    "icon": "file-text",
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        }
+    }
+}

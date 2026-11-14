@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/models/3/edit",
+    "status": 200,
+    "location": null,
+    "title": "Edit model",
+    "bytes": 139703,
+    "sha1": "cf1f934171a693fa335b8ea7bc60d61fb14b1213"
+}

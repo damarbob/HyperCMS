@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/model-data/1",
+    "status": 200,
+    "location": null,
+    "title": "Riwayat model Article",
+    "bytes": 130365,
+    "sha1": "39e441b9b7d280ea9e6823150cf3d2d1b104ee11"
+}

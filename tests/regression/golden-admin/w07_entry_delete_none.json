@@ -1,0 +1,13 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/delete",
+        "form": []
+    },
+    "status": 400,
+    "location": null,
+    "body": {
+        "error": "Tidak ada entri dipilih"
+    },
+    "changes": []
+}

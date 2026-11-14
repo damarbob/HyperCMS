@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/entry-data",
+        "form": {
+            "draw": 1,
+            "id": 9999
+        }
+    },
+    "status": 400,
+    "body": {
+        "error": "Entry with id 9999 not found."
+    }
+}

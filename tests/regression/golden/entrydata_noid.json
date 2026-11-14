@@ -1,0 +1,13 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/entry-data",
+        "form": {
+            "draw": 1
+        }
+    },
+    "status": 400,
+    "body": {
+        "error": "No entry id provided."
+    }
+}

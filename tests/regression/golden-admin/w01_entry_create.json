@@ -1,0 +1,41 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries",
+        "form": {
+            "model_id": 2,
+            "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Entri 44 berhasil dibuat!"
+    },
+    "changes": {
+        "entries": {
+            "added": [
+                {
+                    "id": 44,
+                    "model_id": 2,
+                    "current_entry_data_id": 47,
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        },
+        "entry_data": {
+            "added": [
+                {
+                    "id": 47,
+                    "entry_id": 44,
+                    "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}",
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        }
+    }
+}

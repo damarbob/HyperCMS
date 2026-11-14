@@ -1,0 +1,62 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/restore",
+        "form": {
+            "ids": [
+                24
+            ]
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Entri Article berhasil dipulihkan!"
+    },
+    "changes": {
+        "entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 24,
+                        "model_id": 1,
+                        "current_entry_data_id": 24,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    },
+                    "to": {
+                        "id": 24,
+                        "model_id": 1,
+                        "current_entry_data_id": 24,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 24,
+                        "entry_id": 24,
+                        "fields": "[{\"id\":\"title\",\"value\":\"Sample post 24\"},{\"id\":\"views\",\"value\":\"240\"},{\"id\":\"body\",\"value\":\"Plain body 24\"}]",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    },
+                    "to": {
+                        "id": 24,
+                        "entry_id": 24,
+                        "fields": "[{\"id\":\"title\",\"value\":\"Sample post 24\"},{\"id\":\"views\",\"value\":\"240\"},{\"id\":\"body\",\"value\":\"Plain body 24\"}]",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 0
+                    }
+                }
+            ]
+        }
+    }
+}

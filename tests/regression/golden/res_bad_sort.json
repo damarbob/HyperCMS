@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource?sort=nope",
+        "auth": "bearer"
+    },
+    "status": 400,
+    "body": {
+        "status": 400,
+        "error": 400,
+        "messages": {
+            "sort": "Kolom sort harus salah satu dari: id,created_at,updated_at,model_name."
+        }
+    }
+}

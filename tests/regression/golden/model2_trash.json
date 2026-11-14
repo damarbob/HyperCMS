@@ -1,0 +1,39 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1,
+            "id": 2,
+            "start": 0,
+            "length": 10,
+            "trash": "true"
+        }
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 1,
+        "recordsFiltered": 1,
+        "data": [
+            {
+                "id": "37",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": "2026-11-14 11:13:38",
+                "model_id": "2",
+                "model_name": "Product",
+                "model_fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "user_groups": "[\"superadmin\"]",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "37",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": "capture_admin",
+                "sku": "SKU-012",
+                "price": "",
+                "category": "b",
+                "added": "2026-03-12T08:00"
+            }
+        ]
+    }
+}

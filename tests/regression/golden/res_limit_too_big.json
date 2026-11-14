@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource?limit=500",
+        "auth": "bearer"
+    },
+    "status": 400,
+    "body": {
+        "status": 400,
+        "error": 400,
+        "messages": {
+            "limit": "Kolom limit harus berisi angka kurang dari atau sama dengan 100."
+        }
+    }
+}

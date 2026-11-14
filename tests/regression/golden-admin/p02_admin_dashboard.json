@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/dashboard",
+    "status": 200,
+    "location": null,
+    "title": "Dasbor",
+    "bytes": 143606,
+    "sha1": "fa2ad926edd8ab8a6f3126c2b1485548a06a9b5f"
+}

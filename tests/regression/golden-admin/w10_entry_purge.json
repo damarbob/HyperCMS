@@ -1,0 +1,134 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/purge-deleted",
+        "form": []
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Entri berhasil dihapus!"
+    },
+    "changes": {
+        "entries": {
+            "removed": [
+                {
+                    "id": 3,
+                    "model_id": 1,
+                    "current_entry_data_id": 3,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 4,
+                    "model_id": 1,
+                    "current_entry_data_id": 4,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 5,
+                    "model_id": 1,
+                    "current_entry_data_id": 5,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 25,
+                    "model_id": 1,
+                    "current_entry_data_id": 25,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 37,
+                    "model_id": 2,
+                    "current_entry_data_id": 37,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 41,
+                    "model_id": 4,
+                    "current_entry_data_id": 41,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 42,
+                    "model_id": 4,
+                    "current_entry_data_id": 42,
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                }
+            ]
+        },
+        "entry_data": {
+            "removed": [
+                {
+                    "id": 3,
+                    "entry_id": 3,
+                    "fields": "{\"title\":\"Apple pie recipe\",\"body\":\"Plain body 3\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 4,
+                    "entry_id": 4,
+                    "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 5,
+                    "entry_id": 5,
+                    "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 25,
+                    "entry_id": 25,
+                    "fields": "[{\"id\":\"title\",\"value\":\"Sample post 25\"},{\"id\":\"views\",\"value\":\"250\"},{\"id\":\"body\",\"value\":\"<p>Body of post 25 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\"}]",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 37,
+                    "entry_id": 37,
+                    "fields": "{\"sku\":\"SKU-012\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-12T08:00\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 41,
+                    "entry_id": 41,
+                    "fields": "{\"note\":\"one\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                },
+                {
+                    "id": 42,
+                    "entry_id": 42,
+                    "fields": "{\"note\":\"two\"}",
+                    "creator_id": 1,
+                    "deleter_id": 1,
+                    "deleted": 1
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/entry-data/1",
+    "status": 200,
+    "location": null,
+    "title": "Data entri 1",
+    "bytes": 132141,
+    "sha1": "fbad9ab290033ad666030c555322d85f064c9f68"
+}
