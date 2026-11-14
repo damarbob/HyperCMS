@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Data\ModelStore;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
 
@@ -43,5 +44,19 @@ class Services extends BaseService
             return static::getSharedInstance('fileServer');
         }
         return new FileServer();
+    }
+
+    /**
+     * ModelStore service.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return ModelStore
+     */
+    public static function modelStore(bool $getShared = true): ModelStore
+    {
+        if ($getShared) {
+            return static::getSharedInstance('modelStore');
+        }
+        return new ModelStore(model('modelsModel'));
     }
 }
