@@ -312,6 +312,7 @@ CREATE TABLE `settings` (
 
 LOCK TABLES `settings` WRITE;
 /*!40000 ALTER TABLE `settings` DISABLE KEYS */;
+INSERT INTO `settings` VALUES (1,'Config\\Hyper','publicModels','a:1:{i:0;i:2;}','array',NULL,'2026-11-14 11:13:34','2026-11-14 11:13:34');
 /*!40000 ALTER TABLE `settings` ENABLE KEYS */;
 UNLOCK TABLES;
 DROP TABLE IF EXISTS `users`;

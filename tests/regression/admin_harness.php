@@ -89,6 +89,7 @@ function snapshot(PDO $pdo): array
         'entries'    => $q('SELECT id, model_id, current_entry_data_id, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM entries ORDER BY id'),
         'entry_data' => $q('SELECT id, entry_id, fields, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM entry_data ORDER BY id'),
         'queue_jobs' => $q('SELECT queue, status, COUNT(*) AS n FROM queue_jobs GROUP BY queue, status ORDER BY queue, status'),
+        'settings'   => $q('SELECT id, class, `key`, value, type, context FROM settings ORDER BY id'),
     ];
 }
 
@@ -168,6 +169,7 @@ $pages = [
     'admin/models', 'admin/models/new', 'admin/models/1/edit', 'admin/models/3/edit', 'admin/models/999/edit',
     'admin/model-data/1', 'admin/model-data/999', 'admin/entry-data/1', 'admin/entry-data/999',
     'admin/settings', 'admin/settings/models',
+    'admin/models/2/edit', // the public model, with its box ticked
 ];
 foreach ($pages as $i => $p) {
     $name = 'p' . str_pad((string) ($i + 2), 2, '0', STR_PAD_LEFT) . '_' . preg_replace('/[^a-z0-9]+/i', '_', $p);
@@ -209,6 +211,8 @@ $flows = [
     'w17_model_restore'       => ['admin/models/restore', ['ids' => [4]]],
     'w18_model_purge'         => ['admin/models/purge-deleted', []],
     'w19_model_data_clear'    => ['admin/model-data/clear-history/1', []],
+    'w20_model_public_on'     => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text', 'public' => '1']],
+    'w21_model_public_off'    => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],
 ];
 $prev = snapshot($pdo);
 foreach ($flows as $name => [$path, $form]) {

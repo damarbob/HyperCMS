@@ -98,6 +98,9 @@ return [
     'xToToggleFullscreenMode' => '{x} untuk beralih mode layar penuh.',
     'optionalGroupingForBetterOrganization' => 'Pengelompokan opsional untuk organisasi yang lebih baik.',
     'modelWillVisibleToUsersInSelectedGroups' => 'Model akan terlihat oleh pengguna dalam grup yang dipilih.',
+    'publicAccess' => 'Akses Publik',
+    'readableWithoutLogin' => 'Bisa dibaca tanpa login',
+    'publicModelHelp' => 'Siapa pun bisa membaca entri model ini lewat API, baik sudah login maupun belum. Aktifkan hanya untuk model yang ditampilkan di halaman publik.',
     'forCompleteListOfIconsPleaseVisitx' => 'Untuk daftar ikon lengkap, kunjungi {x}.',
 
     'modelNotFound' => 'Model tidak ditemukan',

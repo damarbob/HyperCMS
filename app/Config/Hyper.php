@@ -21,6 +21,10 @@ class Hyper extends BaseConfig
     // If true, disables ALL modules.
     public bool $safeMode = false;
 
+    // Ids of the models whose entries the API serves without a login.
+    // The model form saves the real list in the settings table, and this is the value before any is saved.
+    public array $publicModels = [];
+
     public function __construct()
     {
         parent::__construct();

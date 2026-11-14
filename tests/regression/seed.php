@@ -88,6 +88,9 @@ $scratch = $mk('Scratch', [['id' => 'note', 'label' => 'Note', 'type' => 'text']
 $restricted = $mk('Restricted', [['id' => 'secret', 'label' => 'Secret', 'type' => 'text']], ['developer']);
 echo "models article=$article product=$product linked=$linked scratch=$scratch restricted=$restricted\n";
 
+// Product is the public model, so a request without a login can read it and nothing else.
+service('modelAccess')->setPublic($product, true);
+
 $titles = ['Getting started with HyperCMS', 'apple pie recipe', 'Apple pie recipe', 'Éclair for beginners', 'eclair filling',
     '  Leading space title', '<b>Bold</b> headline', 'Zebra crossing', 'Ångström units explained', 'Quarterly report 2026'];
 for ($n = 11; $n <= 25; $n++) {

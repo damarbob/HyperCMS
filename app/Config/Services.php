@@ -3,6 +3,7 @@
 namespace Config;
 
 use App\Data\EntryStore;
+use App\Data\ModelAccess;
 use App\Data\ModelStore;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
@@ -77,5 +78,19 @@ class Services extends BaseService
             return static::getSharedInstance('modelStore');
         }
         return new ModelStore(model(ModelsModel::class), model(ModelDataModel::class), service('modelsManager'));
+    }
+
+    /**
+     * ModelAccess service.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return ModelAccess
+     */
+    public static function modelAccess(bool $getShared = true): ModelAccess
+    {
+        if ($getShared) {
+            return static::getSharedInstance('modelAccess');
+        }
+        return new ModelAccess(static::modelStore(), service('settings'));
     }
 }

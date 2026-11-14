@@ -124,6 +124,26 @@ class ModelStore
     }
 
     /**
+     * Read the groups that may open each model, keyed by model id. Trashed models are included,
+     * because their entries can still show up in a trash view.
+     *
+     * @return array<int, list<string>>
+     */
+    public function userGroups(): array
+    {
+        $map = [];
+        foreach ([false, true] as $onlyTrashed) {
+            $rows = $this->models->stardust($onlyTrashed)->withLegacyAliases(true)->get()->getResultArray();
+            foreach ($rows as $row) {
+                $groups = json_decode($row['user_groups'] ?? '[]', true);
+                $map[(int) $row['id']] = is_array($groups) ? array_values($groups) : [];
+            }
+        }
+
+        return $map;
+    }
+
+    /**
      * Compile the SQL that reads every live model as a flat table, without running it.
      *
      * The syntax processor wraps this SQL as a subquery so a form field can list models.
