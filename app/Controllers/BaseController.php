@@ -1,12 +1,6 @@
 <?php
 
 namespace App\Controllers;
-use StarDust\Models\EntriesModel;
-use StarDust\Models\EntryDataModel;
-use StarDust\Models\ModelDataModel;
-use StarDust\Models\ModelsModel;
-use StarDust\Services\EntriesManager;
-use StarDust\Services\ModelsManager;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
 use CodeIgniter\HTTP\IncomingRequest;
@@ -49,14 +43,6 @@ abstract class BaseController extends Controller
      */
     protected $session;
     protected HyperHooks $hooks;
-    protected ModelsManager $modelsManager;
-    protected EntriesManager $entriesManager;
-
-    // Models
-    protected ModelsModel $modelsModel;
-    protected ModelDataModel $modelDataModel;
-    protected EntriesModel $entriesModel;
-    protected EntryDataModel $entryDataModel;
 
     // Data to be passed to views
     protected array $data;
@@ -74,14 +60,6 @@ abstract class BaseController extends Controller
         $this->session = service('session');
 
         $this->hooks = service('hooks');
-        $this->modelsManager = service('modelsManager');
-        $this->entriesManager = service('entriesManager');
-
-        // Models
-        $this->modelsModel = model('modelsModel');
-        $this->modelDataModel = model('modelDataModel');
-        $this->entriesModel = model('entriesModel');
-        $this->entryDataModel = model('entryDataModel');
 
         /**
          * Store the URL history in the session on every non-AJAX,
