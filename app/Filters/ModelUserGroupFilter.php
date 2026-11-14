@@ -15,7 +15,7 @@ use CodeIgniter\HTTP\ResponseInterface;
  *  - Ensure the request is authenticated. If not authenticated, redirect to the login route
  *    with an error message.
  *  - Extract a resource ID from the request URI at a configurable segment index.
- *  - Load the corresponding model record (via StarDust\Models\ModelsModel->getCustomBuilder()) and
+ *  - Load the corresponding model record (via the modelStore service) and
  *    read its "user_groups" JSON field.
  *  - If the model defines user group restrictions, verify the current user's groups intersect
  *    with the model's allowed groups. If there is no intersection, deny access by redirecting
@@ -60,7 +60,7 @@ class ModelUserGroupFilter implements FilterInterface
      *
      * Side effects:
      *  - Reads a URI segment to determine the resource ID.
-     *  - Loads the model via model('StarDust\Models\ModelsModel') and uses getCustomBuilder() to fetch the row.
+     *  - Loads the model through the modelStore service.
      *  - Decodes 'user_groups' from the model and compares against $user->getGroups().
      */
     public function before(RequestInterface $request, $arguments = null)
@@ -87,21 +87,14 @@ class ModelUserGroupFilter implements FilterInterface
             return redirect()->route('dashboard')->with('error', lang('Filter.invalidResource'));
         }
 
-        /** @var \StarDust\Models\ModelsModel */
-        $modelsModel = model('StarDust\Models\ModelsModel');
-        $modelsBuilder = $modelsModel->stardust()->withLegacyAliases(true);
+        // Retrieve the model record, or null when there is none.
+        $model = service('modelStore')->find($id);
 
-        // Retrieve the model record as an associative array.
-        $model = $modelsBuilder->where('id', $id)->get()->getRowArray();
-
-        // log_message('debug', "ModelUserGroupFilter: " . json_encode($model, JSON_PRETTY_PRINT));
-
-        if (empty(json_decode($model['user_groups'] ?? '[]'))) {
+        if (empty(json_decode($model->user_groups ?? '[]'))) {
             return;
         }
 
-        $isAllowed = !empty(array_intersect(json_decode($model['user_groups'] ?? '[]'), $user->getGroups()));
-        // dd($isAllowed, json_decode($model['user_groups'] ?? '[]'), $user->getGroups());
+        $isAllowed = !empty(array_intersect(json_decode($model->user_groups ?? '[]'), $user->getGroups()));
 
         if (!$isAllowed) {
             // User does not have permission to access this model.
