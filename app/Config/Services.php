@@ -58,7 +58,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('entryStore');
         }
-        return new EntryStore(model('entriesModel'));
+        return new EntryStore(model('entriesModel'), static::modelStore());
     }
 
     /**

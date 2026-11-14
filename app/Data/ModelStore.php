@@ -19,6 +19,14 @@ class ModelStore
     }
 
     /**
+     * Read one live model, or null when there is none.
+     */
+    public function find(int $id): ?object
+    {
+        return $this->models->stardust()->withLegacyAliases(true)->where('id', $id)->get()->getRow();
+    }
+
+    /**
      * Answer one DataTables request for the list of models.
      *
      * @param array $post The POST values DataTables sent (draw, start, length, search, order, columns, trash).
