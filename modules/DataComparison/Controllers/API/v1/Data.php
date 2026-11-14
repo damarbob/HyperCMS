@@ -16,31 +16,12 @@ class Data extends AdminController
         $entryIds = $data['entry_ids'] ?? null; // Entry ids
         $modelId = $data['model_id'] ?? null; // Model id
 
-        /** @var \StarDust\Models\EntriesModel */
-        $model = model('entriesModel');
-
-        $modelBuilder = $model->stardust()->withLegacyAliases(true);
-
-        // Filter by entry id if provided:
-        if (!empty($entryId)) {
-            $modelBuilder->where('id', $entryId);
-        }
-
-        // Filter by entry ids if provided:
-        if (!empty($entryIds)) {
-            $modelBuilder->whereIn('id', $entryIds);
-        }
-
-        // Filter by model_id if provided:
-        if (!empty($modelId)) {
-            $modelBuilder->where('model_id', $modelId);
-        }
-
-        // Default ordering by date_modified DESC
-        $modelBuilder->orderBy('date_modified', 'DESC');
-
-        // Fetch data from the database.
-        $data = $modelBuilder->get()->getResultArray();
+        // Newest first, narrowed by whichever of entry id, entry ids and model id were sent.
+        $data = service('entryStore')->recent([
+            'id' => $entryId,
+            'ids' => $entryIds,
+            'model_id' => $modelId,
+        ]);
 
         // Prepare and output the JSON response.
         $output = [

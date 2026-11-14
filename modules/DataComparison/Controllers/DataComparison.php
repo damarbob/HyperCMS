@@ -44,7 +44,7 @@ class DataComparison extends AdminController
             JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT
         );
 
-        $this->data['models']     = $this->modelsManager->get();
+        $this->data['models']     = service('modelStore')->allArray();
         $this->data['title']      = lang('Dc.moduleName');
 
         return render('\DataComparison\Views\data_comparison', $this->data);
@@ -63,7 +63,7 @@ class DataComparison extends AdminController
             return $this->respond("Invalid request", statusCode: 400, success: false);
         }
 
-        $entry = $this->entriesManager->find($entryId);
+        $entry = service('entryStore')->findArray($entryId);
 
         if (empty($entry)) {
             // Not found
@@ -78,7 +78,7 @@ class DataComparison extends AdminController
 
         $finalFields = unmap_entry_fields($mappedEntryFields);
 
-        $this->entriesManager->update($entryId, [
+        service('entryStore')->update($entryId, [
             'fields' => $finalFields
         ], auth()->user()->id);
 

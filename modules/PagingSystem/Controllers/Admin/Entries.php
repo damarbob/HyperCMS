@@ -27,26 +27,13 @@ class Entries extends AdminController
             return redirect()->to("admin/model/$modelId/new");
         };
 
-        $entry = $this->entriesModel
-            ->stardust()->withLegacyAliases(true)
-            ->where('model_id', $modelId)
-            // Where the fields is null, empty, or empty JSON
-            ->groupStart()
-            ->where('fields', null) // Null value
-            ->orWhere('fields', "") // Empty string
-            ->orWhere('fields', '""') // Empty string with double quotes
-            ->orWhere('fields', "[]") // Empty JSON array
-            ->orWhere('fields', "{}") // Empty JSON object
-            ->orWhere('fields', "[{}]") // Empty JSON array with an empty object
-            ->groupEnd()
-            ->orderBy('date_modified', 'desc')
-            ->get()
-            ->getRowArray();
+        // The newest entry of this model that has no field values yet.
+        $entry = service('entryStore')->blankFor($modelId);
 
         // If the entry is not found, create a new one.
         // Otherwise, use the existing.
         if (!$entry) {
-            $entryId = $this->entriesManager->create([
+            $entryId = service('entryStore')->create([
                 "model_id" => $modelId,
                 "fields" => "[]",
             ], auth()->user()->id);

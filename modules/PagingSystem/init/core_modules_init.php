@@ -7,13 +7,7 @@ HyperHooks::getInstance()->register(hook('Core.modules:init'), function () {
     log_message('debug', 'Paging System module init hook triggered.');
 
     // Check which models are eligible for the page editor
-    /** @var \StarDust\Models\ModelsModel */
-    $modelsModel = model('modelsModel');
-
-    $modelsBuilder = $modelsModel->stardust()->withLegacyAliases(true);
-    $models = $modelsBuilder
-        ->get()
-        ->getResultArray();
+    $models = service('modelStore')->all();
 
     $eligibleModelIds = []; // Page Editor eligible model IDs
     $eligibleModelNames = []; // Page Editor eligible model names

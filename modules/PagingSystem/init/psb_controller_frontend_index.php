@@ -8,9 +8,6 @@ use Masterminds\HTML5;
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:frontend:index'), function ($path) {
     log_message('debug', 'Path: ' . $path);
 
-    /** @var \StarDust\Models\EntriesModel */
-    $entriesModel = model('entriesModel');
-
     /* Page-eligible model check */
 
     // Retrieve eligible and primary model IDs.
@@ -25,11 +22,8 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
         return null;
     }
 
-    // Instantiate EntriesModel and retrieve pages for eligible model IDs.
-    $pages = $entriesModel->stardust()->withLegacyAliases(true)
-        ->whereIn('model_id', $pagingSystemEligibleModelIds)
-        ->get()
-        ->getResultArray();
+    // Retrieve pages for eligible model IDs.
+    $pages = service('entryStore')->ofModels($pagingSystemEligibleModelIds);
 
     /* End of page-eligible model check */
 
@@ -45,10 +39,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:fronten
 
     // Validate that we have both eligible models and a primary model.
     if (is_array($assetsEligibleModelIds) && !empty($assetsEligibleModelIds) && !empty($assetsModelId)) {
-        $assets = $entriesModel->stardust()->withLegacyAliases(true)
-            ->whereIn('model_id', $assetsEligibleModelIds)
-            ->get()
-            ->getResultArray();
+        $assets = service('entryStore')->ofModels($assetsEligibleModelIds);
     }
 
     /* End of assets-eligible model check */

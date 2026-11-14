@@ -5,9 +5,6 @@ use StarCore\Service\HyperHooks;
 // Editor controller index data filter
 HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:index:data'), function ($data) {
 
-    /** @var \StarDust\Models\EntriesModel */
-    $entriesModel = model('entriesModel');
-
     /** @var array */
     $pagingSystemAssetsEligibleModelIds = HyperHooks::getInstance()->getState('paging_system_assets_eligible_model_ids');
     $assetsModelId = service('settings')->get('PagingSystem.assetsModelId');
@@ -27,10 +24,7 @@ HyperHooks::getInstance()->register(hook('PagingSystemBackend.controller:editor:
         return $data;
     }
 
-    $assets = $entriesModel->stardust()->withLegacyAliases(true)
-        ->where('model_id', $assetsModelId)
-        ->get()
-        ->getResultArray();
+    $assets = service('entryStore')->ofModels([$assetsModelId]);
 
     if ($assets) {
         foreach ($assets as $asset) {

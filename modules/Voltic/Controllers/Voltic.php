@@ -38,11 +38,8 @@ class Voltic extends AdminController
         /** @var \Voltic\Config\Voltic */
         $config = config('Voltic');
 
-        /** @var \StarDust\Services\ModelsManager */
-        $modelsManager = service('modelsManager');
-
-        /** @var \StarDust\Services\EntriesManager */
-        $entriesManager = service('entriesManager');
+        $modelStore = service('modelStore');
+        $entryStore = service('entryStore');
 
         // Get the current user
         $user = auth()->user();
@@ -106,7 +103,7 @@ class Voltic extends AdminController
                                 $insertData['fields'] = json_encode($insertData['fields']);
 
                                 // Delegate the creation process to the service.
-                                $modelId = $modelsManager->create($insertData, auth()->user()->id);
+                                $modelId = $modelStore->create($insertData, auth()->user()->id);
                                 $response['system'][] =
                                     [
                                         "message" => lang('Voltic.modelxCreatedSuccessfully', ['x' => $insertData['name']]),
@@ -138,9 +135,9 @@ class Voltic extends AdminController
                                 $insertData['fields'] = json_encode($insertData['fields']);
 
                                 // Delegate the creation process to the service.
-                                $entryId = $entriesManager->create($insertData, auth()->user()->id);
-                                $modelId = $entriesManager->find($entryId)['model_id'];
-                                $model = $modelsManager->find($modelId);
+                                $entryId = $entryStore->create($insertData, auth()->user()->id);
+                                $modelId = $entryStore->findArray($entryId)['model_id'];
+                                $model = $modelStore->findArray($modelId);
 
                                 $response['system'][] =
                                     [
@@ -163,9 +160,9 @@ class Voltic extends AdminController
                                 $entryId = $params['id'];
 
                                 // Delegate the creation process to the service.
-                                $entry = $entriesManager->find($entryId);
+                                $entry = $entryStore->findArray($entryId);
                                 $modelId = $entry['model_id'];
-                                $model   = $modelsManager->find($modelId);
+                                $model   = $modelStore->findArray($modelId);
 
                                 $fields = map_entry_fields($entry['fields']);
 

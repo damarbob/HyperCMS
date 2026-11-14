@@ -2,7 +2,6 @@
 
 namespace Voltic\Libraries;
 
-use StarDust\Models\ModelsModel;
 use Config\Hyper;
 use Voltic\Config\Voltic as ConfigVoltic;
 
@@ -17,9 +16,6 @@ class VolticService
 
     // Logger for recording operations and errors
     protected $logger;
-
-    // Model for retrieving metadata definitions from the database
-    protected ModelsModel $modelsModel;
 
     // Manager responsible for creating and managing AI prompts
     public VolticPromptManager $promptManager;
@@ -40,12 +36,9 @@ class VolticService
         /** @var \CodeIgniter\Log\Logger */
         $this->logger = service('logger');
 
-        /** @var ModelsModel */
-        $this->modelsModel = model('modelsModel');
-
         // Reference data
-        $models = service('modelsManager')->get();
-        $entries = service('entriesManager')->get();
+        $models = service('modelStore')->allArray();
+        $entries = service('entryStore')->allArray();
 
         $filteredModels = array_map(function ($item) {
             // Define only the allowed keys

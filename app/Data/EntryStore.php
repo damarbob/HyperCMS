@@ -90,6 +90,82 @@ class EntryStore
     }
 
     /**
+     * Read every live entry as rows with StarDust's own column names.
+     */
+    public function allArray(): array
+    {
+        return $this->manager->get();
+    }
+
+    /**
+     * Read the live entries of the given models, with the legacy column names (model_name, fields, date_modified).
+     */
+    public function ofModels(array $modelIds): array
+    {
+        return $this->entries->stardust()->withLegacyAliases(true)
+            ->whereIn('model_id', $modelIds)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Read the live entries of the model with this name, with the legacy column names.
+     */
+    public function named(string $modelName): array
+    {
+        return $this->entries->stardust()->withLegacyAliases(true)
+            ->where('model_name', $modelName)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Read live entries newest first, with the legacy column names.
+     *
+     * @param array $filters Optional keys: `id`, `ids` (a list) and `model_id`. A filter that is empty is skipped.
+     */
+    public function recent(array $filters = []): array
+    {
+        $builder = $this->entries->stardust()->withLegacyAliases(true);
+
+        if (!empty($filters['id'])) {
+            $builder->where('id', $filters['id']);
+        }
+
+        if (!empty($filters['ids'])) {
+            $builder->whereIn('id', $filters['ids']);
+        }
+
+        if (!empty($filters['model_id'])) {
+            $builder->where('model_id', $filters['model_id']);
+        }
+
+        return $builder->orderBy('date_modified', 'DESC')->get()->getResultArray();
+    }
+
+    /**
+     * Read the newest live entry of a model that has no field values, or null when there is none.
+     *
+     * A blank entry is one whose fields are null, an empty string, or an empty JSON array or object.
+     */
+    public function blankFor(int|string $modelId): ?array
+    {
+        return $this->entries->stardust()->withLegacyAliases(true)
+            ->where('model_id', $modelId)
+            ->groupStart()
+            ->where('fields', null)
+            ->orWhere('fields', '')
+            ->orWhere('fields', '""')
+            ->orWhere('fields', '[]')
+            ->orWhere('fields', '{}')
+            ->orWhere('fields', '[{}]')
+            ->groupEnd()
+            ->orderBy('date_modified', 'desc')
+            ->get()
+            ->getRowArray() ?: null;
+    }
+
+    /**
      * Compile the SQL that reads every live entry as a flat table, without running it.
      *
      * The syntax processor wraps this SQL as a subquery so a form field can list entries.

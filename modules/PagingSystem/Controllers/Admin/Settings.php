@@ -4,28 +4,9 @@ namespace PagingSystem\Controllers\Admin;
 
 use App\Controllers\AdminController;
 use StarCore\Service\HyperHooks;
-use StarDust\Services\ModelsManager;
-use CodeIgniter\HTTP\RequestInterface;
-use CodeIgniter\HTTP\ResponseInterface;
-use Psr\Log\LoggerInterface;
 
 class Settings extends AdminController
 {
-
-    protected ModelsManager $modelsManager;
-
-    /**
-     * @return void
-     */
-    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
-    {
-        // Do Not Edit This Line
-        parent::initController($request, $response, $logger);
-
-        /** @var ModelsManager */
-        $this->modelsManager = service('ModelsManager');
-    }
-
     public function index()
     {
         log_message('debug', 'Paging System: Settings hook triggered.');
@@ -88,7 +69,7 @@ class Settings extends AdminController
     {
         // Create a Page model if it doesn’t already exist
         if (!$eligibleModelExists) {
-            $this->modelsManager->create(
+            service('modelStore')->create(
                 [
                     'name' => lang('PagingSystem.page'),
                     'group' => lang('PagingSystem.page'),
@@ -167,7 +148,7 @@ class Settings extends AdminController
 
         // Create an Assets model if it doesn’t already exist
         if (!$eligibleAssetsModelExists) {
-            $this->modelsManager->create(
+            service('modelStore')->create(
                 [
                     'name' => lang('PagingSystem.assets'),
                     'group' => lang('PagingSystem.page'),

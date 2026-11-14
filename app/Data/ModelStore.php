@@ -134,6 +134,14 @@ class ModelStore
     }
 
     /**
+     * Read every live model as rows with StarDust's own column names.
+     */
+    public function allArray(): array
+    {
+        return $this->manager->get();
+    }
+
+    /**
      * Read every live model as an array of rows.
      */
     public function all(): array

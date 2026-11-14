@@ -22,7 +22,7 @@ class Editor extends AdminController
         $entryId = $data['entry_id']; // Assign entry id
 
         // Load the page entry record
-        $entry = $this->entriesManager->find($entryId);
+        $entry = service('entryStore')->findArray($entryId);
 
         if (empty($entry)) {
             throw PageNotFoundException::forPageNotFound(
@@ -60,7 +60,7 @@ class Editor extends AdminController
     {
         // Get test user-created components for editor plugin blocks
         if (ENVIRONMENT !== 'production') {
-            $testComponents = $this->entriesModel->stardust()->withLegacyAliases(true)->where('model_name', 'Component')->get()->getResultArray();
+            $testComponents = service('entryStore')->named('Component');
             foreach ($testComponents as &$row) {
                 if (isset($row['fields'])) {
                     $fieldsArray = json_decode($row['fields'], true);
