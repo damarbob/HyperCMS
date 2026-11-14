@@ -8,6 +8,10 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Psr\Log\LoggerInterface;
 use StarCore\Service\HyperHooks;
+use StarDust\Models\EntriesModel;
+use StarDust\Models\EntryDataModel;
+use StarDust\Models\ModelDataModel;
+use StarDust\Models\ModelsModel;
 
 /**
  * Class BaseController
@@ -46,6 +50,61 @@ abstract class BaseController extends Controller
 
     // Data to be passed to views
     protected array $data;
+
+    /**
+     * Properties that every controller used to have and that now live in ModelStore and EntryStore.
+     * Custom controllers and modules may still read them, so they are served on demand.
+     * A name maps to the service it used to hold, or to the model class when it holds a model.
+     *
+     * @var array<string, string>
+     */
+    private const LEGACY_SERVICES = [
+        'modelsManager' => 'modelsManager',
+        'entriesManager' => 'entriesManager',
+    ];
+
+    /** @var array<string, class-string> */
+    private const LEGACY_MODELS = [
+        'modelsModel' => ModelsModel::class,
+        'modelDataModel' => ModelDataModel::class,
+        'entriesModel' => EntriesModel::class,
+        'entryDataModel' => EntryDataModel::class,
+    ];
+
+    /**
+     * Names already reported in this request, so a loop does not fill the log.
+     *
+     * @var array<string, true>
+     */
+    private static array $legacyReported = [];
+
+    /**
+     * Serve a removed StarDust property, for example `$this->entriesManager->find(5)` in a custom module.
+     *
+     * @deprecated Use service('modelStore') and service('entryStore') instead.
+     */
+    public function __get(string $name)
+    {
+        if (!$this->__isset($name)) {
+            trigger_error('Undefined property: ' . static::class . '::$' . $name, E_USER_WARNING);
+
+            return null;
+        }
+
+        if (!isset(self::$legacyReported[$name])) {
+            self::$legacyReported[$name] = true;
+            log_message('warning', static::class . '::$' . $name . " is deprecated. Use service('modelStore') or service('entryStore') instead.");
+        }
+
+        return isset(self::LEGACY_SERVICES[$name])
+            ? service(self::LEGACY_SERVICES[$name])
+            : model(self::LEGACY_MODELS[$name]);
+    }
+
+    public function __isset(string $name): bool
+    {
+        return isset(self::LEGACY_SERVICES[$name]) || isset(self::LEGACY_MODELS[$name]);
+    }
 
     /**
      * @return void
