@@ -3,6 +3,7 @@
 namespace App\Data;
 
 use App\Libraries\SortColumn;
+use StarDust\Models\ModelDataModel;
 use StarDust\Models\ModelsModel;
 
 /**
@@ -13,7 +14,7 @@ use StarDust\Models\ModelsModel;
  */
 class ModelStore
 {
-    public function __construct(private ModelsModel $models)
+    public function __construct(private ModelsModel $models, private ModelDataModel $modelData)
     {
     }
 
@@ -62,6 +63,62 @@ class ModelStore
         }
 
         // A length of -1 means no limit.
+        if ($length != -1) {
+            $builder->limit(intval($length), intval($start));
+        }
+
+        return [
+            'draw' => intval($draw),
+            'recordsTotal' => $totalRecords,
+            'recordsFiltered' => $recordsFiltered,
+            'data' => $builder->get()->getResultArray(),
+        ];
+    }
+
+    /**
+     * Answer one DataTables request for the saved versions of models.
+     *
+     * The default order names a column that the select does not have, so a request
+     * without an order fails with a database error, as it did before this class existed.
+     *
+     * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns).
+     * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
+     */
+    public function versionsDataTable(array $post): array
+    {
+        $modelId = $post['id'] ?? null;
+        $draw = $post['draw'] ?? 1;
+        $start = $post['start'] ?? null;
+        $length = $post['length'] ?? -1;
+        $search = $post['search']['value'] ?? '';
+        $order = $post['order'] ?? null;
+        $columns = $post['columns'] ?? null;
+
+        $builder = $this->modelData->stardust()->withLegacyAliases(true);
+
+        $totalRecords = $builder->countAllResults(false);
+
+        if (!empty($modelId)) {
+            $builder->where('id', $modelId);
+        }
+
+        if (!empty($search)) {
+            $builder->groupStart();
+            $builder->like('name', esc($search));
+            $builder->orLike('fields', esc($search));
+            $builder->orLike('created_by', esc($search));
+            $builder->groupEnd();
+        }
+
+        $recordsFiltered = $builder->countAllResults(false);
+
+        $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
+        if (SortColumn::isSafe($orderColumn)) {
+            $builder->orderBy($orderColumn, $order[0]['dir'] ?? '');
+        } else {
+            $builder->orderBy('date_modified', 'DESC');
+        }
+
         if ($length != -1) {
             $builder->limit(intval($length), intval($start));
         }
