@@ -94,6 +94,59 @@ class EntryStore
     }
 
     /**
+     * Read one live entry with the legacy column names, or null when there is none.
+     *
+     * This is the row the admin pages use. `findRow()` is the token API's version of it.
+     */
+    public function findAliased(int|string $id): ?array
+    {
+        return $this->entries->stardust()->withLegacyAliases(true)
+            ->where('id', $id)
+            ->limit(1)
+            ->get()
+            ->getResultArray()[0] ?? null;
+    }
+
+    /**
+     * Read the saved versions of one entry as rows, leaving out the first row of the query.
+     */
+    public function versionsOf(int|string $entryId): array
+    {
+        return $this->entryData->stardust()->withLegacyAliases(true)
+            ->where('entry_id', $entryId)
+            ->offset(1)
+            ->get()
+            ->getResultArray();
+    }
+
+    /**
+     * Delete every saved version of an entry except the newest, for good.
+     *
+     * @return int|null The number of versions deleted, or null when the entry has no versions.
+     */
+    public function clearHistory(int|string $entryId): ?int
+    {
+        $newest = $this->entryData
+            ->select('id')
+            ->where('entry_id', $entryId)
+            ->orderBy('id', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        if (empty($newest)) {
+            return null;
+        }
+
+        $this->entryData
+            ->where('entry_id', $entryId)
+            ->where('id !=', $newest->id)
+            ->delete(purge: true);
+
+        return $this->entryData->db->affectedRows();
+    }
+
+    /**
      * Count the live entries of one model.
      */
     public function countForModel(int|string $modelId): int

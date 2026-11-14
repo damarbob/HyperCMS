@@ -15,19 +15,18 @@ class EntryData extends AdminController
 
         /* Entry */
 
-        $entriesResult = $this->entriesModel->stardust()->withLegacyAliases(true)->where('id', $id)->limit(1)->get()->getResultArray();
+        $entry = service('entryStore')->findAliased($id);
 
         // Check if the entry exists
-        if (!$entriesResult)
+        if (!$entry)
             return redirect('admin/entries')->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $id]));
-
-        $entry = $entriesResult[0];
 
         /* End of entry */
 
         /* Model */
 
-        $modelResult = $this->modelsModel->stardust()->withLegacyAliases(true)->where('id', $entry['model_id'])->limit(1)->get()->getResultArray();
+        $found = service('modelStore')->find($entry['model_id']);
+        $modelResult = $found ? [(array) $found] : [];
 
         // Check if the model exists
         if (empty($modelResult))
@@ -88,11 +87,7 @@ class EntryData extends AdminController
         /* Entry history */
 
         // Entry history
-        $entriesHistory = $this->entryDataModel->stardust()->withLegacyAliases(true)
-            ->where('entry_id', $id)
-            ->offset(1)  // Skip the first record.
-            ->get()
-            ->getResultArray();
+        $entriesHistory = service('entryStore')->versionsOf($id);
 
         foreach ($entriesHistory as &$row) {
             if (isset($row['fields'])) {
@@ -142,17 +137,11 @@ class EntryData extends AdminController
             );
         }
 
-        // Retrieve the newest record for this entry.
-        $newestRecord = $this->entryDataModel
-            ->select('id')
-            ->where('entry_id', $entryId)
-            ->orderBy('id', 'DESC') // Or order by 'created_at' if available.
-            ->limit(1)
-            ->get()
-            ->getRow();
+        // Delete all history records for this entry but keep the newest one.
+        $affected = service('entryStore')->clearHistory($entryId);
 
         // Check if a record was found.
-        if (empty($newestRecord)) {
+        if ($affected === null) {
             return $this->respond(
                 message: lang('Admin.noHistoryFound'),
                 statusCode: 404,
@@ -161,14 +150,6 @@ class EntryData extends AdminController
             );
         }
 
-        // Delete all history records for this entry but exclude the newest one.
-        $this->entryDataModel
-            ->where('entry_id', $entryId)
-            ->where('id !=', $newestRecord->id)
-            ->delete(purge: true);
-
-        // Optionally, check if any rows were affected.
-        $affected = $this->entryDataModel->db->affectedRows();
         $message = ($affected > 0)
             ? lang('Admin.historySuccessfullyCleared')
             : lang('Admin.noHistoryCleared');
