@@ -5,6 +5,7 @@ namespace App\Data;
 use App\Libraries\SortColumn;
 use StarDust\Models\ModelDataModel;
 use StarDust\Models\ModelsModel;
+use StarDust\Services\ModelsManager;
 
 /**
  * The one place that reads and writes models.
@@ -14,8 +15,77 @@ use StarDust\Models\ModelsModel;
  */
 class ModelStore
 {
-    public function __construct(private ModelsModel $models, private ModelDataModel $modelData)
+    public function __construct(
+        private ModelsModel $models,
+        private ModelDataModel $modelData,
+        private ModelsManager $manager,
+    ) {
+    }
+
+    /**
+     * Read one live model as a row with StarDust's own column names, or false when there is none.
+     *
+     * The edit form uses this row. `find()` returns the row with the legacy names the lists use.
+     */
+    public function findArray(int $id): array|false
     {
+        return $this->manager->find($id);
+    }
+
+    /**
+     * Create a model and return its id.
+     */
+    public function create(array $data, int $userId): int
+    {
+        return $this->manager->create($data, $userId);
+    }
+
+    /**
+     * Save a new version of a model.
+     */
+    public function update(int $id, array $data, int $userId): void
+    {
+        $this->manager->update($id, $data, $userId);
+    }
+
+    /**
+     * Move models to the trash.
+     */
+    public function trash(array $ids, int $userId): void
+    {
+        $this->manager->deleteModels($ids, $userId);
+    }
+
+    /**
+     * Read the trashed models among the given ids.
+     */
+    public function trashed(array $ids): array|false
+    {
+        return $this->manager->findDeletedModels($ids);
+    }
+
+    /**
+     * Count the models in the trash.
+     */
+    public function countTrashed(): int|string
+    {
+        return $this->manager->countDeleted();
+    }
+
+    /**
+     * Delete the trashed models for good.
+     */
+    public function emptyTrash(): void
+    {
+        $this->manager->purgeDeleted();
+    }
+
+    /**
+     * Bring models back from the trash.
+     */
+    public function restore(array $ids): void
+    {
+        $this->manager->restore($ids);
     }
 
     /**

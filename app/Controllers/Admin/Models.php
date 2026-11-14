@@ -64,7 +64,7 @@ class Models extends AdminController
             'title' => lang('Admin.editModel'),
         ]);
 
-        $model = $this->modelsManager->find($id);
+        $model = service('modelStore')->findArray($id);
 
         if (empty($model))
             return redirect('admin/models')
@@ -126,7 +126,7 @@ class Models extends AdminController
 
         try {
             // Delegate the creation process to the service.
-            $modelId = $this->modelsManager->create($validData, $userId);
+            $modelId = service('modelStore')->create($validData, $userId);
         } catch (DatabaseException $e) {
             return $this->respond(
                 message: $e->getMessage(),
@@ -168,7 +168,7 @@ class Models extends AdminController
         // dd($validData);
 
         try {
-            $this->modelsManager->update($id, $validData, $userId);
+            service('modelStore')->update($id, $validData, $userId);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), withInput: true, success: false);
         }
@@ -185,12 +185,12 @@ class Models extends AdminController
         }
 
         try {
-            $this->modelsManager->deleteModels($ids, auth()->user()->id);
+            service('modelStore')->trash($ids, auth()->user()->id);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), 'admin/models', 500, false, false);
         }
 
-        $deletedModels = $this->modelsManager->findDeletedModels($ids);
+        $deletedModels = service('modelStore')->trashed($ids);
 
         if (count($deletedModels) > 1) {
             return $this->respond(lang('Admin.modelsSuccessfullyDeleted'), 'admin/models');
@@ -204,12 +204,12 @@ class Models extends AdminController
 
     public function purgeDeleted()
     {
-        if ($this->modelsManager->countDeleted() == 0) {
+        if (service('modelStore')->countTrashed() == 0) {
             return $this->respond(lang('Admin.trashIsEmpty'), statusCode: 400, success: false);
         }
 
         try {
-            $this->modelsManager->purgeDeleted();
+            service('modelStore')->emptyTrash();
         } catch (DatabaseException $e) {
             return $this->respond("{$e->getMessage()} {$e->getTraceAsString()}", statusCode: 500, success: false);
         }
@@ -226,7 +226,7 @@ class Models extends AdminController
         }
 
         try {
-            $this->modelsManager->restore($ids);
+            service('modelStore')->restore($ids);
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), statusCode: 500);
         }

@@ -72,6 +72,6 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('modelStore');
         }
-        return new ModelStore(model('modelsModel'), model('modelDataModel'));
+        return new ModelStore(model('modelsModel'), model('modelDataModel'), service('modelsManager'));
     }
 }
