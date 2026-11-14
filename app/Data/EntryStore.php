@@ -94,6 +94,16 @@ class EntryStore
     }
 
     /**
+     * Count the live entries of one model.
+     */
+    public function countForModel(int|string $modelId): int
+    {
+        return $this->entries->stardust()->withLegacyAliases(true)
+            ->where('model_id', $modelId)
+            ->countAllResults();
+    }
+
+    /**
      * Read one page of entries for the token API.
      *
      * @param array $filters The optional `model_id`, and `search` text that matches the model name or the creator's username.

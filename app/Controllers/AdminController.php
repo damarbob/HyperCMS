@@ -30,7 +30,7 @@ abstract class AdminController extends BaseController
         parent::initController($request, $response, $logger);
 
         // --- Preinit data ---
-        $models = $this->modelsModel->stardust()->withLegacyAliases(true)->get()->getResultArray();
+        $models = service('modelStore')->all();
 
         // Build the menu as a nested array
         $menu = [
@@ -104,9 +104,7 @@ abstract class AdminController extends BaseController
         $modelsMenu = [];
         foreach ($models as $model) {
 
-            $entriesCount = $this->entriesModel->stardust()->withLegacyAliases(true)
-                ->where('model_id', $model['id'])
-                ->countAllResults();
+            $entriesCount = service('entryStore')->countForModel($model['id']);
 
             $tag = $entriesCount === 0 ?
                 lang('Admin.(empty)') : ($entriesCount === 1 ?

@@ -27,20 +27,14 @@ class Model extends AdminController
             return redirect('admin/entries');
         }
 
-        // Retrieve model record(s) using a custom query builder.
-        $models = $this->modelsModel->stardust()->withLegacyAliases(true)
-            ->where('id', $id)
-            ->get()
-            ->getResult();
+        // Retrieve the model record.
+        $model = service('modelStore')->find($id);
 
         // If no model is found, redirect with an error message.
-        if (!$models) {
+        if (!$model) {
             return redirect('admin/entries')
                 ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $id]));
         }
-
-        // Use the first (and expected only) model record.
-        $model = $models[0];
 
         // Define invisible fields that are always present.
         $invisibleFields = [

@@ -19,6 +19,14 @@ class ModelStore
     }
 
     /**
+     * Read every live model as an array of rows.
+     */
+    public function all(): array
+    {
+        return $this->models->stardust()->withLegacyAliases(true)->get()->getResultArray();
+    }
+
+    /**
      * Read one live model, or null when there is none.
      */
     public function find(int|string $id): ?object
