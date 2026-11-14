@@ -85,6 +85,8 @@ class EntryData extends ApiController
 
         // 2. Find individual item
         if ($find && !empty($find['field']) && !empty($find['value'])) {
+            // The field id and the value go into a SQL string below, so escape both first.
+            $db = db_connect();
             $entryDataModelBuilder->where("
                 LOWER(
                     JSON_UNQUOTE(
@@ -94,7 +96,7 @@ class EntryData extends ApiController
                                 '$[',
                                 SUBSTRING_INDEX(
                                     SUBSTRING_INDEX(
-                                        JSON_SEARCH(fields, 'one', '" . $find['field'] . "', NULL, '$[*].id'),
+                                        JSON_SEARCH(fields, 'one', " . $db->escape((string) $find['field']) . ", NULL, '$[*].id'),
                                         '[',
                                         -1
                                     ),
@@ -105,7 +107,7 @@ class EntryData extends ApiController
                             )
                         )
                     )
-                ) LIKE '%" . strtolower($find['value']) . "%'
+                ) LIKE '%" . $db->escapeLikeString(strtolower((string) $find['value'])) . "%'
             ");
         }
 
