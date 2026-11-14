@@ -7,7 +7,7 @@ until mysql \
   --user="$database_default_username" \
   --password="$database_default_password" \
   --database="$database_default_database" \
-  --silent --execute="SELECT 1" &>/dev/null
+  --silent --execute="SELECT 1" >/dev/null 2>&1
 do
   echo "   -> still waiting…"
   sleep 1
@@ -24,5 +24,8 @@ if [ ! -f "$MARKER" ]; then
 else
   echo "ℹ️  hyper:setup already ran"
 fi
+
+# hyper:setup runs as root and creates root-owned files, so hand writable/ to the web server user on every start.
+chown -R www-data:www-data /var/www/html/writable || true
 
 exec "$@"
