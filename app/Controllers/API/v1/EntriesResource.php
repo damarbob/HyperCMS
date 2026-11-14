@@ -15,8 +15,7 @@ use CodeIgniter\RESTful\ResourceController;
  */
 class EntriesResource extends ResourceController
 {
-    protected $modelName = 'StarDust\Models\EntriesModel';
-    protected $format    = 'json';
+    protected $format = 'json';
 
     /**
      * Sort keys a client may use, mapped to the columns they stand for.
@@ -68,31 +67,18 @@ class EntriesResource extends ResourceController
         $search  = $params['q'] ?? null;
         $modelId = $params['model_id'] ?? null;
 
-        /** @var \StarDust\Models\EntriesModel $model */
-        $model   = $this->model;
-        $builder = $model->stardust();
-
-        if ($modelId !== null && $modelId !== '') {
-            $builder->where('entries.model_id', (int) $modelId);
-        }
-
-        if (is_string($search) && $search !== '') {
-            $builder->groupStart()
-                ->like('model_data.name', $search)
-                ->orLike('users.username', $search)
-                ->groupEnd();
-        }
-
-        $total = $builder->countAllResults(false);
-
-        $data = $builder
-            ->orderBy(self::SORTABLE[$sort], $order)
-            ->limit($limit, ($page - 1) * $limit)
-            ->get()
-            ->getResultArray();
+        // The sort column comes from the fixed list above, never from the request text.
+        $result = service('entryStore')->page(
+            ['model_id' => $modelId, 'search' => $search],
+            self::SORTABLE[$sort],
+            $order,
+            $limit,
+            $page,
+        );
+        $total = $result['total'];
 
         return $this->respond([
-            'data'  => $data,
+            'data'  => $result['data'],
             'pager' => [
                 'current_page' => $page,
                 'total_pages'  => (int) ceil($total / $limit),
@@ -111,10 +97,7 @@ class EntriesResource extends ResourceController
             return $denied;
         }
 
-        /** @var \StarDust\Models\EntriesModel $model */
-        $model = $this->model;
-
-        $entry = $model->stardust()->where('entries.id', $id)->get()->getRowArray();
+        $entry = service('entryStore')->findRow($id);
 
         if (! $entry) {
             return $this->failNotFound('Entry not found.');

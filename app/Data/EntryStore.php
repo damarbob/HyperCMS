@@ -94,6 +94,52 @@ class EntryStore
     }
 
     /**
+     * Read one page of entries for the token API.
+     *
+     * @param array $filters The optional `model_id`, and `search` text that matches the model name or the creator's username.
+     * @param string $sortColumn A column from the caller's own fixed list, never text from a request.
+     * @param string $direction ASC or DESC.
+     * @param int $limit Entries per page.
+     * @param int $page The page number, starting at 1.
+     * @return array The rows under `data` and the count of all matching entries under `total`.
+     */
+    public function page(array $filters, string $sortColumn, string $direction, int $limit, int $page): array
+    {
+        $builder = $this->entries->stardust();
+
+        $modelId = $filters['model_id'] ?? null;
+        if ($modelId !== null && $modelId !== '') {
+            $builder->where('entries.model_id', (int) $modelId);
+        }
+
+        $search = $filters['search'] ?? null;
+        if (is_string($search) && $search !== '') {
+            $builder->groupStart()
+                ->like('model_data.name', $search)
+                ->orLike('users.username', $search)
+                ->groupEnd();
+        }
+
+        $total = $builder->countAllResults(false);
+
+        $data = $builder
+            ->orderBy($sortColumn, $direction)
+            ->limit($limit, ($page - 1) * $limit)
+            ->get()
+            ->getResultArray();
+
+        return ['data' => $data, 'total' => $total];
+    }
+
+    /**
+     * Read one entry by its id, or null when there is none.
+     */
+    public function findRow($id): ?array
+    {
+        return $this->entries->stardust()->where('entries.id', $id)->get()->getRowArray() ?: null;
+    }
+
+    /**
      * Answer one DataTables request for the entries of a single model.
      *
      * The caller may be a controller or another module that passes the values directly.
