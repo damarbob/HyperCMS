@@ -14,7 +14,8 @@ class ModelData extends AdminController
 
         /* Model */
 
-        $modelResult = $this->modelsModel->stardust()->withLegacyAliases(true)->where('id', $id)->limit(1)->get()->getResultArray();
+        $found = service('modelStore')->find($id);
+        $modelResult = $found ? [(array) $found] : [];
 
         // Check if the model exists
         if (empty($modelResult))
@@ -38,27 +39,13 @@ class ModelData extends AdminController
             return $this->respond(lang('Admin.noModelFound'), statusCode: 400, success: false);
         }
 
-        // Retrieve the newest record for this model.
-        $newestRecord = $this->modelDataModel
-            ->select('id')
-            ->where('model_id', $modelId)
-            ->orderBy('id', 'DESC') // Or order by 'created_at' if available.
-            ->limit(1)
-            ->get()
-            ->getRow();
+        // Delete all history records for this model but keep the newest one.
+        $affected = service('modelStore')->clearHistory($modelId);
 
-        if (empty($newestRecord)) {
+        if ($affected === null) {
             return $this->respond(lang('Admin.noHistoryFound'), statusCode: 404, success: false);
         }
 
-        // Delete all history records for this model but exclude the newest one.
-        $this->modelDataModel
-            ->where('model_id', $modelId)
-            ->where('id !=', $newestRecord->id)
-            ->delete(purge: true);
-
-        // Optionally, check if any rows were affected.
-        $affected = $this->modelDataModel->db->affectedRows();
         $message = ($affected > 0)
             ? lang('Admin.historySuccessfullyCleared')
             : lang('Admin.noHistoryCleared');

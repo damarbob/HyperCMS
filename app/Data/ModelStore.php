@@ -19,6 +19,33 @@ class ModelStore
     }
 
     /**
+     * Delete every saved version of a model except the newest, for good.
+     *
+     * @return int|null The number of versions deleted, or null when the model has no versions.
+     */
+    public function clearHistory(int|string $modelId): ?int
+    {
+        $newest = $this->modelData
+            ->select('id')
+            ->where('model_id', $modelId)
+            ->orderBy('id', 'DESC')
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        if (empty($newest)) {
+            return null;
+        }
+
+        $this->modelData
+            ->where('model_id', $modelId)
+            ->where('id !=', $newest->id)
+            ->delete(purge: true);
+
+        return $this->modelData->db->affectedRows();
+    }
+
+    /**
      * Read every live model as an array of rows.
      */
     public function all(): array
