@@ -3,6 +3,7 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
+use App\Libraries\SortColumn;
 
 class Entries extends ApiController
 {
@@ -61,13 +62,11 @@ class Entries extends ApiController
         $recordsFiltered = $modelBuilder->countAllResults(false);
 
         // 3. Apply ordering, if provided.
-        if (!empty($order)) {
-            // DataTables provides the column index and sort direction.
-            // We use the columns array to look up the actual column name.
-            $orderColumnIndex = $order[0]['column'];
-            $orderDir = $order[0]['dir'];
-            $orderColumn = $columns[$orderColumnIndex]['data'];
-            $modelBuilder->orderBy($orderColumn, $orderDir);
+        // DataTables provides the column index and sort direction, and the columns array
+        // names the column. Only a plain column name may reach the query.
+        $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
+        if (SortColumn::isSafe($orderColumn)) {
+            $modelBuilder->orderBy($orderColumn, $order[0]['dir'] ?? '');
         } else {
             // Default ordering by date_modified DESC
             $modelBuilder->orderBy('date_modified', 'DESC');
