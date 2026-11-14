@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use App\Data\EntryStore;
 use App\Data\ModelStore;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
@@ -44,6 +45,20 @@ class Services extends BaseService
             return static::getSharedInstance('fileServer');
         }
         return new FileServer();
+    }
+
+    /**
+     * EntryStore service.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return EntryStore
+     */
+    public static function entryStore(bool $getShared = true): EntryStore
+    {
+        if ($getShared) {
+            return static::getSharedInstance('entryStore');
+        }
+        return new EntryStore(model('entriesModel'));
     }
 
     /**
