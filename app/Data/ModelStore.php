@@ -181,9 +181,10 @@ class ModelStore
      * Answer one DataTables request for the list of models.
      *
      * @param array $post The POST values DataTables sent (draw, start, length, search, order, columns, trash).
+     * @param array $hiddenIds Models the caller may not read. They are left out of the rows and the counts.
      * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
      */
-    public function dataTable(array $post): array
+    public function dataTable(array $post, array $hiddenIds = []): array
     {
         $draw = $post['draw'] ?? 1;
         $start = $post['start'] ?? null;
@@ -198,6 +199,10 @@ class ModelStore
             $builder = $this->models->stardust()->withLegacyAliases(true);
         } else {
             $builder = $this->models->stardust(true)->withLegacyAliases(true);
+        }
+
+        if (!empty($hiddenIds)) {
+            $builder->whereNotIn('id', $hiddenIds);
         }
 
         $totalRecords = $builder->countAllResults(false);

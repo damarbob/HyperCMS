@@ -14,7 +14,9 @@ class Entries extends ApiController
             return $this->deny(403, lang('Auth.notEnoughPrivilege'));
         }
 
-        // The DataTables POST parameters go straight to the store.
-        return $this->response->setJSON(service('entryStore')->dataTable($this->request->getPost()));
+        // The DataTables POST parameters go straight to the store, which leaves out the models this caller may not read.
+        $hidden = service('modelAccess')->hiddenIds($this->caller());
+
+        return $this->response->setJSON(service('entryStore')->dataTable($this->request->getPost(), $hidden));
     }
 }

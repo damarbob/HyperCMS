@@ -1,0 +1,17 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/auth/login",
+        "account": "capture_dev"
+    },
+    "status": 200,
+    "body": {
+        "status": 200,
+        "access_token": "<masked>",
+        "user": {
+            "id": 3,
+            "username": "capture_dev",
+            "email": "capture_dev@example.test"
+        }
+    }
+}

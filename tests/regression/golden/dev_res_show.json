@@ -1,0 +1,23 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource/43",
+        "auth": "bearer of capture_dev"
+    },
+    "status": 200,
+    "body": {
+        "id": "43",
+        "created_at": "2026-11-14 11:13:37",
+        "date_deleted": null,
+        "model_id": "5",
+        "model_name": "Restricted",
+        "model_fields": "[{\"id\":\"secret\",\"label\":\"Secret\",\"type\":\"text\"}]",
+        "user_groups": "[\"developer\"]",
+        "fields": "{\"secret\":\"hidden\"}",
+        "date_modified": "2026-11-14 11:13:37",
+        "data_id": "43",
+        "created_by": "capture_admin",
+        "edited_by": "capture_admin",
+        "deleted_by": null
+    }
+}

@@ -65,7 +65,7 @@ class EntriesResource extends ResourceController
 
         // The sort column comes from the fixed list above, never from the request text.
         $result = service('entryStore')->page(
-            ['model_id' => $modelId, 'search' => $search],
+            ['model_id' => $modelId, 'search' => $search, 'hidden_model_ids' => service('modelAccess')->hiddenIds(ApiAuthFilter::caller())],
             self::SORTABLE[$sort],
             $order,
             $limit,
@@ -95,7 +95,8 @@ class EntriesResource extends ResourceController
 
         $entry = service('entryStore')->findRow($id);
 
-        if (! $entry) {
+        // An entry of a model this caller may not read is answered like one that does not exist.
+        if (! $entry || ! service('modelAccess')->canRead(ApiAuthFilter::caller(), $entry['model_id'])) {
             return $this->failNotFound('Entry not found.');
         }
 

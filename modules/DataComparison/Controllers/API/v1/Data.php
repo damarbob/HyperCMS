@@ -27,6 +27,7 @@ class Data extends AdminController
             'id' => $entryId,
             'ids' => $entryIds,
             'model_id' => $modelId,
+            'hidden_model_ids' => service('modelAccess')->hiddenIds(ApiAuthFilter::caller()),
         ]);
 
         // Prepare and output the JSON response.

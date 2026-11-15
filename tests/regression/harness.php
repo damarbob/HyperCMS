@@ -104,6 +104,8 @@ $post = [
     'model3_all'            => ['api/v1/model', $m1(['id' => 3, 'length' => -1])],
     'model_missing'         => ['api/v1/model', $m1(['id' => 999])],
     'model_noid'            => ['api/v1/model', $dt()],
+    // Model 5 is open to developers only, and capture_admin is not one.
+    'model5_restricted'     => ['api/v1/model', $m1(['id' => 5])],
     // model versions
     'modeldata_id1'         => ['api/v1/model-data', $dt(['id' => 1])],
     'modeldata_all'         => ['api/v1/model-data', $dt()],
@@ -117,6 +119,8 @@ $post = [
     'entrydata_id2'         => ['api/v1/entry-data', $dt(['id' => 2])],
     'entrydata_noid'        => ['api/v1/entry-data', $dt()],
     'entrydata_missing'     => ['api/v1/entry-data', $dt(['id' => 9999])],
+    // Entry 43 belongs to model 5.
+    'entrydata_restricted'  => ['api/v1/entry-data', $dt(['id' => 43])],
 ];
 
 $summary = [];
@@ -190,11 +194,33 @@ $get = [
     'res_bad_sort'      => 'api/v1/entries-resource?sort=nope',
     'res_show_1'        => 'api/v1/entries-resource/1',
     'res_show_missing'  => 'api/v1/entries-resource/9999',
+    'res_show_restricted' => 'api/v1/entries-resource/43',
 ];
 foreach ($get as $name => $path) {
     [$s, $body] = call('GET', $base . $path, null, null, ['Authorization: Bearer ' . $token]);
     $save($name, ['method' => 'GET', 'path' => $path, 'auth' => 'bearer'], $s, $body);
 }
+
+// capture_dev is a developer, so the model that capture_admin cannot read is open to this token.
+[$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_dev@example.test', 'password' => 'Capture-Dev-2026']);
+$save('dev_login', ['method' => 'POST', 'path' => 'api/v1/auth/login', 'account' => 'capture_dev'], $s, $body);
+$devToken = json_decode($body, true)['access_token'] ?? '';
+$dev = [
+    'dev_model5'     => ['api/v1/model', $m1(['id' => 5])],
+    'dev_entries'    => ['api/v1/entries', $dt(['length' => 2])],
+    'dev_entrydata'  => ['api/v1/entry-data', $dt(['id' => 43])],
+    'dev_models'     => ['api/v1/models', $dt()],
+    'dev_model_data' => ['api/v1/model-data', $dt(['id' => 1])],
+];
+foreach ($dev as $name => [$path, $form]) {
+    [$s, $body] = call('POST', $base . $path, $form, null, ['Authorization: Bearer ' . $devToken]);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'bearer of capture_dev'], $s, $body);
+}
+foreach (['dev_res_list' => 'api/v1/entries-resource?limit=2', 'dev_res_show' => 'api/v1/entries-resource/43'] as $name => $path) {
+    [$s, $body] = call('GET', $base . $path, null, null, ['Authorization: Bearer ' . $devToken]);
+    $save($name, ['method' => 'GET', 'path' => $path, 'auth' => 'bearer of capture_dev'], $s, $body);
+}
+
 [$s, $body] = call('GET', $base . 'api/v1/entries-resource');
 $save('res_no_token', ['method' => 'GET', 'path' => 'api/v1/entries-resource', 'auth' => 'none'], $s, $body);
 
