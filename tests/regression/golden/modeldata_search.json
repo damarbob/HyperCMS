@@ -10,9 +10,21 @@
         },
         "auth": "bearer"
     },
-    "status": 500,
+    "status": 200,
     "body": {
-        "type": "CodeIgniter\\Database\\Exceptions\\DatabaseException",
-        "message": "Unknown column 'date_modified' in 'order clause'"
+        "draw": 1,
+        "recordsTotal": 4,
+        "recordsFiltered": 1,
+        "data": [
+            {
+                "data_id": "1",
+                "name": "Article",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "icon": "file-text",
+                "date_created": "2026-11-14 11:13:35",
+                "id": "1",
+                "created_by": "capture_admin"
+            }
+        ]
     }
 }

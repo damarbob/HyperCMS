@@ -7,9 +7,48 @@
         },
         "auth": "bearer"
     },
-    "status": 500,
+    "status": 200,
     "body": {
-        "type": "CodeIgniter\\Database\\Exceptions\\DatabaseException",
-        "message": "Unknown column 'date_modified' in 'order clause'"
+        "draw": 1,
+        "recordsTotal": 4,
+        "recordsFiltered": 4,
+        "data": [
+            {
+                "data_id": "5",
+                "name": "Restricted",
+                "fields": "[{\"id\":\"secret\",\"label\":\"Secret\",\"type\":\"text\"}]",
+                "icon": "file-text",
+                "date_created": "2026-11-14 11:13:35",
+                "id": "5",
+                "created_by": "capture_admin"
+            },
+            {
+                "data_id": "3",
+                "name": "Linked",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                "icon": "file-text",
+                "date_created": "2026-11-14 11:13:35",
+                "id": "3",
+                "created_by": "capture_admin"
+            },
+            {
+                "data_id": "2",
+                "name": "Product",
+                "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "icon": "file-text",
+                "date_created": "2026-11-14 11:13:35",
+                "id": "2",
+                "created_by": "capture_admin"
+            },
+            {
+                "data_id": "1",
+                "name": "Article",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "icon": "file-text",
+                "date_created": "2026-11-14 11:13:35",
+                "id": "1",
+                "created_by": "capture_admin"
+            }
+        ]
     }
 }

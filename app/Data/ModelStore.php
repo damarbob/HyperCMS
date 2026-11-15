@@ -280,7 +280,8 @@ class ModelStore
         if (SortColumn::isSafe($orderColumn)) {
             $builder->orderBy($orderColumn, $order[0]['dir'] ?? '');
         } else {
-            $builder->orderBy('date_modified', 'DESC');
+            // Newest version first. The versions list has no `date_modified` column.
+            $builder->orderBy('data_id', 'DESC');
         }
 
         if ($length != -1) {
