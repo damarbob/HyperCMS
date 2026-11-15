@@ -14,6 +14,7 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 | `harness.php` | Sends the API requests, and compares two folders of captures |
 | `admin_harness.php` | Signs in, loads the admin pages and runs the write flows |
 | `probe.php` | Sends hostile sort and find values to the list endpoints |
+| `upgrade.php` | Tests `php spark hyper:upgrade` on the seed put back into the 0.1 layout |
 | `db.php`, `lib.php` | Restore and drop the database |
 | `seed.php` | The script that filled the database before it was dumped |
 | `check.ps1`, `down.ps1` | Run the whole check, and clean up afterwards |
@@ -46,6 +47,14 @@ Without switches only the API captures run. `-Admin` adds the admin pages and wr
 A file that differs is named on a line of its own. The answers from the run are in `captures/api` and `captures/admin`, which git ignores, so compare the named file with the one in the baseline folder to see what moved. For an admin page the full HTML of the run is in `captures/admin/bodies`.
 
 The probes sign in as `capture_admin` first. A probe is safe when the database never complains about its text, and `EXPOSED` means the text reached SQL. `REFUSED` means the request was turned away before any query ran, so that probe tested nothing.
+
+`-Upgrade` tests the upgrade command. The seed is in today's layout, so the script first undoes what an upgrade does. It rewrites the entry fields into the old list format, drops the current version columns and the newer indexes, and records the table migration under its old name. Then it runs `php spark hyper:upgrade` and checks that every entry, model and version came back as the seed had it. Each check prints `ok` or `FAIL`.
+
+```powershell
+powershell -File tests\regression\check.ps1 -Upgrade
+```
+
+That database is a reconstruction. It was not made by a real 0.1 install, so try the command on a copy of a live database before trusting it there.
 
 When you're done, stop the web server and drop the database.
 

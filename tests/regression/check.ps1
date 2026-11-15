@@ -1,9 +1,10 @@
 # Replay the saved requests against the working tree and compare the answers with the baseline.
-# usage: powershell -File check.ps1 [-Admin] [-Probes] [-Record] [-Port 8099]
+# usage: powershell -File check.ps1 [-Admin] [-Probes] [-Upgrade] [-Record] [-Port 8099]
 #   -Admin   also replay the admin pages and write flows
 #   -Probes  also send the hostile sort and find values
+#   -Upgrade also put the database into the 0.1 layout and test `php spark hyper:upgrade` on it
 #   -Record  save the answers as the new baseline instead of comparing them
-param([switch]$Admin, [switch]$Probes, [switch]$Record, [int]$Port = 8099)
+param([switch]$Admin, [switch]$Probes, [switch]$Upgrade, [switch]$Record, [int]$Port = 8099)
 
 $here    = $PSScriptRoot
 $repo    = (Resolve-Path "$here\..\..").Path
@@ -60,6 +61,13 @@ if ($Admin) {
 if ($Probes) {
     "--- probes"
     php "$here\probe.php" $base
+    if ($LASTEXITCODE -ne 0) { $script:failed = $true }
+}
+if ($Upgrade) {
+    "--- upgrade"
+    php "$here\db.php" $envFile restore "$here\seed.sql" | Out-Null
+    if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
+    php "$here\upgrade.php" $envFile $repo
     if ($LASTEXITCODE -ne 0) { $script:failed = $true }
 }
 

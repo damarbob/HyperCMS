@@ -10,6 +10,7 @@ Welcome to **Hyper CMS**—a cutting-edge content management system that redefin
   - [Fields](#fields)
   - [Items/entries](#itemsentries)
 - [Documentation](#documentation)
+- [Upgrading from 0.1](#upgrading-from-01)
 - [Vision](#vision)
 - [Notes](#notes)
 - [Contact](#contact)
@@ -41,6 +42,30 @@ Data entries based on created models. For instance, a Blog model allows users to
 The documentation is a work in progress and is publicly available in our internal ClickUp workspace. You can access it via the following ClickUp document. Please note that the documentation is not yet complete and may be missing some information. We apologize for any inconvenience.
 
 [https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4](https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4)
+
+## Upgrading from 0.1
+
+HyperCMS 0.1 kept its data layer inside the app. This version reads the database through the StarDust package, which stores entry fields in another format and needs two columns the old database does not have. One command brings a 0.1 database up to date.
+
+1. Back up the database, and check that the backup restores.
+2. Deploy this version of the code and run `composer install`.
+3. See what would change. Nothing is written.
+
+   ```
+   php spark hyper:upgrade --dry-run
+   ```
+
+4. Run the upgrade. It asks you to type the database name before it starts.
+
+   ```
+   php spark hyper:upgrade
+   ```
+
+The command records the table migration under StarDust's name, runs the migrations that are still pending, rewrites entry fields from `[{"id": "title", "value": "x"}]` to `{"title": "x"}`, and links each entry and model to its current version. Trashed entries are converted too, and no modified date changes. It skips work that is already done, so it is safe to run again after a failure.
+
+Two things can need a second look. An entry version whose fields are a list in some other shape is left as it is, and the command names its id and ends with an error. The sort columns that speed up sorting by a field are built with MariaDB syntax, so on MySQL the command reports them as missing. The site works without them.
+
+A script that makes the backup itself can pass `--yes` to skip the question.
 
 ## Vision
 
