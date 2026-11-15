@@ -1,0 +1,99 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/delete",
+        "form": {
+            "ids": [
+                4,
+                5
+            ]
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Entri berhasil dihapus!"
+    },
+    "changes": {
+        "entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 4,
+                        "model_id": 1,
+                        "current_entry_data_id": 4,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 4,
+                        "model_id": 1,
+                        "current_entry_data_id": 4,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 5,
+                        "model_id": 1,
+                        "current_entry_data_id": 5,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 5,
+                        "model_id": 1,
+                        "current_entry_data_id": 5,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 4,
+                        "entry_id": 4,
+                        "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 4,
+                        "entry_id": 4,
+                        "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 5,
+                        "entry_id": 5,
+                        "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 5,
+                        "entry_id": 5,
+                        "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        }
+    }
+}

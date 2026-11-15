@@ -1,0 +1,180 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models/3/delete",
+        "form": []
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Model Linked berhasil dihapus!"
+    },
+    "changes": {
+        "models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 3,
+                        "current_model_data_id": 3,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 3,
+                        "current_model_data_id": 3,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "model_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 3,
+                        "model_id": 3,
+                        "name": "Linked",
+                        "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                        "group": "Content",
+                        "user_groups": "[]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 3,
+                        "model_id": 3,
+                        "name": "Linked",
+                        "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                        "group": "Content",
+                        "user_groups": "[]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 38,
+                        "model_id": 3,
+                        "current_entry_data_id": 38,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 38,
+                        "model_id": 3,
+                        "current_entry_data_id": 38,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 39,
+                        "model_id": 3,
+                        "current_entry_data_id": 39,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 39,
+                        "model_id": 3,
+                        "current_entry_data_id": 39,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 40,
+                        "model_id": 3,
+                        "current_entry_data_id": 40,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 40,
+                        "model_id": 3,
+                        "current_entry_data_id": 40,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 38,
+                        "entry_id": 38,
+                        "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 38,
+                        "entry_id": 38,
+                        "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 39,
+                        "entry_id": 39,
+                        "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 39,
+                        "entry_id": 39,
+                        "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 40,
+                        "entry_id": 40,
+                        "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 40,
+                        "entry_id": 40,
+                        "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        }
+    }
+}

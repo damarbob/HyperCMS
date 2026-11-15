@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/entries/2/new",
+    "status": 200,
+    "location": null,
+    "title": "Product baru",
+    "bytes": 129627,
+    "sha1": "b0ca2360c15d3212ccb41ba0df10c46558319892"
+}

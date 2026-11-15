@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/entries",
+    "status": 200,
+    "location": null,
+    "title": "Entri",
+    "bytes": 136023,
+    "sha1": "b976e2feb14244056f9d578ff0ff299d99176bde"
+}

@@ -137,3 +137,4 @@ nb-configuration.xml
 # HyperCMS
 #-------------------------
 **/.hyper-dev/
+tests/regression/captures/

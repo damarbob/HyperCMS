@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries",
+        "form": {
+            "model_id": 2
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "error": "Kolom fields wajib diisi."
+    },
+    "changes": []
+}

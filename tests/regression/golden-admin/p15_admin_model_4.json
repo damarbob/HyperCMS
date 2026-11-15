@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/model/4",
+    "status": 302,
+    "location": "/index.php/admin/entries",
+    "title": null,
+    "bytes": 28722,
+    "sha1": "6cc830078df77019edc0f48c376ca42459320e70"
+}

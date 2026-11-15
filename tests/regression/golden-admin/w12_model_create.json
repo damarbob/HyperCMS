@@ -1,0 +1,63 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models",
+        "form": {
+            "name": "Gallery",
+            "fields": "[{\"id\":\"caption\",\"label\":\"Caption\",\"type\":\"text\"}]",
+            "group": "Media",
+            "user_groups": [
+                "superadmin"
+            ],
+            "icon": "image"
+        }
+    },
+    "status": 303,
+    "location": "/index.php/admin/models",
+    "body": "",
+    "changes": {
+        "models": {
+            "added": [
+                {
+                    "id": 6,
+                    "current_model_data_id": 6,
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        },
+        "model_data": {
+            "added": [
+                {
+                    "id": 6,
+                    "model_id": 6,
+                    "name": "Gallery",
+                    "fields": "[{\"id\":\"caption\",\"label\":\"Caption\",\"type\":\"text\"}]",
+                    "group": "Media",
+                    "user_groups": "[\"superadmin\"]",
+                    "icon": "image",
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        },
+        "queue_jobs": {
+            "changed": [
+                {
+                    "from": {
+                        "queue": "stardust-indexes",
+                        "status": 0,
+                        "n": 5
+                    },
+                    "to": {
+                        "queue": "stardust-indexes",
+                        "status": 0,
+                        "n": 6
+                    }
+                }
+            ]
+        }
+    }
+}

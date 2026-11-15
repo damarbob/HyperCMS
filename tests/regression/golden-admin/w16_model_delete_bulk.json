@@ -1,0 +1,508 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models/delete",
+        "form": {
+            "ids": [
+                2
+            ]
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Model Product berhasil dihapus!"
+    },
+    "changes": {
+        "models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 2,
+                        "current_model_data_id": 2,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 2,
+                        "current_model_data_id": 2,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "model_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 2,
+                        "model_id": 2,
+                        "name": "Product",
+                        "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                        "group": "Content",
+                        "user_groups": "[\"superadmin\"]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 2,
+                        "model_id": 2,
+                        "name": "Product",
+                        "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                        "group": "Content",
+                        "user_groups": "[\"superadmin\"]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 26,
+                        "model_id": 2,
+                        "current_entry_data_id": 26,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 26,
+                        "model_id": 2,
+                        "current_entry_data_id": 26,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 27,
+                        "model_id": 2,
+                        "current_entry_data_id": 27,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 27,
+                        "model_id": 2,
+                        "current_entry_data_id": 27,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 28,
+                        "model_id": 2,
+                        "current_entry_data_id": 28,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 28,
+                        "model_id": 2,
+                        "current_entry_data_id": 28,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 29,
+                        "model_id": 2,
+                        "current_entry_data_id": 29,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 29,
+                        "model_id": 2,
+                        "current_entry_data_id": 29,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 30,
+                        "model_id": 2,
+                        "current_entry_data_id": 30,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 30,
+                        "model_id": 2,
+                        "current_entry_data_id": 30,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 31,
+                        "model_id": 2,
+                        "current_entry_data_id": 31,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 31,
+                        "model_id": 2,
+                        "current_entry_data_id": 31,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 32,
+                        "model_id": 2,
+                        "current_entry_data_id": 32,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 32,
+                        "model_id": 2,
+                        "current_entry_data_id": 32,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 33,
+                        "model_id": 2,
+                        "current_entry_data_id": 33,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 33,
+                        "model_id": 2,
+                        "current_entry_data_id": 33,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 34,
+                        "model_id": 2,
+                        "current_entry_data_id": 34,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 34,
+                        "model_id": 2,
+                        "current_entry_data_id": 34,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 35,
+                        "model_id": 2,
+                        "current_entry_data_id": 35,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 35,
+                        "model_id": 2,
+                        "current_entry_data_id": 35,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 36,
+                        "model_id": 2,
+                        "current_entry_data_id": 36,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 36,
+                        "model_id": 2,
+                        "current_entry_data_id": 36,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 44,
+                        "model_id": 2,
+                        "current_entry_data_id": 47,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 44,
+                        "model_id": 2,
+                        "current_entry_data_id": 47,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 26,
+                        "entry_id": 26,
+                        "fields": "{\"sku\":\"SKU-001\",\"price\":\"3.50\",\"category\":\"a\",\"added\":\"2026-03-01T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 26,
+                        "entry_id": 26,
+                        "fields": "{\"sku\":\"SKU-001\",\"price\":\"3.50\",\"category\":\"a\",\"added\":\"2026-03-01T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 27,
+                        "entry_id": 27,
+                        "fields": "{\"sku\":\"SKU-002\",\"price\":\"7.00\",\"category\":\"b\",\"added\":\"2026-03-02T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 27,
+                        "entry_id": 27,
+                        "fields": "{\"sku\":\"SKU-002\",\"price\":\"7.00\",\"category\":\"b\",\"added\":\"2026-03-02T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 28,
+                        "entry_id": 28,
+                        "fields": "{\"sku\":\"SKU-003\",\"price\":\"10.50\",\"category\":\"a\",\"added\":\"2026-03-03T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 28,
+                        "entry_id": 28,
+                        "fields": "{\"sku\":\"SKU-003\",\"price\":\"10.50\",\"category\":\"a\",\"added\":\"2026-03-03T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 29,
+                        "entry_id": 29,
+                        "fields": "{\"sku\":\"SKU-004\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-04T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 29,
+                        "entry_id": 29,
+                        "fields": "{\"sku\":\"SKU-004\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-04T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 30,
+                        "entry_id": 30,
+                        "fields": "{\"sku\":\"SKU-005\",\"price\":\"17.50\",\"category\":\"a\",\"added\":\"2026-03-05T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 30,
+                        "entry_id": 30,
+                        "fields": "{\"sku\":\"SKU-005\",\"price\":\"17.50\",\"category\":\"a\",\"added\":\"2026-03-05T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 31,
+                        "entry_id": 31,
+                        "fields": "{\"sku\":\"SKU-006\",\"price\":\"21.00\",\"category\":\"b\",\"added\":\"2026-03-06T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 31,
+                        "entry_id": 31,
+                        "fields": "{\"sku\":\"SKU-006\",\"price\":\"21.00\",\"category\":\"b\",\"added\":\"2026-03-06T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 32,
+                        "entry_id": 32,
+                        "fields": "{\"sku\":\"SKU-007\",\"price\":\"24.50\",\"category\":\"a\",\"added\":\"2026-03-07T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 32,
+                        "entry_id": 32,
+                        "fields": "{\"sku\":\"SKU-007\",\"price\":\"24.50\",\"category\":\"a\",\"added\":\"2026-03-07T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 33,
+                        "entry_id": 33,
+                        "fields": "{\"sku\":\"SKU-008\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-08T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 33,
+                        "entry_id": 33,
+                        "fields": "{\"sku\":\"SKU-008\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-08T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 34,
+                        "entry_id": 34,
+                        "fields": "{\"sku\":\"SKU-009\",\"price\":\"31.50\",\"category\":\"a\",\"added\":\"2026-03-09T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 34,
+                        "entry_id": 34,
+                        "fields": "{\"sku\":\"SKU-009\",\"price\":\"31.50\",\"category\":\"a\",\"added\":\"2026-03-09T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 35,
+                        "entry_id": 35,
+                        "fields": "{\"sku\":\"SKU-010\",\"price\":\"35.00\",\"category\":\"b\",\"added\":\"2026-03-10T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 35,
+                        "entry_id": 35,
+                        "fields": "{\"sku\":\"SKU-010\",\"price\":\"35.00\",\"category\":\"b\",\"added\":\"2026-03-10T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 36,
+                        "entry_id": 36,
+                        "fields": "{\"sku\":\"SKU-011\",\"price\":\"38.50\",\"category\":\"a\",\"added\":\"2026-03-11T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 36,
+                        "entry_id": 36,
+                        "fields": "{\"sku\":\"SKU-011\",\"price\":\"38.50\",\"category\":\"a\",\"added\":\"2026-03-11T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 47,
+                        "entry_id": 44,
+                        "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 47,
+                        "entry_id": 44,
+                        "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,75 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models/1",
+        "form": {
+            "name": "Article",
+            "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
+            "group": "Content",
+            "user_groups": [
+                "superadmin",
+                "admin"
+            ],
+            "icon": "file-text"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Model Article berhasil disimpan!"
+    },
+    "changes": {
+        "models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "current_model_data_id": 1,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "current_model_data_id": 7,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "model_data": {
+            "added": [
+                {
+                    "id": 7,
+                    "model_id": 1,
+                    "name": "Article",
+                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
+                    "group": "Content",
+                    "user_groups": "[\"superadmin\",\"admin\"]",
+                    "icon": "file-text",
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        },
+        "queue_jobs": {
+            "changed": [
+                {
+                    "from": {
+                        "queue": "stardust-indexes",
+                        "status": 0,
+                        "n": 6
+                    },
+                    "to": {
+                        "queue": "stardust-indexes",
+                        "status": 0,
+                        "n": 7
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,17 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1,
+            "id": 999,
+            "start": 0,
+            "length": 10
+        }
+    },
+    "status": 500,
+    "body": {
+        "type": "InvalidArgumentException",
+        "message": "Model with id 999 not found."
+    }
+}

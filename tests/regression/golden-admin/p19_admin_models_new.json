@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/models/new",
+    "status": 200,
+    "location": null,
+    "title": "Model baru",
+    "bytes": 136892,
+    "sha1": "46c1f7f3c16f2010072ddfcb692a92ede4210009"
+}

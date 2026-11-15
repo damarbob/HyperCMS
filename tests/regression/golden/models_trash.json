@@ -1,0 +1,33 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/models",
+        "form": {
+            "draw": 1,
+            "trash": "true"
+        }
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 1,
+        "recordsFiltered": 1,
+        "data": [
+            {
+                "id": "4",
+                "created_at": "2026-11-14 11:13:35",
+                "date_deleted": "2026-11-14 11:13:38",
+                "name": "Scratch",
+                "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
+                "group": "Content",
+                "user_groups": "[]",
+                "icon": "file-text",
+                "date_modified": "2026-11-14 11:13:35",
+                "data_id": "4",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": "capture_admin"
+            }
+        ]
+    }
+}

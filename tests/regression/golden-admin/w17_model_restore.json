@@ -1,0 +1,68 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models/restore",
+        "form": {
+            "ids": [
+                4
+            ]
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Model berhasil dipulihkan!"
+    },
+    "changes": {
+        "models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 4,
+                        "current_model_data_id": 4,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    },
+                    "to": {
+                        "id": 4,
+                        "current_model_data_id": 4,
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "model_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 4,
+                        "model_id": 4,
+                        "name": "Scratch",
+                        "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
+                        "group": "Content",
+                        "user_groups": "[]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    },
+                    "to": {
+                        "id": 4,
+                        "model_id": 4,
+                        "name": "Scratch",
+                        "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
+                        "group": "Content",
+                        "user_groups": "[]",
+                        "icon": "file-text",
+                        "creator_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 0
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,50 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/entries/1",
+        "form": {
+            "fields": "{\"title\":\"Edited by flow\",\"body\":\"<p>x</p>\",\"views\":\"99\",\"published_at\":\"\",\"tags\":[\"tech\"],\"cover\":\"\"}"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "success": "Entri 1 berhasil disimpan!"
+    },
+    "changes": {
+        "entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "model_id": 1,
+                        "current_entry_data_id": 45,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "model_id": 1,
+                        "current_entry_data_id": 48,
+                        "creator_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "entry_data": {
+            "added": [
+                {
+                    "id": 48,
+                    "entry_id": 1,
+                    "fields": "{\"title\":\"Edited by flow\",\"body\":\"<p>x<\\/p>\",\"views\":\"99\",\"published_at\":\"\",\"tags\":[\"tech\"],\"cover\":\"\"}",
+                    "creator_id": 1,
+                    "deleter_id": null,
+                    "deleted": 0
+                }
+            ]
+        }
+    }
+}

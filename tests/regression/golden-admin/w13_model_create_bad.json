@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models",
+        "form": {
+            "name": "ab"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "error": "Kolom name harus memiliki panjang minimal 3 karakter. Kolom fields wajib diisi. Kolom user_groups wajib diisi."
+    },
+    "changes": []
+}

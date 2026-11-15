@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/models",
+    "status": 200,
+    "location": null,
+    "title": "Model",
+    "bytes": 128526,
+    "sha1": "eed77094a3d1a35de734fb4b5513c3d5d9eb2c77"
+}
