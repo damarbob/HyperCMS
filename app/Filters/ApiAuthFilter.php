@@ -8,7 +8,9 @@ use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\I18n\Time;
 use CodeIgniter\Shield\Authentication\Authenticators\AccessTokens;
+use CodeIgniter\Shield\Entities\AccessToken;
 use CodeIgniter\Shield\Entities\User;
+use CodeIgniter\Shield\Models\UserIdentityModel;
 
 /**
  * Signs the caller of an API route in, by access token or by the admin session.
@@ -22,7 +24,7 @@ use CodeIgniter\Shield\Entities\User;
  *  - `optional`, which lets a caller without credentials through as a visitor.
  *
  * A token also needs a user in one of the staff groups, as the token API has required from the start.
- * A token past its `expires` date is refused, and so is a login token that has no date at all.
+ * A token past its `expires` date is refused, and so is a token that has no date at all.
  */
 class ApiAuthFilter implements FilterInterface
 {
@@ -37,11 +39,29 @@ class ApiAuthFilter implements FilterInterface
     public const LOGIN_TOKEN = 'api-login';
 
     /**
-     * How many days a login token works.
+     * How many days a token works.
      */
-    public const LOGIN_TOKEN_DAYS = 30;
+    public const TOKEN_DAYS = 30;
 
     private static ?User $caller = null;
+
+    /**
+     * Make an access token that this filter will accept, which means one with an expiry date.
+     *
+     * Shield's own `generateAccessToken` takes no date, so the date goes on the row afterwards.
+     *
+     * @param list<string> $scopes
+     */
+    public static function issueToken(User $user, string $name, array $scopes): AccessToken
+    {
+        $token   = $user->generateAccessToken($name, $scopes);
+        $expires = Time::now()->addDays(self::TOKEN_DAYS);
+
+        model(UserIdentityModel::class)->update($token->id, ['expires' => $expires->format('Y-m-d H:i:s')]);
+        $token->expires = $expires;
+
+        return $token;
+    }
 
     /**
      * The user this filter signed in for the current request, or null for a visitor.
@@ -116,10 +136,9 @@ class ApiAuthFilter implements FilterInterface
         $user = $authenticator->getUser();
 
         // Shield stores an expiry date and never reads it, so the check is made here.
-        // A login token from before the dates were added has none, and is treated as expired.
-        $token   = $user->currentAccessToken();
-        $expires = $token?->expires;
-        if ($expires !== null ? ! Time::now()->isBefore($expires) : $token?->name === self::LOGIN_TOKEN) {
+        // A token without a date is treated as expired, whatever its name, so no token works forever.
+        $expires = $user->currentAccessToken()?->expires;
+        if ($expires === null || ! Time::now()->isBefore($expires)) {
             $authenticator->logout();
 
             return $this->deny(ResponseInterface::HTTP_UNAUTHORIZED, lang('Filter.tokenExpired'));

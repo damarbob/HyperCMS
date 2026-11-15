@@ -207,15 +207,16 @@ foreach ($get as $name => $path) {
     $save($name, ['method' => 'GET', 'path' => $path, 'auth' => 'bearer'], $s, $body);
 }
 
-// Three tokens put straight into the database for capture_dev. A token past its date is refused, and so
-// is a login token with no date, which is what a login handed out before tokens had one.
-// A token with another name and no date still works.
+// Four tokens put straight into the database for capture_dev. A token past its date is refused, and so
+// is a token with no date under any name, which is what a login handed out before tokens had one.
+// A token with another name and a date still ahead works.
 $pdo   = connect(dbSettings($envFile), true);
 $devId = (int) $pdo->query("SELECT id FROM users WHERE username = 'capture_dev'")->fetchColumn();
 $stale = [
     'token_expired'  => ['api-login', '2020-01-01 00:00:00'],
     'token_undated'  => ['api-login', null],
-    'token_personal' => ['personal', null],
+    'token_personal_undated' => ['personal', null],
+    'token_personal' => ['personal', '2099-01-01 00:00:00'],
 ];
 $insert = $pdo->prepare("INSERT INTO auth_identities (user_id, type, name, secret, extra, expires, created_at, updated_at) VALUES (?, 'access_token', ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())");
 foreach ($stale as $name => [$tokenName, $expires]) {
@@ -230,7 +231,7 @@ $before   = $tokensOf();
 [$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_dev@example.test', 'password' => 'Capture-Dev-2026']);
 $save('dev_login', ['method' => 'POST', 'path' => 'api/v1/auth/login', 'account' => 'capture_dev'], $s, $body);
 $devToken = json_decode($body, true)['access_token'] ?? '';
-// The login clears the two login tokens that can no longer sign in, and leaves the personal one.
+// The login clears the two login tokens that can no longer sign in, and leaves the personal ones.
 $save('dev_tokens_after_login', ['check' => 'access tokens of capture_dev by name, before and after the login'], 0, (string) json_encode(['before' => $before, 'after' => $tokensOf()]));
 $dev = [
     'dev_model5'     => ['api/v1/model', $m1(['id' => 5])],

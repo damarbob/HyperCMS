@@ -74,17 +74,13 @@ class Auth extends ResourceController
             ->delete();
 
         // The token may read entries and model definitions. Add a scope here when the API grows.
-        $token = $user->generateAccessToken(ApiAuthFilter::LOGIN_TOKEN, ['entries.read', 'models.read']);
-
-        // Shield has no expiry argument here, so the date goes on the row afterwards.
-        $expires = $now->addDays(ApiAuthFilter::LOGIN_TOKEN_DAYS);
-        $identities->update($token->id, ['expires' => $expires->format('Y-m-d H:i:s')]);
+        $token = ApiAuthFilter::issueToken($user, ApiAuthFilter::LOGIN_TOKEN, ['entries.read', 'models.read']);
 
         // 5. Return the Raw Token
         return $this->respond([
             'status' => 200,
             'access_token'  => $token->raw_token, // IMPORTANT: accessible only once here
-            'expires_at'    => $expires->format(DATE_ATOM),
+            'expires_at'    => $token->expires->format(DATE_ATOM),
             'user'   => [
                 'id'       => $user->id,
                 'username' => $user->username,

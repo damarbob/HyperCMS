@@ -6,11 +6,11 @@
     "body": {
         "before": {
             "api-login": 2,
-            "personal": 1
+            "personal": 2
         },
         "after": {
             "api-login": 1,
-            "personal": 1
+            "personal": 2
         }
     }
 }

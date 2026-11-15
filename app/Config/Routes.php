@@ -1,5 +1,6 @@
 <?php
 
+use App\Filters\ApiAuthFilter;
 use CodeIgniter\Router\RouteCollection;
 
 /**
@@ -149,9 +150,10 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             });
 
             $routes->post('generate', static function () {
-                $token = auth()->user()->generateAccessToken(service('request')->getVar('name'));
+                // The API refuses a token without an expiry date, so this one gets a date like a login token does.
+                $token = ApiAuthFilter::issueToken(auth()->user(), (string) service('request')->getVar('name'), ['*']);
 
-                return service('response')->setJSON(['token' => $token->raw_token]);
+                return service('response')->setJSON(['token' => $token->raw_token, 'expires_at' => $token->expires->format(DATE_ATOM)]);
             });
 
             $routes->post('revoke', static function () {
