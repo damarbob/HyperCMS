@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/models",
+        "form": {
+            "draw": 1,
+            "length": 1
+        },
+        "auth": "a 'api-login' token of capture_dev, expires never"
+    },
+    "status": 401,
+    "body": {
+        "message": "Access token ini sudah kedaluwarsa. Login lagi untuk mendapat token baru."
+    }
+}

@@ -6,6 +6,7 @@ use CodeIgniter\Filters\FilterInterface;
 use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
+use CodeIgniter\I18n\Time;
 use CodeIgniter\Shield\Authentication\Authenticators\AccessTokens;
 use CodeIgniter\Shield\Entities\User;
 
@@ -21,6 +22,7 @@ use CodeIgniter\Shield\Entities\User;
  *  - `optional`, which lets a caller without credentials through as a visitor.
  *
  * A token also needs a user in one of the staff groups, as the token API has required from the start.
+ * A token past its `expires` date is refused, and so is a login token that has no date at all.
  */
 class ApiAuthFilter implements FilterInterface
 {
@@ -28,6 +30,16 @@ class ApiAuthFilter implements FilterInterface
      * Groups whose members may use the API with a token. These match the admin entries routes.
      */
     public const STAFF_GROUPS = ['superadmin', 'admin', 'developer'];
+
+    /**
+     * The name of the tokens that `api/v1/auth/login` hands out.
+     */
+    public const LOGIN_TOKEN = 'api-login';
+
+    /**
+     * How many days a login token works.
+     */
+    public const LOGIN_TOKEN_DAYS = 30;
 
     private static ?User $caller = null;
 
@@ -102,6 +114,16 @@ class ApiAuthFilter implements FilterInterface
         }
 
         $user = $authenticator->getUser();
+
+        // Shield stores an expiry date and never reads it, so the check is made here.
+        // A login token from before the dates were added has none, and is treated as expired.
+        $token   = $user->currentAccessToken();
+        $expires = $token?->expires;
+        if ($expires !== null ? ! Time::now()->isBefore($expires) : $token?->name === self::LOGIN_TOKEN) {
+            $authenticator->logout();
+
+            return $this->deny(ResponseInterface::HTTP_UNAUTHORIZED, lang('Filter.tokenExpired'));
+        }
 
         if (! $user->isActivated()) {
             $authenticator->logout();
