@@ -303,6 +303,28 @@
                     "deleted": 1
                 }
             ]
+        },
+        "settings": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "class": "Config\\Hyper",
+                        "key": "publicModels",
+                        "value": "a:1:{i:0;i:2;}",
+                        "type": "array",
+                        "context": null
+                    },
+                    "to": {
+                        "id": 1,
+                        "class": "Config\\Hyper",
+                        "key": "publicModels",
+                        "value": "a:0:{}",
+                        "type": "array",
+                        "context": null
+                    }
+                }
+            ]
         }
     }
 }

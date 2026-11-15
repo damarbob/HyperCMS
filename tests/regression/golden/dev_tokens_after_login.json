@@ -1,0 +1,16 @@
+{
+    "request": {
+        "check": "access tokens of capture_dev by name, before and after the login"
+    },
+    "status": 0,
+    "body": {
+        "before": {
+            "api-login": 2,
+            "personal": 2
+        },
+        "after": {
+            "api-login": 1,
+            "personal": 2
+        }
+    }
+}

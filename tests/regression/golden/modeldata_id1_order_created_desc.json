@@ -16,7 +16,8 @@
                     "data": "date_created"
                 }
             ]
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

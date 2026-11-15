@@ -74,7 +74,8 @@ class Models extends AdminController
             return render('admin/partials/models_form', [
                 'action' => 'edit',
                 'formAction' => base_url('admin/models/' . $model['id']),
-                'model' => $model
+                'model' => $model,
+                'isPublic' => service('modelAccess')->isPublic($model['id']),
             ]);
         });
 
@@ -134,6 +135,8 @@ class Models extends AdminController
             );
         }
 
+        service('modelAccess')->setPublic((int) $modelId, (bool) $this->request->getPost('public'));
+
         return redirect('admin/models')
             ->with('success', lang('Admin.modelxSuccessfullyCreated', ['x' => $data['name']]));
     }
@@ -172,6 +175,8 @@ class Models extends AdminController
         } catch (DatabaseException $e) {
             return $this->respond($e->getMessage(), withInput: true, success: false);
         }
+
+        service('modelAccess')->setPublic((int) $id, (bool) $this->request->getPost('public'));
 
         return $this->respond(lang('Admin.modelxSuccessfullySaved', ['x' => $validData['name']]), withInput: false);
     }
@@ -213,6 +218,8 @@ class Models extends AdminController
         } catch (DatabaseException $e) {
             return $this->respond("{$e->getMessage()} {$e->getTraceAsString()}", statusCode: 500, success: false);
         }
+
+        service('modelAccess')->forgetMissing();
 
         return $this->respond(lang('Admin.modelsSuccessfullyDeleted'));
     }

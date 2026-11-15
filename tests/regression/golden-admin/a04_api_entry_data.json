@@ -1,0 +1,53 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/entry-data",
+        "form": {
+            "draw": 1,
+            "id": 1,
+            "start": 0,
+            "length": 2
+        }
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 3,
+        "recordsFiltered": 3,
+        "data": [
+            {
+                "entry_id": "1",
+                "id": "45",
+                "date_created": "2026-11-14 11:13:38",
+                "model_id": "1",
+                "model_name": "Article",
+                "created_by": "capture_admin",
+                "title": "Getting started with HyperCMS (edited twice)",
+                "body": "<p>v3</p>",
+                "views": "16",
+                "published_at": "2026-01-05T09:30",
+                "tags": [
+                    "news",
+                    "tech"
+                ],
+                "cover": ""
+            },
+            {
+                "entry_id": "1",
+                "id": "44",
+                "date_created": "2026-11-14 11:13:37",
+                "model_id": "1",
+                "model_name": "Article",
+                "created_by": "capture_admin",
+                "title": "Getting started with HyperCMS (edited)",
+                "body": "<p>v2</p>",
+                "views": "15",
+                "published_at": "2026-01-05T09:30",
+                "tags": [
+                    "news"
+                ],
+                "cover": ""
+            }
+        ]
+    }
+}

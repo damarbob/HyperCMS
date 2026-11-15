@@ -2,6 +2,7 @@
 
 namespace App\Controllers\API\v1;
 
+use App\Filters\ApiAuthFilter;
 use CodeIgniter\API\ResponseTrait;
 use CodeIgniter\Controller;
 use CodeIgniter\HTTP\CLIRequest;
@@ -9,6 +10,7 @@ use CodeIgniter\HTTP\IncomingRequest;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\Session\Session;
+use CodeIgniter\Shield\Entities\User;
 use Config\Services;
 use Psr\Log\LoggerInterface;
 
@@ -52,5 +54,21 @@ abstract class ApiController extends Controller
 
         // Preload any models, libraries, etc, here.
 
+    }
+
+    /**
+     * The user the `api-auth` filter signed in, or null for a visitor on a route that lets one through.
+     */
+    protected function caller(): ?User
+    {
+        return ApiAuthFilter::caller();
+    }
+
+    /**
+     * Refuse the request with a status code and a JSON message, in the shape the `api-auth` filter uses.
+     */
+    protected function deny(int $status, string $message): ResponseInterface
+    {
+        return $this->response->setStatusCode($status)->setJSON(['message' => $message]);
     }
 }

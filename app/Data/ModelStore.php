@@ -124,6 +124,26 @@ class ModelStore
     }
 
     /**
+     * Read the groups that may open each model, keyed by model id. Trashed models are included,
+     * because their entries can still show up in a trash view.
+     *
+     * @return array<int, list<string>>
+     */
+    public function userGroups(): array
+    {
+        $map = [];
+        foreach ([false, true] as $onlyTrashed) {
+            $rows = $this->models->stardust($onlyTrashed)->withLegacyAliases(true)->get()->getResultArray();
+            foreach ($rows as $row) {
+                $groups = json_decode($row['user_groups'] ?? '[]', true);
+                $map[(int) $row['id']] = is_array($groups) ? array_values($groups) : [];
+            }
+        }
+
+        return $map;
+    }
+
+    /**
      * Compile the SQL that reads every live model as a flat table, without running it.
      *
      * The syntax processor wraps this SQL as a subquery so a form field can list models.
@@ -161,9 +181,10 @@ class ModelStore
      * Answer one DataTables request for the list of models.
      *
      * @param array $post The POST values DataTables sent (draw, start, length, search, order, columns, trash).
+     * @param array $hiddenIds Models the caller may not read. They are left out of the rows and the counts.
      * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
      */
-    public function dataTable(array $post): array
+    public function dataTable(array $post, array $hiddenIds = []): array
     {
         $draw = $post['draw'] ?? 1;
         $start = $post['start'] ?? null;
@@ -178,6 +199,10 @@ class ModelStore
             $builder = $this->models->stardust()->withLegacyAliases(true);
         } else {
             $builder = $this->models->stardust(true)->withLegacyAliases(true);
+        }
+
+        if (!empty($hiddenIds)) {
+            $builder->whereNotIn('id', $hiddenIds);
         }
 
         $totalRecords = $builder->countAllResults(false);

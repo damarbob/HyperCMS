@@ -2,8 +2,12 @@
 
 namespace App\Controllers\API\v1;
 
+use App\Filters\ApiAuthFilter;
 use CodeIgniter\HTTP\Exceptions\HTTPException;
+use CodeIgniter\I18n\Time;
 use CodeIgniter\RESTful\ResourceController;
+use CodeIgniter\Shield\Authentication\Authenticators\AccessTokens;
+use CodeIgniter\Shield\Models\UserIdentityModel;
 
 class Auth extends ResourceController
 {
@@ -53,13 +57,30 @@ class Auth extends ResourceController
         }
 
         // 4. Generate the Access Token
-        // The token may only read entries. Add a scope here when the API grows.
-        $token = $user->generateAccessToken('api-login', ['entries.read']);
+        /** @var UserIdentityModel $identities */
+        $identities = model(UserIdentityModel::class);
+        $now        = Time::now();
+
+        // Clear this user's login tokens that can no longer sign in. Tokens that are still valid stay,
+        // so a login on one device does not sign another device out.
+        $identities
+            ->where('user_id', $user->id)
+            ->where('type', AccessTokens::ID_TYPE_ACCESS_TOKEN)
+            ->where('name', ApiAuthFilter::LOGIN_TOKEN)
+            ->groupStart()
+            ->where('expires', null)
+            ->orWhere('expires <=', $now->format('Y-m-d H:i:s'))
+            ->groupEnd()
+            ->delete();
+
+        // The token may read entries and model definitions. Add a scope here when the API grows.
+        $token = ApiAuthFilter::issueToken($user, ApiAuthFilter::LOGIN_TOKEN, ['entries.read', 'models.read']);
 
         // 5. Return the Raw Token
         return $this->respond([
             'status' => 200,
             'access_token'  => $token->raw_token, // IMPORTANT: accessible only once here
+            'expires_at'    => $token->expires->format(DATE_ATOM),
             'user'   => [
                 'id'       => $user->id,
                 'username' => $user->username,

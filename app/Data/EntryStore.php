@@ -122,11 +122,15 @@ class EntryStore
     /**
      * Read live entries newest first, with the legacy column names.
      *
-     * @param array $filters Optional keys: `id`, `ids` (a list) and `model_id`. A filter that is empty is skipped.
+     * @param array $filters Optional keys: `id`, `ids` (a list), `model_id`, and `hidden_model_ids` (a list of models to leave out). A filter that is empty is skipped.
      */
     public function recent(array $filters = []): array
     {
         $builder = $this->entries->stardust()->withLegacyAliases(true);
+
+        if (!empty($filters['hidden_model_ids'])) {
+            $builder->whereNotIn('model_id', $filters['hidden_model_ids']);
+        }
 
         if (!empty($filters['id'])) {
             $builder->where('id', $filters['id']);
@@ -179,9 +183,10 @@ class EntryStore
      * Answer one DataTables request for entries across all models.
      *
      * @param array $post The POST values DataTables sent (id, ids, model_id, draw, start, length, search, order, columns, trash).
+     * @param array $hiddenModelIds Models whose entries the caller may not read. They are left out of the rows and the counts.
      * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
      */
-    public function dataTable(array $post): array
+    public function dataTable(array $post, array $hiddenModelIds = []): array
     {
         $id = $post['id'] ?? null;
         $ids = $post['ids'] ?? null;
@@ -213,12 +218,19 @@ class EntryStore
             $builder->where('model_id', $modelId);
         }
 
+        if (!empty($hiddenModelIds)) {
+            $builder->whereNotIn('model_id', $hiddenModelIds);
+        }
+
         $totalRecords = $builder->countAllResults(false);
 
+        // The three matches sit in one group. Without it their OR would let a row past the filters above.
         if (!empty($search)) {
+            $builder->groupStart();
             $builder->like('model_name', esc($search));
             $builder->orLike('fields', esc($search));
             $builder->orLike('created_by', esc($search));
+            $builder->groupEnd();
         }
 
         $recordsFiltered = $builder->countAllResults(false);
@@ -311,7 +323,8 @@ class EntryStore
     /**
      * Read one page of entries for the token API.
      *
-     * @param array $filters The optional `model_id`, and `search` text that matches the model name or the creator's username.
+     * @param array $filters The optional `model_id`, `search` text that matches the model name or the creator's username,
+     *                       and `hidden_model_ids`, a list of models whose entries are left out.
      * @param string $sortColumn A column from the caller's own fixed list, never text from a request.
      * @param string $direction ASC or DESC.
      * @param int $limit Entries per page.
@@ -325,6 +338,10 @@ class EntryStore
         $modelId = $filters['model_id'] ?? null;
         if ($modelId !== null && $modelId !== '') {
             $builder->where('entries.model_id', (int) $modelId);
+        }
+
+        if (!empty($filters['hidden_model_ids'])) {
+            $builder->whereNotIn('entries.model_id', $filters['hidden_model_ids']);
         }
 
         $search = $filters['search'] ?? null;
@@ -352,6 +369,20 @@ class EntryStore
     public function findRow($id): ?array
     {
         return $this->entries->stardust()->where('entries.id', $id)->get()->getRowArray() ?: null;
+    }
+
+    /**
+     * Read the id of the model an entry belongs to, or null when the entry has no saved version.
+     */
+    public function modelIdOf(int|string $entryId): ?int
+    {
+        $row = $this->entryData->stardust()->withLegacyAliases(true)
+            ->where('entry_id', $entryId)
+            ->limit(1)
+            ->get()
+            ->getRow();
+
+        return $row ? (int) $row->model_id : null;
     }
 
     /**

@@ -10,7 +10,8 @@
             "search": {
                 "value": "zzznomatch"
             }
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

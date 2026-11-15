@@ -2,8 +2,10 @@
 declare(strict_types=1);
 
 // Capture what the API endpoints answer, or compare two folders of captures.
-//   php harness.php capture <baseUrl> <outDir>
+//   php harness.php capture <baseUrl> <outDir> <envFile>
 //   php harness.php compare <dirA> <dirB>
+require __DIR__ . '/lib.php';
+
 $mode = $argv[1] ?? '';
 
 function j(mixed $v): string
@@ -54,12 +56,12 @@ if ($mode === 'compare') {
     exit($diff === 0 ? 0 : 1);
 }
 
-if ($mode !== 'capture') {
-    fwrite(STDERR, "usage: harness.php capture <baseUrl> <outDir> | compare <dirA> <dirB>\n");
+if ($mode !== 'capture' || count($argv) < 5) {
+    fwrite(STDERR, "usage: harness.php capture <baseUrl> <outDir> <envFile> | compare <dirA> <dirB>\n");
     exit(2);
 }
 
-[, , $base, $out] = $argv;
+[, , $base, $out, $envFile] = $argv;
 $base = rtrim($base, '/') . '/';
 @mkdir($out, 0777, true);
 
@@ -104,6 +106,8 @@ $post = [
     'model3_all'            => ['api/v1/model', $m1(['id' => 3, 'length' => -1])],
     'model_missing'         => ['api/v1/model', $m1(['id' => 999])],
     'model_noid'            => ['api/v1/model', $dt()],
+    // Model 5 is open to developers only, and capture_admin is not one.
+    'model5_restricted'     => ['api/v1/model', $m1(['id' => 5])],
     // model versions
     'modeldata_id1'         => ['api/v1/model-data', $dt(['id' => 1])],
     'modeldata_all'         => ['api/v1/model-data', $dt()],
@@ -117,6 +121,8 @@ $post = [
     'entrydata_id2'         => ['api/v1/entry-data', $dt(['id' => 2])],
     'entrydata_noid'        => ['api/v1/entry-data', $dt()],
     'entrydata_missing'     => ['api/v1/entry-data', $dt(['id' => 9999])],
+    // Entry 43 belongs to model 5.
+    'entrydata_restricted'  => ['api/v1/entry-data', $dt(['id' => 43])],
 ];
 
 $summary = [];
@@ -125,6 +131,10 @@ $save = function (string $name, array $request, int $status, string $body) use (
     if (json_last_error() === JSON_ERROR_NONE) {
         if (is_array($decoded) && isset($decoded['access_token'])) {
             $decoded['access_token'] = '<masked>';
+        }
+        if (is_array($decoded) && isset($decoded['expires_at'])) {
+            // The date moves with the clock, so the capture keeps only how far ahead it is.
+            $decoded['expires_at'] = '<' . (int) round((strtotime($decoded['expires_at']) - time()) / 86400) . ' days ahead>';
         }
         $payload = $decoded;
         if ($status >= 500 && is_array($decoded) && isset($decoded['message'])) {
@@ -139,17 +149,44 @@ $save = function (string $name, array $request, int $status, string $body) use (
     $summary[] = [$name, $status, strlen($body), $rows, is_array($payload) ? ($payload['recordsTotal'] ?? '') : '', is_array($payload) ? ($payload['recordsFiltered'] ?? '') : ''];
 };
 
-foreach ($post as $name => [$path, $form]) {
-    [$status, $body] = call('POST', $base . $path, $form);
-    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form], $status, $body);
-}
-
-// token API
+// Sign in first. Every list endpoint needs a login or a token.
 [$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_admin@example.test', 'password' => 'Capture-Admin-2026']);
 $save('auth_login', ['method' => 'POST', 'path' => 'api/v1/auth/login'], $s, $body);
 $token = json_decode($body, true)['access_token'] ?? '';
 [$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_admin@example.test', 'password' => 'wrong']);
 $save('auth_login_bad', ['method' => 'POST', 'path' => 'api/v1/auth/login'], $s, $body);
+
+foreach ($post as $name => [$path, $form]) {
+    [$status, $body] = call('POST', $base . $path, $form, null, ['Authorization: Bearer ' . $token]);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'bearer'], $status, $body);
+}
+
+// What a caller without a login gets. Model 2 is the public one.
+$anon = [
+    'anon_models'              => ['api/v1/models', $dt()],
+    'anon_model_data'          => ['api/v1/model-data', $dt(['id' => 1])],
+    'anon_entries'             => ['api/v1/entries', $dt()],
+    'anon_entry_data'          => ['api/v1/entry-data', $dt(['id' => 1])],
+    'anon_model1'              => ['api/v1/model', $m1()],
+    'anon_model_noid'          => ['api/v1/model', $dt()],
+    'anon_model2_public'       => ['api/v1/model', $m1(['id' => 2, 'length' => -1])],
+    'anon_model2_public_trash' => ['api/v1/model', $m1(['id' => 2, 'length' => -1, 'trash' => 'true'])],
+];
+foreach ($anon as $name => [$path, $form]) {
+    [$status, $body] = call('POST', $base . $path, $form);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'none'], $status, $body);
+}
+[$s, $body] = call('POST', $base . 'api/v1/models', $dt(), null, ['Authorization: Bearer not-a-real-token']);
+$save('badtoken_models', ['method' => 'POST', 'path' => 'api/v1/models', 'form' => $dt(), 'auth' => 'bad token'], $s, $body);
+
+// A token works only for the staff groups. capture_user can log in, and its token is refused.
+[$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_user@example.test', 'password' => 'Capture-User-2026']);
+$save('user_login', ['method' => 'POST', 'path' => 'api/v1/auth/login', 'account' => 'capture_user'], $s, $body);
+$userToken = json_decode($body, true)['access_token'] ?? '';
+[$s, $body] = call('POST', $base . 'api/v1/models', $dt(), null, ['Authorization: Bearer ' . $userToken]);
+$save('user_models', ['method' => 'POST', 'path' => 'api/v1/models', 'form' => $dt(), 'auth' => 'bearer of capture_user'], $s, $body);
+[$s, $body] = call('GET', $base . 'api/v1/entries-resource', null, null, ['Authorization: Bearer ' . $userToken]);
+$save('user_res_list', ['method' => 'GET', 'path' => 'api/v1/entries-resource', 'auth' => 'bearer of capture_user'], $s, $body);
 
 $get = [
     'res_list'          => 'api/v1/entries-resource',
@@ -163,11 +200,55 @@ $get = [
     'res_bad_sort'      => 'api/v1/entries-resource?sort=nope',
     'res_show_1'        => 'api/v1/entries-resource/1',
     'res_show_missing'  => 'api/v1/entries-resource/9999',
+    'res_show_restricted' => 'api/v1/entries-resource/43',
 ];
 foreach ($get as $name => $path) {
     [$s, $body] = call('GET', $base . $path, null, null, ['Authorization: Bearer ' . $token]);
     $save($name, ['method' => 'GET', 'path' => $path, 'auth' => 'bearer'], $s, $body);
 }
+
+// Four tokens put straight into the database for capture_dev. A token past its date is refused, and so
+// is a token with no date under any name, which is what a login handed out before tokens had one.
+// A token with another name and a date still ahead works.
+$pdo   = connect(dbSettings($envFile), true);
+$devId = (int) $pdo->query("SELECT id FROM users WHERE username = 'capture_dev'")->fetchColumn();
+$stale = [
+    'token_expired'  => ['api-login', '2020-01-01 00:00:00'],
+    'token_undated'  => ['api-login', null],
+    'token_personal_undated' => ['personal', null],
+    'token_personal' => ['personal', '2099-01-01 00:00:00'],
+];
+$insert = $pdo->prepare("INSERT INTO auth_identities (user_id, type, name, secret, extra, expires, created_at, updated_at) VALUES (?, 'access_token', ?, ?, ?, ?, UTC_TIMESTAMP(), UTC_TIMESTAMP())");
+foreach ($stale as $name => [$tokenName, $expires]) {
+    $insert->execute([$devId, $tokenName, hash('sha256', "raw-$name"), serialize(['entries.read', 'models.read']), $expires]);
+    [$s, $body] = call('POST', $base . 'api/v1/models', $dt(['length' => 1]), null, ["Authorization: Bearer raw-$name"]);
+    $save($name, ['method' => 'POST', 'path' => 'api/v1/models', 'form' => $dt(['length' => 1]), 'auth' => "a '$tokenName' token of capture_dev, expires " . ($expires ?? 'never')], $s, $body);
+}
+$tokensOf = fn(): array => $pdo->query("SELECT name, COUNT(*) AS tokens FROM auth_identities WHERE type = 'access_token' AND user_id = $devId GROUP BY name ORDER BY name")->fetchAll(PDO::FETCH_KEY_PAIR);
+$before   = $tokensOf();
+
+// capture_dev is a developer, so the model that capture_admin cannot read is open to this token.
+[$s, $body] = call('POST', $base . 'api/v1/auth/login', null, ['email' => 'capture_dev@example.test', 'password' => 'Capture-Dev-2026']);
+$save('dev_login', ['method' => 'POST', 'path' => 'api/v1/auth/login', 'account' => 'capture_dev'], $s, $body);
+$devToken = json_decode($body, true)['access_token'] ?? '';
+// The login clears the two login tokens that can no longer sign in, and leaves the personal ones.
+$save('dev_tokens_after_login', ['check' => 'access tokens of capture_dev by name, before and after the login'], 0, (string) json_encode(['before' => $before, 'after' => $tokensOf()]));
+$dev = [
+    'dev_model5'     => ['api/v1/model', $m1(['id' => 5])],
+    'dev_entries'    => ['api/v1/entries', $dt(['length' => 2])],
+    'dev_entrydata'  => ['api/v1/entry-data', $dt(['id' => 43])],
+    'dev_models'     => ['api/v1/models', $dt()],
+    'dev_model_data' => ['api/v1/model-data', $dt(['id' => 1])],
+];
+foreach ($dev as $name => [$path, $form]) {
+    [$s, $body] = call('POST', $base . $path, $form, null, ['Authorization: Bearer ' . $devToken]);
+    $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'bearer of capture_dev'], $s, $body);
+}
+foreach (['dev_res_list' => 'api/v1/entries-resource?limit=2', 'dev_res_show' => 'api/v1/entries-resource/43'] as $name => $path) {
+    [$s, $body] = call('GET', $base . $path, null, null, ['Authorization: Bearer ' . $devToken]);
+    $save($name, ['method' => 'GET', 'path' => $path, 'auth' => 'bearer of capture_dev'], $s, $body);
+}
+
 [$s, $body] = call('GET', $base . 'api/v1/entries-resource');
 $save('res_no_token', ['method' => 'GET', 'path' => 'api/v1/entries-resource', 'auth' => 'none'], $s, $body);
 

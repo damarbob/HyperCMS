@@ -59,6 +59,16 @@ $user->addGroup('superadmin');
 $uid = (int) $user->id;
 echo "user capture_admin id=$uid\n";
 
+// Two more accounts for the access rules. One is outside the staff groups and one is a developer.
+foreach ([['capture_user', 'user', 'Capture-User-2026'], ['capture_dev', 'developer', 'Capture-Dev-2026']] as [$name, $group, $password]) {
+    $account = new CodeIgniter\Shield\Entities\User(['username' => $name, 'email' => "$name@example.test", 'password' => $password]);
+    $users->save($account);
+    $account = $users->findById($users->getInsertID());
+    $account->activate();
+    $account->addGroup($group);
+    echo "user $name id={$account->id}\n";
+}
+
 $mm = service('modelsManager');
 $em = service('entriesManager');
 
@@ -87,6 +97,9 @@ $linked = $mk('Linked', [
 $scratch = $mk('Scratch', [['id' => 'note', 'label' => 'Note', 'type' => 'text']], []);
 $restricted = $mk('Restricted', [['id' => 'secret', 'label' => 'Secret', 'type' => 'text']], ['developer']);
 echo "models article=$article product=$product linked=$linked scratch=$scratch restricted=$restricted\n";
+
+// Product is the public model, so a request without a login can read it and nothing else.
+service('modelAccess')->setPublic($product, true);
 
 $titles = ['Getting started with HyperCMS', 'apple pie recipe', 'Apple pie recipe', 'Éclair for beginners', 'eclair filling',
     '  Leading space title', '<b>Bold</b> headline', 'Zebra crossing', 'Ångström units explained', 'Quarterly report 2026'];

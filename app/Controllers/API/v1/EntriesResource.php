@@ -2,15 +2,16 @@
 
 namespace App\Controllers\API\v1;
 
+use App\Filters\ApiAuthFilter;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
 
 /**
  * Read-only REST access to entries.
  *
- * The routes in `Routes.php` put this behind the `tokens` filter, so a request needs a valid
- * `Authorization: Bearer <token>` header. The token must also carry the `entries.read` scope,
- * and its user must be in a group that may open the admin entries pages.
+ * The routes in `Routes.php` put this behind the `api-auth` filter, so a request needs a valid
+ * `Authorization: Bearer <token>` header or a signed-in admin session. A token must carry the
+ * `entries.read` scope, and the user must be in a group that may open the admin entries pages.
  * Writing entries is not supported here yet.
  */
 class EntriesResource extends ResourceController
@@ -26,11 +27,6 @@ class EntriesResource extends ResourceController
         'updated_at' => 'entry_data.created_at',
         'model_name' => 'model_data.name',
     ];
-
-    /**
-     * Groups that may read entries. These match the `group` filter on the admin entries routes.
-     */
-    private const READER_GROUPS = ['superadmin', 'admin', 'developer'];
 
     /**
      * List entries, newest edit first by default.
@@ -69,7 +65,7 @@ class EntriesResource extends ResourceController
 
         // The sort column comes from the fixed list above, never from the request text.
         $result = service('entryStore')->page(
-            ['model_id' => $modelId, 'search' => $search],
+            ['model_id' => $modelId, 'search' => $search, 'hidden_model_ids' => service('modelAccess')->hiddenIds(ApiAuthFilter::caller())],
             self::SORTABLE[$sort],
             $order,
             $limit,
@@ -99,7 +95,8 @@ class EntriesResource extends ResourceController
 
         $entry = service('entryStore')->findRow($id);
 
-        if (! $entry) {
+        // An entry of a model this caller may not read is answered like one that does not exist.
+        if (! $entry || ! service('modelAccess')->canRead(ApiAuthFilter::caller(), $entry['model_id'])) {
             return $this->failNotFound('Entry not found.');
         }
 
@@ -107,14 +104,14 @@ class EntriesResource extends ResourceController
     }
 
     /**
-     * Return a 403 response unless the token has the `entries.read` scope
-     * and its user is in one of the reader groups.
+     * Return a 403 response unless the caller is in one of the staff groups.
+     * The filter has already checked a token's scope.
      */
     private function denyUnlessAllowed(): ?ResponseInterface
     {
-        $user = auth('tokens')->user();
+        $user = ApiAuthFilter::caller();
 
-        if ($user === null || $user->tokenCant('entries.read') || ! $user->inGroup(...self::READER_GROUPS)) {
+        if ($user === null || ! $user->inGroup(...ApiAuthFilter::STAFF_GROUPS)) {
             return $this->failForbidden('This account or token cannot read entries.');
         }
 

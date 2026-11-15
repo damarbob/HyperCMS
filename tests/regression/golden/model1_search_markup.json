@@ -10,7 +10,8 @@
             "search": {
                 "value": "markup"
             }
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

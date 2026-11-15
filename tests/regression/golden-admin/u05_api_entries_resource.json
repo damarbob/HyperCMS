@@ -1,0 +1,16 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "api/v1/entries-resource?limit=2",
+        "form": null,
+        "account": "capture_user"
+    },
+    "status": 403,
+    "body": {
+        "status": 403,
+        "error": 403,
+        "messages": {
+            "error": "This account or token cannot read entries."
+        }
+    }
+}

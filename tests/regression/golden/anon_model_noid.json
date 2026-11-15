@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/model",
+        "form": {
+            "draw": 1
+        },
+        "auth": "none"
+    },
+    "status": 401,
+    "body": {
+        "message": "Login dulu atau kirim access token untuk memakai endpoint ini."
+    }
+}

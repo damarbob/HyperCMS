@@ -9,7 +9,8 @@
                 2,
                 3
             ]
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

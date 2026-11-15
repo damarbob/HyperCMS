@@ -7,7 +7,8 @@
             "id": 1,
             "start": 1,
             "length": 1
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

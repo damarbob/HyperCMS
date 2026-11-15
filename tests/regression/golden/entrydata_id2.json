@@ -5,7 +5,8 @@
         "form": {
             "draw": 1,
             "id": 2
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

@@ -1,0 +1,28 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/entry-data",
+        "form": {
+            "draw": 1,
+            "id": 43
+        },
+        "auth": "bearer of capture_dev"
+    },
+    "status": 200,
+    "body": {
+        "draw": 1,
+        "recordsTotal": 1,
+        "recordsFiltered": 1,
+        "data": [
+            {
+                "entry_id": "43",
+                "id": "43",
+                "date_created": "2026-11-14 11:13:37",
+                "model_id": "5",
+                "model_name": "Restricted",
+                "created_by": "capture_admin",
+                "secret": "hidden"
+            }
+        ]
+    }
+}

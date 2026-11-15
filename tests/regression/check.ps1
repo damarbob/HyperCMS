@@ -53,7 +53,7 @@ function Invoke-Run([string]$Name, [string]$Baseline, [scriptblock]$Capture) {
     }
 }
 
-Invoke-Run 'api' 'golden' { param($dir) php "$here\harness.php" capture $base $dir }
+Invoke-Run 'api' 'golden' { param($dir) php "$here\harness.php" capture $base $dir $envFile }
 if ($Admin) {
     Invoke-Run 'admin' 'golden-admin' { param($dir) php "$here\admin_harness.php" capture $base $dir $envFile }
 }

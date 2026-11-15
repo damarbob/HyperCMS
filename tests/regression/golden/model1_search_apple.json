@@ -10,7 +10,8 @@
             "search": {
                 "value": "apple"
             }
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {

@@ -98,6 +98,9 @@ return [
     'xToToggleFullscreenMode' => '{x} to toggle fullscreen mode.',
     'optionalGroupingForBetterOrganization' => 'Optional grouping for better organization.',
     'modelWillVisibleToUsersInSelectedGroups' => 'The model will be visible to users in the selected groups.',
+    'publicAccess' => 'Public Access',
+    'readableWithoutLogin' => 'Readable without login',
+    'publicModelHelp' => 'Anyone can read the entries of this model through the API, signed in or not. Turn it on only for a model that a public page shows.',
     'forCompleteListOfIconsPleaseVisitx' => 'For a complete list of icons, please visit {x}.',
 
     'modelNotFound' => 'Model not found',

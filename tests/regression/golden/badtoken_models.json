@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "api/v1/models",
+        "form": {
+            "draw": 1
+        },
+        "auth": "bad token"
+    },
+    "status": 401,
+    "body": {
+        "message": "Akses token tidak sah."
+    }
+}

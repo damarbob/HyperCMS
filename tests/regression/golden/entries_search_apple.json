@@ -9,12 +9,13 @@
             },
             "start": 0,
             "length": 10
-        }
+        },
+        "auth": "bearer"
     },
     "status": 200,
     "body": {
         "draw": 1,
-        "recordsTotal": 38,
+        "recordsTotal": 37,
         "recordsFiltered": 2,
         "data": [
             {

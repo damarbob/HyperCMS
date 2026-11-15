@@ -71,6 +71,23 @@ $fieldsError = validation_show_error('fields');
         </p>
     </div>
 
+    <!-- Public access -->
+    <?php // A form that comes back with errors carries the old name, and then the old tick decides.
+    $publicChecked = old('name') !== null ? (bool) old('public') : !empty($isPublic); ?>
+
+    <div class="field">
+        <label class="label"><?= lang('Admin.publicAccess') ?></label>
+        <div class="checkboxes">
+            <label class="checkbox">
+                <input type="checkbox" name="public" value="1" <?= $publicChecked ? 'checked="checked"' : '' ?>>
+                <?= lang('Admin.readableWithoutLogin') ?>
+            </label>
+        </div>
+        <p class="help">
+            <?= lang('Admin.publicModelHelp') ?>
+        </p>
+    </div>
+
     <!-- Icon -->
     <div class="field">
         <label class="label"><?= lang('Admin.icon') ?></label>
