@@ -23,7 +23,9 @@ class Model extends ApiController
                 return $this->deny(401, lang('Filter.loginRequired'));
             }
             unset($post['trash']);
-        } elseif ($modelId !== null && ! service('modelAccess')->canRead($this->caller(), $modelId)) {
+        } elseif ($modelId === null) {
+            return $this->deny(400, lang('Filter.invalidResource'));
+        } elseif (! service('modelAccess')->canRead($this->caller(), $modelId)) {
             // The model's user groups decide, as they do on its admin page.
             return $this->deny(403, lang('Auth.notEnoughPrivilege'));
         }
