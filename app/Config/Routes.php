@@ -150,8 +150,20 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             });
 
             $routes->post('generate', static function () {
+                $user = auth()->user();
+
+                // A token may only hand on scopes it has itself, so a login token cannot mint a wider one.
+                $asked  = service('request')->getVar('scopes');
+                $scopes = $asked === null ? ($user->currentAccessToken()?->scopes ?? []) : array_values(array_filter((array) $asked, 'is_string'));
+
+                foreach ($scopes as $scope) {
+                    if ($user->tokenCant($scope)) {
+                        return service('response')->setStatusCode(403)->setJSON(['message' => lang('Filter.apiNotAllowed')]);
+                    }
+                }
+
                 // The API refuses a token without an expiry date, so this one gets a date like a login token does.
-                $token = ApiAuthFilter::issueToken(auth()->user(), (string) service('request')->getVar('name'), ['*']);
+                $token = ApiAuthFilter::issueToken($user, (string) service('request')->getVar('name'), $scopes);
 
                 return service('response')->setJSON(['token' => $token->raw_token, 'expires_at' => $token->expires->format(DATE_ATOM)]);
             });
