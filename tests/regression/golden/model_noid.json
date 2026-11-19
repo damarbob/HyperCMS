@@ -7,9 +7,8 @@
         },
         "auth": "bearer"
     },
-    "status": 500,
+    "status": 400,
     "body": {
-        "type": "InvalidArgumentException",
-        "message": "No model id provided."
+        "message": "Resource tidak valid"
     }
 }
