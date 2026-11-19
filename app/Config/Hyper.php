@@ -7,7 +7,7 @@ use CodeIgniter\Config\BaseConfig;
 class Hyper extends BaseConfig
 {
     public string $appName = 'Hyper CMS';
-    public string $appVersion = '0.1.0-alpha.6';
+    public string $appVersion = '0.1.0-alpha.7';
 
     // Default modules as a comma-separated list.
     private string $defaultActiveModules = 'UserManagement, PagingSystem';
