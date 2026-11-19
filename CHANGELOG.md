@@ -36,6 +36,7 @@ This release moves the data layer from code inside the app to the `damarbob/star
 - **Case-sensitive systems**: Loaded the StarDust models by full class name, which fixes the crash on a fresh Linux install reported in GitHub issue 3 (690d6c5).
 - **Removed properties**: Served the old `BaseController` model properties on demand, so modules that still read them keep working (d853ce5).
 - **Docker entrypoint**: Waited for the database before running setup and fixed the owner of `writable/logs` (ecb8659).
+- **Line endings**: Kept shell scripts on LF line endings with `.gitattributes`, so `.docker/entrypoint.sh` still runs after a clone on Windows.
 
 ### Security
 
