@@ -9,8 +9,13 @@ All notable changes to HyperCMS are listed here. The format follows [Keep a Chan
 - **Upgrade warning**: Listed the entry versions that name one field id more than once after `hyper:upgrade`, because the new format keeps only the last value (a3c028b).
 - **Upgrade stress test**: Added `check.ps1 -Stress`, which upgrades a reconstructed 0.1 database of 12000 entries and 36000 versions with large bodies, emoji and odd field lists (191ab16).
 
+### Security
+
+- **Development token route**: Limited `admin/access-token/generate` to the scopes the calling token already has, because a login token could mint one with every scope. The route exists only outside production.
+
 ### Fixed
 
+- **Model endpoint**: Answered a logged-in `POST /api/v1/model` without an `id` with a 400, where it ended in a 500 and a critical log entry.
 - **Upgrade memory**: Read at most 8 MB of entry text at a time in `hyper:upgrade`, because a run of 1 MB bodies exhausted the 128 MB limit PHP has in Docker (a1af075).
 - **Upgrade emoji**: Kept emoji in entry fields when `hyper:upgrade` converts them on a three byte `utf8` database, where each one became a question mark (05374b8).
 
