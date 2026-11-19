@@ -42,9 +42,15 @@ class Upgrade extends BaseCommand
     private const NEW_MIGRATION = 'StarDust\Database\Migrations\CreateHyperTables';
 
     /**
-     * How many entry versions are read at a time.
+     * How many entry versions are looked at at a time.
      */
     private const CHUNK = 500;
+
+    /**
+     * The most entry text read into memory at once. PHP in Docker stops at 128 MB, and one entry with
+     * pictures pasted into its text can be several MB, so a count of rows is not a safe limit.
+     */
+    private const BATCH_BYTES = 8 * 1024 * 1024;
 
     public function run(array $params)
     {
@@ -271,13 +277,28 @@ class Upgrade extends BaseCommand
     private function eachVersion(BaseConnection $db, callable $callback): void
     {
         $lastId = 0;
-        do {
-            $rows = $db->table('entry_data')->select('id, fields')->where('id >', $lastId)->orderBy('id', 'ASC')->limit(self::CHUNK)->get()->getResultArray();
-            foreach ($rows as $row) {
-                $lastId = (int) $row['id'];
+        while (true) {
+            // Sizes come first, so that a run of entries with pictures pasted into the text is read in small batches.
+            $sizes = $db->table('entry_data')->select('id, LENGTH(fields) AS size', false)->where('id >', $lastId)->orderBy('id', 'ASC')->limit(self::CHUNK)->get()->getResultArray();
+            if ($sizes === []) {
+                return;
+            }
+
+            $ids   = [];
+            $bytes = 0;
+            foreach ($sizes as $row) {
+                if ($ids !== [] && $bytes + (int) $row['size'] > self::BATCH_BYTES) {
+                    break;
+                }
+                $ids[]  = (int) $row['id'];
+                $bytes += (int) $row['size'];
+            }
+
+            foreach ($db->table('entry_data')->select('id, fields')->whereIn('id', $ids)->orderBy('id', 'ASC')->get()->getResultArray() as $row) {
                 $callback($row);
             }
-        } while ($rows !== []);
+            $lastId = end($ids);
+        }
     }
 
     /**
