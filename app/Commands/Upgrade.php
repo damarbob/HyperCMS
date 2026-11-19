@@ -233,8 +233,7 @@ class Upgrade extends BaseCommand
                 return;
             }
 
-            // Text is kept unescaped, as the admin saves it, because search matches the stored text.
-            $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+            $json = self::encode($fields);
             $db->table('entry_data')->where('id', $row['id'])->update(['fields' => $json]);
             $converted++;
         });
@@ -243,6 +242,24 @@ class Upgrade extends BaseCommand
         CLI::write("Converted $converted entry versions to the new field format.");
 
         return $odd;
+    }
+
+    /**
+     * Write fields as JSON text. Text is kept unescaped, as the admin saves it, because search matches the stored text.
+     *
+     * Characters outside the Basic Multilingual Plane, such as emoji, are written as JSON escape pairs instead.
+     * A connection or column on three byte `utf8` cannot take them, and MySQL then replaces each one with a
+     * question mark without raising an error.
+     */
+    private static function encode(stdClass $fields): string
+    {
+        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+
+        return preg_replace_callback('/[\x{10000}-\x{10FFFF}]/u', static function (array $match): string {
+            $offset = mb_ord($match[0], 'UTF-8') - 0x10000;
+
+            return sprintf('\u%04x\u%04x', 0xD800 + ($offset >> 10), 0xDC00 + ($offset & 0x3FF));
+        }, $json);
     }
 
     /**
