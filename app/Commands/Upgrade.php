@@ -42,9 +42,15 @@ class Upgrade extends BaseCommand
     private const NEW_MIGRATION = 'StarDust\Database\Migrations\CreateHyperTables';
 
     /**
-     * How many entry versions are read at a time.
+     * How many entry versions are looked at at a time.
      */
     private const CHUNK = 500;
+
+    /**
+     * The most entry text read into memory at once. PHP in Docker stops at 128 MB, and one entry with
+     * pictures pasted into its text can be several MB, so a count of rows is not a safe limit.
+     */
+    private const BATCH_BYTES = 8 * 1024 * 1024;
 
     public function run(array $params)
     {
@@ -98,7 +104,7 @@ class Upgrade extends BaseCommand
 
             // The two data steps succeed or fail together.
             $db->transBegin();
-            $odd    = $this->convertFields($db);
+            [$odd, $repeated] = $this->convertFields($db);
             $mapped = $this->mapCurrentVersions($db);
             $db->transCommit();
 
@@ -119,6 +125,10 @@ class Upgrade extends BaseCommand
         CLI::write("Sort columns on entry_data: {$columns['present']} present, {$columns['missing']} missing.");
         if ($columns['missing'] > 0) {
             CLI::write('The database refused some sort columns, and the reason is in writable/logs. StarDust builds them with MariaDB syntax. The site works without them, and sorting by a field is slower.', 'yellow');
+        }
+
+        if ($repeated !== []) {
+            CLI::write(count($repeated) . ' entry versions had the same field id more than once. The new format holds one value per id, so the last one was kept. entry_data ids: ' . implode(', ', array_slice($repeated, 0, 50)) . (count($repeated) > 50 ? ' and more' : ''), 'yellow');
         }
 
         $left = $after['unlinkedEntries'] + $after['unlinkedModels'] + $after['history'];
@@ -209,15 +219,17 @@ class Upgrade extends BaseCommand
      *
      * Only `fields` is written, so the date a version was last modified stays as it was.
      *
-     * @return list<int> The ids of versions that hold a list in some other shape, which are left alone.
+     * @return array{0: list<int>, 1: list<int>} The ids of versions that hold a list in some other shape, which are
+     *                                            left alone, and the ids of versions that named one field twice.
      */
     private function convertFields(BaseConnection $db): array
     {
         $converted = 0;
         $odd       = [];
+        $repeated  = [];
 
-        $this->eachVersion($db, static function (array $row) use ($db, &$converted, &$odd): void {
-            $fields = self::keyValue($row['fields']);
+        $this->eachVersion($db, static function (array $row) use ($db, &$converted, &$odd, &$repeated): void {
+            $fields = self::keyValue($row['fields'], $twice);
             if ($fields === null) {
                 return;
             }
@@ -227,8 +239,11 @@ class Upgrade extends BaseCommand
                 return;
             }
 
-            // Text is kept unescaped, as the admin saves it, because search matches the stored text.
-            $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+            if ($twice) {
+                $repeated[] = (int) $row['id'];
+            }
+
+            $json = self::encode($fields);
             $db->table('entry_data')->where('id', $row['id'])->update(['fields' => $json]);
             $converted++;
         });
@@ -236,18 +251,39 @@ class Upgrade extends BaseCommand
         CLI::newLine();
         CLI::write("Converted $converted entry versions to the new field format.");
 
-        return $odd;
+        return [$odd, $repeated];
+    }
+
+    /**
+     * Write fields as JSON text. Text is kept unescaped, as the admin saves it, because search matches the stored text.
+     *
+     * Characters outside the Basic Multilingual Plane, such as emoji, are written as JSON escape pairs instead.
+     * A connection or column on three byte `utf8` cannot take them, and MySQL then replaces each one with a
+     * question mark without raising an error.
+     */
+    private static function encode(stdClass $fields): string
+    {
+        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
+
+        return preg_replace_callback('/[\x{10000}-\x{10FFFF}]/u', static function (array $match): string {
+            $offset = mb_ord($match[0], 'UTF-8') - 0x10000;
+
+            return sprintf('\u%04x\u%04x', 0xD800 + ($offset >> 10), 0xDC00 + ($offset & 0x3FF));
+        }, $json);
     }
 
     /**
      * Turn `[{"id": "title", "value": "x"}]` into `{"title": "x"}`.
      *
+     * @param bool|null $twice Set to true when the list names one id more than once.
+     *
      * @return stdClass|false|null The new fields, false for a list in some other shape, or null when
      *                             there is nothing to convert (already converted, empty, or not JSON).
      */
-    private static function keyValue(?string $raw): stdClass|false|null
+    private static function keyValue(?string $raw, ?bool &$twice = null): stdClass|false|null
     {
-        $data = json_decode((string) $raw);
+        $twice = false;
+        $data  = json_decode((string) $raw);
         if (! is_array($data) || $data === []) {
             return null;
         }
@@ -257,6 +293,7 @@ class Upgrade extends BaseCommand
             if (! $item instanceof stdClass || ! property_exists($item, 'value') || ! is_scalar($item->id ?? null)) {
                 return false;
             }
+            $twice = $twice || property_exists($fields, (string) $item->id);
             $fields->{(string) $item->id} = $item->value;
         }
 
@@ -271,13 +308,28 @@ class Upgrade extends BaseCommand
     private function eachVersion(BaseConnection $db, callable $callback): void
     {
         $lastId = 0;
-        do {
-            $rows = $db->table('entry_data')->select('id, fields')->where('id >', $lastId)->orderBy('id', 'ASC')->limit(self::CHUNK)->get()->getResultArray();
-            foreach ($rows as $row) {
-                $lastId = (int) $row['id'];
+        while (true) {
+            // Sizes come first, so that a run of entries with pictures pasted into the text is read in small batches.
+            $sizes = $db->table('entry_data')->select('id, LENGTH(fields) AS size', false)->where('id >', $lastId)->orderBy('id', 'ASC')->limit(self::CHUNK)->get()->getResultArray();
+            if ($sizes === []) {
+                return;
+            }
+
+            $ids   = [];
+            $bytes = 0;
+            foreach ($sizes as $row) {
+                if ($ids !== [] && $bytes + (int) $row['size'] > self::BATCH_BYTES) {
+                    break;
+                }
+                $ids[]  = (int) $row['id'];
+                $bytes += (int) $row['size'];
+            }
+
+            foreach ($db->table('entry_data')->select('id, fields')->whereIn('id', $ids)->orderBy('id', 'ASC')->get()->getResultArray() as $row) {
                 $callback($row);
             }
-        } while ($rows !== []);
+            $lastId = end($ids);
+        }
     }
 
     /**
