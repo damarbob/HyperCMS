@@ -104,7 +104,7 @@ class Upgrade extends BaseCommand
 
             // The two data steps succeed or fail together.
             $db->transBegin();
-            $odd    = $this->convertFields($db);
+            [$odd, $repeated] = $this->convertFields($db);
             $mapped = $this->mapCurrentVersions($db);
             $db->transCommit();
 
@@ -125,6 +125,10 @@ class Upgrade extends BaseCommand
         CLI::write("Sort columns on entry_data: {$columns['present']} present, {$columns['missing']} missing.");
         if ($columns['missing'] > 0) {
             CLI::write('The database refused some sort columns, and the reason is in writable/logs. StarDust builds them with MariaDB syntax. The site works without them, and sorting by a field is slower.', 'yellow');
+        }
+
+        if ($repeated !== []) {
+            CLI::write(count($repeated) . ' entry versions had the same field id more than once. The new format holds one value per id, so the last one was kept. entry_data ids: ' . implode(', ', array_slice($repeated, 0, 50)) . (count($repeated) > 50 ? ' and more' : ''), 'yellow');
         }
 
         $left = $after['unlinkedEntries'] + $after['unlinkedModels'] + $after['history'];
@@ -215,15 +219,17 @@ class Upgrade extends BaseCommand
      *
      * Only `fields` is written, so the date a version was last modified stays as it was.
      *
-     * @return list<int> The ids of versions that hold a list in some other shape, which are left alone.
+     * @return array{0: list<int>, 1: list<int>} The ids of versions that hold a list in some other shape, which are
+     *                                            left alone, and the ids of versions that named one field twice.
      */
     private function convertFields(BaseConnection $db): array
     {
         $converted = 0;
         $odd       = [];
+        $repeated  = [];
 
-        $this->eachVersion($db, static function (array $row) use ($db, &$converted, &$odd): void {
-            $fields = self::keyValue($row['fields']);
+        $this->eachVersion($db, static function (array $row) use ($db, &$converted, &$odd, &$repeated): void {
+            $fields = self::keyValue($row['fields'], $twice);
             if ($fields === null) {
                 return;
             }
@@ -231,6 +237,10 @@ class Upgrade extends BaseCommand
                 $odd[] = (int) $row['id'];
 
                 return;
+            }
+
+            if ($twice) {
+                $repeated[] = (int) $row['id'];
             }
 
             $json = self::encode($fields);
@@ -241,7 +251,7 @@ class Upgrade extends BaseCommand
         CLI::newLine();
         CLI::write("Converted $converted entry versions to the new field format.");
 
-        return $odd;
+        return [$odd, $repeated];
     }
 
     /**
@@ -265,12 +275,15 @@ class Upgrade extends BaseCommand
     /**
      * Turn `[{"id": "title", "value": "x"}]` into `{"title": "x"}`.
      *
+     * @param bool|null $twice Set to true when the list names one id more than once.
+     *
      * @return stdClass|false|null The new fields, false for a list in some other shape, or null when
      *                             there is nothing to convert (already converted, empty, or not JSON).
      */
-    private static function keyValue(?string $raw): stdClass|false|null
+    private static function keyValue(?string $raw, ?bool &$twice = null): stdClass|false|null
     {
-        $data = json_decode((string) $raw);
+        $twice = false;
+        $data  = json_decode((string) $raw);
         if (! is_array($data) || $data === []) {
             return null;
         }
@@ -280,6 +293,7 @@ class Upgrade extends BaseCommand
             if (! $item instanceof stdClass || ! property_exists($item, 'value') || ! is_scalar($item->id ?? null)) {
                 return false;
             }
+            $twice = $twice || property_exists($fields, (string) $item->id);
             $fields->{(string) $item->id} = $item->value;
         }
 

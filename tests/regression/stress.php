@@ -148,7 +148,7 @@ $insVersion = $pdo->prepare('INSERT INTO entry_data (entry_id, fields, creator_i
 $versionWant = []; // version id => expected fields as a PHP value, for versions that must change
 $entryWant   = []; // entry id => expected current version id, or null
 $untouched   = []; // version id => the exact stored text, for versions that must not change
-$kinds       = ['entries' => 0, 'versions' => 0, 'trashedEntries' => 0, 'big' => 0, 'awkward' => 0];
+$kinds       = ['entries' => 0, 'versions' => 0, 'trashedEntries' => 0, 'big' => 0, 'awkward' => 0, 'duplicate' => 0];
 
 // The order of the entry loop follows how a CMS fills up, so ids are not sorted by model.
 $awkwardNames = array_keys($awkward);
@@ -209,6 +209,7 @@ for ($e = 1; $e <= $entryCount; $e++) {
             $list = $awkward[$name];
             $custom = $name;
             $kinds['awkward']++;
+            $kinds['duplicate'] += $name === 'duplicate ids' ? 1 : 0;
         }
 
         if ($custom === 'already key value') {
@@ -275,6 +276,7 @@ echo sprintf("      dry run %.1f s at %s", $seconds, $memory) . PHP_EOL;
 [$code, $text, $seconds] = $spark('--yes');
 echo preg_replace('/^/m', '      | ', trim($text)) . PHP_EOL;
 echo sprintf("      upgrade %.1f s at %s, exit %d", $seconds, $memory, $code) . PHP_EOL;
+$check('versions that name one field twice are reported', str_contains($text, "{$kinds['duplicate']} entry versions had the same field id more than once"));
 $check('the upgrade ran to the end', $code === 0 || $code === 1 && preg_match('/\d+ entry versions hold a list/', $text) === 1, "exit $code: " . substr($text, -300));
 
 // ---------------------------------------------------------------- compare with what was generated
