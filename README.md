@@ -63,7 +63,7 @@ HyperCMS 0.1 kept its data layer inside the app. This version reads the database
 
 The command records the table migration under StarDust's name, runs the migrations that are still pending, rewrites entry fields from `[{"id": "title", "value": "x"}]` to `{"title": "x"}`, and links each entry and model to its current version. Trashed entries are converted too, and no modified date changes. It skips work that is already done, so it is safe to run again after a failure.
 
-Two things can need a second look. An entry version whose fields are a list in some other shape is left as it is, and the command names its id and ends with an error. The sort columns that speed up sorting by a field are built with MariaDB syntax, so on MySQL the command reports them as missing. The site works without them.
+Two things can need a second look. An entry version whose fields are a list in some other shape is left as it is, and the command names its id and ends with an error. The sort columns that speed up sorting by a field are built with MariaDB syntax. The upgrade has been tested on MariaDB 10.4.32, where it builds them. On MySQL, which we tested on 8.0.13, the command reports them as missing and the site works without them, with slower sorting by a field.
 
 A script that makes the backup itself can pass `--yes` to skip the question.
 
