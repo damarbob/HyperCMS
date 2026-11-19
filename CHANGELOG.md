@@ -4,6 +4,10 @@ All notable changes to HyperCMS are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.1.0-alpha.8] - 2026-11-19
+
+This release hardens `hyper:upgrade` and fixes two issues in the API. The upgrade steps are the same as for 0.1.0-alpha.7. The upgrade test and the stress test both pass on MariaDB 10.4.32.
+
 ### Added
 
 - **Upgrade warning**: Listed the entry versions that name one field id more than once after `hyper:upgrade`, because the new format keeps only the last value (a3c028b).
@@ -11,11 +15,11 @@ All notable changes to HyperCMS are listed here. The format follows [Keep a Chan
 
 ### Security
 
-- **Development token route**: Limited `admin/access-token/generate` to the scopes the calling token already has, because a login token could mint one with every scope. The route exists only outside production.
+- **Development token route**: Limited `admin/access-token/generate` to the scopes the calling token already has, because a login token could mint one with every scope. The route exists only outside production (09eb277).
 
 ### Fixed
 
-- **Model endpoint**: Answered a logged-in `POST /api/v1/model` without an `id` with a 400, where it ended in a 500 and a critical log entry.
+- **Model endpoint**: Answered a logged-in `POST /api/v1/model` without an `id` with a 400, where it ended in a 500 and a critical log entry (dbfb1e0).
 - **Upgrade memory**: Read at most 8 MB of entry text at a time in `hyper:upgrade`, because a run of 1 MB bodies exhausted the 128 MB limit PHP has in Docker (a1af075).
 - **Upgrade emoji**: Kept emoji in entry fields when `hyper:upgrade` converts them on a three byte `utf8` database, where each one became a question mark (05374b8).
 
