@@ -23,7 +23,7 @@
     "codeigniter4/queue": "dev-develop",
     "codeigniter4/shield": "^1.1",
     "damarbob/starcore": "^0.2.0",
-    "damarbob/stardust": "^0.2.0-alpha.2",
+    "damarbob/stardust": "dev-main#7afee96b98d0db00828ae0fe382a22b0fe903ab9",
     "masterminds/html5": "^2.9"
   },
   "require-dev": {
