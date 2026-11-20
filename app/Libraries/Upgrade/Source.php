@@ -64,12 +64,22 @@ final class Source
 
         $pointer = $this->layout() === '0.2' ? "x.`$column`" : 'NULL';
 
+        // One pass over the versions finds the newest of each kind for every row. A subquery per row would
+        // read the versions once for every entry, and a 0.1 database has no index on the owner column.
         return "SELECT x.id AS owner_id, COALESCE({$pointer},
             CASE WHEN x.deleted_at IS NULL
-                THEN (SELECT COALESCE(MAX(CASE WHEN v.deleted_at IS NULL THEN v.id END), MAX(v.id)) FROM `$versions` v WHERE v.`$key` = x.id)
-                ELSE (SELECT COALESCE(MAX(CASE WHEN v.deleted_at IS NOT NULL THEN v.id END), MAX(v.id)) FROM `$versions` v WHERE v.`$key` = x.id)
+                THEN COALESCE(g.live_id, g.any_id)
+                ELSE COALESCE(g.trashed_id, g.any_id)
             END) AS version_id
-            FROM `$table` x";
+            FROM `$table` x
+            LEFT JOIN (
+                SELECT v.`$key` AS owner_id,
+                    MAX(CASE WHEN v.deleted_at IS NULL THEN v.id END) AS live_id,
+                    MAX(CASE WHEN v.deleted_at IS NOT NULL THEN v.id END) AS trashed_id,
+                    MAX(v.id) AS any_id
+                FROM `$versions` v
+                GROUP BY v.`$key`
+            ) g ON g.owner_id = x.id";
     }
 
     /**
