@@ -469,9 +469,7 @@ $upgradePeak    = $peak;
 
 $check('the upgrade does not run out of memory', $noCrash($text) && $peak > 0 && $peak < $limit, 'peak ' . $mb($peak));
 $wantExit = $skipWant === [] ? 0 : 1;
-// Known issue V1, see the check below: the command's own verifier calls an entry with 2.0 in it different, and exits 1.
-$exitNow = $skipWant === [] && $floatWant === [] ? 0 : 1;
-$check("the upgrade exits $exitNow, as the entries it must refuse say", $code === $exitNow, "exit $code: " . substr($text, -300));
+$check("the upgrade exits $wantExit, as the entries it must refuse say", $code === $wantExit, "exit $code: " . substr($text, -300));
 $check('the upgrade says it copied every model', preg_match('/Copied (\d+) models and (\d+) model versions\./', $text, $m) === 1 && (int) $m[1] === count($models) && (int) $m[2] === count($modelRevision), $m[0] ?? 'no line');
 $check('the upgrade registered every model in StarDust', preg_match('/Registered (\d+) models in StarDust\./', $text, $m) === 1 && (int) $m[1] === count($models), $m[0] ?? 'no line');
 $check('the upgrade says it copied every entry and version', preg_match('/Copied (\d+) entries and (\d+) entry versions\./', $text, $m) === 1 && (int) $m[1] === $kinds['entries'] && (int) $m[2] === $kinds['versions'], $m[0] ?? 'no line');
@@ -498,8 +496,7 @@ $checkNone('the entries the command lists as not written are the ones the genera
 $checkNone('each refused entry is refused for the expected reason', $wrongWhy);
 // The command's verifier compares an entry's StarDust fields with its converted source.
 $differ = preg_match('/(\d+) entries differ from their source or did not come back\./', $text, $m) === 1 ? (int) $m[1] : 0;
-$check('the verifier of the command reports no entry as differing, apart from the known zero fraction ones', $differ === count($floatWant), "$differ reported, " . count($floatWant) . ' with a zero fraction');
-$known('the verifier of the command does not call an entry with 2.0 in its fields different (V1)', $differ === 0 || $floatWant === [], 'V1 Verifier compares with !== so the float 2.0 of the source never equals the integer 2 StarDust returns, and the run exits 1 with nothing wrong. Reproduce with a live entry whose current version is [{"id":"ratio","value":2.0}].');
+$check('the verifier of the command reports no entry as differing, a zero fraction number such as 2.0 included', $differ === 0, "$differ reported, " . count($floatWant) . ' entries have a zero fraction number');
 $check('the command found no live entry without a StarDust entry left unexplained', ! preg_match('/live entries still have no StarDust entry/', $text));
 
 // ---------------------------------------------------------------- the old tables stay as they were
@@ -679,7 +676,7 @@ $compare   = function () use (&$ids, &$bytes, $pdo, &$badFields, &$badModel, &$b
         }
         $fields = json_decode((string) $row['fields']);
         if ($fields === [] && $versionWant[$want['current']][4] === md5('{}')) {
-            $blankAsList[] = $entryId; // known issue V2, counted below and not a failure here
+            $blankAsList[] = $entryId; // StarDust stores an empty array as [], which is a blank entry
             continue;
         }
         if (! $fields instanceof stdClass || md5($canon($fields)) !== $versionWant[$want['current']][4]) {
@@ -701,7 +698,7 @@ $compare();
 $checkNone('every written entry is in StarDust under its model and tenant', $badModel);
 $checkNone('every written entry\'s StarDust fields equal the converted source (blank reads as {})', $badFields);
 
-$known('blank fields are stored in StarDust as {} (V2)', $blankAsList === [], 'V2 ' . count($blankAsList) . ' of ' . count($blankWant) . ' blank entries hold [] in sd_entry_data.fields, a JSON list, because PayloadWriter hands StarDust an empty PHP array. Reproduce with a live entry whose current version is [] or {} and read sd_entry_data.fields.');
+// StarDust stores a blank entry's empty array as []. The row assembly of the app writes it as {}, so only the content is checked here.
 
 $sdRows = (int) $pdo->query('SELECT COUNT(*) FROM sd_entry_data WHERE tenant_id = 1')->fetchColumn();
 $check('StarDust holds one entry per written entry and nothing else', $sdRows === count($writeWant), "$sdRows rows for " . count($writeWant) . ' written entries');
@@ -747,7 +744,7 @@ $settled = $state();
 [$code2, $text2, $seconds2, $peak2] = $spark('--yes');
 echo sprintf('      second run %.1f s, PHP peak %s, exit %d', $seconds2, $mb($peak2), $code2) . PHP_EOL;
 $check('a second run does not run out of memory', $noCrash($text2) && $peak2 > 0 && $peak2 < $limit, 'peak ' . $mb($peak2));
-$check("a second run exits $exitNow again", $code2 === $exitNow, "exit $code2: " . substr($text2, -300));
+$check("a second run exits $wantExit again", $code2 === $wantExit, "exit $code2: " . substr($text2, -300));
 $check('a second run copies and writes nothing', preg_match('/Copied 0 models and 0 model versions\./', $text2) === 1 && preg_match('/Registered 0 models/', $text2) === 1 && preg_match('/Copied 0 entries and 0 entry versions\./', $text2) === 1 && preg_match('/Wrote 0 entries/', $text2) === 1, substr($text2, 0, 600));
 $after = $state();
 $check('a second run changes no row of the hyper or StarDust tables', $after === $settled, implode(', ', array_keys(array_filter($after, fn($v, $k): bool => $v !== $settled[$k], ARRAY_FILTER_USE_BOTH))));
