@@ -10,10 +10,6 @@ use CodeIgniter\Config\BaseService;
 use PDO;
 use StarDust\Config\Config as StarDustConfig;
 use StarDust\StarDust;
-use StarDust\Models\EntriesModel;
-use StarDust\Models\EntryDataModel;
-use StarDust\Models\ModelDataModel;
-use StarDust\Models\ModelsModel;
 
 /**
  * Services Configuration file.
@@ -80,7 +76,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('modelStore');
         }
-        return new ModelStore(model(ModelsModel::class), model(ModelDataModel::class), service('modelsManager'));
+        return new ModelStore();
     }
 
     /**

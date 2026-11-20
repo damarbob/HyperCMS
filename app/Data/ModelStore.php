@@ -3,23 +3,22 @@
 namespace App\Data;
 
 use App\Libraries\SortColumn;
-use StarDust\Models\ModelDataModel;
-use StarDust\Models\ModelsModel;
-use StarDust\Services\ModelsManager;
+use CodeIgniter\Database\BaseBuilder;
+use CodeIgniter\Database\BaseConnection;
+use LogicException;
 
 /**
  * The one place that reads and writes models.
  *
- * Controllers call this class and never touch StarDust themselves, so the engine
- * behind it can change without editing every controller.
+ * Controllers call this class and never touch StarDust themselves, so the engine behind it can
+ * change without editing every controller. A model lives wholly in `hyper_models` and its saved
+ * versions in `hyper_model_revisions`. StarDust 0.3 knows each model only as `m{id}` with the names
+ * of its fields, so a model's labels, options and icons have no place there.
  */
 class ModelStore
 {
-    public function __construct(
-        private ModelsModel $models,
-        private ModelDataModel $modelData,
-        private ModelsManager $manager,
-    ) {
+    public function __construct(private ?BaseConnection $db = null)
+    {
     }
 
     /**
@@ -29,7 +28,7 @@ class ModelStore
      */
     public function findArray(int $id): array|false
     {
-        return $this->manager->find($id);
+        return $this->listing()->where('m.id', $id)->get()->getResultArray()[0] ?? false;
     }
 
     /**
@@ -37,7 +36,7 @@ class ModelStore
      */
     public function create(array $data, int $userId): int
     {
-        return $this->manager->create($data, $userId);
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
@@ -45,7 +44,7 @@ class ModelStore
      */
     public function update(int $id, array $data, int $userId): void
     {
-        $this->manager->update($id, $data, $userId);
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
@@ -53,15 +52,19 @@ class ModelStore
      */
     public function trash(array $ids, int $userId): void
     {
-        $this->manager->deleteModels($ids, $userId);
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
-     * Read the trashed models among the given ids.
+     * Read the trashed models among the given ids, or false when there are none.
      */
     public function trashed(array $ids): array|false
     {
-        return $this->manager->findDeletedModels($ids);
+        if ($ids === []) {
+            return false;
+        }
+
+        return $this->listing(true)->whereIn('m.id', $ids)->get()->getResultArray() ?: false;
     }
 
     /**
@@ -69,7 +72,7 @@ class ModelStore
      */
     public function countTrashed(): int|string
     {
-        return $this->manager->countDeleted();
+        return $this->listing(true)->countAllResults();
     }
 
     /**
@@ -77,7 +80,7 @@ class ModelStore
      */
     public function emptyTrash(): void
     {
-        $this->manager->purgeDeleted();
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
@@ -85,7 +88,7 @@ class ModelStore
      */
     public function restore(array $ids): void
     {
-        $this->manager->restore($ids);
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
@@ -95,24 +98,7 @@ class ModelStore
      */
     public function clearHistory(int|string $modelId): ?int
     {
-        $newest = $this->modelData
-            ->select('id')
-            ->where('model_id', $modelId)
-            ->orderBy('id', 'DESC')
-            ->limit(1)
-            ->get()
-            ->getRow();
-
-        if (empty($newest)) {
-            return null;
-        }
-
-        $this->modelData
-            ->where('model_id', $modelId)
-            ->where('id !=', $newest->id)
-            ->delete(purge: true);
-
-        return $this->modelData->db->affectedRows();
+        throw $this->notPorted(__FUNCTION__);
     }
 
     /**
@@ -120,7 +106,7 @@ class ModelStore
      */
     public function exists(int|string $id): bool
     {
-        return !empty($this->models->where('id', $id)->findAll());
+        return $this->db()->table('hyper_models')->where('id', $id)->where('deleted_at', null)->countAllResults() > 0;
     }
 
     /**
@@ -133,8 +119,7 @@ class ModelStore
     {
         $map = [];
         foreach ([false, true] as $onlyTrashed) {
-            $rows = $this->models->stardust($onlyTrashed)->withLegacyAliases(true)->get()->getResultArray();
-            foreach ($rows as $row) {
+            foreach ($this->listing($onlyTrashed)->get()->getResultArray() as $row) {
                 $groups = json_decode($row['user_groups'] ?? '[]', true);
                 $map[(int) $row['id']] = is_array($groups) ? array_values($groups) : [];
             }
@@ -150,7 +135,7 @@ class ModelStore
      */
     public function compiledSelect(): string
     {
-        return $this->models->stardust()->getCompiledSelect();
+        return $this->listing()->getCompiledSelect();
     }
 
     /**
@@ -158,7 +143,7 @@ class ModelStore
      */
     public function allArray(): array
     {
-        return $this->manager->get();
+        return $this->listing()->get()->getResultArray();
     }
 
     /**
@@ -166,7 +151,7 @@ class ModelStore
      */
     public function all(): array
     {
-        return $this->models->stardust()->withLegacyAliases(true)->get()->getResultArray();
+        return $this->allArray();
     }
 
     /**
@@ -174,7 +159,7 @@ class ModelStore
      */
     public function find(int|string $id): ?object
     {
-        return $this->models->stardust()->withLegacyAliases(true)->where('id', $id)->get()->getRow();
+        return $this->listing()->where('m.id', $id)->get()->getRow();
     }
 
     /**
@@ -195,23 +180,19 @@ class ModelStore
         $trash = $post['trash'] ?? false;
 
         // The trash view lists deleted models.
-        if (!$trash || $trash == 'false') {
-            $builder = $this->models->stardust()->withLegacyAliases(true);
-        } else {
-            $builder = $this->models->stardust(true)->withLegacyAliases(true);
-        }
+        $builder = $this->listing($trash && $trash != 'false');
 
         if (!empty($hiddenIds)) {
-            $builder->whereNotIn('id', $hiddenIds);
+            $builder->whereNotIn('m.id', $hiddenIds);
         }
 
         $totalRecords = $builder->countAllResults(false);
 
         if (!empty($search)) {
             $builder->groupStart();
-            $builder->like('name', esc($search));
-            $builder->orLike('fields', esc($search));
-            $builder->orLike('created_by', esc($search));
+            $builder->like($this->column('name'), esc($search));
+            $builder->orLike($this->column('fields'), esc($search));
+            $builder->orLike($this->column('created_by'), esc($search));
             $builder->groupEnd();
         }
 
@@ -221,9 +202,9 @@ class ModelStore
         // column. Only a plain column name may reach the query.
         $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
         if (SortColumn::isSafe($orderColumn)) {
-            $builder->orderBy($orderColumn, $order[0]['dir'] ?? '');
+            $builder->orderBy($this->column($orderColumn), $order[0]['dir'] ?? '');
         } else {
-            $builder->orderBy('date_modified', 'DESC');
+            $builder->orderBy($this->column('date_modified'), 'DESC');
         }
 
         // A length of -1 means no limit.
@@ -242,8 +223,7 @@ class ModelStore
     /**
      * Answer one DataTables request for the saved versions of models.
      *
-     * The default order names a column that the select does not have, so a request
-     * without an order fails with a database error, as it did before this class existed.
+     * The versions of a trashed model are left out until it is restored.
      *
      * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns).
      * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
@@ -258,19 +238,19 @@ class ModelStore
         $order = $post['order'] ?? null;
         $columns = $post['columns'] ?? null;
 
-        $builder = $this->modelData->stardust()->withLegacyAliases(true);
+        $builder = $this->versions();
 
         $totalRecords = $builder->countAllResults(false);
 
         if (!empty($modelId)) {
-            $builder->where('id', $modelId);
+            $builder->where('m.id', $modelId);
         }
 
         if (!empty($search)) {
             $builder->groupStart();
-            $builder->like('name', esc($search));
-            $builder->orLike('fields', esc($search));
-            $builder->orLike('created_by', esc($search));
+            $builder->like('r.name', esc($search));
+            $builder->orLike('r.fields', esc($search));
+            $builder->orLike($this->usersColumn('c'), esc($search));
             $builder->groupEnd();
         }
 
@@ -278,10 +258,10 @@ class ModelStore
 
         $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
         if (SortColumn::isSafe($orderColumn)) {
-            $builder->orderBy($orderColumn, $order[0]['dir'] ?? '');
+            $builder->orderBy($this->versionColumn($orderColumn), $order[0]['dir'] ?? '');
         } else {
-            // Newest version first. The versions list has no `date_modified` column.
-            $builder->orderBy('data_id', 'DESC');
+            // Newest version first.
+            $builder->orderBy('r.id', 'DESC');
         }
 
         if ($length != -1) {
@@ -294,5 +274,130 @@ class ModelStore
             'recordsFiltered' => $recordsFiltered,
             'data' => $builder->get()->getResultArray(),
         ];
+    }
+
+    /**
+     * Every live or every trashed model with the columns a list shows, under the names a list uses.
+     *
+     * `date_modified` is when the current version was saved, and `edited_by` is who saved it.
+     */
+    private function listing(bool $onlyTrashed = false): BaseBuilder
+    {
+        $users = $this->users();
+
+        $builder = $this->db()->table('hyper_models AS m')
+            ->select([
+                'm.id',
+                'm.created_at',
+                'm.deleted_at AS date_deleted',
+                'm.name',
+                'm.fields',
+                'm.group',
+                'm.user_groups',
+                'm.icon',
+                'r.created_at AS date_modified',
+                'm.current_revision_id AS data_id',
+                'c.' . $users['name'] . ' AS created_by',
+                'e.' . $users['name'] . ' AS edited_by',
+                'd.' . $users['name'] . ' AS deleted_by',
+            ])
+            ->join('hyper_model_revisions AS r', 'm.current_revision_id = r.id', 'left')
+            ->join($users['table'] . ' AS c', 'm.creator_id = c.' . $users['id'], 'left')
+            ->join($users['table'] . ' AS e', 'r.creator_id = e.' . $users['id'], 'left')
+            ->join($users['table'] . ' AS d', 'm.deleter_id = d.' . $users['id'], 'left');
+
+        return $onlyTrashed ? $builder->where('m.deleted_at IS NOT NULL', null, false) : $builder->where('m.deleted_at', null);
+    }
+
+    /**
+     * Every saved version of a live model, with who saved it.
+     */
+    private function versions(): BaseBuilder
+    {
+        $users = $this->users();
+
+        return $this->db()->table('hyper_model_revisions AS r')
+            ->select([
+                'r.id AS data_id',
+                'r.name',
+                'r.fields',
+                'r.icon',
+                'r.created_at AS date_created',
+                'm.id',
+                'c.' . $users['name'] . ' AS created_by',
+            ])
+            ->join('hyper_models AS m', 'r.model_id = m.id', 'left')
+            ->join($users['table'] . ' AS c', 'r.creator_id = c.' . $users['id'], 'left')
+            ->where('m.deleted_at', null);
+    }
+
+    /**
+     * The table, key column and name column of the people who save models.
+     *
+     * @return array{table: string, id: string, name: string}
+     */
+    private function users(): array
+    {
+        $engine = config('HyperEngine');
+
+        return ['table' => $engine->usersTable, 'id' => $engine->usersIdColumn, 'name' => $engine->usersUsernameColumn];
+    }
+
+    private function usersColumn(string $alias): string
+    {
+        return $alias . '.' . $this->users()['name'];
+    }
+
+    /**
+     * Map a list column to the column it reads, as the legacy list names did. A name this does not know is
+     * passed on as written, so an unknown column is a database error as before.
+     */
+    private function column(string $name): string
+    {
+        return match ($name) {
+            'id'            => 'm.id',
+            'name'          => 'm.name',
+            'fields'        => 'm.fields',
+            'group'         => 'm.group',
+            'user_groups'   => 'm.user_groups',
+            'icon'          => 'm.icon',
+            'created_at'    => 'm.created_at',
+            'date_modified' => 'r.created_at',
+            'data_id'       => 'm.current_revision_id',
+            'date_deleted'  => 'm.deleted_at',
+            'created_by'    => $this->usersColumn('c'),
+            'edited_by'     => $this->usersColumn('e'),
+            'deleted_by'    => $this->usersColumn('d'),
+            default         => $name,
+        };
+    }
+
+    /**
+     * The same for the list of versions.
+     */
+    private function versionColumn(string $name): string
+    {
+        return match ($name) {
+            'data_id'      => 'r.id',
+            'id'           => 'm.id',
+            'name'         => 'r.name',
+            'fields'       => 'r.fields',
+            'icon'         => 'r.icon',
+            'group'        => 'r.group',
+            'user_groups'  => 'r.user_groups',
+            'created_by'   => $this->usersColumn('c'),
+            'date_created' => 'r.created_at',
+            default        => $name,
+        };
+    }
+
+    private function db(): BaseConnection
+    {
+        return $this->db ??= db_connect();
+    }
+
+    private function notPorted(string $method): LogicException
+    {
+        return new LogicException(static::class . '::' . $method . '() is not ported to StarDust 0.3 yet.');
     }
 }
