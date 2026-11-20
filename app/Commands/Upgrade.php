@@ -2,12 +2,14 @@
 
 namespace App\Commands;
 
+use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use CodeIgniter\Database\BaseConnection;
 use Config\Database;
+use Config\HyperEngine;
 use Throwable;
 
 /**
@@ -100,7 +102,35 @@ class Upgrade extends BaseCommand
      */
     private function upgrade(BaseConnection $db, Source $source, array $report): int
     {
-        CLI::error('The upgrade steps are not in this version of the command yet.');
+        $engine = service('stardust');
+        $tenant = config(HyperEngine::class)->tenantId;
+
+        try {
+            CLI::newLine();
+            $exit = $this->call('hyper:migrate', ['all' => null]);
+            if ($exit !== null && $exit !== EXIT_SUCCESS) {
+                CLI::error('The migrations failed, so nothing was copied.');
+
+                return EXIT_ERROR;
+            }
+            $db->resetDataCache();
+
+            $models = new ModelCopier($db, $source, $engine, $tenant);
+
+            $copied = $models->copy();
+            CLI::write("Copied {$copied['models']} models and {$copied['revisions']} model versions.");
+
+            $registered = $models->register();
+            CLI::write("Registered $registered models in StarDust.");
+        } catch (Throwable $e) {
+            CLI::newLine();
+            CLI::error('The upgrade stopped. ' . $e->getMessage());
+            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
+
+            return EXIT_ERROR;
+        }
+
+        CLI::error('The upgrade steps after the models are not in this version of the command yet.');
 
         return EXIT_ERROR;
     }
