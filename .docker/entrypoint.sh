@@ -52,7 +52,8 @@ old_layout() {
 # An old layout is converted only by a person running hyper:upgrade, never from here.
 if [ "$(old_layout)" = "1" ]; then
   echo "❌ This database still has the old HyperCMS layout (entries, entry_data, models or model_data tables and no hyper_entries)."
-  echo "   Take a dump of the database first, then run: php spark hyper:upgrade"
+  echo "   Take a dump of the database first. This container stops, so run the upgrade in a new one:"
+echo "   docker compose run --rm --entrypoint '' app php spark hyper:upgrade"
   echo "   This container never runs the upgrade by itself, so it stops here."
   exit 1
 fi
