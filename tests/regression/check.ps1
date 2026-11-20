@@ -1,11 +1,14 @@
 # Replay the saved requests against the working tree and compare the answers with the baseline.
-# usage: powershell -File check.ps1 [-Admin] [-Probes] [-Upgrade] [-Stress] [-Record] [-Port 8099]
+# usage: powershell -File check.ps1 [-Admin] [-Probes] [-Upgrade] [-Stress] [-Record] [-Port 8099] [-Database name] [-Watch file]
 #   -Admin   also replay the admin pages and write flows
 #   -Probes  also send the hostile sort and find values
 #   -Upgrade also put the database into the 0.1 layout and test `php spark hyper:upgrade` on it
 #   -Stress  also upgrade a large database of awkward data (about 4 minutes)
 #   -Record  save the answers as the new baseline instead of comparing them
-param([switch]$Admin, [switch]$Probes, [switch]$Upgrade, [switch]$Stress, [switch]$Record, [int]$Port = 8099)
+#   -Port    the port of the throwaway web server, so two checkouts can run side by side
+#   -Database  rewrite database_default_database in this checkout's .env first (its own database per lane)
+#   -Watch   a file that lists the tables the admin write flows watch, instead of watched.php
+param([switch]$Admin, [switch]$Probes, [switch]$Upgrade, [switch]$Stress, [switch]$Record, [int]$Port = 8099, [string]$Database = '', [string]$Watch = '')
 
 $here    = $PSScriptRoot
 $repo    = (Resolve-Path "$here\..\..").Path
@@ -16,6 +19,10 @@ $script:failed = $false
 
 if (-not (Test-Path $envFile)) { "No .env found in $repo"; exit 2 }
 New-Item -ItemType Directory -Force $out | Out-Null
+. "$here\env.ps1"
+if ($Database -ne '') { Set-EnvDatabase $envFile $Database }
+$watchArgs = @()
+if ($Watch -ne '') { $watchArgs = @((Resolve-Path $Watch).Path) }
 
 # A syntax error would show up as 58 differences, so catch it first.
 $files = @()
@@ -57,7 +64,7 @@ function Invoke-Run([string]$Name, [string]$Baseline, [scriptblock]$Capture) {
 
 Invoke-Run 'api' 'golden' { param($dir) php "$here\harness.php" capture $base $dir $envFile }
 if ($Admin) {
-    Invoke-Run 'admin' 'golden-admin' { param($dir) php "$here\admin_harness.php" capture $base $dir $envFile }
+    Invoke-Run 'admin' 'golden-admin' { param($dir) php "$here\admin_harness.php" capture $base $dir $envFile @watchArgs }
 }
 if ($Probes) {
     "--- probes"

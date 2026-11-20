@@ -17,6 +17,7 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 | `upgrade.php` | Tests `php spark hyper:upgrade` on the seed put back into the 0.1 layout |
 | `stress.php` | Tests the same command on a large database of awkward data |
 | `db.php`, `lib.php` | Restore and drop the database |
+| `watched.php`, `env.ps1` | The tables the write flows watch, and the helper that points `.env` at another database |
 | `seed.php` | The script that filled the database before it was dumped |
 | `check.ps1`, `down.ps1` | Run the whole check, and clean up afterwards |
 
@@ -58,6 +59,8 @@ powershell -File tests\regression\check.ps1 -Upgrade
 That database is a reconstruction. It was not made by a real 0.1 install, so try the command on a copy of a live database before trusting it there.
 
 `-Stress` tests the same command on a bigger reconstruction, and it takes about four minutes. The script replaces the seed's entries with 12000 entries and 36000 versions, built from assumptions about what a real 0.1 database could hold. Some bodies are 1 to 3 MB, as with pictures pasted into the text. Some text has emoji, some lists repeat a field id or have an odd shape, and some entries are trashed. The upgrade runs with PHP's 128 MB memory limit, the one a Docker container has, and the script compares every version and every link with what it generated. Use `--entries=2000` on `stress.php` for a quicker run.
+
+Two checkouts can run side by side. `-Port 8101` moves the web server, `-Database hyper_lane_a` rewrites the first `database_default_database` line of that checkout's `.env` before the run, and `-Watch other.php` swaps the list of tables the write flows watch. Give `down.ps1` the same `-Port` and `-Database` to clean up.
 
 When you're done, stop the web server and drop the database.
 
