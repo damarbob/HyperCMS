@@ -63,6 +63,9 @@ services:
       MYSQL_DATABASE: ${database_default_database}
       MYSQL_USER: ${database_default_username}
       MYSQL_PASSWORD: ${database_default_password}
+      # An existing db_data volume was written by an older server. This lets the first start on mariadb:10.11 upgrade
+      # the system tables instead of refusing to run. Take a dump of the database before that first start.
+      MARIADB_AUTO_UPGRADE: "1"
     volumes:
       # Persist database data
       - db_data:/var/lib/mysql
