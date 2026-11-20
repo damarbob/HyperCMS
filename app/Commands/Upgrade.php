@@ -7,6 +7,7 @@ use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\PayloadWriter;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
+use App\Libraries\Upgrade\Verifier;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use CodeIgniter\Database\BaseConnection;
@@ -132,14 +133,14 @@ class Upgrade extends BaseCommand
             if ($revisions['repeated'] !== []) {
                 CLI::write(count($revisions['repeated']) . ' entry versions named one field id more than once, and the last value was kept. Version ids: ' . implode(', ', array_slice($revisions['repeated'], 0, 50)) . (count($revisions['repeated']) > 50 ? ' and more' : ''), 'yellow');
             }
-            $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
-            CLI::write("Wrote {$payloads['written']} entries to StarDust.");
-            foreach ($payloads['skipped'] as $skip) {
-                CLI::error("Entry {$skip['id']} was not written, because {$skip['reason']}");
-            }
             if ($revisions['odd'] !== []) {
                 CLI::write(count($revisions['odd']) . ' entry versions hold a list in some other shape and were copied as text. Version ids: ' . implode(', ', array_slice($revisions['odd'], 0, 50)) . (count($revisions['odd']) > 50 ? ' and more' : ''), 'yellow');
             }
+
+            $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
+            CLI::write("Wrote {$payloads['written']} entries to StarDust.");
+
+            $result = (new Verifier($db, $engine, $tenant))->verify();
         } catch (Throwable $e) {
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());
@@ -148,9 +149,40 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
-        CLI::error('The upgrade steps after the copy are not in this version of the command yet.');
+        CLI::newLine();
+        CLI::write('Entries per model, in the hyper tables and read back from StarDust:');
+        foreach ($result['models'] as $model) {
+            CLI::write(sprintf('  %d %s: %d written, %d read back', $model['id'], $model['name'], $model['expected'], $model['found']));
+        }
 
-        return EXIT_ERROR;
+        $failed = false;
+        foreach ($payloads['skipped'] as $skip) {
+            CLI::error("Entry {$skip['id']} was not written, because {$skip['reason']}");
+            $failed = true;
+        }
+        if ($result['mismatched'] !== []) {
+            CLI::error(count($result['mismatched']) . ' entries differ from their source or did not come back. Entry ids: ' . implode(', ', array_slice($result['mismatched'], 0, 50)) . (count($result['mismatched']) > 50 ? ' and more' : ''));
+            $failed = true;
+        }
+        if ($result['unwritten'] > 0 && $payloads['skipped'] === []) {
+            CLI::error("{$result['unwritten']} live entries still have no StarDust entry.");
+            $failed = true;
+        }
+        if ($result['leftBehind'] > 0) {
+            CLI::write("{$result['leftBehind']} live entries of the old tables were left behind, because they have no saved version or no model.", 'yellow');
+        }
+
+        if ($failed) {
+            CLI::newLine();
+            CLI::error('The upgrade finished with the problems above. The old tables are untouched, and running the command again moves what it can.');
+
+            return EXIT_ERROR;
+        }
+
+        CLI::newLine();
+        CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');
+
+        return EXIT_SUCCESS;
     }
 
     /**
