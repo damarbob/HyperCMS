@@ -29,7 +29,7 @@ The seed has three accounts, so the captures cover who gets in as well as what c
 
 The two `.ps1` scripts are PowerShell and were written on Windows. You also need PHP with the `pdo_mysql` extension and a MySQL or MariaDB server that is already running.
 
-The database is the one named by `database_default_database` in your `.env`, because that is the one the app opens. **Every run drops that database and restores it from `seed.sql`.** The scripts put a `regression_marker` table into a database they create, and they refuse to drop one that holds tables without it. Even so, set `.env` to a name you use for nothing else.
+The database is the one named by `database_default_database` in your `.env`, because that is the one the app opens. **Every run drops that database, restores it from `seed.sql`, and runs `php spark hyper:upgrade --yes` on it, because the seed is in the old layout and the app reads the `hyper_` tables.** The scripts put a `regression_marker` table into a database they create, and they refuse to drop one that holds tables without it. Even so, set `.env` to a name you use for nothing else.
 
 ## Running the check
 

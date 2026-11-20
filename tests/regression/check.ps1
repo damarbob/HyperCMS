@@ -48,6 +48,10 @@ if (-not (Test-Listening)) {
 function Invoke-Run([string]$Name, [string]$Baseline, [scriptblock]$Capture) {
     php "$here\db.php" $envFile restore "$here\seed.sql" | Out-Null
     if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
+    # The seed is in the old layout, so the real upgrade gives it the tables the app reads now.
+    Push-Location $repo
+    try { php spark hyper:upgrade --yes | Out-Null; $upgraded = $LASTEXITCODE } finally { Pop-Location }
+    if ($upgraded -ne 0) { "The seed could not be upgraded. Run php spark hyper:upgrade --yes to see why."; exit 1 }
     Remove-Item -Recurse -Force "$out\$Name" -ErrorAction SilentlyContinue
     & $Capture "$out\$Name" | Select-Object -Last 1
     if ($Record) {
