@@ -56,4 +56,17 @@ class HyperEngine extends BaseConfig
      * Seconds one `php spark hyper:tick` run may spend when no --budget is given.
      */
     public int $tickBudgetSeconds = 50;
+
+    /**
+     * Seconds a save waits for another save of the same entry or model before it gives up.
+     */
+    public int $lockTimeoutSeconds = 10;
+
+    /**
+     * The table that holds the people who create, edit and delete models and entries, the column
+     * that is its primary key, and the column that lists show as their name.
+     */
+    public string $usersTable          = 'users';
+    public string $usersIdColumn       = 'id';
+    public string $usersUsernameColumn = 'username';
 }
