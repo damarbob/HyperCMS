@@ -28,6 +28,19 @@ db_query() {
     --silent --skip-column-names --execute="$1"
 }
 
+# The tick container runs only hyper:tick. It skips setup, migration and chown so two containers never run setup at once,
+# and it waits until the web container has created StarDust's tables before its first run.
+if [ "$HYPER_ROLE" = "tick" ]; then
+  SCHEMA_TABLE="${hyperEngine_tablePrefix:-sd_}stardust_schema_version"
+  until [ "$(db_query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '$SCHEMA_TABLE'" 2>/dev/null)" = "1" ]
+  do
+    echo "   -> waiting for the web container to create $SCHEMA_TABLE…"
+    sleep 5
+  done
+  echo "✅ StarDust tables found, starting the tick loop"
+  exec "$@"
+fi
+
 # Prints 1 when the database still has the 0.1 or 0.2 layout (a table named entries, entry_data, models or model_data, and no hyper_entries table).
 old_layout() {
   db_query "SELECT IF(
