@@ -54,6 +54,26 @@ class EntryWriter
     }
 
     /**
+     * Trash the live entries of the given models, as ModelStore does when it trashes a model.
+     *
+     * Each entry is trashed as `trash()` does, with its payload copied out of StarDust first.
+     */
+    public function trashForModels(array $modelIds, int $userId): void
+    {
+        throw $this->notPorted(__FUNCTION__);
+    }
+
+    /**
+     * Bring back the entries of the given models, as ModelStore does when it restores a trashed model.
+     *
+     * The entries trashed before the model was, come back with it, as they did on StarDust 0.2.
+     */
+    public function restoreForModels(array $modelIds): void
+    {
+        throw $this->notPorted(__FUNCTION__);
+    }
+
+    /**
      * Delete every saved version of an entry except the current one.
      *
      * @return int|null The number of versions deleted, or null when the entry has no versions.
