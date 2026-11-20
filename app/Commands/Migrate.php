@@ -62,7 +62,7 @@ class Migrate extends BaseMigrate
 
             CLI::write(lang('Migrations.migrated'), 'green');
 
-            $this->bootstrapEngine();
+            return $this->bootstrapEngine();
         } catch (Throwable $e) {
             throw $e; // Re-throw to ensure CLI exits with error code
         }
@@ -71,8 +71,9 @@ class Migrate extends BaseMigrate
     /**
      * Create StarDust's own tables next to the app's. It never runs on a request, only here and in
      * the upgrade command, and it is safe to run again on a database that already has them.
+     * Returns the exit code for the command.
      */
-    protected function bootstrapEngine(): void
+    protected function bootstrapEngine(): int
     {
         CLI::write('Preparing the StarDust tables', 'yellow');
 
@@ -82,9 +83,11 @@ class Migrate extends BaseMigrate
             CLI::error('This database server is too old for StarDust 0.3. It needs MySQL 8.0.13 or newer, or MariaDB 10.11 or newer.');
             CLI::error($e->getMessage());
 
-            throw $e;
+            return EXIT_ERROR;
         }
 
         CLI::write('StarDust tables are ready', 'green');
+
+        return EXIT_SUCCESS;
     }
 }
