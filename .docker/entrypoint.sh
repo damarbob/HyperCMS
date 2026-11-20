@@ -1,9 +1,12 @@
 #!/usr/bin/env sh
 set -e
 
-echo "⏳ Waiting for MySQL at ${database_default_hostname}:3306…"
+DB_PORT="${database_default_port:-3306}"
+
+echo "⏳ Waiting for MySQL at ${database_default_hostname}:${DB_PORT}…"
 until mysql \
   --host="$database_default_hostname" \
+  --port="$DB_PORT" \
   --user="$database_default_username" \
   --password="$database_default_password" \
   --database="$database_default_database" \
@@ -18,6 +21,7 @@ echo "✅ MySQL is up!"
 db_query() {
   mysql \
     --host="$database_default_hostname" \
+    --port="$DB_PORT" \
     --user="$database_default_username" \
     --password="$database_default_password" \
     --database="$database_default_database" \
