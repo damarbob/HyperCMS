@@ -29,7 +29,7 @@ services:
 
   # MySQL Database
   db:
-    image: mariadb:10.4.32
+    image: mariadb:10.11
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${database_default_database}
