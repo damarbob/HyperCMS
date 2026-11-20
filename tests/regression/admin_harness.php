@@ -2,14 +2,19 @@
 declare(strict_types=1);
 
 // Capture the admin pages and write flows. Run it on a freshly restored database.
-// usage: php admin_harness.php capture <baseUrl> <outDir> <envFile>
+// usage: php admin_harness.php capture <baseUrl> <outDir> <envFile> [watchedFile]
 require __DIR__ . '/lib.php';
 
 if (($argv[1] ?? '') !== 'capture' || count($argv) < 5) {
-    fwrite(STDERR, "usage: admin_harness.php capture <baseUrl> <outDir> <envFile>\n");
+    fwrite(STDERR, "usage: admin_harness.php capture <baseUrl> <outDir> <envFile> [watchedFile]\n");
     exit(2);
 }
 [, , $base, $out, $envFile] = $argv;
+$watched = $argv[5] ?? __DIR__ . '/watched.php';
+if (! is_file($watched)) {
+    fwrite(STDERR, "Watched-tables file not found: $watched\n");
+    exit(2);
+}
 $base = rtrim($base, '/') . '/';
 @mkdir($out, 0777, true);
 
@@ -79,25 +84,22 @@ final class Client
 
 // database access for the state snapshots
 $pdo = connect(dbSettings($envFile), true);
+$queries = require $watched;
 
-function snapshot(PDO $pdo): array
+function snapshot(PDO $pdo, array $queries): array
 {
-    $q = fn(string $sql) => $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
-    return [
-        'models'     => $q('SELECT id, current_model_data_id, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM models ORDER BY id'),
-        'model_data' => $q('SELECT id, model_id, name, fields, `group`, user_groups, icon, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM model_data ORDER BY id'),
-        'entries'    => $q('SELECT id, model_id, current_entry_data_id, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM entries ORDER BY id'),
-        'entry_data' => $q('SELECT id, entry_id, fields, creator_id, deleter_id, deleted_at IS NOT NULL AS deleted FROM entry_data ORDER BY id'),
-        'queue_jobs' => $q('SELECT queue, status, COUNT(*) AS n FROM queue_jobs GROUP BY queue, status ORDER BY queue, status'),
-        'settings'   => $q('SELECT id, class, `key`, value, type, context FROM settings ORDER BY id'),
-    ];
+    $out = [];
+    foreach ($queries as $table => $sql) {
+        $out[$table] = $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+    }
+    return $out;
 }
 
 function changes(array $before, array $after): array
 {
     $out = [];
     foreach ($after as $table => $rows) {
-        $key = $table === 'queue_jobs' ? fn($r) => $r['queue'] . '/' . $r['status'] : fn($r) => (string) $r['id'];
+        $key = fn($r) => isset($r['id']) ? (string) $r['id'] : implode('/', array_slice($r, 0, 2));
         $old = [];
         foreach ($before[$table] ?? [] as $r) {
             $old[$key($r)] = $r;
@@ -244,11 +246,11 @@ $flows = [
     'w20_model_public_on'     => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text', 'public' => '1']],
     'w21_model_public_off'    => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],
 ];
-$prev = snapshot($pdo);
+$prev = snapshot($pdo, $queries);
 foreach ($flows as $name => [$path, $form]) {
     [$status, $body, $loc] = $c->request('POST', $path, $form, true);
     $decoded = json_decode($body, true);
-    $cur = snapshot($pdo);
+    $cur = snapshot($pdo, $queries);
     $save($name, [
         'request'  => ['method' => 'POST', 'path' => $path, 'form' => $form],
         'status'   => $status,

@@ -1,9 +1,11 @@
 # Stop the throwaway web server and drop the regression database.
-# usage: powershell -File down.ps1 [-Port 8099]
-param([int]$Port = 8099)
+# usage: powershell -File down.ps1 [-Port 8099] [-Database name]
+param([int]$Port = 8099, [string]$Database = '')
 
 $here = $PSScriptRoot
 $repo = (Resolve-Path "$here\..\..").Path
+. "$here\env.ps1"
+if ($Database -ne '') { Set-EnvDatabase "$repo\.env" $Database }
 
 function Get-Php([string]$Pattern) {
     Get-CimInstance Win32_Process -Filter "Name='php.exe'" | Where-Object { $_.CommandLine -match $Pattern }

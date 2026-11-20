@@ -4,6 +4,10 @@ All notable changes to HyperCMS are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+### Removed
+
+- **Controller property bridge**: Removed the deprecated `BaseController::__get`, which served `$this->modelsManager`, `$this->entriesManager` and the four StarDust model properties to custom controllers. Use `service('modelStore')` and `service('entryStore')` instead.
+
 ## [0.1.0-alpha.8] - 2026-11-19
 
 This release hardens `hyper:upgrade` and fixes two issues in the API. The upgrade steps are the same as for 0.1.0-alpha.7. The upgrade test and the stress test both pass on MariaDB 10.4.32.
