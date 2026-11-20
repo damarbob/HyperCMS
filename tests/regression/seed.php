@@ -69,8 +69,8 @@ foreach ([['capture_user', 'user', 'Capture-User-2026'], ['capture_dev', 'develo
     echo "user $name id={$account->id}\n";
 }
 
-$mm = service('modelsManager');
-$em = service('entriesManager');
+$mm = service('modelStore');
+$em = service('entryStore');
 
 $mk = function (string $name, array $fields, array $groups, string $group = 'Content') use ($mm, $uid, $j): int {
     return $mm->create(['name' => $name, 'fields' => $j($fields), 'group' => $group, 'user_groups' => $j($groups), 'icon' => 'file-text'], $uid);
@@ -149,8 +149,8 @@ $em->update($entryIds[1], ['fields' => $j(['title' => 'Getting started with Hype
 $em->update($entryIds[2], ['fields' => $j(['title' => 'apple pie recipe v2', 'body' => 'changed', 'views' => '25', 'published_at' => '', 'tags' => [], 'cover' => ''])], $uid);
 
 // trash
-$em->deleteEntries([$entryIds[24], $entryIds[25], $productIds[12]], $uid);
-$mm->deleteModels([$scratch], $uid);
+$em->trash([$entryIds[24], $entryIds[25], $productIds[12]], $uid);
+$mm->trash([$scratch], $uid);
 
 foreach (['models', 'model_data', 'entries', 'entry_data'] as $t) {
     echo str_pad($t, 12) . ' rows=' . $db->table($t)->countAllResults() . PHP_EOL;
