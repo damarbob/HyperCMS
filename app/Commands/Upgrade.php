@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Libraries\Upgrade\EntryCopier;
 use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
@@ -122,6 +123,17 @@ class Upgrade extends BaseCommand
 
             $registered = $models->register();
             CLI::write("Registered $registered models in StarDust.");
+
+            $entries   = new EntryCopier($db, $source);
+            $revisions = $entries->copyRevisions();
+            $added     = $entries->copyEntries();
+            CLI::write("Copied $added entries and {$revisions['count']} entry versions.");
+            if ($revisions['repeated'] !== []) {
+                CLI::write(count($revisions['repeated']) . ' entry versions named one field id more than once, and the last value was kept. Version ids: ' . implode(', ', array_slice($revisions['repeated'], 0, 50)) . (count($revisions['repeated']) > 50 ? ' and more' : ''), 'yellow');
+            }
+            if ($revisions['odd'] !== []) {
+                CLI::write(count($revisions['odd']) . ' entry versions hold a list in some other shape and were copied as text. Version ids: ' . implode(', ', array_slice($revisions['odd'], 0, 50)) . (count($revisions['odd']) > 50 ? ' and more' : ''), 'yellow');
+            }
         } catch (Throwable $e) {
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());
@@ -130,7 +142,7 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
-        CLI::error('The upgrade steps after the models are not in this version of the command yet.');
+        CLI::error('The upgrade steps after the copy are not in this version of the command yet.');
 
         return EXIT_ERROR;
     }
