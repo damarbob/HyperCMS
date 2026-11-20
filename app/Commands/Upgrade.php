@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Libraries\Upgrade\EntryCopier;
 use App\Libraries\Upgrade\ModelCopier;
+use App\Libraries\Upgrade\PayloadWriter;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
 use CodeIgniter\CLI\BaseCommand;
@@ -130,6 +131,11 @@ class Upgrade extends BaseCommand
             CLI::write("Copied $added entries and {$revisions['count']} entry versions.");
             if ($revisions['repeated'] !== []) {
                 CLI::write(count($revisions['repeated']) . ' entry versions named one field id more than once, and the last value was kept. Version ids: ' . implode(', ', array_slice($revisions['repeated'], 0, 50)) . (count($revisions['repeated']) > 50 ? ' and more' : ''), 'yellow');
+            }
+            $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
+            CLI::write("Wrote {$payloads['written']} entries to StarDust.");
+            foreach ($payloads['skipped'] as $skip) {
+                CLI::error("Entry {$skip['id']} was not written, because {$skip['reason']}");
             }
             if ($revisions['odd'] !== []) {
                 CLI::write(count($revisions['odd']) . ' entry versions hold a list in some other shape and were copied as text. Version ids: ' . implode(', ', array_slice($revisions['odd'], 0, 50)) . (count($revisions['odd']) > 50 ? ' and more' : ''), 'yellow');
