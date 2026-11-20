@@ -5,6 +5,7 @@ namespace App\Commands;
 use CodeIgniter\Commands\Database\Migrate as BaseMigrate;
 use CodeIgniter\CLI\CLI;
 use CodeIgniter\Database\Exceptions\DatabaseException;
+use StarDust\Exception\UnsupportedServerException;
 use Throwable;
 
 /**
@@ -60,8 +61,30 @@ class Migrate extends BaseMigrate
             }
 
             CLI::write(lang('Migrations.migrated'), 'green');
+
+            $this->bootstrapEngine();
         } catch (Throwable $e) {
             throw $e; // Re-throw to ensure CLI exits with error code
         }
+    }
+
+    /**
+     * Create StarDust's own tables next to the app's. It never runs on a request, only here and in
+     * the upgrade command, and it is safe to run again on a database that already has them.
+     */
+    protected function bootstrapEngine(): void
+    {
+        CLI::write('Preparing the StarDust tables', 'yellow');
+
+        try {
+            service('stardust')->bootstrap();
+        } catch (UnsupportedServerException $e) {
+            CLI::error('This database server is too old for StarDust 0.3. It needs MySQL 8.0.13 or newer, or MariaDB 10.11 or newer.');
+            CLI::error($e->getMessage());
+
+            throw $e;
+        }
+
+        CLI::write('StarDust tables are ready', 'green');
     }
 }
