@@ -109,10 +109,14 @@ final class Verifier
     }
 
     /**
-     * Sort the keys of every object, so two values compare by content and not by key order.
+     * Sort the keys of every object and settle the number type, so two values compare by content.
      */
     private static function canonical(mixed $value): mixed
     {
+        // MySQL keeps 2.0 as the integer 2, so a number with no fraction is compared as an integer.
+        if (is_float($value) && is_finite($value) && $value === floor($value) && abs($value) < 9.0E15) {
+            return (int) $value;
+        }
         if (! is_array($value)) {
             return $value;
         }
