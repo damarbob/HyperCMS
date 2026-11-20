@@ -5,7 +5,13 @@ namespace App\Data;
 use App\Libraries\SortColumn;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseConnection;
-use LogicException;
+use App\Data\Entries\EntryWriter;
+use App\Libraries\Upgrade\ModelCopier;
+use CodeIgniter\I18n\Time;
+use InvalidArgumentException;
+use RuntimeException;
+use StarDust\Exception\ModelDeletionInProgressException;
+use StarDust\StarDust;
 
 /**
  * The one place that reads and writes models.
@@ -17,8 +23,13 @@ use LogicException;
  */
 class ModelStore
 {
-    public function __construct(private ?BaseConnection $db = null)
-    {
+    public function __construct(
+        private ?BaseConnection $db = null,
+        private ?StarDust $engine = null,
+        private ?WriteVersions $versions = null,
+        private ?NamedLock $locks = null,
+        private ?EntryWriter $entries = null,
+    ) {
     }
 
     /**
@@ -36,7 +47,37 @@ class ModelStore
      */
     public function create(array $data, int $userId): int
     {
-        throw $this->notPorted(__FUNCTION__);
+        $this->definition($data);
+        $db  = $this->db();
+        $now = $this->now();
+
+        // The HyperCMS rows come first. StarDust cannot join this transaction, so the model exists in
+        // HyperCMS before it is registered there, and a failed registration is finished by hyper:repair.
+        $db->transStart();
+        $db->table('hyper_models')->insert([
+            'name'          => (string) ($data['name'] ?? ''),
+            'fields'        => $data['fields'],
+            'group'         => $data['group'] ?? null,
+            'icon'          => $data['icon'] ?? null,
+            'user_groups'   => $data['user_groups'] ?? null,
+            'creator_id'    => $userId,
+            'editor_id'     => $userId,
+            'created_at'    => $now,
+            'updated_at'    => $now,
+            'write_version' => 0,
+        ]);
+        $id = (int) $db->insertID();
+        $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
+        $db->table('hyper_models')->where('id', $id)->update(['current_revision_id' => (int) $db->insertID()]);
+        $db->transComplete();
+        $this->assertSaved('create the model');
+
+        $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
+            $this->syncFields($id);
+            $this->versions()->bump([$id]);
+        });
+
+        return $id;
     }
 
     /**
@@ -44,7 +85,34 @@ class ModelStore
      */
     public function update(int $id, array $data, int $userId): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        $this->definition($data);
+        if ($this->db()->table('hyper_models')->where('id', $id)->countAllResults() === 0) {
+            throw new LookupException("Model $id does not exist.");
+        }
+
+        $this->locks()->run(NamedLock::forModel($id), function () use ($id, $data, $userId): void {
+            $db  = $this->db();
+            $now = $this->now();
+
+            $db->transStart();
+            $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
+            $db->table('hyper_models')->where('id', $id)->update([
+                'name'                => (string) ($data['name'] ?? ''),
+                'fields'              => $data['fields'],
+                'group'               => $data['group'] ?? null,
+                'icon'                => $data['icon'] ?? null,
+                'user_groups'         => $data['user_groups'] ?? null,
+                'current_revision_id' => (int) $db->insertID(),
+                'editor_id'           => $userId,
+                'updated_at'          => $now,
+            ]);
+            $db->transComplete();
+            $this->assertSaved('save the model');
+
+            // A field removed in the editor stays registered, so the values old entries hold for it survive.
+            $this->syncFields($id);
+            $this->versions()->bump([$id]);
+        });
     }
 
     /**
@@ -52,7 +120,16 @@ class ModelStore
      */
     public function trash(array $ids, int $userId): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($ids) as $id) {
+            $this->locks()->run(NamedLock::forModel($id), function () use ($id, $userId): void {
+                // Trashing a model trashes the live entries it holds, and their payloads are kept for restore.
+                $this->entries()->trashForModels([$id], $userId);
+
+                $now = $this->now();
+                $this->db()->table('hyper_models')->where('id', $id)->update(['deleter_id' => $userId, 'deleted_at' => $now, 'updated_at' => $now]);
+                $this->versions()->bump([$id]);
+            });
+        }
     }
 
     /**
@@ -80,7 +157,32 @@ class ModelStore
      */
     public function emptyTrash(): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        $db = $this->db();
+
+        foreach ($db->table('hyper_models')->select('id, sd_model_id')->where('deleted_at IS NOT NULL', null, false)->get()->getResultArray() as $model) {
+            $id = (int) $model['id'];
+
+            $this->locks()->run(NamedLock::forModel($id), function () use ($db, $id, $model): void {
+                if ($model['sd_model_id'] !== null) {
+                    // StarDust finishes the deletion later, from hyper:tick. A model it is already deleting is left to it.
+                    try {
+                        $this->engine()->deleteModel($this->tenant(), (int) $model['sd_model_id']);
+                    } catch (ModelDeletionInProgressException) {
+                    }
+                }
+
+                // Every entry of the model goes with it, the trashed ones and any left live.
+                $db->transStart();
+                $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
+                $db->table('hyper_entries')->where('model_id', $id)->delete();
+                $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
+                $db->table('hyper_models')->where('id', $id)->delete();
+                $db->transComplete();
+                $this->assertSaved('delete the model');
+
+                $this->versions()->bumpGlobal();
+            });
+        }
     }
 
     /**
@@ -88,7 +190,18 @@ class ModelStore
      */
     public function restore(array $ids): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($ids) as $id) {
+            $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
+                $wasTrashed = $this->db()->table('hyper_models')->where('id', $id)->where('deleted_at IS NOT NULL', null, false)->countAllResults() > 0;
+
+                $this->db()->table('hyper_models')->where('id', $id)->update(['deleted_at' => null, 'updated_at' => $this->now()]);
+                if ($wasTrashed) {
+                    // The entries come back with their model, the ones trashed earlier included.
+                    $this->entries()->restoreForModels([$id]);
+                }
+                $this->versions()->bump([$id]);
+            });
+        }
     }
 
     /**
@@ -98,7 +211,16 @@ class ModelStore
      */
     public function clearHistory(int|string $modelId): ?int
     {
-        throw $this->notPorted(__FUNCTION__);
+        $id     = (int) $modelId;
+        $db     = $this->db();
+        $newest = $db->table('hyper_model_revisions')->selectMax('id', 'newest')->where('model_id', $id)->get()->getRow()->newest ?? null;
+        if ($newest === null) {
+            return null;
+        }
+
+        $db->table('hyper_model_revisions')->where('model_id', $id)->where('id !=', $newest)->delete();
+
+        return $db->affectedRows();
     }
 
     /**
@@ -238,7 +360,7 @@ class ModelStore
         $order = $post['order'] ?? null;
         $columns = $post['columns'] ?? null;
 
-        $builder = $this->versions();
+        $builder = $this->versionRows();
 
         $totalRecords = $builder->countAllResults(false);
 
@@ -312,7 +434,7 @@ class ModelStore
     /**
      * Every saved version of a live model, with who saved it.
      */
-    private function versions(): BaseBuilder
+    private function versionRows(): BaseBuilder
     {
         $users = $this->users();
 
@@ -391,13 +513,131 @@ class ModelStore
         };
     }
 
+    /**
+     * Register the model in StarDust when it is not there yet, and return its StarDust id.
+     *
+     * Also finishes a create that stopped after the HyperCMS rows were written.
+     *
+     * @throws LookupException When there is no such model.
+     */
+    public function ensureRegistered(int $id): int
+    {
+        $row = $this->db()->table('hyper_models')->select('sd_model_id, fields')->where('id', $id)->get()->getRow();
+        if ($row === null) {
+            throw new LookupException("Model $id does not exist.");
+        }
+        if ($row->sd_model_id !== null) {
+            return (int) $row->sd_model_id;
+        }
+
+        // StarDust creates a model by name, so naming it after the id keeps two models called "Article" apart.
+        $definition = $this->engine()->schemaBuilder()->createModel($this->tenant(), 'm' . $id, ModelCopier::fieldDefinitions($row->fields));
+        $this->db()->table('hyper_models')->where('id', $id)->update(['sd_model_id' => $definition->modelId]);
+
+        return $definition->modelId;
+    }
+
+    /**
+     * Register every field of the model's current definition in StarDust, each as a string that is not filterable,
+     * so StarDust stores a value exactly as written and never refuses one for its type.
+     */
+    public function syncFields(int $id): void
+    {
+        $sdId = $this->ensureRegistered($id);
+        $row  = $this->db()->table('hyper_models')->select('fields')->where('id', $id)->get()->getRow();
+
+        foreach (ModelCopier::fieldDefinitions($row->fields ?? null) as $field) {
+            $this->engine()->schemaBuilder()->defineField($sdId, $field->name, 'string', false);
+        }
+    }
+
+    /**
+     * The fields of a model definition, checked before anything is written.
+     *
+     * @return list<array<string, mixed>>
+     *
+     * @throws InvalidArgumentException When the definition is missing or is not a JSON list.
+     */
+    private function definition(array $data): array
+    {
+        if (! isset($data['fields']) || ! is_string($data['fields'])) {
+            throw new InvalidArgumentException('A model needs a `fields` definition.');
+        }
+
+        $fields = json_decode($data['fields'], true);
+        if (! is_array($fields)) {
+            throw new InvalidArgumentException('The `fields` of a model must be a JSON list.');
+        }
+
+        return $fields;
+    }
+
+    /**
+     * The row of a saved version of a model.
+     *
+     * @return array<string, mixed>
+     */
+    private function revision(int $modelId, array $data, int $userId, string $now): array
+    {
+        return [
+            'model_id'    => $modelId,
+            'name'        => (string) ($data['name'] ?? ''),
+            'fields'      => $data['fields'],
+            'group'       => $data['group'] ?? null,
+            'icon'        => $data['icon'] ?? null,
+            'user_groups' => $data['user_groups'] ?? null,
+            'creator_id'  => $userId,
+            'created_at'  => $now,
+        ];
+    }
+
+    /**
+     * @return list<int>
+     */
+    private function ids(array $ids): array
+    {
+        return array_values(array_unique(array_map('intval', $ids)));
+    }
+
+    private function assertSaved(string $what): void
+    {
+        if (! $this->db()->transStatus()) {
+            throw new RuntimeException('Could not ' . $what . ': ' . ($this->db()->error()['message'] ?? 'unknown error'));
+        }
+    }
+
+    private function now(): string
+    {
+        return Time::now()->toDateTimeString();
+    }
+
+    private function tenant(): int
+    {
+        return (int) config('HyperEngine')->tenantId;
+    }
+
     private function db(): BaseConnection
     {
         return $this->db ??= db_connect();
     }
 
-    private function notPorted(string $method): LogicException
+    private function engine(): StarDust
     {
-        return new LogicException(static::class . '::' . $method . '() is not ported to StarDust 0.3 yet.');
+        return $this->engine ??= service('stardust');
+    }
+
+    private function versions(): WriteVersions
+    {
+        return $this->versions ??= new WriteVersions($this->db());
+    }
+
+    private function locks(): NamedLock
+    {
+        return $this->locks ??= new NamedLock($this->db());
+    }
+
+    private function entries(): EntryWriter
+    {
+        return $this->entries ??= new EntryWriter();
     }
 }
