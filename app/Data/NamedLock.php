@@ -33,6 +33,23 @@ class NamedLock
      */
     public function run(string $name, callable $callback): mixed
     {
+        $this->acquire($name);
+
+        try {
+            return $callback();
+        } finally {
+            $this->release($name);
+        }
+    }
+
+    /**
+     * Take the lock and keep it until `release()` or the end of the process. Use it when the id to lock is only
+     * known partway through a write, such as after an insert that has not been committed yet.
+     *
+     * @throws RuntimeException When the lock is not free within the timeout.
+     */
+    public function acquire(string $name): void
+    {
         $db      = $this->db ??= db_connect();
         $timeout = $this->timeoutSeconds > 0 ? $this->timeoutSeconds : (int) config('HyperEngine')->lockTimeoutSeconds;
 
@@ -40,15 +57,14 @@ class NamedLock
         if ((int) ($got->got ?? 0) !== 1) {
             throw new RuntimeException("Another save of this record is still running ($name). Try again in a moment.");
         }
+    }
 
+    public function release(string $name): void
+    {
         try {
-            return $callback();
-        } finally {
-            try {
-                $db->query('SELECT RELEASE_LOCK(?)', [$name]);
-            } catch (Throwable) {
-                // The lock is released with the connection anyway.
-            }
+            ($this->db ??= db_connect())->query('SELECT RELEASE_LOCK(?)', [$name]);
+        } catch (Throwable) {
+            // The lock is released with the connection anyway.
         }
     }
 

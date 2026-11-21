@@ -69,32 +69,43 @@ class EntryWriter
         $db  = $this->db();
         $now = $this->now();
 
-        // Step 1. The entry has no StarDust id yet, so lists skip it until step 3.
-        [$id, $revisionId] = $this->transact(function () use ($db, $modelId, $userId, $text, $now): array {
-            $db->table('hyper_entries')->insert([
-                'model_id'      => $modelId,
-                'creator_id'    => $userId,
-                'editor_id'     => $userId,
-                'created_at'    => $now,
-                'updated_at'    => $now,
-                'payload_bytes' => strlen($text),
-            ]);
-            $id = (int) $db->insertID();
+        // Step 1. The entry has no StarDust id yet, so lists skip it until step 3. The lock is taken as soon as the
+        // id exists, before the commit, so `hyper:repair` cannot find the unfinished row and write it to StarDust
+        // while this request still means to.
+        $lockName = null;
 
-            $revisionId = $this->insertRevision($id, $text, $userId, $now);
-            $db->table('hyper_entries')->where('id', $id)->update(['current_revision_id' => $revisionId]);
+        try {
+            [$id, $revisionId] = $this->transact(function () use ($db, $modelId, $userId, $text, $now, &$lockName): array {
+                $db->table('hyper_entries')->insert([
+                    'model_id'      => $modelId,
+                    'creator_id'    => $userId,
+                    'editor_id'     => $userId,
+                    'created_at'    => $now,
+                    'updated_at'    => $now,
+                    'payload_bytes' => strlen($text),
+                ]);
+                $id = (int) $db->insertID();
 
-            return [$id, $revisionId];
-        });
+                $lockName = NamedLock::forEntry($id);
+                $this->locks()->acquire($lockName);
 
-        $this->locks()->run(NamedLock::forEntry($id), function () use ($id, $revisionId, $modelId, $sdModelId, $fields): void {
+                $revisionId = $this->insertRevision($id, $text, $userId, $now);
+                $db->table('hyper_entries')->where('id', $id)->update(['current_revision_id' => $revisionId]);
+
+                return [$id, $revisionId];
+            });
+
             // Step 2.
             $sdId = $this->engine()->write($sdModelId, $fields);
 
             // Step 3.
             $this->recordLive($id, $sdId, $revisionId);
             $this->versions()->bump([$modelId]);
-        });
+        } finally {
+            if ($lockName !== null) {
+                $this->locks()->release($lockName);
+            }
+        }
 
         return $id;
     }
