@@ -160,23 +160,61 @@ class EntryWriter
      */
     public function trash(array $ids, int $userId): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($ids) as $id) {
+            $this->trashOne($id, $userId);
+        }
     }
 
     /**
      * Bring entries back from the trash.
+     *
+     * An entry whose model is trashed or gone stays in the trash, because it would come back with no model to show it under.
      */
     public function restore(array $ids): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($ids) as $id) {
+            $this->restoreOne($id, true);
+        }
     }
 
     /**
-     * Delete the trashed entries for good.
+     * Delete the trashed entries for good, and their saved versions.
+     *
+     * StarDust 0.3 has no hard delete, so the rows it holds for them stay soft-deleted and nothing points at them.
      */
     public function emptyTrash(): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        $db     = $this->db();
+        $lastId = 0;
+
+        while (true) {
+            $rows = $db->query(
+                'SELECT id, model_id, sd_entry_id FROM hyper_entries WHERE deleted_at IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
+                [$lastId]
+            )->getResultArray();
+            if ($rows === []) {
+                return;
+            }
+            $lastId = (int) end($rows)['id'];
+
+            // A trash that stopped before StarDust was told is finished here, because nothing will point at the row afterwards.
+            foreach ($rows as $row) {
+                if ($row['sd_entry_id'] !== null) {
+                    $this->engine()->delete((int) $row['sd_entry_id']);
+                }
+            }
+
+            $ids = implode(',', array_map(static fn (array $row): int => (int) $row['id'], $rows));
+
+            // The entries go first, and only those still in the trash. A restore running at the same moment
+            // wins, and its entry keeps its versions because the second statement only takes versions with no entry.
+            $this->transact(function () use ($db, $ids): void {
+                $db->query("DELETE FROM hyper_entries WHERE id IN ($ids) AND deleted_at IS NOT NULL");
+                $db->query("DELETE r FROM hyper_entry_revisions r LEFT JOIN hyper_entries e ON e.id = r.entry_id WHERE r.entry_id IN ($ids) AND e.id IS NULL");
+            });
+
+            $this->versions()->bump(array_map(static fn (array $row): int => (int) $row['model_id'], $rows));
+        }
     }
 
     /**
@@ -207,6 +245,121 @@ class EntryWriter
     public function clearHistory(int|string $entryId): ?int
     {
         throw $this->notPorted(__FUNCTION__);
+    }
+
+    /**
+     * Trash one live entry. An entry that is missing or already in the trash is left as it is.
+     *
+     * The live payload is copied out of StarDust into the entry's current version first, so the trash view and a
+     * restore read HyperCMS rows only.
+     *
+     * @return int|null The model id when the entry was trashed.
+     */
+    protected function trashOne(int $id, int $userId, bool $bump = true): ?int
+    {
+        return $this->locks()->run(NamedLock::forEntry($id), function () use ($id, $userId, $bump): ?int {
+            $entry = $this->entryRow($id);
+            if ($entry === null || $entry['deleted_at'] !== null) {
+                return null;
+            }
+
+            $db      = $this->db();
+            $now     = $this->now();
+            $current = $this->currentRevision($entry);
+            $sdId    = $entry['sd_entry_id'] !== null ? (int) $entry['sd_entry_id'] : null;
+
+            // A version that holds a payload already is the one to keep. It is a save that has not reached StarDust yet.
+            $copy = $sdId !== null && $current !== null && $current['fields'] === null ? $this->snapshotOf($sdId, $id) : null;
+
+            // Step 1.
+            $this->transact(function () use ($db, $id, $userId, $now, $current, $copy): void {
+                if ($copy !== null) {
+                    $db->table('hyper_entry_revisions')->where('id', (int) $current['id'])->update(['fields' => $copy]);
+                }
+                $db->table('hyper_entries')->where('id', $id)->update(['deleted_at' => $now, 'deleter_id' => $userId, 'updated_at' => $now]);
+            });
+
+            // Step 2.
+            if ($sdId !== null) {
+                $this->engine()->delete($sdId);
+            }
+
+            // Step 3. A trashed entry with a StarDust id is one StarDust has not been told about yet.
+            $db->table('hyper_entries')->where('id', $id)->update(['sd_entry_id' => null]);
+            if ($bump) {
+                $this->versions()->bump([(int) $entry['model_id']]);
+            }
+
+            return (int) $entry['model_id'];
+        });
+    }
+
+    /**
+     * Bring one entry back from the trash by writing its snapshot to StarDust as a new entry, because StarDust
+     * cannot bring a deleted one back. An entry that is not in the trash is left as it is.
+     *
+     * @param bool $needsModel Leave the entry in the trash when its model is trashed or gone.
+     *
+     * @return int|null The model id when the entry was restored.
+     */
+    protected function restoreOne(int $id, bool $needsModel, bool $bump = true): ?int
+    {
+        return $this->locks()->run(NamedLock::forEntry($id), function () use ($id, $needsModel, $bump): ?int {
+            $entry = $this->entryRow($id);
+            if ($entry === null || $entry['deleted_at'] === null) {
+                return null;
+            }
+            if ($entry['found_model_id'] === null || ($needsModel && $entry['model_deleted_at'] !== null)) {
+                return null;
+            }
+
+            $db      = $this->db();
+            $now     = $this->now();
+            $current = $this->currentRevision($entry);
+            $text    = $current['fields'] ?? null;
+            $fields  = $this->fieldsOf($text);
+
+            // Registered before anything changes, so a failure here leaves the entry in the trash.
+            $sdModelId = $entry['sd_model_id'] !== null ? (int) $entry['sd_model_id'] : $this->models()->ensureRegistered((int) $entry['model_id']);
+
+            // Step 1. Live again, with no StarDust id until step 3, so lists skip it.
+            $restored = $this->transact(function () use ($db, $id, $now, $text): bool {
+                $db->table('hyper_entries')->where('id', $id)->where('deleted_at IS NOT NULL', null, false)->update([
+                    'deleted_at'    => null,
+                    'sd_entry_id'   => null,
+                    'updated_at'    => $now,
+                    'payload_bytes' => strlen((string) ($text ?? '{}')),
+                ]);
+
+                return $db->affectedRows() > 0;
+            });
+            if (! $restored) {
+                return null;
+            }
+
+            // Step 2.
+            $sdId = $this->engine()->write($sdModelId, $fields);
+
+            // Step 3.
+            if ($current === null) {
+                $db->table('hyper_entries')->where('id', $id)->update(['sd_entry_id' => $sdId]);
+            } else {
+                $this->recordLive($id, $sdId, (int) $current['id']);
+            }
+            if ($bump) {
+                $this->versions()->bump([(int) $entry['model_id']]);
+            }
+
+            return (int) $entry['model_id'];
+        });
+    }
+
+    /**
+     * @return list<int>
+     */
+    protected function ids(array $ids): array
+    {
+        return array_values(array_filter(array_unique(array_map('intval', $ids)), static fn (int $id): bool => $id > 0));
     }
 
     /**
