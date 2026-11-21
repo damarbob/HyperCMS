@@ -44,10 +44,23 @@ if (-not (Test-Listening)) {
     if (-not (Test-Listening)) { "The web server did not start on port $Port"; exit 1 }
 }
 
+# Restore the seeded data and empty the cache. A restore starts the write versions again from the seed, and a saved
+# list in the cache is keyed on them, so a list saved before the restore could pass for current on the new data.
+function Restore-Seed {
+    php "$here\db.php" $envFile restore "$here\seed.sql"
+    $code = $LASTEXITCODE
+    Get-ChildItem "$repo\writable\cache" -File -ErrorAction SilentlyContinue | Where-Object { $_.Name -ne 'index.html' } | Remove-Item -Force -ErrorAction SilentlyContinue
+    $global:LASTEXITCODE = $code
+}
+
 # Every run starts from the seeded data, because logins and the admin write flows change it.
 function Invoke-Run([string]$Name, [string]$Baseline, [scriptblock]$Capture) {
-    php "$here\db.php" $envFile restore "$here\seed.sql" | Out-Null
+    Restore-Seed | Out-Null
     if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
+    # The seed is in the old layout, so the real upgrade gives it the tables the app reads now.
+    Push-Location $repo
+    try { php spark hyper:upgrade --yes | Out-Null; $upgraded = $LASTEXITCODE } finally { Pop-Location }
+    if ($upgraded -ne 0) { "The seed could not be upgraded. Run php spark hyper:upgrade --yes to see why."; exit 1 }
     Remove-Item -Recurse -Force "$out\$Name" -ErrorAction SilentlyContinue
     & $Capture "$out\$Name" | Select-Object -Last 1
     if ($Record) {
@@ -73,14 +86,14 @@ if ($Probes) {
 }
 if ($Upgrade) {
     "--- upgrade"
-    php "$here\db.php" $envFile restore "$here\seed.sql" | Out-Null
+    Restore-Seed | Out-Null
     if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
     php "$here\upgrade.php" $envFile $repo
     if ($LASTEXITCODE -ne 0) { $script:failed = $true }
 }
 if ($Stress) {
     "--- stress"
-    php "$here\db.php" $envFile restore "$here\seed.sql" | Out-Null
+    Restore-Seed | Out-Null
     if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
     php "$here\stress.php" $envFile $repo
     if ($LASTEXITCODE -ne 0) { $script:failed = $true }

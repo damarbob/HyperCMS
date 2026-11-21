@@ -16,12 +16,13 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 | `probe.php` | Sends hostile sort and find values to the list endpoints |
 | `upgrade.php` | Tests `php spark hyper:upgrade` on the seed put back into the 0.1 layout |
 | `stress.php` | Tests the same command on a large database of awkward data |
+| `measure.php` | Builds models of generated entries and times a search and a sort on a model field, with the PHP peak memory of each |
 | `db.php`, `lib.php` | Restore and drop the database |
 | `watched.php`, `env.ps1` | The tables the write flows watch, and the helper that points `.env` at another database |
 | `seed.php` | The script that filled the database before it was dumped |
 | `check.ps1`, `down.ps1` | Run the whole check, and clean up afterwards |
 
-An API capture stores the request, the status code and the JSON body. An admin page capture stores the status, the redirect target, the page title, and the size and SHA-1 of the HTML with its CSRF tokens masked. A write flow capture also lists the rows the request added, changed or removed in `models`, `model_data`, `entries`, `entry_data` and `settings`.
+An API capture stores the request, the status code and the JSON body. An admin page capture stores the status, the redirect target, the page title, and the size and SHA-1 of the HTML with its CSRF tokens masked. A write flow capture also lists the rows the request added, changed or removed in `hyper_models`, `hyper_model_revisions`, `hyper_entries`, `hyper_entry_revisions`, `hyper_counters`, `sd_entry_data` and `settings`.
 
 The seed has three accounts, so the captures cover who gets in as well as what comes back. `capture_admin` is a superadmin and makes most of the requests. `capture_dev` is a developer, and `capture_user` is in the `user` group, which is outside the staff groups. Files that start with `anon_` were sent with no login at all. Product is the one model marked public, and Restricted is open to developers only.
 
@@ -29,7 +30,7 @@ The seed has three accounts, so the captures cover who gets in as well as what c
 
 The two `.ps1` scripts are PowerShell and were written on Windows. You also need PHP with the `pdo_mysql` extension and a MySQL or MariaDB server that is already running.
 
-The database is the one named by `database_default_database` in your `.env`, because that is the one the app opens. **Every run drops that database and restores it from `seed.sql`.** The scripts put a `regression_marker` table into a database they create, and they refuse to drop one that holds tables without it. Even so, set `.env` to a name you use for nothing else.
+The database is the one named by `database_default_database` in your `.env`, because that is the one the app opens. **Every run drops that database, restores it from `seed.sql`, and runs `php spark hyper:upgrade --yes` on it, because the seed is in the old layout and the app reads the `hyper_` tables.** The scripts put a `regression_marker` table into a database they create, and they refuse to drop one that holds tables without it. Even so, set `.env` to a name you use for nothing else.
 
 ## Running the check
 
@@ -69,6 +70,17 @@ powershell -File tests\regression\down.ps1
 ```
 
 Runs leave Debug Toolbar and session files behind in `writable/`.
+
+## Measuring a saved list
+
+A search, or a sort on a model field, reads every entry of the model once and keeps the ordered ids in the cache, so its cost grows with the size of the model. `measure.php` builds models of generated entries in a database that holds the seed and has been upgraded, and times the requests on them.
+
+```powershell
+php tests\regression\measure.php build . hyper_measure --entries=10000 --large=5
+php tests\regression\measure.php run . hyper_measure --out=figures.json
+```
+
+`--large=5` gives 5 percent of the entries a body of 1 to 3 MB and the rest a body of about 1 KB. A model is built once and reused, because a model of 50,000 entries holds about 5 GB, and the build turns the server's binary log off for its own sessions so that this is not written twice. Each request runs in a PHP process of its own with a 128 MB limit, once with an empty cache (the list is built) and once with the list cached, on the first page and on a page from the middle. `drop` removes a model's HyperCMS rows, and the StarDust rows go when the database is dropped.
 
 ## When the baseline should change
 

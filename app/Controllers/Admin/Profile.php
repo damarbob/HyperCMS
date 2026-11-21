@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Data\WriteVersions;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 
 class Profile extends AdminController
@@ -77,10 +78,17 @@ class Profile extends AdminController
         $users = auth()->getProvider();
 
         $user = $users->findById($id);
+        $oldUsername = $user->username;
         $user->fill($userData);
 
         try {
             $users->save($user);
+
+            // Lists show usernames and a saved list may hold matches or an order built from the old one, so a
+            // rename raises the global write version and the next list request builds a fresh list.
+            if ($user->username !== $oldUsername) {
+                (new WriteVersions())->bumpGlobal();
+            }
         } catch (DatabaseException $e) {
             return $this->respond(
                 message: $e->getMessage(),

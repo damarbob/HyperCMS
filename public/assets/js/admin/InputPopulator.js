@@ -137,8 +137,10 @@ export default class InputPopulator {
       case "url":
       case "color":
       case "range":
-      case "datetime-local":
         element.value = value;
+        break;
+      case "datetime-local":
+        element.value = this.toDatetimeLocal(value);
         break;
       case "checkbox":
         element.checked = value === "on";
@@ -157,6 +159,30 @@ export default class InputPopulator {
         }
         break;
     }
+  }
+
+  /**
+   * Turns a stored date into what a datetime-local input accepts.
+   *
+   * A filterable date is stored as `2025-03-20 10:30:00`, with a space and with seconds. The input wants a `T`, and
+   * it shows seconds only when they are not zero, so `2025-03-20T10:30` is what the person saw when they typed it.
+   * Any other value, such as one saved before the field was filterable, goes to the input as it is.
+   *
+   * @param {*} value - The stored value, or null for an empty date.
+   * @returns {string}
+   */
+  toDatetimeLocal(value) {
+    if (value === null || value === undefined) return "";
+
+    const stored = /^(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}):(\d{2})(\.\d+)?$/.exec(
+      String(value)
+    );
+    if (!stored) return value;
+
+    const [, day, time, seconds, fraction = ""] = stored;
+    const exact = seconds === "00" && /^\.0*$/.test(fraction || ".");
+
+    return exact ? `${day}T${time}` : `${day}T${time}:${seconds}${fraction}`;
   }
 
   /**

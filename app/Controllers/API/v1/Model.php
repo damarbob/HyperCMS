@@ -3,6 +3,7 @@
 namespace App\Controllers\API\v1;
 
 use App\Controllers\API\v1\ApiController;
+use App\Data\Entries\ScanLimitExceeded;
 
 class Model extends ApiController
 {
@@ -30,8 +31,13 @@ class Model extends ApiController
             return $this->deny(403, lang('Auth.notEnoughPrivilege'));
         }
 
-        // The DataTables POST parameters go straight to the store.
-        return $this->response->setJSON($this->getModelData($post));
+        try {
+            // The DataTables POST parameters go straight to the store.
+            return $this->response->setJSON($this->getModelData($post));
+        } catch (ScanLimitExceeded $e) {
+            // DataTables shows the text of an `error` key to the person using the table, in place of the rows.
+            return $this->response->setJSON(['draw' => (int) ($post['draw'] ?? 1), 'recordsTotal' => 0, 'recordsFiltered' => 0, 'data' => [], 'error' => $e->getMessage()]);
+        }
     }
 
     /**

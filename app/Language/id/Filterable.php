@@ -1,0 +1,28 @@
+<?php
+
+return [
+    'unsupportedType'  => 'Bidang {field} bertipe {type}, sehingga tidak bisa ditandai filterable. Hapus "filterable" dari bidang itu, atau pakai salah satu tipe berikut: {types}.',
+    'notSingleValue'   => 'Bidang {field} bersifat filterable dan hanya menyimpan satu nilai, jadi tidak bisa diisi daftar.',
+    'tooLong'          => 'Bidang {field} bersifat filterable, jadi teksnya paling panjang {max} karakter.',
+    'notNumber'        => 'Bidang {field} bersifat filterable dan harus berisi angka, tetapi "{value}" bukan angka. Isi dengan angka atau kosongkan.',
+    'notInteger'       => 'Bidang {field} bersifat filterable dan harus berisi bilangan bulat, tetapi "{value}" bukan bilangan bulat. Isi dengan bilangan bulat atau kosongkan.',
+    'notDate'          => 'Bidang {field} bersifat filterable dan harus berisi tanggal dan jam, tetapi "{value}" bukan tanggal dan jam. Pilih tanggal dan jam atau kosongkan.',
+    'indexingFailed'   => 'Model sudah tersimpan, tetapi pengindeksan untuk {fields} belum bisa dimulai. Simpan model sekali lagi untuk mencoba lagi. {reason}',
+    'indexed'          => 'Sudah terindeks',
+    'indexing'         => 'Sedang diindeks',
+    'indexingHelp'     => 'Pengindeksan berjalan di latar belakang dan memerlukan tugas terjadwal `hyper:tick`. Pengurutan dan penyaringan pada bidang ini baru bisa dipakai setelah selesai.',
+    'filterableTitle'  => 'Bidang filterable',
+    'filterableHint'   => 'Tambahkan "filterable": true pada bidang bertipe text, email, url, password, color, radio, select, checkbox, number, range, atau datetime-local agar bidang itu diindeks. Daftar entri jadi cepat diurutkan menurut bidang tersebut, dan API token bisa menyaringnya. Tanpa tanda itu, bidang bekerja seperti biasa.',
+    'modelsBusy'       => '{count} model tetap berada di tempat sampah karena ada bidang yang masih diindeks atau diganti namanya. Coba lagi setelah `hyper:tick` selesai.',
+    'needsModel' => 'Mengurutkan atau menyaring menurut bidang memerlukan model_id.',
+    'noSearchWithField' => 'Pencarian q tidak bisa digabung dengan pengurutan atau penyaringan menurut bidang.',
+    'sortKeyWithField' => 'Bersama filter pada bidang, sort hanya bisa id, created_at, atau field:nama, bukan {sort}.',
+    'notIndexed' => 'Bidang {field} belum terindeks. Bidang yang sudah terindeks: {indexed}.',
+    'noIndexedFields' => 'tidak ada',
+    'badFilter' => 'Filter pada {field} tidak valid. {reason}',
+    'badOperator' => 'Operator {operator} tidak didukung. Pakai salah satu dari: {operators}.',
+    'badValue' => 'Nilai "{value}" tidak bisa dipakai pada bidang {field}.',
+    'badList' => 'Isi 1 sampai {max} nilai, dipisahkan koma.',
+    'prefixText' => 'Prefix hanya berlaku untuk bidang teks.',
+    'filterRefused' => 'StarDust tidak bisa menjalankan filter ini. {reason}',
+];

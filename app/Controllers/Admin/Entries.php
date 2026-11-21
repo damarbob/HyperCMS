@@ -6,7 +6,8 @@ use App\Controllers\AdminController;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use App\Libraries\SyntaxProcessor;
-use CodeIgniter\Database\Exceptions\DatabaseException;
+use InvalidArgumentException;
+use RuntimeException;
 use CodeIgniter\HTTP\Files\UploadedFile;
 use Psr\Log\LoggerInterface;
 
@@ -223,7 +224,7 @@ class Entries extends AdminController
 
             // Delegate the creation process to the service
             $entryId = service('entryStore')->create($finalData, $userId);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
@@ -271,7 +272,7 @@ class Entries extends AdminController
 
             // Delegate the creation process to the service
             service('entryStore')->update($id, $finalData, $userId);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
@@ -300,7 +301,7 @@ class Entries extends AdminController
         try {
             // Delete entries and data
             service('entryStore')->trash($ids, $deleterId);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
@@ -338,7 +339,7 @@ class Entries extends AdminController
 
         try {
             service('entryStore')->emptyTrash();
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
@@ -395,7 +396,7 @@ class Entries extends AdminController
 
         try {
             service('entryStore')->restore($ids);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 

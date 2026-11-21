@@ -3,7 +3,8 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
-use CodeIgniter\Database\Exceptions\DatabaseException;
+use InvalidArgumentException;
+use RuntimeException;
 
 class Models extends AdminController
 {
@@ -76,6 +77,7 @@ class Models extends AdminController
                 'formAction' => base_url('admin/models/' . $model['id']),
                 'model' => $model,
                 'isPublic' => service('modelAccess')->isPublic($model['id']),
+                'filterableState' => service('modelStore')->filterableState((int) $model['id']),
             ]);
         });
 
@@ -128,7 +130,7 @@ class Models extends AdminController
         try {
             // Delegate the creation process to the service.
             $modelId = service('modelStore')->create($validData, $userId);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond(
                 message: $e->getMessage(),
                 success: false
@@ -172,7 +174,7 @@ class Models extends AdminController
 
         try {
             service('modelStore')->update($id, $validData, $userId);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), withInput: true, success: false);
         }
 
@@ -191,7 +193,7 @@ class Models extends AdminController
 
         try {
             service('modelStore')->trash($ids, auth()->user()->id);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), 'admin/models', 500, false, false);
         }
 
@@ -215,8 +217,11 @@ class Models extends AdminController
 
         try {
             service('modelStore')->emptyTrash();
-        } catch (DatabaseException $e) {
-            return $this->respond("{$e->getMessage()} {$e->getTraceAsString()}", statusCode: 500, success: false);
+        } catch (RuntimeException | InvalidArgumentException $e) {
+            // Models purged before the failure are gone, and their access settings go with them.
+            service('modelAccess')->forgetMissing();
+
+            return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
         service('modelAccess')->forgetMissing();
@@ -234,7 +239,7 @@ class Models extends AdminController
 
         try {
             service('modelStore')->restore($ids);
-        } catch (DatabaseException $e) {
+        } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->respond($e->getMessage(), statusCode: 500);
         }
 

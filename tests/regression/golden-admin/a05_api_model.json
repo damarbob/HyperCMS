@@ -28,15 +28,15 @@
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null,
-                "title": "Getting started with HyperCMS (edited twice)",
                 "body": "<p>v3</p>",
-                "views": "16",
-                "published_at": "2026-01-05T09:30",
                 "tags": [
                     "news",
                     "tech"
                 ],
-                "cover": ""
+                "cover": "",
+                "title": "Getting started with HyperCMS (edited twice)",
+                "views": "16",
+                "published_at": "2026-01-05T09:30"
             },
             {
                 "id": "2",
@@ -51,12 +51,12 @@
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null,
-                "title": "apple pie recipe v2",
                 "body": "changed",
-                "views": "25",
-                "published_at": "",
                 "tags": [],
-                "cover": ""
+                "cover": "",
+                "title": "apple pie recipe v2",
+                "views": "25",
+                "published_at": ""
             }
         ]
     }

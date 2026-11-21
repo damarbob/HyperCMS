@@ -35,12 +35,10 @@
 # fileManager.productionPath = '{FCPATH}uploads'
 # fileManager.nonProductionPath = '{ROOTPATH}'
 
-# StarDust
-# StarDust.usersTable = 'users'
-# StarDust.usersIdColumn = 'id'
-# StarDust.usersUsernameColumn = 'username'
-# StarDust.asyncIndexing = true
-# StarDust.workerToken = 'hyper'
+# Data engine (StarDust 0.3). The tables of the engine carry the prefix sd_ and need no setting here.
+# HyperEngine.usersTable = 'users'
+# HyperEngine.usersIdColumn = 'id'
+# HyperEngine.usersUsernameColumn = 'username'
 
 
 #--------------------------------------------------------------------

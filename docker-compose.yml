@@ -27,14 +27,45 @@ services:
         reservations:
           memory: 256M
 
+  # Background work of the StarDust engine. Same image as app, runs hyper:tick about once a minute.
+  # HYPER_ROLE=tick makes the entrypoint skip setup, migration and chown, and wait for the app container to create the sd_ tables.
+  # A failed run is logged and the loop carries on. Do not also run a cron line for hyper:tick or StarDust's own daemons.
+  tick:
+    build: .
+    depends_on:
+      - app
+      - db
+    env_file:
+      - .env
+    environment:
+      HYPER_ROLE: tick
+    # www-data, so files tick writes into the shared writable folders stay readable by the web server
+    user: www-data
+    command:
+      - sh
+      - -c
+      - 'while true; do php spark hyper:tick --budget 50 || echo "hyper:tick failed with exit code $$?" >&2; sleep 60; done'
+    volumes:
+      - ./writable/cache:/var/www/html/writable/cache
+      - ./writable/logs:/var/www/html/writable/logs
+      - ./writable/uploads:/var/www/html/writable/uploads
+    restart: always
+    deploy:
+      resources:
+        limits:
+          memory: 256M
+
   # MySQL Database
   db:
-    image: mariadb:10.4.32
+    image: mariadb:10.11
     environment:
       MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}
       MYSQL_DATABASE: ${database_default_database}
       MYSQL_USER: ${database_default_username}
       MYSQL_PASSWORD: ${database_default_password}
+      # An existing db_data volume was written by an older server. This lets the first start on mariadb:10.11 upgrade
+      # the system tables instead of refusing to run. Take a dump of the database before that first start.
+      MARIADB_AUTO_UPGRADE: "1"
     volumes:
       # Persist database data
       - db_data:/var/lib/mysql

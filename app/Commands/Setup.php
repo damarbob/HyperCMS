@@ -92,6 +92,10 @@ class Setup extends BaseCommand
 
         try {
             $exitCode = $this->call('hyper:migrate', ['all' => null]); // Use custom command
+            if ($exitCode !== null && $exitCode !== EXIT_SUCCESS) {
+                CLI::error('Fix the problem above and rerun setup');
+                exit(1);
+            }
             CLI::write('✓ Database migrations completed', 'green');
         } catch (Throwable $e) {
             CLI::error('Migration failed: ' . $e->getMessage());

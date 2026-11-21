@@ -32,12 +32,12 @@
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null,
-                "title": "apple pie recipe v2",
                 "body": "changed",
-                "views": "25",
-                "published_at": "",
                 "tags": [],
-                "cover": ""
+                "cover": "",
+                "title": "apple pie recipe v2",
+                "views": "25",
+                "published_at": ""
             },
             {
                 "id": "3",
@@ -52,15 +52,15 @@
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null,
-                "title": "Apple pie recipe",
                 "body": "Plain body 3",
-                "views": "",
-                "published_at": "2026-02-04T14:05:00",
                 "tags": [
                     "news",
                     "tech"
                 ],
-                "cover": ""
+                "cover": "",
+                "title": "Apple pie recipe",
+                "views": "",
+                "published_at": "2026-02-04T14:05:00"
             }
         ]
     }

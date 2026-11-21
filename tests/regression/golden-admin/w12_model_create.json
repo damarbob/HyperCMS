@@ -16,18 +16,22 @@
     "location": "/index.php/admin/models",
     "body": "",
     "changes": {
-        "models": {
+        "hyper_models": {
             "added": [
                 {
                     "id": 6,
-                    "current_model_data_id": 6,
+                    "sd_model_id": 6,
+                    "name": "Gallery",
+                    "current_revision_id": 6,
+                    "write_version": 1,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": null,
                     "deleted": 0
                 }
             ]
         },
-        "model_data": {
+        "hyper_model_revisions": {
             "added": [
                 {
                     "id": 6,
@@ -37,24 +41,20 @@
                     "group": "Media",
                     "user_groups": "[\"superadmin\"]",
                     "icon": "image",
-                    "creator_id": 1,
-                    "deleter_id": null,
-                    "deleted": 0
+                    "creator_id": 1
                 }
             ]
         },
-        "queue_jobs": {
+        "hyper_counters": {
             "changed": [
                 {
                     "from": {
-                        "queue": "stardust-indexes",
-                        "status": 0,
-                        "n": 5
+                        "id": "write_version",
+                        "value": 7
                     },
                     "to": {
-                        "queue": "stardust-indexes",
-                        "status": 0,
-                        "n": 6
+                        "id": "write_version",
+                        "value": 8
                     }
                 }
             ]

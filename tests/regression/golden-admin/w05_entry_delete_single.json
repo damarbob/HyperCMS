@@ -10,45 +10,107 @@
         "success": "Entri Article berhasil dihapus!"
     },
     "changes": {
-        "entries": {
+        "hyper_models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 1,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 2,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "hyper_entries": {
             "changed": [
                 {
                     "from": {
                         "id": 3,
                         "model_id": 1,
-                        "current_entry_data_id": 3,
+                        "in_sd": 1,
+                        "current_revision_id": 3,
+                        "payload_bytes": 132,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 3,
                         "model_id": 1,
-                        "current_entry_data_id": 3,
+                        "in_sd": 0,
+                        "current_revision_id": 3,
+                        "payload_bytes": 132,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "changed": [
                 {
                     "from": {
                         "id": 3,
                         "entry_id": 3,
-                        "fields": "{\"title\":\"Apple pie recipe\",\"body\":\"Plain body 3\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 3,
                         "entry_id": 3,
-                        "fields": "{\"title\":\"Apple pie recipe\",\"body\":\"Plain body 3\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
+                        "fields": "{\"body\":\"Plain body 3\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\",\"title\":\"Apple pie recipe\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\"}",
+                        "creator_id": 1
+                    }
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 2
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 3
+                    }
+                }
+            ]
+        },
+        "sd_entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 3,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"Plain body 3\", \"tags\": [\"news\", \"tech\"], \"cover\": \"\", \"title\": \"Apple pie recipe\", \"views\": \"\", \"published_at\": \"2026-02-04T14:05:00\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 3,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"Plain body 3\", \"tags\": [\"news\", \"tech\"], \"cover\": \"\", \"title\": \"Apple pie recipe\", \"views\": \"\", \"published_at\": \"2026-02-04T14:05:00\"}",
                         "deleted": 1
                     }
                 }

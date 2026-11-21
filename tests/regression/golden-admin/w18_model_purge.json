@@ -10,25 +10,33 @@
         "success": "Model berhasil dihapus!"
     },
     "changes": {
-        "models": {
+        "hyper_models": {
             "removed": [
                 {
                     "id": 2,
-                    "current_model_data_id": 2,
+                    "sd_model_id": 2,
+                    "name": "Product",
+                    "current_revision_id": 2,
+                    "write_version": 4,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 3,
-                    "current_model_data_id": 3,
+                    "sd_model_id": 3,
+                    "name": "Linked",
+                    "current_revision_id": 3,
+                    "write_version": 2,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 }
             ]
         },
-        "model_data": {
+        "hyper_model_revisions": {
             "removed": [
                 {
                     "id": 2,
@@ -38,9 +46,7 @@
                     "group": "Content",
                     "user_groups": "[\"superadmin\"]",
                     "icon": "file-text",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 3,
@@ -50,257 +56,284 @@
                     "group": "Content",
                     "user_groups": "[]",
                     "icon": "file-text",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 }
             ]
         },
-        "entries": {
+        "hyper_entries": {
             "removed": [
                 {
                     "id": 26,
                     "model_id": 2,
-                    "current_entry_data_id": 26,
+                    "in_sd": 0,
+                    "current_revision_id": 26,
+                    "payload_bytes": 74,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 27,
                     "model_id": 2,
-                    "current_entry_data_id": 27,
+                    "in_sd": 0,
+                    "current_revision_id": 27,
+                    "payload_bytes": 74,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 28,
                     "model_id": 2,
-                    "current_entry_data_id": 28,
+                    "in_sd": 0,
+                    "current_revision_id": 28,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 29,
                     "model_id": 2,
-                    "current_entry_data_id": 29,
+                    "in_sd": 0,
+                    "current_revision_id": 29,
+                    "payload_bytes": 70,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 30,
                     "model_id": 2,
-                    "current_entry_data_id": 30,
+                    "in_sd": 0,
+                    "current_revision_id": 30,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 31,
                     "model_id": 2,
-                    "current_entry_data_id": 31,
+                    "in_sd": 0,
+                    "current_revision_id": 31,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 32,
                     "model_id": 2,
-                    "current_entry_data_id": 32,
+                    "in_sd": 0,
+                    "current_revision_id": 32,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 33,
                     "model_id": 2,
-                    "current_entry_data_id": 33,
+                    "in_sd": 0,
+                    "current_revision_id": 33,
+                    "payload_bytes": 70,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 34,
                     "model_id": 2,
-                    "current_entry_data_id": 34,
+                    "in_sd": 0,
+                    "current_revision_id": 34,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 35,
                     "model_id": 2,
-                    "current_entry_data_id": 35,
+                    "in_sd": 0,
+                    "current_revision_id": 35,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 36,
                     "model_id": 2,
-                    "current_entry_data_id": 36,
+                    "in_sd": 0,
+                    "current_revision_id": 36,
+                    "payload_bytes": 75,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 38,
                     "model_id": 3,
-                    "current_entry_data_id": 38,
+                    "in_sd": 0,
+                    "current_revision_id": 38,
+                    "payload_bytes": 38,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 39,
                     "model_id": 3,
-                    "current_entry_data_id": 39,
+                    "in_sd": 0,
+                    "current_revision_id": 39,
+                    "payload_bytes": 38,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 40,
                     "model_id": 3,
-                    "current_entry_data_id": 40,
+                    "in_sd": 0,
+                    "current_revision_id": 40,
+                    "payload_bytes": 38,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 44,
                     "model_id": 2,
-                    "current_entry_data_id": 47,
+                    "in_sd": 0,
+                    "current_revision_id": 47,
+                    "payload_bytes": 74,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "removed": [
                 {
                     "id": 26,
                     "entry_id": 26,
-                    "fields": "{\"sku\":\"SKU-001\",\"price\":\"3.50\",\"category\":\"a\",\"added\":\"2026-03-01T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-001\",\"added\":\"2026-03-01T08:00\",\"price\":\"3.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 27,
                     "entry_id": 27,
-                    "fields": "{\"sku\":\"SKU-002\",\"price\":\"7.00\",\"category\":\"b\",\"added\":\"2026-03-02T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-002\",\"added\":\"2026-03-02T08:00\",\"price\":\"7.00\",\"category\":\"b\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 28,
                     "entry_id": 28,
-                    "fields": "{\"sku\":\"SKU-003\",\"price\":\"10.50\",\"category\":\"a\",\"added\":\"2026-03-03T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-003\",\"added\":\"2026-03-03T08:00\",\"price\":\"10.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 29,
                     "entry_id": 29,
-                    "fields": "{\"sku\":\"SKU-004\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-04T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-004\",\"added\":\"2026-03-04T08:00\",\"price\":\"\",\"category\":\"b\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 30,
                     "entry_id": 30,
-                    "fields": "{\"sku\":\"SKU-005\",\"price\":\"17.50\",\"category\":\"a\",\"added\":\"2026-03-05T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-005\",\"added\":\"2026-03-05T08:00\",\"price\":\"17.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 31,
                     "entry_id": 31,
-                    "fields": "{\"sku\":\"SKU-006\",\"price\":\"21.00\",\"category\":\"b\",\"added\":\"2026-03-06T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-006\",\"added\":\"2026-03-06T08:00\",\"price\":\"21.00\",\"category\":\"b\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 32,
                     "entry_id": 32,
-                    "fields": "{\"sku\":\"SKU-007\",\"price\":\"24.50\",\"category\":\"a\",\"added\":\"2026-03-07T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-007\",\"added\":\"2026-03-07T08:00\",\"price\":\"24.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 33,
                     "entry_id": 33,
-                    "fields": "{\"sku\":\"SKU-008\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-08T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-008\",\"added\":\"2026-03-08T08:00\",\"price\":\"\",\"category\":\"b\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 34,
                     "entry_id": 34,
-                    "fields": "{\"sku\":\"SKU-009\",\"price\":\"31.50\",\"category\":\"a\",\"added\":\"2026-03-09T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-009\",\"added\":\"2026-03-09T08:00\",\"price\":\"31.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 35,
                     "entry_id": 35,
-                    "fields": "{\"sku\":\"SKU-010\",\"price\":\"35.00\",\"category\":\"b\",\"added\":\"2026-03-10T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-010\",\"added\":\"2026-03-10T08:00\",\"price\":\"35.00\",\"category\":\"b\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 36,
                     "entry_id": 36,
-                    "fields": "{\"sku\":\"SKU-011\",\"price\":\"38.50\",\"category\":\"a\",\"added\":\"2026-03-11T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-011\",\"added\":\"2026-03-11T08:00\",\"price\":\"38.50\",\"category\":\"a\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 38,
                     "entry_id": 38,
                     "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 39,
                     "entry_id": 39,
                     "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 40,
                     "entry_id": 40,
                     "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 47,
                     "entry_id": 44,
-                    "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"sku\":\"SKU-NEW\",\"added\":\"2026-04-01T08:00\",\"price\":\"5.00\",\"category\":\"a\"}",
+                    "creator_id": 1
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 14
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 16
+                    }
                 }
             ]
         },

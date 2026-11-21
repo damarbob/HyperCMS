@@ -2,55 +2,45 @@
 
 namespace App\Commands;
 
+use App\Libraries\Upgrade\EntryCopier;
+use App\Libraries\Upgrade\ModelCopier;
+use App\Libraries\Upgrade\PayloadWriter;
+use App\Libraries\Upgrade\Preflight;
+use App\Libraries\Upgrade\Source;
+use App\Libraries\Upgrade\Verifier;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use CodeIgniter\Database\BaseConnection;
 use Config\Database;
-use stdClass;
+use Config\HyperEngine;
 use Throwable;
 
 /**
- * Brings a database made by HyperCMS 0.1 up to the layout this version reads.
+ * Brings a database made by HyperCMS 0.1 or 0.2 onto the tables this version reads.
  *
- * HyperCMS 0.1 kept the data layer inside the app. This version uses the StarDust package, which
- * expects four things the old database does not have:
+ * The old layout keeps entries and models in `models`, `model_data`, `entries` and `entry_data`. This
+ * version keeps the current fields of every entry in StarDust 0.3, and everything else (public ids,
+ * authors, edit times, history, trash, form definitions) in the `hyper_` tables. The command reads the
+ * old tables, copies them with the same ids, and writes each live entry's current fields to StarDust.
+ * It leaves the old tables as they are.
  *
- *  1. The table migration recorded under the `StarDust` namespace instead of `App`.
- *  2. The newer StarDust migrations, which add indexes and the current version columns.
- *  3. Entry fields saved as `{"title": "x"}` instead of `[{"id": "title", "value": "x"}]`.
- *  4. Each entry and model pointing at its current version.
- *
- * Every step leaves finished work alone, so the command can be run again after a failure.
+ * Every step skips finished work, so the command can be run again after a failure.
  */
 class Upgrade extends BaseCommand
 {
+    /**
+     * The row in `hyper_counters` that marks an upgrade as complete. `.docker/entrypoint.sh` reads it by this name.
+     */
+    private const FINISHED = 'upgrade_finished';
+
     protected $group       = 'Hyper';
     protected $name        = 'hyper:upgrade';
-    protected $description = 'Upgrades a HyperCMS 0.1 database to the layout this version reads.';
+    protected $description = 'Upgrades a HyperCMS 0.1 or 0.2 database to the layout this version reads.';
     protected $usage       = 'hyper:upgrade [options]';
     protected $options     = [
-        '--dry-run' => 'Report what the upgrade would change, and change nothing.',
+        '--dry-run' => 'Report what the upgrade would meet, and change nothing.',
         '--yes'     => 'Skip the backup question. For scripts that made the backup themselves.',
     ];
-
-    private const TABLES = ['migrations', 'models', 'model_data', 'entries', 'entry_data'];
-
-    /**
-     * The table migration as HyperCMS 0.1 recorded it, and as StarDust records it.
-     */
-    private const OLD_MIGRATION = 'App\Database\Migrations\CreateHyperTables';
-    private const NEW_MIGRATION = 'StarDust\Database\Migrations\CreateHyperTables';
-
-    /**
-     * How many entry versions are looked at at a time.
-     */
-    private const CHUNK = 500;
-
-    /**
-     * The most entry text read into memory at once. PHP in Docker stops at 128 MB, and one entry with
-     * pictures pasted into its text can be several MB, so a count of rows is not a safe limit.
-     */
-    private const BATCH_BYTES = 8 * 1024 * 1024;
 
     public function run(array $params)
     {
@@ -66,27 +56,44 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
-        $name    = $db->getDatabase();
-        $missing = array_values(array_filter(self::TABLES, static fn (string $table): bool => ! $db->tableExists($table)));
+        $name   = $db->getDatabase();
+        $source = new Source($db);
+
+        $missing = $source->missingTables();
         if ($missing !== []) {
-            CLI::error("Database '$name' has no " . implode(', ', $missing) . ' table, so it is not a HyperCMS database. For a new install run `php spark hyper:setup`.');
+            CLI::error("Database '$name' has no " . implode(', ', $missing) . ' table, so it is not a HyperCMS 0.1 or 0.2 database. For a new install run `php spark hyper:setup`.');
 
             return EXIT_ERROR;
         }
 
-        $before = $this->inspect($db);
+        try {
+            $report = (new Preflight($db, $source, service('stardust')))->run();
+        } catch (Throwable $e) {
+            CLI::error('The database could not be read. ' . $e->getMessage());
+
+            return EXIT_ERROR;
+        }
+
         CLI::write("Database '$name'", 'yellow');
-        $this->report($before);
+        $blocked = $this->report($report);
 
         if ($dryRun) {
-            CLI::write('Dry run, nothing was changed. Pending migrations are not counted here and run during the upgrade.');
+            CLI::newLine();
+            CLI::write('Dry run, nothing was changed.');
 
-            return EXIT_SUCCESS;
+            return $blocked ? EXIT_ERROR : EXIT_SUCCESS;
+        }
+
+        if ($blocked) {
+            CLI::newLine();
+            CLI::error('The upgrade cannot start until the problem above is solved.');
+
+            return EXIT_ERROR;
         }
 
         if (! $yes) {
             CLI::newLine();
-            CLI::write('The upgrade changes this database in place, and adding columns cannot be rolled back.');
+            CLI::write('The upgrade adds tables to this database and leaves the old ones as they are.');
             $answer = CLI::prompt('Make a backup you know how to restore, then type the database name to go on');
             if (trim($answer) !== $name) {
                 CLI::error('The name does not match. Nothing was changed.');
@@ -95,22 +102,54 @@ class Upgrade extends BaseCommand
             }
         }
 
-        try {
-            $this->adoptHistory($db);
+        return $this->upgrade($db, $source, $report);
+    }
 
+    /**
+     * Run the steps in order. Each one skips what an earlier run finished.
+     */
+    private function upgrade(BaseConnection $db, Source $source, array $report): int
+    {
+        $engine = service('stardust');
+        $tenant = config(HyperEngine::class)->tenantId;
+
+        try {
             CLI::newLine();
-            $this->call('hyper:migrate', ['all' => null]);
+            $exit = $this->call('hyper:migrate', ['all' => null]);
+            if ($exit !== null && $exit !== EXIT_SUCCESS) {
+                CLI::error('The migrations failed, so nothing was copied.');
+
+                return EXIT_ERROR;
+            }
             $db->resetDataCache();
 
-            // The two data steps succeed or fail together.
-            $db->transBegin();
-            [$odd, $repeated] = $this->convertFields($db);
-            $mapped = $this->mapCurrentVersions($db);
-            $db->transCommit();
+            // A rerun is unfinished until it reaches the end again, so a restart in between does not boot the app.
+            $db->table('hyper_counters')->where('name', self::FINISHED)->delete();
 
-            $columns = $this->buildIndexes($db);
+            $models = new ModelCopier($db, $source, $engine, $tenant);
+
+            $copied = $models->copy();
+            CLI::write("Copied {$copied['models']} models and {$copied['revisions']} model versions.");
+
+            $registered = $models->register();
+            CLI::write("Registered $registered models in StarDust.");
+
+            $entries   = new EntryCopier($db, $source);
+            $revisions = $entries->copyRevisions();
+            $added     = $entries->copyEntries();
+            CLI::write("Copied $added entries and {$revisions['count']} entry versions.");
+            if ($revisions['repeated'] !== []) {
+                CLI::write(count($revisions['repeated']) . ' entry versions named one field id more than once, and the last value was kept. Version ids: ' . implode(', ', array_slice($revisions['repeated'], 0, 50)) . (count($revisions['repeated']) > 50 ? ' and more' : ''), 'yellow');
+            }
+            if ($revisions['odd'] !== []) {
+                CLI::write(count($revisions['odd']) . ' entry versions hold a list in some other shape and were copied as text. Version ids: ' . implode(', ', array_slice($revisions['odd'], 0, 50)) . (count($revisions['odd']) > 50 ? ' and more' : ''), 'yellow');
+            }
+
+            $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
+            CLI::write("Wrote {$payloads['written']} entries to StarDust.");
+
+            $result = (new Verifier($db, $engine, $tenant))->verify();
         } catch (Throwable $e) {
-            $db->transRollback();
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());
             CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
@@ -118,278 +157,112 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
-        $after = $this->inspect($db);
-
         CLI::newLine();
-        CLI::write("Linked $mapped entries and models to their current version.");
-        CLI::write("Sort columns on entry_data: {$columns['present']} present, {$columns['missing']} missing.");
-        if ($columns['missing'] > 0) {
-            CLI::write('The database refused some sort columns, and the reason is in writable/logs. StarDust builds them with MariaDB syntax. The site works without them, and sorting by a field is slower.', 'yellow');
+        CLI::write('Entries per model, in the hyper tables and read back from StarDust:');
+        foreach ($result['models'] as $model) {
+            CLI::write(sprintf('  %d %s: %d written, %d read back', $model['id'], $model['name'], $model['expected'], $model['found']));
         }
 
-        if ($repeated !== []) {
-            CLI::write(count($repeated) . ' entry versions had the same field id more than once. The new format holds one value per id, so the last one was kept. entry_data ids: ' . implode(', ', array_slice($repeated, 0, 50)) . (count($repeated) > 50 ? ' and more' : ''), 'yellow');
+        $failed = false;
+        foreach ($payloads['skipped'] as $skip) {
+            CLI::error("Entry {$skip['id']} was not written, because {$skip['reason']}");
+            $failed = true;
+        }
+        if ($result['mismatched'] !== []) {
+            CLI::error(count($result['mismatched']) . ' entries differ from their source or did not come back. Entry ids: ' . implode(', ', array_slice($result['mismatched'], 0, 50)) . (count($result['mismatched']) > 50 ? ' and more' : ''));
+            $failed = true;
+        }
+        if ($result['unwritten'] > 0 && $payloads['skipped'] === []) {
+            CLI::error("{$result['unwritten']} live entries still have no StarDust entry.");
+            $failed = true;
+        }
+        if ($result['leftBehind'] > 0) {
+            CLI::write("{$result['leftBehind']} live entries of the old tables were left behind, because they have no saved version or no model.", 'yellow');
         }
 
-        $left = $after['unlinkedEntries'] + $after['unlinkedModels'] + $after['history'];
-        if ($odd !== [] || $left > 0) {
-            if ($odd !== []) {
-                CLI::error(count($odd) . ' entry versions hold a list that is not in the old field format and were left as they are. entry_data ids: ' . implode(', ', array_slice($odd, 0, 50)) . (count($odd) > 50 ? ' and more' : ''));
-            }
-            if ($left > 0) {
-                CLI::error('Some rows still need work.');
-                $this->report($after);
-            }
+        if ($failed) {
+            CLI::newLine();
+            CLI::error('The upgrade finished with the problems above. The old tables are untouched, and running the command again moves what it can.');
 
             return EXIT_ERROR;
         }
 
-        CLI::write('The upgrade is complete.', 'green');
+        // The docker entrypoint starts the app and the tick only when this mark exists on an old database.
+        $db->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
+
+        CLI::newLine();
+        CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');
 
         return EXIT_SUCCESS;
     }
 
     /**
-     * Count what is left to do. Nothing is written.
+     * Print what the preflight found.
      *
-     * @return array{history: int, oldFields: int, unlinkedEntries: int, unlinkedModels: int}
+     * @return bool True when something found stops the upgrade from starting.
      */
-    private function inspect(BaseConnection $db): array
+    private function report(array $r): bool
     {
-        $db->resetDataCache();
+        $blocked = false;
 
-        $oldFields = 0;
-        $this->eachVersion($db, static function (array $row) use (&$oldFields): void {
-            if (self::keyValue($row['fields']) !== null) {
-                $oldFields++;
-            }
-        });
+        CLI::write("  Layout found: HyperCMS {$r['layout']}");
 
-        return [
-            'history'         => $db->table('migrations')->where('class', self::OLD_MIGRATION)->countAllResults(),
-            'oldFields'       => $oldFields,
-            'unlinkedEntries' => $this->countUnlinked($db, 'entries', 'current_entry_data_id', 'entry_data', 'entry_id'),
-            'unlinkedModels'  => $this->countUnlinked($db, 'models', 'current_model_data_id', 'model_data', 'model_id'),
-        ];
-    }
-
-    /**
-     * Count the rows that have at least one version and do not point at any.
-     */
-    private function countUnlinked(BaseConnection $db, string $table, string $column, string $versions, string $key): int
-    {
-        $builder = $db->table($table)->where("EXISTS (SELECT 1 FROM `$versions` WHERE `$versions`.`$key` = `$table`.`id`)", null, false);
-        if ($db->fieldExists($column, $table)) {
-            $builder->where("`$table`.`$column`", null);
+        $server = $r['server'];
+        CLI::write("  Database server: {$server['version']}" . ($server['supported'] ? '' : ', too old for StarDust 0.3'));
+        if (! $server['supported']) {
+            CLI::error('  ' . $server['message']);
+            CLI::error('  StarDust 0.3 needs MySQL 8.0.13 or newer, or MariaDB 10.11 or newer.');
+            $blocked = true;
         }
 
-        return (int) $builder->countAllResults();
-    }
-
-    /**
-     * @param array{history: int, oldFields: int, unlinkedEntries: int, unlinkedModels: int} $state
-     */
-    private function report(array $state): void
-    {
-        CLI::write("  Table migration recorded under the old name: {$state['history']}");
-        CLI::write("  Entry versions in the old field format: {$state['oldFields']}");
-        CLI::write("  Entries not linked to a current version: {$state['unlinkedEntries']}");
-        CLI::write("  Models not linked to a current version: {$state['unlinkedModels']}");
-    }
-
-    /**
-     * Record the table migration under StarDust's name, so `migrate` does not try to make the tables again.
-     */
-    private function adoptHistory(BaseConnection $db): void
-    {
-        $old = $db->table('migrations')->where('class', self::OLD_MIGRATION);
-
-        if ($db->table('migrations')->where('class', self::NEW_MIGRATION)->countAllResults() > 0) {
-            // A half-finished earlier attempt already made StarDust's row, so the old one is only clutter.
-            $old->delete();
-
-            return;
+        $packet = $r['packet'];
+        CLI::write(sprintf('  max_allowed_packet: %s, largest entry text: %s', self::bytes($packet['maxAllowed']), self::bytes($packet['largestPayload'])));
+        if (! $packet['fits']) {
+            CLI::write('  The largest entry text does not fit the packet size with a margin. Entries that do not fit are skipped and listed, and raising max_allowed_packet lets a rerun move them.', 'yellow');
         }
 
-        $old->update(['class' => self::NEW_MIGRATION, 'namespace' => 'StarDust']);
-    }
-
-    /**
-     * Rewrite every entry version that is still in the old field format, trashed versions included.
-     *
-     * Only `fields` is written, so the date a version was last modified stays as it was.
-     *
-     * @return array{0: list<int>, 1: list<int>} The ids of versions that hold a list in some other shape, which are
-     *                                            left alone, and the ids of versions that named one field twice.
-     */
-    private function convertFields(BaseConnection $db): array
-    {
-        $converted = 0;
-        $odd       = [];
-        $repeated  = [];
-
-        $this->eachVersion($db, static function (array $row) use ($db, &$converted, &$odd, &$repeated): void {
-            $fields = self::keyValue($row['fields'], $twice);
-            if ($fields === null) {
-                return;
-            }
-            if ($fields === false) {
-                $odd[] = (int) $row['id'];
-
-                return;
-            }
-
-            if ($twice) {
-                $repeated[] = (int) $row['id'];
-            }
-
-            $json = self::encode($fields);
-            $db->table('entry_data')->where('id', $row['id'])->update(['fields' => $json]);
-            $converted++;
-        });
-
-        CLI::newLine();
-        CLI::write("Converted $converted entry versions to the new field format.");
-
-        return [$odd, $repeated];
-    }
-
-    /**
-     * Write fields as JSON text. Text is kept unescaped, as the admin saves it, because search matches the stored text.
-     *
-     * Characters outside the Basic Multilingual Plane, such as emoji, are written as JSON escape pairs instead.
-     * A connection or column on three byte `utf8` cannot take them, and MySQL then replaces each one with a
-     * question mark without raising an error.
-     */
-    private static function encode(stdClass $fields): string
-    {
-        $json = json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION | JSON_THROW_ON_ERROR);
-
-        return preg_replace_callback('/[\x{10000}-\x{10FFFF}]/u', static function (array $match): string {
-            $offset = mb_ord($match[0], 'UTF-8') - 0x10000;
-
-            return sprintf('\u%04x\u%04x', 0xD800 + ($offset >> 10), 0xDC00 + ($offset & 0x3FF));
-        }, $json);
-    }
-
-    /**
-     * Turn `[{"id": "title", "value": "x"}]` into `{"title": "x"}`.
-     *
-     * @param bool|null $twice Set to true when the list names one id more than once.
-     *
-     * @return stdClass|false|null The new fields, false for a list in some other shape, or null when
-     *                             there is nothing to convert (already converted, empty, or not JSON).
-     */
-    private static function keyValue(?string $raw, ?bool &$twice = null): stdClass|false|null
-    {
-        $twice = false;
-        $data  = json_decode((string) $raw);
-        if (! is_array($data) || $data === []) {
-            return null;
+        CLI::write('  Entries per model (live and trashed):');
+        foreach ($r['models'] as $model) {
+            CLI::write(sprintf('    %d %s: %d live, %d trashed', $model['id'], $model['name'], $model['live'], $model['trashed']));
         }
 
-        $fields = new stdClass();
-        foreach ($data as $item) {
-            if (! $item instanceof stdClass || ! property_exists($item, 'value') || ! is_scalar($item->id ?? null)) {
-                return false;
-            }
-            $twice = $twice || property_exists($fields, (string) $item->id);
-            $fields->{(string) $item->id} = $item->value;
+        if ($r['entriesWithoutVersion'] > 0) {
+            CLI::write("  Entries with no saved version, which the old version never showed and the upgrade leaves behind: {$r['entriesWithoutVersion']}", 'yellow');
+        }
+        if ($r['oddVersions'] !== []) {
+            CLI::write('  Entry versions that hold a list in some other shape and are kept as text only: ' . self::ids($r['oddVersions']), 'yellow');
+        }
+        if ($r['notObjectVersions'] !== []) {
+            CLI::write('  Entry versions whose text is not an object: ' . self::ids($r['notObjectVersions']), 'yellow');
+        }
+        if ($r['repeatedVersions'] !== []) {
+            CLI::write('  Entry versions that name one field id more than once, where the last value is kept: ' . self::ids($r['repeatedVersions']), 'yellow');
         }
 
-        return $fields;
+        foreach ($r['fieldProblems'] as $problem) {
+            CLI::write("  Model {$problem['model']}: {$problem['problem']}", 'yellow');
+        }
+
+        if ($r['entryQueries'] !== []) {
+            CLI::write('  Models with a form field whose data query reads the entries table, which keeps working only for a small set of queries:', 'yellow');
+            foreach ($r['entryQueries'] as $query) {
+                CLI::write("    {$query['model']}, field {$query['field']}");
+            }
+        }
+
+        return $blocked;
     }
 
     /**
-     * Hand every row of `entry_data` to the callback, a chunk at a time, in id order.
-     *
-     * @param callable(array{id: string, fields: ?string}): void $callback
+     * @param list<int> $ids
      */
-    private function eachVersion(BaseConnection $db, callable $callback): void
+    private static function ids(array $ids): string
     {
-        $lastId = 0;
-        while (true) {
-            // Sizes come first, so that a run of entries with pictures pasted into the text is read in small batches.
-            $sizes = $db->table('entry_data')->select('id, LENGTH(fields) AS size', false)->where('id >', $lastId)->orderBy('id', 'ASC')->limit(self::CHUNK)->get()->getResultArray();
-            if ($sizes === []) {
-                return;
-            }
-
-            $ids   = [];
-            $bytes = 0;
-            foreach ($sizes as $row) {
-                if ($ids !== [] && $bytes + (int) $row['size'] > self::BATCH_BYTES) {
-                    break;
-                }
-                $ids[]  = (int) $row['id'];
-                $bytes += (int) $row['size'];
-            }
-
-            foreach ($db->table('entry_data')->select('id, fields')->whereIn('id', $ids)->orderBy('id', 'ASC')->get()->getResultArray() as $row) {
-                $callback($row);
-            }
-            $lastId = end($ids);
-        }
+        return count($ids) . ' (ids ' . implode(', ', array_slice($ids, 0, 20)) . (count($ids) > 20 ? ' and more' : '') . ')';
     }
 
-    /**
-     * Point each entry and model at its current version, the way HyperCMS 0.1 picked one on every read.
-     *
-     * A live row gets its newest version that is not trashed. A trashed row gets its newest trashed
-     * version, because trashing a row trashes its versions with it. Rows that already point at a
-     * version are left alone.
-     *
-     * @return int How many rows were linked.
-     */
-    private function mapCurrentVersions(BaseConnection $db): int
+    private static function bytes(int $bytes): string
     {
-        $linked = 0;
-        $pairs  = [
-            ['entries', 'current_entry_data_id', 'entry_data', 'entry_id'],
-            ['models', 'current_model_data_id', 'model_data', 'model_id'],
-        ];
-
-        foreach ($pairs as [$table, $column, $versions, $key]) {
-            $db->query("
-                UPDATE `$table`
-                INNER JOIN (
-                    SELECT `$key`, MAX(id) AS version_id FROM `$versions` WHERE deleted_at IS NULL GROUP BY `$key`
-                ) AS newest ON newest.`$key` = `$table`.id
-                SET `$table`.`$column` = newest.version_id
-                WHERE `$table`.`$column` IS NULL AND `$table`.deleted_at IS NULL
-            ");
-            $linked += $db->affectedRows();
-
-            $db->query("
-                UPDATE `$table`
-                INNER JOIN (
-                    SELECT `$key`, COALESCE(MAX(CASE WHEN deleted_at IS NOT NULL THEN id END), MAX(id)) AS version_id FROM `$versions` GROUP BY `$key`
-                ) AS newest ON newest.`$key` = `$table`.id
-                SET `$table`.`$column` = newest.version_id
-                WHERE `$table`.`$column` IS NULL AND `$table`.deleted_at IS NOT NULL
-            ");
-            $linked += $db->affectedRows();
-        }
-
-        return $linked;
-    }
-
-    /**
-     * Have StarDust build the sort columns for every model field, then count what the database really has.
-     *
-     * StarDust logs a column it could not make and carries on, so its own numbers cannot be trusted.
-     *
-     * @return array{present: int, missing: int}
-     */
-    private function buildIndexes(BaseConnection $db): array
-    {
-        $indexer  = \StarDust\Config\Services::runtimeIndexer();
-        $existing = count($indexer->getAllVirtualColumns());
-        $stats    = $indexer->indexAllModels();
-
-        $db->resetDataCache();
-        $present = count($indexer->getAllVirtualColumns());
-
-        return ['present' => $present, 'missing' => max(0, $existing + (int) $stats['columns_created'] - $present)];
+        return $bytes >= 1048576 ? round($bytes / 1048576, 1) . ' MB' : round($bytes / 1024, 1) . ' KB';
     }
 }

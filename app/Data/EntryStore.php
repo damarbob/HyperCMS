@@ -2,27 +2,29 @@
 
 namespace App\Data;
 
-use App\Constants\EntryDataStaticFields;
-use App\Constants\ModelStaticFields;
-use App\Libraries\SortColumn;
-use StarDust\Models\EntriesModel;
-use StarDust\Models\EntryDataModel;
-use StarDust\Services\EntriesManager;
+use App\Data\Entries\EntryLists;
+use App\Data\Entries\EntryReader;
+use App\Data\Entries\EntryRows;
+use App\Data\Entries\EntryWriter;
 
 /**
  * The one place that reads and writes entries.
  *
- * Controllers call this class and never touch StarDust themselves, so the engine
- * behind it can change without editing every controller.
+ * Controllers call this class and never touch StarDust themselves, so the engine behind it can
+ * change without editing every controller. The work is split by lane: EntryWriter writes,
+ * EntryReader answers single and module reads, EntryLists answers lists and saved lists, and
+ * EntryRows builds the row every read returns.
  */
 class EntryStore
 {
     public function __construct(
-        private EntriesModel $entries,
-        private EntryDataModel $entryData,
-        private ModelStore $models,
-        private EntriesManager $manager,
+        private ?EntryWriter $writer = null,
+        private ?EntryReader $reader = null,
+        private ?EntryLists $lists = null,
     ) {
+        $this->writer ??= new EntryWriter();
+        $this->reader ??= new EntryReader();
+        $this->lists ??= new EntryLists();
     }
 
     /**
@@ -30,7 +32,7 @@ class EntryStore
      */
     public function findArray(int $id): array|false
     {
-        return $this->manager->find($id);
+        return $this->reader->findArray($id);
     }
 
     /**
@@ -38,7 +40,7 @@ class EntryStore
      */
     public function create(array $data, int $userId): int
     {
-        return $this->manager->create($data, $userId);
+        return $this->writer->create($data, $userId);
     }
 
     /**
@@ -46,7 +48,7 @@ class EntryStore
      */
     public function update(int $id, array $data, int $userId): void
     {
-        $this->manager->update($id, $data, $userId);
+        $this->writer->update($id, $data, $userId);
     }
 
     /**
@@ -54,7 +56,7 @@ class EntryStore
      */
     public function trash(array $ids, int $userId): void
     {
-        $this->manager->deleteEntries($ids, $userId);
+        $this->writer->trash($ids, $userId);
     }
 
     /**
@@ -62,7 +64,7 @@ class EntryStore
      */
     public function trashed(array $ids): array|false
     {
-        return $this->manager->findDeletedEntries($ids);
+        return $this->reader->trashed($ids);
     }
 
     /**
@@ -70,7 +72,7 @@ class EntryStore
      */
     public function countTrashed(): int|string
     {
-        return $this->manager->countDeleted();
+        return $this->reader->countTrashed();
     }
 
     /**
@@ -78,7 +80,7 @@ class EntryStore
      */
     public function emptyTrash(): void
     {
-        $this->manager->purgeDeleted();
+        $this->writer->emptyTrash();
     }
 
     /**
@@ -86,7 +88,7 @@ class EntryStore
      */
     public function restore(array $ids): void
     {
-        $this->manager->restore($ids);
+        $this->writer->restore($ids);
     }
 
     /**
@@ -94,7 +96,7 @@ class EntryStore
      */
     public function allArray(): array
     {
-        return $this->manager->get();
+        return $this->reader->allArray();
     }
 
     /**
@@ -102,10 +104,7 @@ class EntryStore
      */
     public function ofModels(array $modelIds): array
     {
-        return $this->entries->stardust()->withLegacyAliases(true)
-            ->whereIn('model_id', $modelIds)
-            ->get()
-            ->getResultArray();
+        return $this->reader->ofModels($modelIds);
     }
 
     /**
@@ -113,10 +112,7 @@ class EntryStore
      */
     public function named(string $modelName): array
     {
-        return $this->entries->stardust()->withLegacyAliases(true)
-            ->where('model_name', $modelName)
-            ->get()
-            ->getResultArray();
+        return $this->reader->named($modelName);
     }
 
     /**
@@ -126,25 +122,7 @@ class EntryStore
      */
     public function recent(array $filters = []): array
     {
-        $builder = $this->entries->stardust()->withLegacyAliases(true);
-
-        if (!empty($filters['hidden_model_ids'])) {
-            $builder->whereNotIn('model_id', $filters['hidden_model_ids']);
-        }
-
-        if (!empty($filters['id'])) {
-            $builder->where('id', $filters['id']);
-        }
-
-        if (!empty($filters['ids'])) {
-            $builder->whereIn('id', $filters['ids']);
-        }
-
-        if (!empty($filters['model_id'])) {
-            $builder->where('model_id', $filters['model_id']);
-        }
-
-        return $builder->orderBy('date_modified', 'DESC')->get()->getResultArray();
+        return $this->reader->recent($filters);
     }
 
     /**
@@ -154,19 +132,7 @@ class EntryStore
      */
     public function blankFor(int|string $modelId): ?array
     {
-        return $this->entries->stardust()->withLegacyAliases(true)
-            ->where('model_id', $modelId)
-            ->groupStart()
-            ->where('fields', null)
-            ->orWhere('fields', '')
-            ->orWhere('fields', '""')
-            ->orWhere('fields', '[]')
-            ->orWhere('fields', '{}')
-            ->orWhere('fields', '[{}]')
-            ->groupEnd()
-            ->orderBy('date_modified', 'desc')
-            ->get()
-            ->getRowArray() ?: null;
+        return $this->reader->blankFor($modelId);
     }
 
     /**
@@ -176,7 +142,29 @@ class EntryStore
      */
     public function compiledSelect(): string
     {
-        return $this->entries->stardust()->getCompiledSelect();
+        return $this->reader->compiledSelect();
+    }
+
+    /**
+     * Every live entry without its fields, as `id`, `model_id`, `model_name`, `sd_entry_id` and `payload_bytes`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function flatRows(): array
+    {
+        return $this->reader->flatRows();
+    }
+
+    /**
+     * Read the fields of rows from `flatRows()` a chunk at a time, yielding each chunk's fields by entry id.
+     *
+     * @param list<array<string, mixed>> $flatRows
+     *
+     * @return \Generator<int, array<int, array>>
+     */
+    public function fieldsOf(array $flatRows): \Generator
+    {
+        return $this->reader->fieldsOf($flatRows);
     }
 
     /**
@@ -188,73 +176,7 @@ class EntryStore
      */
     public function dataTable(array $post, array $hiddenModelIds = []): array
     {
-        $id = $post['id'] ?? null;
-        $ids = $post['ids'] ?? null;
-        $modelId = $post['model_id'] ?? null;
-        $draw = $post['draw'] ?? 1;
-        $start = $post['start'] ?? null;
-        $length = $post['length'] ?? -1;
-        $search = $post['search']['value'] ?? '';
-        $order = $post['order'] ?? null;
-        $columns = $post['columns'] ?? null;
-        $trash = $post['trash'] ?? false;
-
-        // The trash view lists deleted entries.
-        if (!$trash || $trash == 'false') {
-            $builder = $this->entries->stardust()->withLegacyAliases(true);
-        } else {
-            $builder = $this->entries->stardust(true)->withLegacyAliases(true);
-        }
-
-        if (!empty($id)) {
-            $builder->where('id', $id);
-        }
-
-        if (!empty($ids)) {
-            $builder->whereIn('id', $ids);
-        }
-
-        if (!empty($modelId)) {
-            $builder->where('model_id', $modelId);
-        }
-
-        if (!empty($hiddenModelIds)) {
-            $builder->whereNotIn('model_id', $hiddenModelIds);
-        }
-
-        $totalRecords = $builder->countAllResults(false);
-
-        // The three matches sit in one group. Without it their OR would let a row past the filters above.
-        if (!empty($search)) {
-            $builder->groupStart();
-            $builder->like('model_name', esc($search));
-            $builder->orLike('fields', esc($search));
-            $builder->orLike('created_by', esc($search));
-            $builder->groupEnd();
-        }
-
-        $recordsFiltered = $builder->countAllResults(false);
-
-        // DataTables sends the column index and direction, and the columns array names the
-        // column. Only a plain column name may reach the query.
-        $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
-        if (SortColumn::isSafe($orderColumn)) {
-            $builder->orderBy($orderColumn, $order[0]['dir'] ?? '');
-        } else {
-            $builder->orderBy('date_modified', 'DESC');
-        }
-
-        // A length of -1 means no limit.
-        if ($length != -1) {
-            $builder->limit(intval($length), intval($start));
-        }
-
-        return [
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $builder->get()->getResultArray(),
-        ];
+        return $this->lists->dataTable($post, $hiddenModelIds);
     }
 
     /**
@@ -264,23 +186,15 @@ class EntryStore
      */
     public function findAliased(int|string $id): ?array
     {
-        return $this->entries->stardust()->withLegacyAliases(true)
-            ->where('id', $id)
-            ->limit(1)
-            ->get()
-            ->getResultArray()[0] ?? null;
+        return $this->reader->findAliased($id);
     }
 
     /**
-     * Read the saved versions of one entry as rows, leaving out the first row of the query.
+     * Read the saved versions of one entry as rows.
      */
     public function versionsOf(int|string $entryId): array
     {
-        return $this->entryData->stardust()->withLegacyAliases(true)
-            ->where('entry_id', $entryId)
-            ->offset(1)
-            ->get()
-            ->getResultArray();
+        return $this->reader->versionsOf($entryId);
     }
 
     /**
@@ -290,24 +204,7 @@ class EntryStore
      */
     public function clearHistory(int|string $entryId): ?int
     {
-        $newest = $this->entryData
-            ->select('id')
-            ->where('entry_id', $entryId)
-            ->orderBy('id', 'DESC')
-            ->limit(1)
-            ->get()
-            ->getRow();
-
-        if (empty($newest)) {
-            return null;
-        }
-
-        $this->entryData
-            ->where('entry_id', $entryId)
-            ->where('id !=', $newest->id)
-            ->delete(purge: true);
-
-        return $this->entryData->db->affectedRows();
+        return $this->writer->clearHistory($entryId);
     }
 
     /**
@@ -315,9 +212,7 @@ class EntryStore
      */
     public function countForModel(int|string $modelId): int
     {
-        return $this->entries->stardust()->withLegacyAliases(true)
-            ->where('model_id', $modelId)
-            ->countAllResults();
+        return $this->reader->countForModel($modelId);
     }
 
     /**
@@ -333,34 +228,29 @@ class EntryStore
      */
     public function page(array $filters, string $sortColumn, string $direction, int $limit, int $page): array
     {
-        $builder = $this->entries->stardust();
+        return $this->lists->page($filters, $sortColumn, $direction, $limit, $page);
+    }
 
-        $modelId = $filters['model_id'] ?? null;
-        if ($modelId !== null && $modelId !== '') {
-            $builder->where('entries.model_id', (int) $modelId);
-        }
+    /**
+     * The fields of a model that lists can sort and filter on right now, with the StarDust type of each.
+     *
+     * @return array<string, string> By field id.
+     */
+    public function indexedFields(int $modelId): array
+    {
+        return $this->lists->indexedFields($modelId);
+    }
 
-        if (!empty($filters['hidden_model_ids'])) {
-            $builder->whereNotIn('entries.model_id', $filters['hidden_model_ids']);
-        }
-
-        $search = $filters['search'] ?? null;
-        if (is_string($search) && $search !== '') {
-            $builder->groupStart()
-                ->like('model_data.name', $search)
-                ->orLike('users.username', $search)
-                ->groupEnd();
-        }
-
-        $total = $builder->countAllResults(false);
-
-        $data = $builder
-            ->orderBy($sortColumn, $direction)
-            ->limit($limit, ($page - 1) * $limit)
-            ->get()
-            ->getResultArray();
-
-        return ['data' => $data, 'total' => $total];
+    /**
+     * Read one page of a model's entries through its indexed fields, for the token API.
+     *
+     * @param int $countCap The most matches to count for the total.
+     *
+     * @return array{data: list<array>, total: int|null, more: bool} `total` is null when the count stopped at the cap.
+     */
+    public function fieldPage(int $modelId, array $hiddenModelIds, ?\StarDust\Read\SortSpec $sort, ?\StarDust\Filter\Ast\FilterNode $filter, int $limit, int $page, int $countCap): array
+    {
+        return $this->lists->fieldPage($modelId, $hiddenModelIds, $sort, $filter, $limit, $page, $countCap);
     }
 
     /**
@@ -368,7 +258,7 @@ class EntryStore
      */
     public function findRow($id): ?array
     {
-        return $this->entries->stardust()->where('entries.id', $id)->get()->getRowArray() ?: null;
+        return $this->reader->findRow($id);
     }
 
     /**
@@ -376,13 +266,7 @@ class EntryStore
      */
     public function modelIdOf(int|string $entryId): ?int
     {
-        $row = $this->entryData->stardust()->withLegacyAliases(true)
-            ->where('entry_id', $entryId)
-            ->limit(1)
-            ->get()
-            ->getRow();
-
-        return $row ? (int) $row->model_id : null;
+        return $this->reader->modelIdOf($entryId);
     }
 
     /**
@@ -396,205 +280,7 @@ class EntryStore
      */
     public function modelDataTable(array $params): array
     {
-        $modelId = $params['id'] ?? null;
-        $draw = $params['draw'] ?? 1;
-        $start = $params['start'] ?? 0;
-        $length = $params['length'] ?? 10;
-        $search = $params['search']['value'] ?? ($params['search'] ?? '');
-        $order = $params['order'] ?? null;
-        $columns = $params['columns'] ?? null;
-        $find = $params['find'] ?? null;
-        $trash = $params['trash'] ?? false;
-
-        if (!$modelId) {
-            throw new \InvalidArgumentException("No model id provided.");
-        }
-
-        $modelInfo = $this->modelInfo($modelId);
-        $dateFields = $modelInfo['dateFields'];
-        $numericFields = $modelInfo['numericFields'];
-        $codeFields = $modelInfo['codeFields'];
-
-        $builder = $this->modelQuery($modelId, !$trash || $trash == 'false');
-
-        $this->applyFind($builder, $find);
-
-        // Count after the find filter and before the search, as the list screens expect.
-        $totalRecords = $builder->countAllResults(false);
-
-        $this->applySearch($builder, esc($search));
-
-        $recordsFiltered = $builder->countAllResults(false);
-
-        $this->applyModelOrdering($builder, $order, $columns, $dateFields, $numericFields);
-
-        $this->applyPagination($builder, $length, $start);
-
-        $data = $this->pivotRows($builder->get()->getResultArray(), $codeFields);
-
-        return [
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $data,
-        ];
-    }
-
-    /**
-     * Read the model and sort its fields by type.
-     */
-    protected function modelInfo(int $modelId): array
-    {
-        $model = $this->models->find($modelId);
-
-        if (!$model) {
-            throw new \InvalidArgumentException("Model with id $modelId not found.");
-        }
-
-        $modelFields = json_decode($model->fields);
-        $dateFields = [];
-        $numericFields = [];
-        $codeFields = [];
-
-        foreach ($modelFields as $field) {
-            if (!empty($field->type)) {
-                if ($field->type == 'datetime-local') {
-                    $dateFields[] = $field->id;
-                } elseif ($field->type == 'number') {
-                    $numericFields[] = $field->id;
-                } elseif ($field->type == 'code') {
-                    $codeFields[] = $field->id;
-                }
-            }
-        }
-
-        return [
-            'model' => $model,
-            'dateFields' => $dateFields,
-            'numericFields' => $numericFields,
-            'codeFields' => $codeFields,
-        ];
-    }
-
-    /**
-     * Build the base query for the entries of one model.
-     *
-     * The flag is true for live entries and false for the trash view.
-     */
-    protected function modelQuery(int $modelId, bool $live)
-    {
-        if ($live) {
-            $builder = $this->entries->stardust()->withLegacyAliases(true);
-        } else {
-            $builder = $this->entries->stardust(true)->withLegacyAliases(true);
-        }
-
-        $builder->where('model_id', $modelId);
-
-        return $builder;
-    }
-
-    /**
-     * Apply the find filter if one was sent.
-     *
-     * @todo Handle several find conditions, which `likeFields()` already supports.
-     */
-    protected function applyFind(&$builder, ?array $find): void
-    {
-        if ($find && !empty($find['field']) && !empty($find['value'])) {
-            $builder->likeFields([$find]);
-        }
-    }
-
-    /**
-     * Apply the search filter if one was sent.
-     */
-    protected function applySearch(&$builder, string $search): void
-    {
-        if (!empty($search)) {
-            $builder->where("LOWER(CAST(entry_data.fields AS CHAR)) LIKE '%" . strtolower($search) . "%'");
-        }
-    }
-
-    /**
-     * Apply the requested order. A dynamic field id is quoted and escaped before it
-     * goes into the sort expression.
-     */
-    protected function applyModelOrdering(&$builder, ?array $order, ?array $columns, array $dateFields, array $numericFields): void
-    {
-        if (!empty($order)) {
-            $orderColumnIndex = $order[0]['column'];
-            $orderDir = $order[0]['dir'];
-            $orderColumn = $columns[$orderColumnIndex]['data'];
-
-            $quoted = db_connect()->escape((string) $orderColumn);
-
-            if (in_array($orderColumn, ModelStaticFields::FIELD_LIST)) {
-                $builder->orderBy($orderColumn, $orderDir);
-            } else {
-                if (in_array($orderColumn, $dateFields)) {
-                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                } elseif (in_array($orderColumn, $numericFields)) {
-                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                } else {
-                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                }
-            }
-        } else {
-            $builder->orderBy('date_modified', 'DESC');
-        }
-    }
-
-    /**
-     * Apply pagination. A length of -1 means no limit.
-     */
-    protected function applyPagination(&$builder, int $length, int $start): void
-    {
-        if ($length != -1) {
-            $builder->limit(intval($length), intval($start));
-        }
-    }
-
-    /**
-     * Spread each row's JSON fields into columns and escape the HTML of code fields.
-     */
-    protected function pivotRows(array $data, array $codeFields): array
-    {
-        foreach ($data as &$row) {
-            if (isset($row['fields'])) {
-                $fieldsArray = json_decode($row['fields'], true);
-
-                if (is_array($fieldsArray)) {
-                    // The older format is a list of objects with an id and a value.
-                    if (array_is_list($fieldsArray) && !empty($fieldsArray) && isset($fieldsArray[0]['id'])) {
-                        foreach ($fieldsArray as $field) {
-                            if (isset($field['id']) && isset($field['value'])) {
-                                $row['' . $field['id']] = $field['value'];
-                            }
-                        }
-                    } else {
-                        // The newer format is a plain object of keys and values.
-                        foreach ($fieldsArray as $key => $value) {
-                            $row['' . $key] = $value;
-                        }
-                    }
-                }
-                unset($row['fields']);
-            }
-        }
-
-        foreach ($data as $i => $item) {
-            foreach ($codeFields as $x) {
-                if (isset($item[$x])) {
-                    $data[$i][$x] = htmlspecialchars($item[$x]);
-                }
-            }
-        }
-
-        return $data;
+        return $this->lists->modelDataTable($params);
     }
 
     /**
@@ -606,129 +292,6 @@ class EntryStore
      */
     public function versionsDataTable(array $post): array
     {
-        $entryId = $post['id'] ?? null;
-        $draw = $post['draw'] ?? 1;
-        $start = $post['start'] ?? 0;
-        $length = $post['length'] ?? 10;
-        $search = $post['search']['value'] ?? '';
-        $order = $post['order'] ?? null;
-        $columns = $post['columns'] ?? null;
-        $find = $post['find'] ?? null;
-
-        if (!$entryId) {
-            throw new LookupException("No entry id provided.");
-        }
-
-        $latest = $this->entryData
-            ->stardust()->withLegacyAliases(true)
-            ->where('entry_id', $entryId)
-            ->orderBy('date_created', 'DESC')
-            ->get()
-            ->getRow();
-
-        if (!$latest) {
-            throw new LookupException("Entry with id $entryId not found.");
-        }
-
-        $model = $this->models->find($latest->model_id);
-
-        if (!$model) {
-            throw new LookupException("Model with id $latest->model_id not found.");
-        }
-
-        $modelFields = json_decode($model->fields);
-        $dateFields = [];
-        $numericFields = [];
-        $codeFields = [];
-
-        foreach ($modelFields as $field) {
-            if ($field->type == 'datetime-local') {
-                $dateFields[] = $field->id;
-            } elseif ($field->type == 'number') {
-                $numericFields[] = $field->id;
-            } elseif ($field->type == 'code') {
-                $codeFields[] = $field->id;
-            }
-        }
-
-        $builder = $this->entryData->stardust()->withLegacyAliases(true);
-
-        if (!empty($entryId)) {
-            $builder->where('entry_id', $entryId);
-        }
-
-        if ($find && !empty($find['field']) && !empty($find['value'])) {
-            // The field id and the value go into a SQL string below, so escape both first.
-            $db = db_connect();
-            $builder->where("
-                LOWER(
-                    JSON_UNQUOTE(
-                        JSON_EXTRACT(
-                            entry_data.fields,
-                            CONCAT(
-                                '$[',
-                                SUBSTRING_INDEX(
-                                    SUBSTRING_INDEX(
-                                        JSON_SEARCH(entry_data.fields, 'one', " . $db->escape((string) $find['field']) . ", NULL, '$[*].id'),
-                                        '[',
-                                        -1
-                                    ),
-                                    ']',
-                                    1
-                                ),
-                                '].value'
-                            )
-                        )
-                    )
-                ) LIKE '%" . $db->escapeLikeString(strtolower((string) $find['value'])) . "%'
-            ");
-        }
-
-        // The total counts this entry's versions after the find filter, before the search.
-        $totalRecords = $builder->countAllResults(false);
-
-        if (!empty($search)) {
-            $builder->where("LOWER(CAST(entry_data.fields AS CHAR)) LIKE '%" . strtolower(esc($search)) . "%'");
-        }
-
-        $recordsFiltered = $builder->countAllResults(false);
-
-        if (!empty($order)) {
-            $orderColumnIndex = $order[0]['column'];
-            $orderDir = $order[0]['dir'];
-            $orderColumn = $columns[$orderColumnIndex]['data']; // The field key for dynamic fields.
-
-            // The field id goes into a SQL string below, so quote and escape it first.
-            $quoted = db_connect()->escape((string) $orderColumn);
-
-            if (in_array($orderColumn, EntryDataStaticFields::FIELD_LIST)) {
-                $builder->orderBy($orderColumn, $orderDir);
-            } else {
-                if (in_array($orderColumn, $dateFields)) {
-                    $orderExpr = "STR_TO_DATE( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ), '%Y-%m-%d %H:%i:%s' )";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                } elseif (in_array($orderColumn, $numericFields)) {
-                    $orderExpr = "CAST( JSON_UNQUOTE( JSON_EXTRACT( entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' ) ) ) AS DECIMAL(10,2) )";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                } else {
-                    $orderExpr = "LOWER(TRIM(REGEXP_REPLACE( CAST(JSON_EXTRACT(entry_data.fields, CONCAT( '$[', SUBSTRING_INDEX( SUBSTRING_INDEX(JSON_SEARCH(entry_data.fields, 'one', " . $quoted . ", NULL, '$[*].id'), '[', -1), ']', 1), '].value' )) AS CHAR), '<[^>]+>', '' )))";
-                    $builder->orderBy($orderExpr, $orderDir, false);
-                }
-            }
-        } else {
-            $builder->orderBy('date_created', 'DESC');
-        }
-
-        // A length of -1 means no limit.
-        if ($length != -1) {
-            $builder->limit(intval($length), intval($start));
-        }
-
-        return [
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $this->pivotRows($builder->get()->getResultArray(), $codeFields),
-        ];
+        return $this->lists->versionsDataTable($post);
     }
 }
