@@ -28,6 +28,11 @@ use Throwable;
  */
 class Upgrade extends BaseCommand
 {
+    /**
+     * The row in `hyper_counters` that marks an upgrade as complete. `.docker/entrypoint.sh` reads it by this name.
+     */
+    private const FINISHED = 'upgrade_finished';
+
     protected $group       = 'Hyper';
     protected $name        = 'hyper:upgrade';
     protected $description = 'Upgrades a HyperCMS 0.1 or 0.2 database to the layout this version reads.';
@@ -118,6 +123,9 @@ class Upgrade extends BaseCommand
             }
             $db->resetDataCache();
 
+            // A rerun is unfinished until it reaches the end again, so a restart in between does not boot the app.
+            $db->table('hyper_counters')->where('name', self::FINISHED)->delete();
+
             $models = new ModelCopier($db, $source, $engine, $tenant);
 
             $copied = $models->copy();
@@ -178,6 +186,9 @@ class Upgrade extends BaseCommand
 
             return EXIT_ERROR;
         }
+
+        // The docker entrypoint starts the app and the tick only when this mark exists on an old database.
+        $db->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
 
         CLI::newLine();
         CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');

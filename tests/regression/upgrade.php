@@ -307,6 +307,7 @@ $verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pai
 [$code, $text] = $spark('--yes');
 echo preg_replace('/^/m', '      | ', $text) . PHP_EOL;
 $check('upgrade exits 0 although one version is odd', $code === 0, "exit $code");
+$check('a complete run sets the finished mark the docker entrypoint waits for', (int) $pdo->query("SELECT COUNT(*) FROM hyper_counters WHERE name = 'upgrade_finished'")->fetchColumn() === 1);
 $check('upgrade warns and names the odd version', str_contains($text, 'hold a list in some other shape and were copied as text. Version ids: ' . $oddId), $text);
 $check('upgrade copied every model, entry and version', str_contains($text, 'Copied ' . count($wantModels) . ' models and ' . count($wantModelRevisions) . ' model versions.') && str_contains($text, 'Copied ' . count($wantEntries) . ' entries and ' . count($wantVersions) . ' entry versions.'), $text);
 $liveCount = count(array_filter($wantEntries, fn(array $e): bool => $e['deleted_at'] === null));
