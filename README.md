@@ -33,7 +33,7 @@ Central to Hyper CMS, models can be extended into various types such as Blog, Ag
 
 Individual inputs are required to form a model. These fields are versatile and adaptable, converting into inputs in the Item Editor. The wide range of input types available ensures comprehensive customization.
 
-A field whose definition holds `"filterable": true` is indexed by StarDust, so a list of entries sorts on it quickly and the token API can sort and filter on it with `sort=field:name` and `filter[name]=value`. The flag works on the types `text`, `email`, `url`, `password`, `color`, `radio`, `select`, `checkbox`, `number`, `range` and `datetime-local`, and is off by default. Indexing runs in the background and needs the scheduled `php spark hyper:tick`. Entries saved before the flag was set are brought in with `php spark hyper:normalize`.
+A field whose definition holds `"filterable": true` is indexed by StarDust, so a list of entries sorts on it quickly and the token API can sort and filter on it with `sort=field:name` and `filter[name]=value`. The flag works on the types `text`, `email`, `url`, `password`, `color`, `radio`, `select`, `checkbox`, `number`, `range` and `datetime-local`, and is off by default. Indexing runs in the background and needs the scheduled `php spark hyper:tick`. Saving a model that newly flags a field cleans that field's values in its existing entries first, so the index starts with them, unless the model holds more than 2000 entries. For a larger model, and to repair entries later, run `php spark hyper:normalize` with the model id.
 
 ### Entries/Items
 
