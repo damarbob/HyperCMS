@@ -37,9 +37,16 @@ class HyperEngine extends BaseConfig
     public int $savedListExpiry = 600;
 
     /**
-     * The most entries a search or a sort on a model field may scan. 0 means no limit has been set yet.
+     * The most entries a search or a sort on a model field may scan. 0 means no limit. The figure comes from the
+     * A8 measurements, where memory grew about 1 MB per 1,000 entries and reached 128 MB near 70,000.
      */
-    public int $scanLimit = 0;
+    public int $scanLimit = 20000;
+
+    /**
+     * The most bytes of stored fields a search or a sort on a model field may read in one request. 0 means no
+     * limit. A search costs about 33 ms per MB, so 600 MB is about 20 seconds, under PHP's 30 second web limit.
+     */
+    public int $scanBytes = 629_145_600;
 
     /**
      * The most bytes of stored fields one getMany() call may be asked for, because bodies of 1 to 3 MB

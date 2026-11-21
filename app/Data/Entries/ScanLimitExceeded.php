@@ -10,10 +10,15 @@ use RuntimeException;
  */
 class ScanLimitExceeded extends RuntimeException
 {
-    public function __construct(public readonly int $entries, public readonly int $limit)
+    /**
+     * @param string $reason `entries` when the limit counts entries, `bytes` when it counts bytes of stored fields.
+     */
+    public function __construct(public readonly int $entries, public readonly int $limit, string $reason = 'entries')
     {
         // The count covers entries of models the caller may not read, so it stays out of the message
         // and is kept as a property for the server log only.
-        parent::__construct(lang('EntryLists.scanLimit', ['limit' => $limit]));
+        parent::__construct($reason === 'bytes'
+            ? lang('EntryLists.scanBytes', ['megabytes' => (int) round($limit / 1048576)])
+            : lang('EntryLists.scanLimit', ['limit' => $limit]));
     }
 }

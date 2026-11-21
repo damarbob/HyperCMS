@@ -161,6 +161,25 @@ final class ListScanTest extends CIUnitTestCase
         $this->assertSame(6, $read);
     }
 
+    public function testTheByteLimitRefusesALargeScanAndLeavesASmallOneAlone(): void
+    {
+        $config            = new HyperEngine();
+        $config->scanBytes = 59; // The six candidates hold 10 bytes each, 60 in all.
+        $scan              = new ListScan(new EntryPayloads(null, null, $config), $config);
+
+        try {
+            $scan->run($this->candidates(), ['search' => 'a'], $this->reader());
+            $this->fail('The scan should have been refused.');
+        } catch (ScanLimitExceeded $e) {
+            $this->assertSame([6, 59], [$e->entries, $e->limit]);
+            $this->assertStringContainsString('MB', $e->getMessage());
+        }
+
+        $config->scanBytes = 60;
+        $this->assertCount(6, $scan->run($this->candidates(), [], $this->reader())['rows']);
+        $this->assertNotEmpty($scan->run($this->candidates(), ['search' => 'a'], $this->reader())['rows']);
+    }
+
     public function testTheScanLimitRefusesWithAMessageInBothLanguages(): void
     {
         try {

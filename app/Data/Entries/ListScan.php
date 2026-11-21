@@ -55,6 +55,14 @@ final class ListScan
             throw new ScanLimitExceeded(count($needs), $limit);
         }
 
+        $byteLimit = $this->config->scanBytes;
+        $bytes     = array_sum(array_map(static fn (array $candidate): int => (int) ($candidate['payload_bytes'] ?? 0), $needs));
+        if ($byteLimit > 0 && $bytes > $byteLimit) {
+            log_message('notice', 'Scan byte limit of {limit} exceeded, {bytes} bytes would be read.', ['limit' => $byteLimit, 'bytes' => $bytes]);
+
+            throw new ScanLimitExceeded(count($needs), $byteLimit, 'bytes');
+        }
+
         // Read the fields once, a chunk at a time, and keep only what the verdict needs.
         $verdicts = [];
         foreach (($this->payloads ??= new EntryPayloads())->chunks($needs) as $chunk) {
