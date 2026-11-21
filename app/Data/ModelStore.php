@@ -6,12 +6,17 @@ use App\Libraries\SortColumn;
 use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseConnection;
 use App\Data\Entries\EntryWriter;
+use App\Data\Entries\FilterableFields;
 use App\Libraries\Upgrade\ModelCopier;
 use CodeIgniter\I18n\Time;
 use InvalidArgumentException;
 use RuntimeException;
+use StarDust\Exception\FieldDeletionInProgressException;
 use StarDust\Exception\ModelDeletionInProgressException;
+use StarDust\Exception\RenameInProgressException;
+use StarDust\Exception\RetypeInProgressException;
 use StarDust\StarDust;
+use Throwable;
 
 /**
  * The one place that reads and writes models.
@@ -76,8 +81,7 @@ class ModelStore
         });
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
-            $this->syncFields($id);
-            $this->versions()->bump([$id]);
+            $this->syncAndBump($id);
         });
 
         return $id;
@@ -112,8 +116,7 @@ class ModelStore
             });
 
             // A field removed in the editor stays registered, so the values old entries hold for it survive.
-            $this->syncFields($id);
-            $this->versions()->bump([$id]);
+            $this->syncAndBump($id);
         });
     }
 
@@ -159,17 +162,24 @@ class ModelStore
      */
     public function emptyTrash(): void
     {
-        $db = $this->db();
+        $db   = $this->db();
+        $busy = 0;
 
         foreach ($db->table('hyper_models')->select('id, sd_model_id')->where('deleted_at IS NOT NULL', null, false)->get()->getResultArray() as $model) {
             $id = (int) $model['id'];
 
-            $this->locks()->run(NamedLock::forModel($id), function () use ($db, $id, $model): void {
+            $this->locks()->run(NamedLock::forModel($id), function () use ($db, $id, $model, &$busy): void {
                 if ($model['sd_model_id'] !== null) {
                     // StarDust finishes the deletion later, from hyper:tick. A model it is already deleting is left to it.
                     try {
                         $this->engine()->deleteModel($this->tenant(), (int) $model['sd_model_id']);
                     } catch (ModelDeletionInProgressException) {
+                    } catch (RetypeInProgressException | RenameInProgressException | FieldDeletionInProgressException) {
+                        // A field is still being indexed, renamed or deleted, and StarDust refuses until that is done.
+                        // The model stays in the trash and nothing of it is removed.
+                        $busy++;
+
+                        return;
                     }
                 }
 
@@ -183,6 +193,10 @@ class ModelStore
 
                 $this->versions()->bumpGlobal();
             });
+        }
+
+        if ($busy > 0) {
+            throw new RuntimeException(lang('Filterable.modelsBusy', ['count' => $busy]));
         }
     }
 
@@ -539,16 +553,104 @@ class ModelStore
     }
 
     /**
-     * Register every field of the model's current definition in StarDust, each as a string that is not filterable,
-     * so StarDust stores a value exactly as written and never refuses one for its type.
+     * Register every field of the model's current definition in StarDust, and make each one filterable or not as
+     * the definition says.
+     *
+     * A field is a string that is not filterable unless its definition says `"filterable": true`, so StarDust stores a
+     * value exactly as written and never refuses one for its type. A flagged field is given the StarDust type its
+     * field type maps to and then promoted, which StarDust backfills from `hyper:tick`. A field that is no longer
+     * flagged, or was removed from the definition, is demoted. Demoting only frees the index. The values stay in
+     * each entry, as they were written.
+     *
+     * @throws IndexingFailed When StarDust refuses to change a field, after every other field has been handled.
      */
     public function syncFields(int $id): void
     {
         $sdId = $this->ensureRegistered($id);
         $row  = $this->db()->table('hyper_models')->select('fields')->where('id', $id)->get()->getRow();
+        $kind = FilterableFields::read($row->fields ?? null)['fields'];
 
         foreach (ModelCopier::fieldDefinitions($row->fields ?? null) as $field) {
-            $this->engine()->schemaBuilder()->defineField($sdId, $field->name, 'string', false);
+            $this->engine()->schemaBuilder()->defineField($sdId, $field->name, $kind[$field->name] ?? 'string', false);
+        }
+
+        $failures  = [];
+        $described = $this->engine()->describeModel($this->tenant(), $sdId);
+        foreach ($described?->fields ?? [] as $field) {
+            $wanted = $kind[$field->name] ?? null;
+
+            try {
+                if ($wanted === null) {
+                    if ($field->isFilterable) {
+                        $this->engine()->demoteFieldFromFilterable($this->tenant(), $field->fieldId);
+                    }
+
+                    continue;
+                }
+                if ($field->declaredType !== $wanted) {
+                    $this->engine()->retypeField($this->tenant(), $field->fieldId, $wanted);
+                }
+                if (! $field->isFilterable) {
+                    $this->engine()->promoteFieldToFilterable($this->tenant(), $field->fieldId);
+                }
+            } catch (Throwable $e) {
+                log_message('warning', 'Field {field} of model {model} could not be changed in StarDust. {error}', ['field' => $field->name, 'model' => $id, 'error' => $e->getMessage()]);
+                $failures[$field->name] = $e->getMessage();
+            }
+        }
+
+        if ($failures !== []) {
+            throw new IndexingFailed($failures);
+        }
+    }
+
+    /**
+     * Where each filterable field of a model stands: `indexed` when lists can sort and filter on it now, and
+     * `indexing` while StarDust is still backfilling it, which `hyper:tick` finishes.
+     *
+     * @return array<string, string> By field id, for the fields the definition marks filterable and no others.
+     */
+    public function filterableState(int $id): array
+    {
+        $row   = $this->db()->table('hyper_models')->select('fields, sd_model_id')->where('id', $id)->get()->getRow();
+        $wants = FilterableFields::read($row->fields ?? null)['fields'];
+        if ($wants === []) {
+            return [];
+        }
+
+        $indexed = [];
+        if ($row->sd_model_id !== null) {
+            foreach ($this->engine()->describeModel($this->tenant(), (int) $row->sd_model_id)?->indexedFields() ?? [] as $field) {
+                $indexed[$field->name] = true;
+            }
+        }
+
+        $state = [];
+        foreach ($wants as $name => $kind) {
+            $state[$name] = isset($indexed[$name]) ? 'indexed' : 'indexing';
+        }
+
+        return $state;
+    }
+
+    /**
+     * Register the fields, then raise the write version, which a saved list is built under. A failure to start
+     * indexing is reported after the version has risen, because the model itself was saved.
+     */
+    private function syncAndBump(int $id): void
+    {
+        $failed = null;
+
+        try {
+            $this->syncFields($id);
+        } catch (IndexingFailed $e) {
+            $failed = $e;
+        }
+
+        $this->versions()->bump([$id]);
+
+        if ($failed !== null) {
+            throw $failed;
         }
     }
 
@@ -569,6 +671,9 @@ class ModelStore
         if (! is_array($fields)) {
             throw new InvalidArgumentException('The `fields` of a model must be a JSON list.');
         }
+
+        // A field that asks to be filterable must be of a type that can be.
+        FilterableFields::assertValid($data['fields']);
 
         return $fields;
     }

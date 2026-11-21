@@ -77,6 +77,7 @@ class Models extends AdminController
                 'formAction' => base_url('admin/models/' . $model['id']),
                 'model' => $model,
                 'isPublic' => service('modelAccess')->isPublic($model['id']),
+                'filterableState' => service('modelStore')->filterableState((int) $model['id']),
             ]);
         });
 
@@ -217,7 +218,10 @@ class Models extends AdminController
         try {
             service('modelStore')->emptyTrash();
         } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond("{$e->getMessage()} {$e->getTraceAsString()}", statusCode: 500, success: false);
+            // Models purged before the failure are gone, and their access settings go with them.
+            service('modelAccess')->forgetMissing();
+
+            return $this->respond($e->getMessage(), statusCode: 500, success: false);
         }
 
         service('modelAccess')->forgetMissing();

@@ -33,6 +33,20 @@ $fieldsError = validation_show_error('fields');
         <p class="help"><?= lang('Admin.enterModelFieldsInJsonFormat') ?></p>
         <p class="help"><?= lang('Admin.xToFormatAndValidateJson', ['x' => '<b>Ctrl + B</b>']) ?></p>
         <p class="help"><?= lang('Admin.xToToggleFullscreenMode', ['x' => '<b>Ctrl + Alt + Z</b>']) ?></p>
+        <p class="help"><?= lang('Filterable.filterableHint') ?></p>
+        <?php if (!empty($filterableState)): ?>
+            <div class="mt-3">
+                <p class="help"><b><?= lang('Filterable.filterableTitle') ?></b></p>
+                <div class="tags mt-1 mb-1">
+                    <?php foreach ($filterableState as $fieldId => $state): ?>
+                        <span class="tag <?= $state === 'indexed' ? 'is-success' : 'is-warning' ?> is-light"><?= esc($fieldId) ?> &middot; <?= lang('Filterable.' . $state) ?></span>
+                    <?php endforeach; ?>
+                </div>
+                <?php if (in_array('indexing', $filterableState, true)): ?>
+                    <p class="help"><?= lang('Filterable.indexingHelp') ?></p>
+                <?php endif; ?>
+            </div>
+        <?php endif; ?>
         <?php if ($fieldsError): ?>
             <p class="help is-danger"><?= $fieldsError ?></p>
         <?php endif; ?>

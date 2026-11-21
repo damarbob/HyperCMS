@@ -7,4 +7,11 @@ return [
     'notNumber'        => 'Bidang {field} bersifat filterable dan harus berisi angka, tetapi "{value}" bukan angka. Isi dengan angka atau kosongkan.',
     'notInteger'       => 'Bidang {field} bersifat filterable dan harus berisi bilangan bulat, tetapi "{value}" bukan bilangan bulat. Isi dengan bilangan bulat atau kosongkan.',
     'notDate'          => 'Bidang {field} bersifat filterable dan harus berisi tanggal dan jam, tetapi "{value}" bukan tanggal dan jam. Pilih tanggal dan jam atau kosongkan.',
+    'indexingFailed'   => 'Model sudah tersimpan, tetapi pengindeksan untuk {fields} belum bisa dimulai. Simpan model sekali lagi untuk mencoba lagi. {reason}',
+    'indexed'          => 'Sudah terindeks',
+    'indexing'         => 'Sedang diindeks',
+    'indexingHelp'     => 'Pengindeksan berjalan di latar belakang dan memerlukan tugas terjadwal `hyper:tick`. Pengurutan dan penyaringan pada bidang ini baru bisa dipakai setelah selesai.',
+    'filterableTitle'  => 'Bidang filterable',
+    'filterableHint'   => 'Tambahkan "filterable": true pada bidang bertipe text, email, url, password, color, radio, select, checkbox, number, range, atau datetime-local agar bidang itu diindeks. Daftar entri jadi cepat diurutkan menurut bidang tersebut, dan API token bisa menyaringnya. Tanpa tanda itu, bidang bekerja seperti biasa.',
+    'modelsBusy'       => '{count} model tetap berada di tempat sampah karena ada bidang yang masih diindeks atau diganti namanya. Coba lagi setelah `hyper:tick` selesai.',
 ];
