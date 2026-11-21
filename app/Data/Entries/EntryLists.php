@@ -818,6 +818,6 @@ class EntryLists
 
     private function indexedReads(): IndexedReads
     {
-        return $this->indexed ??= new IndexedReads(null, $this->db());
+        return $this->indexed ??= new IndexedReads(null, $this->db(), $this->versions());
     }
 }

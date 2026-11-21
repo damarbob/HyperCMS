@@ -325,6 +325,40 @@ final class FilterableModelTest extends CIUnitTestCase
         }
     }
 
+    public function testADeepOffsetIsReachedByWalkingAndTheSameWalkIsRepeatableFromItsCursors(): void
+    {
+        $modelId = $this->models->create(['name' => 'Walked', 'fields' => '[{"id":"views","type":"number","filterable":true}]'], 1);
+        $this->indexUntilDone($modelId);
+        $sdModel = (int) self::$conn->table('hyper_models')->where('id', $modelId)->get()->getRow()->sd_model_id;
+
+        // 250 entries whose numbers are shuffled, written straight to StarDust because only its ids are read.
+        $views = range(0, 249);
+        mt_srand(7);
+        shuffle($views);
+        $byViews = [];
+        foreach ($views as $number) {
+            $byViews[$number] = self::$stardust->write(new \StarDust\Write\EntryPayload(1, $sdModel, ['views' => (string) $number]))->entryId;
+        }
+        ksort($byViews);
+        $expected = array_values($byViews);
+
+        $reads = new IndexedReads(self::$stardust, self::$conn, new WriteVersions(self::$conn));
+        $sort  = SortSpec::byField('views');
+
+        // The first run walks and keeps cursors, the second starts from them, and both give the sorted ids.
+        foreach ([1, 2] as $run) {
+            foreach ([[0, 10], [95, 10], [100, 100], [150, 20], [240, 20], [0, null], [200, null]] as [$offset, $limit]) {
+                $page = $reads->page($modelId, $sort, null, $offset, $limit);
+
+                $this->assertSame(array_slice($expected, $offset, $limit), $page['ids'], "run $run, offset $offset, limit " . var_export($limit, true));
+                $this->assertSame($limit !== null && $offset + $limit < 250, $page['more'], "more at offset $offset");
+            }
+        }
+
+        $this->assertSame(250, $reads->count($modelId, null, 1000));
+        $this->assertNull($reads->count($modelId, null, 120), 'A count past its cap has no total.');
+    }
+
     public function testAModelWithAFieldStillBeingIndexedStaysInTheTrashWithAMessage(): void
     {
         $modelId = $this->models->create(['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime-local"}]'], 1);
