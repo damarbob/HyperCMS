@@ -5,6 +5,7 @@ namespace App\Data\Entries;
 use App\Data\LookupException;
 use App\Data\ModelStore;
 use App\Data\NamedLock;
+use App\Data\Transacts;
 use App\Data\WriteVersions;
 use App\Libraries\Upgrade\Payload;
 use App\Libraries\Upgrade\Preflight;
@@ -37,6 +38,8 @@ use Throwable;
  */
 class EntryWriter
 {
+    use Transacts;
+
     public function __construct(
         private ?BaseConnection $db = null,
         private ?EntryEngine $engine = null,
@@ -687,38 +690,6 @@ class EntryWriter
         }
 
         return $row;
-    }
-
-    /**
-     * Run the callback in one MySQLi transaction, and roll it back when it throws.
-     *
-     * @template T
-     *
-     * @param callable(): T $callback
-     *
-     * @return T
-     */
-    protected function transact(callable $callback): mixed
-    {
-        $db = $this->db();
-        $db->transBegin();
-
-        try {
-            $result = $callback();
-        } catch (Throwable $e) {
-            $db->transRollback();
-
-            throw $e;
-        }
-
-        if (! $db->transStatus()) {
-            $db->transRollback();
-
-            throw new RuntimeException('Could not save the entry: ' . ($db->error()['message'] ?? 'unknown error'));
-        }
-        $db->transCommit();
-
-        return $result;
     }
 
     protected function now(): string

@@ -313,6 +313,19 @@ final class EntryWriteStepsTest extends CIUnitTestCase
         $this->assertSame(1, self::$conn->table('hyper_entry_revisions')->where('entry_id', $id)->countAllResults());
     }
 
+    public function testSavingAModelKeepsAVersionAndLeavesNoTransactionOpen(): void
+    {
+        $versions = new WriteVersions(self::$conn);
+        $models   = new ModelStore(self::$conn, self::$stardust, $versions, new NamedLock(self::$conn, 1));
+
+        $models->update($this->modelId, ['name' => 'Article 2', 'fields' => '[{"id":"title","type":"text"}]'], 1);
+
+        $row = self::$conn->table('hyper_models')->where('id', $this->modelId)->get()->getRowArray();
+        $this->assertSame('Article 2', $row['name']);
+        $this->assertSame(2, self::$conn->table('hyper_model_revisions')->where('model_id', $this->modelId)->countAllResults());
+        $this->assertSame(0, self::$conn->transDepth, 'A save leaves no open transaction behind.');
+    }
+
     public function testFieldIdsThatAreOnlyZeroOneTwoAreRefusedBecauseStarDustWouldStoreAList(): void
     {
         $before = self::$conn->table('hyper_entries')->countAllResults();

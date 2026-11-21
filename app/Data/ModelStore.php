@@ -23,6 +23,8 @@ use StarDust\StarDust;
  */
 class ModelStore
 {
+    use Transacts;
+
     public function __construct(
         private ?BaseConnection $db = null,
         private ?StarDust $engine = null,
@@ -53,24 +55,25 @@ class ModelStore
 
         // The HyperCMS rows come first. StarDust cannot join this transaction, so the model exists in
         // HyperCMS before it is registered there, and a failed registration is finished by hyper:repair.
-        $db->transStart();
-        $db->table('hyper_models')->insert([
-            'name'          => (string) ($data['name'] ?? ''),
-            'fields'        => $data['fields'],
-            'group'         => $data['group'] ?? null,
-            'icon'          => $data['icon'] ?? null,
-            'user_groups'   => $data['user_groups'] ?? null,
-            'creator_id'    => $userId,
-            'editor_id'     => $userId,
-            'created_at'    => $now,
-            'updated_at'    => $now,
-            'write_version' => 0,
-        ]);
-        $id = (int) $db->insertID();
-        $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
-        $db->table('hyper_models')->where('id', $id)->update(['current_revision_id' => (int) $db->insertID()]);
-        $db->transComplete();
-        $this->assertSaved('create the model');
+        $id = $this->transact(function () use ($db, $data, $userId, $now): int {
+            $db->table('hyper_models')->insert([
+                'name'          => (string) ($data['name'] ?? ''),
+                'fields'        => $data['fields'],
+                'group'         => $data['group'] ?? null,
+                'icon'          => $data['icon'] ?? null,
+                'user_groups'   => $data['user_groups'] ?? null,
+                'creator_id'    => $userId,
+                'editor_id'     => $userId,
+                'created_at'    => $now,
+                'updated_at'    => $now,
+                'write_version' => 0,
+            ]);
+            $id = (int) $db->insertID();
+            $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
+            $db->table('hyper_models')->where('id', $id)->update(['current_revision_id' => (int) $db->insertID()]);
+
+            return $id;
+        });
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
             $this->syncFields($id);
@@ -94,20 +97,19 @@ class ModelStore
             $db  = $this->db();
             $now = $this->now();
 
-            $db->transStart();
-            $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
-            $db->table('hyper_models')->where('id', $id)->update([
-                'name'                => (string) ($data['name'] ?? ''),
-                'fields'              => $data['fields'],
-                'group'               => $data['group'] ?? null,
-                'icon'                => $data['icon'] ?? null,
-                'user_groups'         => $data['user_groups'] ?? null,
-                'current_revision_id' => (int) $db->insertID(),
-                'editor_id'           => $userId,
-                'updated_at'          => $now,
-            ]);
-            $db->transComplete();
-            $this->assertSaved('save the model');
+            $this->transact(function () use ($db, $id, $data, $userId, $now): void {
+                $db->table('hyper_model_revisions')->insert($this->revision($id, $data, $userId, $now));
+                $db->table('hyper_models')->where('id', $id)->update([
+                    'name'                => (string) ($data['name'] ?? ''),
+                    'fields'              => $data['fields'],
+                    'group'               => $data['group'] ?? null,
+                    'icon'                => $data['icon'] ?? null,
+                    'user_groups'         => $data['user_groups'] ?? null,
+                    'current_revision_id' => (int) $db->insertID(),
+                    'editor_id'           => $userId,
+                    'updated_at'          => $now,
+                ]);
+            });
 
             // A field removed in the editor stays registered, so the values old entries hold for it survive.
             $this->syncFields($id);
@@ -172,13 +174,12 @@ class ModelStore
                 }
 
                 // Every entry of the model goes with it, the trashed ones and any left live.
-                $db->transStart();
-                $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
-                $db->table('hyper_entries')->where('model_id', $id)->delete();
-                $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
-                $db->table('hyper_models')->where('id', $id)->delete();
-                $db->transComplete();
-                $this->assertSaved('delete the model');
+                $this->transact(function () use ($db, $id): void {
+                    $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
+                    $db->table('hyper_entries')->where('model_id', $id)->delete();
+                    $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
+                    $db->table('hyper_models')->where('id', $id)->delete();
+                });
 
                 $this->versions()->bumpGlobal();
             });
@@ -597,13 +598,6 @@ class ModelStore
     private function ids(array $ids): array
     {
         return array_values(array_unique(array_map('intval', $ids)));
-    }
-
-    private function assertSaved(string $what): void
-    {
-        if (! $this->db()->transStatus()) {
-            throw new RuntimeException('Could not ' . $what . ': ' . ($this->db()->error()['message'] ?? 'unknown error'));
-        }
     }
 
     private function now(): string
