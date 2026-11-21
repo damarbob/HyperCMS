@@ -313,6 +313,24 @@ final class EntryWriteStepsTest extends CIUnitTestCase
         $this->assertSame(1, self::$conn->table('hyper_entry_revisions')->where('entry_id', $id)->countAllResults());
     }
 
+    public function testFieldIdsThatAreOnlyZeroOneTwoAreRefusedBecauseStarDustWouldStoreAList(): void
+    {
+        $before = self::$conn->table('hyper_entries')->countAllResults();
+
+        try {
+            $this->writer->create(['model_id' => $this->modelId, 'fields' => '{"0":"a","1":"b"}'], 1);
+            $this->fail('The fields should have been refused.');
+        } catch (\InvalidArgumentException $e) {
+            $this->assertStringContainsString('0, 1, 2', $e->getMessage());
+        }
+
+        $this->assertSame($before, self::$conn->table('hyper_entries')->countAllResults(), 'Nothing is written for a refused save.');
+
+        // Ids that skip a number or start elsewhere are objects and stay allowed.
+        $id = $this->writer->create(['model_id' => $this->modelId, 'fields' => '{"1":"a","2":"b"}'], 1);
+        $this->assertEquals(['1' => 'a', '2' => 'b'], self::$stardust->get(1, (int) $this->entry($id)['sd_entry_id'])?->fields);
+    }
+
     /**
      * @return array<string, mixed>
      */

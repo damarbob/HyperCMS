@@ -531,9 +531,16 @@ class EntryWriter
             }
         }
 
-        $text = Payload::encode($data);
+        $text   = Payload::encode($data);
+        $fields = json_decode($text, true);
 
-        return [$text, json_decode($text, true)];
+        // StarDust takes the fields as a PHP array and stores a list as a JSON array, so field ids that are
+        // exactly 0, 1, 2 and so on would come back as a list with no field names. Refuse them instead.
+        if ($fields !== [] && array_is_list($fields)) {
+            throw new InvalidArgumentException('Field ids cannot be only the numbers 0, 1, 2 and so on in order, because StarDust would store them as a list. Rename one of them.');
+        }
+
+        return [$text, $fields];
     }
 
     /**
