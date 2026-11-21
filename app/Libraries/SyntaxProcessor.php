@@ -4,6 +4,7 @@ namespace App\Libraries;
 
 use CodeIgniter\Database\BaseConnection;
 use Config\Database;
+use Config\HyperEngine;
 use StarCore\Star\HyperHook;
 
 class SyntaxProcessor
@@ -14,9 +15,9 @@ class SyntaxProcessor
     protected BaseConnection $db;
 
     /**
-     * @var \StarDust\Config\StarDust
+     * The settings that name the users table, and the prefix of StarDust's own tables.
      */
-    protected $config;
+    protected HyperEngine $config;
 
     /**
      * SyntaxProcessor constructor.
@@ -25,7 +26,7 @@ class SyntaxProcessor
     {
         // Dependency injection: You could allow injecting a DB connection here.
         $this->db = Database::connect();
-        $this->config = config('StarDust');
+        $this->config = config('HyperEngine');
     }
 
     /**
@@ -128,24 +129,22 @@ class SyntaxProcessor
         }
 
         // Validate table: disallow empty or forbidden tables.
-        if (
-            empty($queryParams['table']) ||
-            in_array($queryParams['table'], ['auth_identities', $this->config->usersTable])
-        ) {
+        if (empty($queryParams['table']) || $this->isForbiddenTable((string) $queryParams['table'])) {
             return ['error' => 'Table name not specified/not allowed'];
         }
 
         $table = $queryParams['table'];
+
+        // Entries are answered in PHP, because their current fields are no longer in a database column.
+        if ($table === 'entries') {
+            return $this->fetchEntries($queryParams);
+        }
+
         $builder = $this->db->table($table);
 
-        // For certain tables, use a custom builder from models.
+        // The models table is a flat select over the models, so the columns keep the names a list shows.
         if ($table === 'models') {
-            // Wrap the pre-compiled query as a subquery to preserve "flat table" column aliases (e.g. fields, model_fields)
             $subQuery = service('modelStore')->compiledSelect();
-            $builder = $this->db->table("($subQuery) as sub");
-        } elseif ($table === 'entries') {
-            // Wrap the pre-compiled query as a subquery to preserve "flat table" column aliases (e.g. fields, model_fields)
-            $subQuery = service('entryStore')->compiledSelect();
             $builder = $this->db->table("($subQuery) as sub");
         }
 
@@ -258,6 +257,53 @@ class SyntaxProcessor
         } else {
             return $builder->countAllResults();
         }
+    }
+
+    /**
+     * Answers a data query on the entries table with the PHP subset in EntriesQuery.
+     *
+     * A query the subset does not answer is not run. The list it returns holds one option that says so, so the
+     * form shows the refusal where the choices would have been, instead of a list that looks right and is not.
+     *
+     * @return array|int The rows, a count, or the one option that carries the refusal.
+     */
+    protected function fetchEntries(array $queryParams): array|int
+    {
+        $store = service('entryStore');
+        $query = new EntriesQuery(
+            static fn (): array => $store->flatRows(),
+            static fn (array $rows) => $store->fieldsOf($rows),
+        );
+
+        try {
+            $result = $query->run($queryParams);
+        } catch (UnsupportedDataQuery $e) {
+            log_message('warning', 'A data query on entries was refused: {part}', ['part' => $e->part]);
+
+            return [['value' => '', 'label' => lang('SyntaxProcessor.unsupportedEntriesQuery', ['part' => $e->part])]];
+        }
+
+        return is_int($result) ? $result : $this->sanitizeData($result);
+    }
+
+    /**
+     * Whether a data query may not read this table. The users table, the login tables and HyperCMS's and
+     * StarDust's own tables are closed, because reading them by name would skip the access rules of a model.
+     */
+    protected function isForbiddenTable(string $table): bool
+    {
+        $name = strtolower($table);
+        if (in_array($name, ['auth_identities', strtolower($this->config->usersTable), 'entry_data', 'model_data'], true)) {
+            return true;
+        }
+
+        foreach (['auth_', 'hyper_', strtolower($this->config->tablePrefix)] as $prefix) {
+            if ($prefix !== '' && str_starts_with($name, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
@@ -392,7 +438,7 @@ class SyntaxProcessor
         return array_map(function ($item) {
             return array_map(function ($value) {
                 // Escape HTML entities.
-                $value = htmlspecialchars($value, ENT_QUOTES, 'UTF-8');
+                $value = htmlspecialchars((string) $value, ENT_QUOTES, 'UTF-8');
                 // Replace new line characters with a space.
                 return str_replace(["\r\n", "\r", "\n"], ' ', $value);
             }, $item);

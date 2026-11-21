@@ -151,6 +151,32 @@ class EntryReader
     }
 
     /**
+     * Every live entry without its fields, as `id`, `model_id`, `model_name`, `sd_entry_id` and `payload_bytes`,
+     * oldest first. A data query in a form field starts from this and reads the fields only of the entries it keeps.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function flatRows(): array
+    {
+        return $this->rows()->lean()->select('m.name AS model_name')->orderBy('e.id')->get()->getResultArray();
+    }
+
+    /**
+     * Read the fields of rows from `flatRows()` a chunk at a time, yielding each chunk's fields by entry id.
+     * A chunk stays within the entry and byte caps, and an entry StarDust does not return is left out.
+     *
+     * @param list<array<string, mixed>> $flatRows
+     *
+     * @return \Generator<int, array<int, array>>
+     */
+    public function fieldsOf(array $flatRows): \Generator
+    {
+        foreach ($this->payloads()->chunks($flatRows) as $chunk) {
+            yield $this->payloads()->read($chunk);
+        }
+    }
+
+    /**
      * Read the trashed entries among the given ids, or false when there are none.
      */
     public function trashed(array $ids): array|false

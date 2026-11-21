@@ -146,6 +146,28 @@ class EntryStore
     }
 
     /**
+     * Every live entry without its fields, as `id`, `model_id`, `model_name`, `sd_entry_id` and `payload_bytes`.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function flatRows(): array
+    {
+        return $this->reader->flatRows();
+    }
+
+    /**
+     * Read the fields of rows from `flatRows()` a chunk at a time, yielding each chunk's fields by entry id.
+     *
+     * @param list<array<string, mixed>> $flatRows
+     *
+     * @return \Generator<int, array<int, array>>
+     */
+    public function fieldsOf(array $flatRows): \Generator
+    {
+        return $this->reader->fieldsOf($flatRows);
+    }
+
+    /**
      * Answer one DataTables request for entries across all models.
      *
      * @param array $post The POST values DataTables sent (id, ids, model_id, draw, start, length, search, order, columns, trash).
