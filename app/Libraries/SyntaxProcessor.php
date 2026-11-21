@@ -129,7 +129,12 @@ class SyntaxProcessor
         }
 
         // Validate table: disallow empty or forbidden tables.
-        if (empty($queryParams['table']) || $this->isForbiddenTable((string) $queryParams['table'])) {
+        if (
+            empty($queryParams['table'])
+            || ! is_string($queryParams['table'])
+            || ! preg_match('/^\w+$/', $queryParams['table'])
+            || $this->isForbiddenTable($queryParams['table'])
+        ) {
             return ['error' => 'Table name not specified/not allowed'];
         }
 
@@ -210,6 +215,11 @@ class SyntaxProcessor
         if (!empty($queryParams['joins']) && is_array($queryParams['joins'])) {
             foreach ($queryParams['joins'] as $join) {
                 if (isset($join['table'], $join['condition'], $join['type'])) {
+                    // A joined table is held to the same rule as the main one, so a join cannot reach a closed table.
+                    if (! is_string($join['table']) || ! preg_match('/^\w+(\s+(as\s+)?\w+)?$/i', trim($join['table']))
+                        || $this->isForbiddenTable(preg_split('/\s+/', trim($join['table']))[0])) {
+                        return ['error' => 'Table name not specified/not allowed'];
+                    }
                     $builder->join($join['table'], $join['condition'], $join['type']);
                 }
             }
