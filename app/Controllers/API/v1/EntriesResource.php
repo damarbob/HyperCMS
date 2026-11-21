@@ -2,6 +2,7 @@
 
 namespace App\Controllers\API\v1;
 
+use App\Data\Entries\ScanLimitExceeded;
 use App\Filters\ApiAuthFilter;
 use CodeIgniter\HTTP\ResponseInterface;
 use CodeIgniter\RESTful\ResourceController;
@@ -64,13 +65,17 @@ class EntriesResource extends ResourceController
         $modelId = $params['model_id'] ?? null;
 
         // The sort column comes from the fixed list above, never from the request text.
-        $result = service('entryStore')->page(
-            ['model_id' => $modelId, 'search' => $search, 'hidden_model_ids' => service('modelAccess')->hiddenIds(ApiAuthFilter::caller())],
-            self::SORTABLE[$sort],
-            $order,
-            $limit,
-            $page,
-        );
+        try {
+            $result = service('entryStore')->page(
+                ['model_id' => $modelId, 'search' => $search, 'hidden_model_ids' => service('modelAccess')->hiddenIds(ApiAuthFilter::caller())],
+                self::SORTABLE[$sort],
+                $order,
+                $limit,
+                $page,
+            );
+        } catch (ScanLimitExceeded $e) {
+            return $this->fail($e->getMessage(), 422);
+        }
         $total = $result['total'];
 
         return $this->respond([

@@ -2,6 +2,7 @@
 
 use StarCore\Service\HyperHooks;
 use App\Controllers\API\v1\Model;
+use App\Data\Entries\ScanLimitExceeded;
 use Masterminds\HTML5;
 
 // Frontend controller index
@@ -287,7 +288,14 @@ function pagingSystemProcessDynamicMetaTags($dom): void
 
         // Instantiate the model controller and retrieve the dynamic meta data.
         $modelController = new Model();
-        $metaData = $modelController->getModelData($postData)['data'];
+        try {
+            $metaData = $modelController->getModelData($postData)['data'];
+        } catch (ScanLimitExceeded $e) {
+            // The lookup would scan too many entries. The page is shown without this meta value.
+            log_message('warning', 'Meta lookup skipped: {message}', ['message' => $e->getMessage()]);
+
+            continue;
+        }
 
         // Assume the first matching entry contains the desired field.
         $metaValues = array_values($metaData);
