@@ -21,12 +21,12 @@
                 "model_id": "1",
                 "model_name": "Article",
                 "created_by": "capture_admin",
-                "title": "apple pie recipe v2",
                 "body": "changed",
-                "views": "25",
-                "published_at": "",
                 "tags": [],
-                "cover": ""
+                "cover": "",
+                "title": "apple pie recipe v2",
+                "views": "25",
+                "published_at": ""
             },
             {
                 "entry_id": "2",
