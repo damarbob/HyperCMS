@@ -4,6 +4,7 @@ use App\Data\Entries\EntryLists;
 use App\Data\Entries\EntryPayloads;
 use App\Data\Entries\EntryRows;
 use App\Data\Entries\EntryWriter;
+use App\Data\Entries\FieldFilters;
 use App\Data\Entries\IndexedReads;
 use App\Data\Entries\SavedLists;
 use App\Data\Entries\StarDustEntries;
@@ -353,6 +354,43 @@ final class FilterableModelTest extends CIUnitTestCase
 
         $this->assertSame(['2'], array_column($table['data'], 'views'));
         $this->assertSame(1, $table['recordsTotal']);
+    }
+
+    public function testTheTokenApiPageFiltersAndSortsOnIndexedFields(): void
+    {
+        $lists   = $this->lists();
+        $modelId = $this->models->create(['name' => 'Api page', 'fields' => '[{"id":"title","type":"text","filterable":true},{"id":"views","type":"number","filterable":true},{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $this->indexUntilDone($modelId);
+        foreach ([['A', '30', '2025-01-01T10:00'], ['B', '5', '2025-02-01T10:00'], ['C', '', ''], ['D', '12.5', '2025-03-01T10:00'], ['E', '100', '2025-04-01T10:00']] as [$title, $views, $when]) {
+            $this->writer->create(['model_id' => $modelId, 'fields' => json_encode(['title' => $title, 'views' => $views, 'when' => $when])], 1);
+        }
+        $indexed = $lists->indexedFields($modelId);
+        $this->assertSame(['title' => 'string', 'views' => 'numeric', 'when' => 'datetime'], $indexed);
+
+        $page = static fn (array $filter, ?SortSpec $sort, int $limit, int $number, int $cap = 100, array $hidden = []): array => $lists->fieldPage($modelId, $hidden, $sort, FieldFilters::parse($filter, $indexed), $limit, $number, $cap);
+        $titles = static fn (array $result): array => array_map(static fn (array $row): string => json_decode($row['fields'], true)['title'], $result['data']);
+
+        $result = $page(['views' => ['gte' => '10']], SortSpec::byField('views', SortDirection::Desc), 2, 1);
+        $this->assertSame(['E', 'A'], $titles($result));
+        $this->assertSame(3, $result['total'], 'The count reads the ids of the matches.');
+        $this->assertTrue($result['more']);
+        $this->assertSame(array_keys((new EntryRows(self::$conn))->assemble(['id' => 1, 'created_at' => '', 'date_deleted' => null, 'model_id' => 1, 'model_name' => '', 'model_fields' => '', 'user_groups' => '', 'date_modified' => '', 'data_id' => 1, 'created_by' => '', 'edited_by' => '', 'deleted_by' => ''], [])), array_keys($result['data'][0]), 'The same row as every other list.');
+
+        $result = $page(['views' => ['gte' => '10']], SortSpec::byField('views', SortDirection::Desc), 2, 2);
+        $this->assertSame(['D'], $titles($result));
+        $this->assertFalse($result['more']);
+
+        $this->assertSame(['B'], $titles($page(['views' => '5'], null, 10, 1)), 'An equality on a number.');
+        $this->assertSame(['E', 'D'], $titles($page(['when' => ['gte' => '2025-03-01T10:00']], SortSpec::byField('when', SortDirection::Desc), 10, 1)), 'A range on a date, read as UTC.');
+        $this->assertSame(['C'], $titles($page(['when' => ['is_null' => '1']], null, 10, 1)));
+        $this->assertSame(['A'], $titles($page(['title' => ['prefix' => 'A']], null, 10, 1)));
+        $this->assertSame(['E', 'D', 'C', 'B', 'A'], $titles($page([], SortSpec::byId(SortDirection::Desc), 10, 1)), 'No filter lists every entry.');
+
+        $capped = $page(['views' => ['gte' => '1']], null, 2, 1, 2);
+        $this->assertNull($capped['total'], 'A match set past the cap has no total.');
+        $this->assertTrue($capped['more']);
+
+        $this->assertSame(['data' => [], 'total' => 0, 'more' => false], $page([], null, 10, 1, 100, [$modelId]), 'A hidden model has no entries.');
     }
 
     private function lists(): EntryLists

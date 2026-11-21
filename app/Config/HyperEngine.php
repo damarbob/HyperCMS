@@ -49,6 +49,12 @@ class HyperEngine extends BaseConfig
     public int $scanBytes = 629_145_600;
 
     /**
+     * The most entries the token API counts for the total of a list filtered on an indexed field. StarDust has no
+     * count, so a count reads the ids of the matches a thousand at a time, and a larger match set has no total.
+     */
+    public int $filterCountLimit = 10000;
+
+    /**
      * The most bytes of stored fields one getMany() call may be asked for, because bodies of 1 to 3 MB
      * exist and PHP in Docker stops at 128 MB.
      */
