@@ -50,6 +50,8 @@ final class ListScan
 
         $limit = ($this->config ??= config('HyperEngine'))->scanLimit;
         if ($limit > 0 && count($needs) > $limit) {
+            log_message('notice', 'Scan limit of {limit} exceeded, {entries} entries would be read.', ['limit' => $limit, 'entries' => count($needs)]);
+
             throw new ScanLimitExceeded(count($needs), $limit);
         }
 

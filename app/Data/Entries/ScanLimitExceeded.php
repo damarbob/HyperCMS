@@ -12,6 +12,8 @@ class ScanLimitExceeded extends RuntimeException
 {
     public function __construct(public readonly int $entries, public readonly int $limit)
     {
-        parent::__construct(lang('EntryLists.scanLimit', ['entries' => $entries, 'limit' => $limit]));
+        // The count covers entries of models the caller may not read, so it stays out of the message
+        // and is kept as a property for the server log only.
+        parent::__construct(lang('EntryLists.scanLimit', ['limit' => $limit]));
     }
 }

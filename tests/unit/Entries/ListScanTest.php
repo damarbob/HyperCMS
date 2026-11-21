@@ -168,7 +168,7 @@ final class ListScanTest extends CIUnitTestCase
             $this->fail('The scan should have been refused.');
         } catch (ScanLimitExceeded $e) {
             $this->assertSame([6, 5], [$e->entries, $e->limit]);
-            $this->assertStringContainsString('6', $e->getMessage());
+            $this->assertStringNotContainsString('6', $e->getMessage());
             $this->assertStringContainsString('5', $e->getMessage());
         }
 
@@ -178,7 +178,7 @@ final class ListScanTest extends CIUnitTestCase
         foreach (['en', 'id'] as $locale) {
             $strings = require APPPATH . 'Language/' . $locale . '/EntryLists.php';
             $this->assertArrayHasKey('scanLimit', $strings);
-            $this->assertStringContainsString('{entries}', $strings['scanLimit']);
+            $this->assertStringNotContainsString('{entries}', $strings['scanLimit']);
             $this->assertStringContainsString('{limit}', $strings['scanLimit']);
         }
     }
