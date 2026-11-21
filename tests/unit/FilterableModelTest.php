@@ -7,6 +7,7 @@ use App\Data\Entries\EntryWriter;
 use App\Data\Entries\FieldFilters;
 use App\Data\Entries\IndexedReads;
 use App\Data\Entries\SavedLists;
+use App\Data\Entries\ScanLimitExceeded;
 use App\Data\Entries\StarDustEntries;
 use App\Data\IndexingFailed;
 use App\Data\ModelStore;
@@ -287,6 +288,41 @@ final class FilterableModelTest extends CIUnitTestCase
         $this->assertSame('next week', $this->stored($odd)['when']);
         $this->assertSame(1, self::$conn->table('hyper_entry_revisions')->where('entry_id', $early)->countAllResults(), 'No version is added.');
         $this->assertSame(0, $this->writer->normaliseModel($modelId)['rewritten'], 'A second run changes nothing.');
+    }
+
+    public function testAnIndexedReadStopsAtTheScanLimitInsteadOfWalkingTheModel(): void
+    {
+        $modelId = $this->models->create(['name' => 'Bounded', 'fields' => '[{"id":"views","type":"number","filterable":true}]'], 1);
+        $this->indexUntilDone($modelId);
+        foreach (['1', '2', '3', '4', '5'] as $views) {
+            $this->writer->create(['model_id' => $modelId, 'fields' => json_encode(['views' => $views])], 1);
+        }
+        $reads  = new IndexedReads(self::$stardust, self::$conn);
+        $config = config('HyperEngine');
+        $before = $config->scanLimit;
+        $sort   = SortSpec::byField('views');
+
+        try {
+            $config->scanLimit = 3;
+
+            $this->assertCount(3, $reads->page($modelId, $sort, null, 0, 3)['ids'], 'A page that stays within the limit is read.');
+            $this->assertCount(1, $reads->page($modelId, $sort, null, 2, 1)['ids']);
+
+            foreach ([[2, 2], [1_000_000_000, 10], [0, null]] as [$offset, $limit]) {
+                try {
+                    $reads->page($modelId, $sort, null, $offset, $limit);
+                    $this->fail("Offset $offset and limit " . var_export($limit, true) . ' should be refused.');
+                } catch (ScanLimitExceeded $e) {
+                    $this->assertStringContainsString('3', $e->getMessage());
+                    $this->assertStringNotContainsString('5', $e->getMessage(), 'The message leaves out how many entries there are.');
+                }
+            }
+
+            $config->scanLimit = 0;
+            $this->assertCount(5, $reads->page($modelId, $sort, null, 0, null)['ids'], 'A limit of 0 means no limit.');
+        } finally {
+            $config->scanLimit = $before;
+        }
     }
 
     public function testAModelWithAFieldStillBeingIndexedStaysInTheTrashWithAMessage(): void

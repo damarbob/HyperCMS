@@ -55,13 +55,23 @@ class IndexedReads
      * @param int|null $limit The page size, or null for every id from the offset on.
      *
      * @return array{ids: list<int>, more: bool} `more` says whether StarDust has entries beyond this page.
+     *
+     * @throws ScanLimitExceeded When reaching the page would mean reading more ids than `HyperEngine::scanLimit` allows,
+     *                           which a deep offset or no page size at all would do. The bound keeps a request from
+     *                           walking and holding a whole model.
      */
     public function page(int $modelId, ?SortSpec $sort, ?FilterNode $filter, int $offset, ?int $limit): array
     {
         $sdId   = $this->sdModelId($modelId);
-        $need   = $limit === null ? null : $offset + $limit;
+        $offset = max(0, $offset);
+        $need   = $limit === null ? null : $offset + max(0, $limit);
+        $bound  = max(0, (int) config('HyperEngine')->scanLimit);
         $ids    = [];
         $cursor = null;
+
+        if ($bound > 0 && $need !== null && $need > $bound) {
+            throw new ScanLimitExceeded($need, $bound);
+        }
 
         do {
             // A cursor marks a position only, so every read of one walk asks for the same page size.
@@ -77,6 +87,9 @@ class IndexedReads
             ));
             foreach ($page->rows as $entry) {
                 $ids[] = $entry->id;
+            }
+            if ($bound > 0 && count($ids) > $bound) {
+                throw new ScanLimitExceeded(count($ids), $bound);
             }
             $cursor = $page->nextCursor;
         } while ($cursor !== null && ($need === null || count($ids) < $need));

@@ -127,6 +127,8 @@ class EntriesResource extends ResourceController
         }
 
         $modelId = (int) $modelId;
+        // A page number that large only asks for an offset the read would refuse, and would overflow the sum below.
+        $page   = min($page, 1_000_000);
         $caller  = ApiAuthFilter::caller();
         $hidden  = service('modelAccess')->hiddenIds($caller);
 
@@ -151,6 +153,8 @@ class EntriesResource extends ResourceController
 
             $ast    = FieldFilters::parse($filter, $indexed);
             $result = $store->fieldPage($modelId, $hidden, $sort, $ast, $limit, $page, (int) config('HyperEngine')->filterCountLimit);
+        } catch (ScanLimitExceeded $e) {
+            return $this->fail($e->getMessage(), 422);
         } catch (InvalidArgumentException $e) {
             return $this->fail($e->getMessage(), 422);
         } catch (QueryFilterValidationException $e) {
