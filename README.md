@@ -10,7 +10,7 @@ Welcome to **Hyper CMS**—a cutting-edge content management system that redefin
   - [Fields](#fields)
   - [Items/entries](#itemsentries)
 - [Documentation](#documentation)
-- [Upgrading from 0.1](#upgrading-from-01)
+- [Upgrading from an earlier version](#upgrading-from-an-earlier-version)
 - [Vision](#vision)
 - [Notes](#notes)
 - [Contact](#contact)
@@ -43,13 +43,15 @@ The documentation is a work in progress and is publicly available in our interna
 
 [https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4](https://doc.clickup.com/9018906321/d/h/8ct35ph-1918/ab2db207224a8e4)
 
-## Upgrading from 0.1
+## Upgrading from an earlier version
 
-HyperCMS 0.1 kept its data layer inside the app. This version reads the database through the StarDust package, which stores entry fields in another format and needs two columns the old database does not have. One command brings a 0.1 database up to date.
+HyperCMS 0.1 kept its data layer inside the app, and the 0.2 alphas used StarDust 0.2. This version runs on StarDust 0.3. Models, entries and their versions now live in tables of HyperCMS (`hyper_models`, `hyper_entries` and so on), and the current fields of each entry live in StarDust's tables, which carry the prefix `sd_`. One command copies a 0.1 or 0.2 database into that layout.
+
+The database server must be MySQL 8.0.13 or newer, or MariaDB 10.11 or newer. StarDust 0.3 refuses older servers, and the command stops with a message when it meets one.
 
 1. Back up the database, and check that the backup restores.
 2. Deploy this version of the code and run `composer install`.
-3. See what would change. Nothing is written.
+3. See what the command would meet. Nothing is written.
 
    ```
    php spark hyper:upgrade --dry-run
@@ -61,9 +63,17 @@ HyperCMS 0.1 kept its data layer inside the app. This version reads the database
    php spark hyper:upgrade
    ```
 
-The command records the table migration under StarDust's name, runs the migrations that are still pending, rewrites entry fields from `[{"id": "title", "value": "x"}]` to `{"title": "x"}`, and links each entry and model to its current version. Trashed entries are converted too, and no modified date changes. It skips work that is already done, so it is safe to run again after a failure.
+The command creates the new tables, copies every model, entry and version with the same ids, so links and stored select values keep working, and writes the current fields of each live entry to StarDust. Fields saved as `[{"id": "title", "value": "x"}]` become `{"title": "x"}`. It then reads every entry back and compares it with its source. The old tables (`models`, `model_data`, `entries` and `entry_data`) are left untouched, and nothing drops them. Drop them yourself once you have restored a dump somewhere and are satisfied with the result. The command skips work that is already done, so it is safe to run again after a failure.
 
-Two things can need a second look. An entry version whose fields are a list in some other shape is left as it is, and the command names its id and ends with an error. The sort columns that speed up sorting by a field are built with MariaDB syntax. The upgrade has been tested on MariaDB 10.4.32, where it builds them. On MySQL, which we tested on 8.0.13, the command reports them as missing and the site works without them, with slower sorting by a field.
+An entry version whose fields are a list in some other shape is copied as text and named in the output. An entry that does not fit `max_allowed_packet` is skipped and listed, and raising that setting lets a rerun move it.
+
+StarDust finishes some work in the background, such as deleting a purged model, and HyperCMS finishes writes that a crash left halfway. Both run from one command, so schedule it every minute. Do not also run StarDust's own daemons.
+
+```
+* * * * * cd /path/to/hypercms && php spark hyper:tick
+```
+
+With Docker, the `tick` service does this. The web container stops at start while an old database has not finished its upgrade, and the tick service waits as well. Run the upgrade in a new container, for example `docker compose run --rm --entrypoint '' app php spark hyper:upgrade`, then start the stack. The tables of StarDust share the database with HyperCMS, so keep the `sd_` prefix in mind if other software uses the same database.
 
 A script that makes the backup itself can pass `--yes` to skip the question.
 
