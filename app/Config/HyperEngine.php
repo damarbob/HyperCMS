@@ -55,6 +55,12 @@ class HyperEngine extends BaseConfig
     public int $filterCountLimit = 10000;
 
     /**
+     * The most live entries a model may hold for flagging a field filterable to clean their values at once, inside
+     * the request that saves the model. A larger model is left to `php spark hyper:normalize`, which has no time limit.
+     */
+    public int $normaliseLimit = 2000;
+
+    /**
      * The most bytes of stored fields one getMany() call may be asked for, because bodies of 1 to 3 MB
      * exist and PHP in Docker stops at 128 MB.
      */

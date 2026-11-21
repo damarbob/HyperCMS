@@ -275,14 +275,14 @@ final class FilterableModelTest extends CIUnitTestCase
         $this->indexUntilDone($modelId);
         [$sdLate, $sdEarly, $sdBlank, $sdOdd] = $this->sdIds([$late, $early, $blank, $odd]);
 
-        // StarDust's backfill reads only dates with seconds, so the index holds no date yet and the order is by id.
-        $this->assertSame([$sdLate, $sdEarly, $sdBlank, $sdOdd], $this->readIds($modelId, SortSpec::byField('when')));
+        // Flagging the field cleaned the values before the backfill, so the index already holds them.
+        $this->assertSame([$sdBlank, $sdOdd, $sdEarly, $sdLate], $this->readIds($modelId, SortSpec::byField('when')), 'Entries with no date first, then by date.');
+        $this->assertSame('2025-03-20 10:30:00', $this->stored($late)['when']);
 
         $report = $this->writer->normaliseModel($modelId);
 
-        $this->assertSame(['checked' => 3, 'rewritten' => 3], ['checked' => $report['checked'], 'rewritten' => $report['rewritten']]);
+        $this->assertSame(['checked' => 3, 'rewritten' => 0], ['checked' => $report['checked'], 'rewritten' => $report['rewritten']], 'The command finds nothing left to clean.');
         $this->assertSame([$odd], array_keys($report['failed']), 'A value that is not a date is left as it is and reported.');
-        $this->assertSame([$sdBlank, $sdOdd, $sdEarly, $sdLate], $this->readIds($modelId, SortSpec::byField('when')), 'Entries with no date first, then by date.');
         $this->assertSame('2024-01-05 09:30:00', $this->stored($early)['when']);
         $this->assertNull($this->stored($blank)['when']);
         $this->assertSame('next week', $this->stored($odd)['when']);

@@ -576,6 +576,16 @@ class ModelStore
 
         $failures  = [];
         $described = $this->engine()->describeModel($this->tenant(), $sdId);
+
+        // StarDust's backfill reads only a date with seconds, so a field about to be indexed must hold clean values.
+        foreach ($described?->fields ?? [] as $field) {
+            if (isset($kind[$field->name]) && ! $field->isFilterable) {
+                $this->cleanBeforeIndexing($id);
+
+                break;
+            }
+        }
+
         foreach ($described?->fields ?? [] as $field) {
             $wanted = $kind[$field->name] ?? null;
 
@@ -601,6 +611,35 @@ class ModelStore
 
         if ($failures !== []) {
             throw new IndexingFailed($failures);
+        }
+    }
+
+    /**
+     * Clean the values of the model's filterable fields in its existing entries, before a field is promoted, so the
+     * index starts with them. A model larger than `HyperEngine::normaliseLimit` is left to `hyper:normalize`, and an
+     * entry holding a value that cannot be read stays as it is. Neither stops the model from being saved.
+     */
+    private function cleanBeforeIndexing(int $id): void
+    {
+        $live = $this->db()->table('hyper_entries')->where('model_id', $id)->where('deleted_at', null)->countAllResults();
+        if ($live === 0) {
+            return;
+        }
+
+        $limit = (int) config('HyperEngine')->normaliseLimit;
+        if ($limit > 0 && $live > $limit) {
+            log_message('warning', 'Model {model} has {entries} entries, so their values were not cleaned before indexing. Run hyper:normalize {model}.', ['model' => $id, 'entries' => $live]);
+
+            return;
+        }
+
+        try {
+            $report = $this->entries()->normaliseModel($id);
+            foreach ($report['failed'] as $entryId => $reason) {
+                log_message('warning', 'Entry {entry} of model {model} was left as it is. {reason}', ['entry' => $entryId, 'model' => $id, 'reason' => $reason]);
+            }
+        } catch (Throwable $e) {
+            log_message('warning', 'Cleaning the entries of model {model} before indexing failed. {error}', ['model' => $id, 'error' => $e->getMessage()]);
         }
     }
 
