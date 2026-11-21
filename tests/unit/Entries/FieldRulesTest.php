@@ -151,4 +151,38 @@ final class FieldRulesTest extends CIUnitTestCase
         $this->assertSame([2, 3, 5, 4, 1, 6], $order('date', 'published', 'asc'));
         $this->assertSame([1, 6, 4, 2, 3, 5], $order('date', 'published', 'desc'));
     }
+
+    public function testFoldingByStretchesGivesWhatFoldingTheWholeTextGives(): void
+    {
+        $lower = Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC; Lower');
+        $upper = Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC; Upper');
+
+        $samples = [
+            'Éclair au chocolat, Ångström and ZOË',
+            "e\u{0301}clair with a loose mark, a\u{030A}b and plain ASCII",
+            'Ünïcödé 日本語 text 😀 with emoji and ÀÉÎÕÜ at the end É',
+            'İstanbul and ǅ in one line',
+            'ASCII only, nothing to strip',
+            'É',
+            '',
+        ];
+        foreach ($samples as $text) {
+            $this->assertSame($lower->transliterate($text), FieldRules::fold($text), $text);
+            $this->assertSame(rtrim($upper->transliterate($text), ' '), FieldRules::sortFold($text), $text);
+        }
+        // The sharp s is read as one s by the collation.
+        $this->assertSame('STRASE', FieldRules::sortFold('Straße'));
+    }
+
+    public function testASearchOverALargeBodyWithAccentsStaysFast(): void
+    {
+        // Folding a body of 2 MB in one piece took about 30 seconds, and a stretch at a time takes a fraction of a second.
+        $body  = str_repeat('<p>Éclair au chocolat et Ångström, quarterly report. </p>', 40000);
+        $start = microtime(true);
+
+        $this->assertFalse(FieldRules::contains($body, 'kiwi'));
+        $this->assertTrue(FieldRules::contains($body, 'angstrom'));
+        $this->assertNotSame('', FieldRules::sortFold($body));
+        $this->assertLessThan(5.0, microtime(true) - $start);
+    }
 }

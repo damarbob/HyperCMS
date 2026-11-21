@@ -37,9 +37,52 @@ final class FieldRules
         }
 
         self::$lower ??= Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC; Lower') ?: null;
-        $folded = self::$lower?->transliterate($text);
+        $folded = self::transliterateRuns(self::$lower, $text, strtolower(...));
 
-        return is_string($folded) ? $folded : mb_strtolower($text);
+        return $folded ?? mb_strtolower($text);
+    }
+
+    /**
+     * Run the transliterator over each stretch of non-ASCII characters and change the ASCII between them with `$ascii`.
+     *
+     * The transliterator slows down faster than the text grows, about 6 seconds for 1 MB and 30 seconds for 2 MB, and
+     * bodies of that size exist. A stretch is short, and the result is the same, because ASCII has no accent to
+     * strip and a mark that follows an ASCII letter is removed on its own.
+     *
+     * @param callable(string): string $ascii
+     *
+     * @return string|null Null when the text is not valid UTF-8 or there is no transliterator.
+     */
+    private static function transliterateRuns(?Transliterator $transliterator, string $text, callable $ascii): ?string
+    {
+        if ($transliterator === null) {
+            return null;
+        }
+
+        $failed = false;
+        $parts  = preg_split('/([^\x00-\x7F]+)/u', $text, -1, PREG_SPLIT_DELIM_CAPTURE);
+        if ($parts === false) {
+            return null;
+        }
+        foreach ($parts as $i => $part) {
+            if ($part === '') {
+                continue;
+            }
+            if ($i % 2 === 0) {
+                $parts[$i] = $ascii($part);
+
+                continue;
+            }
+            $converted = $transliterator->transliterate($part);
+            if (! is_string($converted)) {
+                $failed = true;
+
+                break;
+            }
+            $parts[$i] = $converted;
+        }
+
+        return $failed ? null : implode('', $parts);
     }
 
     /**
@@ -56,9 +99,9 @@ final class FieldRules
         $text = str_replace(['ß', 'ẞ'], 's', $text);
 
         self::$upper ??= Transliterator::create('NFD; [:Nonspacing Mark:] Remove; NFC; Upper') ?: null;
-        $folded = self::$upper?->transliterate($text);
+        $folded = self::transliterateRuns(self::$upper, $text, strtoupper(...));
 
-        return rtrim(is_string($folded) ? $folded : mb_strtoupper($text), ' ');
+        return rtrim($folded ?? mb_strtoupper($text), ' ');
     }
 
     /**
