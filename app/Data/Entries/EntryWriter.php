@@ -63,7 +63,7 @@ class EntryWriter
             throw new InvalidArgumentException('An entry needs a `model_id`.');
         }
         $modelId         = (int) $data['model_id'];
-        [$text, $fields] = $this->payload($data['fields'] ?? null);
+        [$text, $fields] = $this->payload($data['fields'] ?? null, $this->filterableKinds($modelId));
 
         // The model is registered before anything is written, so a failure here leaves nothing behind.
         $model     = $this->model($modelId);
@@ -121,7 +121,8 @@ class EntryWriter
      */
     public function update(int $id, array $data, int $userId): void
     {
-        [$text, $fields] = $this->payload($data['fields'] ?? null);
+        $modelId         = (int) ($this->db()->table('hyper_entries')->select('model_id')->where('id', $id)->get()->getRow()->model_id ?? 0);
+        [$text, $fields] = $this->payload($data['fields'] ?? null, $this->filterableKinds($modelId));
 
         $this->locks()->run(NamedLock::forEntry($id), function () use ($id, $userId, $text, $fields): void {
             $entry = $this->entryRow($id);
@@ -341,9 +342,9 @@ class EntryWriter
                 return 'nothing';
             }
 
-            $fields = $this->fieldsOf($current['fields'] ?? null);
+            $fields = $this->fieldsOf($current['fields'] ?? null, $this->filterableKinds((int) $entry['model_id']));
 
-            $live = $entry['sd_entry_id'] !== null ? $this->engine()->get((int) $entry['sd_entry_id']) : null;
+            $live =$entry['sd_entry_id'] !== null ? $this->engine()->get((int) $entry['sd_entry_id']) : null;
             if ($live !== null && $live == $fields) {
                 $db->table('hyper_entry_revisions')->where('id', (int) $current['id'])->update(['fields' => null]);
                 $this->versions()->bump([(int) $entry['model_id']]);
@@ -433,7 +434,7 @@ class EntryWriter
             $now     = $this->now();
             $current = $this->currentRevision($entry);
             $text    = $current['fields'] ?? null;
-            $fields  = $this->fieldsOf($text);
+            $fields  = $this->fieldsOf($text, $this->filterableKinds((int) $entry['model_id']));
 
             // Registered before anything changes, so a failure here leaves the entry in the trash.
             $sdModelId = $entry['sd_model_id'] !== null ? (int) $entry['sd_model_id'] : $this->models()->ensureRegistered((int) $entry['model_id']);
@@ -500,12 +501,17 @@ class EntryWriter
      * The older list, `[{"id":"title","value":"x"}]`, becomes the object `{"title":"x"}`. Nothing at all, `""`,
      * `[]` and `{}` are a blank entry, which StarDust holds as `[]` and a version holds as `{}`.
      *
+     * The values of the filterable fields of the model are cleaned first, as `FilterableFields::value()` does, so
+     * StarDust never refuses one. Every other field is written as it came.
+     *
+     * @param array<string, string> $kinds The filterable fields of the entry's model.
+     *
      * @return array{0: string, 1: array<string, mixed>}
      *
-     * @throws InvalidArgumentException When the text is not an object or a list that can become one, or a key
-     *                                  is empty or longer than StarDust accepts.
+     * @throws InvalidArgumentException When the text is not an object or a list that can become one, a key
+     *                                  is empty or longer than StarDust accepts, or a filterable value cannot be read.
      */
-    protected function payload(mixed $raw): array
+    protected function payload(mixed $raw, array $kinds = []): array
     {
         if (is_array($raw) || $raw instanceof stdClass) {
             $raw = json_encode($raw, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION);
@@ -534,6 +540,12 @@ class EntryWriter
             }
         }
 
+        foreach ($kinds as $id => $kind) {
+            if (property_exists($data, (string) $id)) {
+                $data->{(string) $id} = FilterableFields::value((string) $id, $kind, $data->{(string) $id});
+            }
+        }
+
         $text   = Payload::encode($data);
         $fields = json_decode($text, true);
 
@@ -551,11 +563,25 @@ class EntryWriter
      *
      * @return array<string, mixed>
      *
-     * @throws InvalidArgumentException When the text cannot be made into an object.
+     * @param array<string, string> $kinds The filterable fields of the entry's model, whose values are cleaned.
+     *
+     * @throws InvalidArgumentException When the text cannot be made into an object or a filterable value cannot be read.
      */
-    protected function fieldsOf(?string $text): array
+    protected function fieldsOf(?string $text, array $kinds = []): array
     {
-        return $this->payload($text)[1];
+        return $this->payload($text, $kinds)[1];
+    }
+
+    /**
+     * The filterable fields of a model and the StarDust type each is indexed as.
+     *
+     * @return array<string, string>
+     */
+    protected function filterableKinds(int $modelId): array
+    {
+        $row = $this->db()->table('hyper_models')->select('fields')->where('id', $modelId)->get()->getRow();
+
+        return FilterableFields::read($row->fields ?? null)['fields'];
     }
 
     /**
