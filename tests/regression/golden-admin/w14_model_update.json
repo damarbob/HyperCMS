@@ -19,27 +19,35 @@
         "success": "Model Article berhasil disimpan!"
     },
     "changes": {
-        "models": {
+        "hyper_models": {
             "changed": [
                 {
                     "from": {
                         "id": 1,
-                        "current_model_data_id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 6,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 1,
-                        "current_model_data_id": 7,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 7,
+                        "write_version": 7,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     }
                 }
             ]
         },
-        "model_data": {
+        "hyper_model_revisions": {
             "added": [
                 {
                     "id": 7,
@@ -49,24 +57,20 @@
                     "group": "Content",
                     "user_groups": "[\"superadmin\",\"admin\"]",
                     "icon": "file-text",
-                    "creator_id": 1,
-                    "deleter_id": null,
-                    "deleted": 0
+                    "creator_id": 1
                 }
             ]
         },
-        "queue_jobs": {
+        "hyper_counters": {
             "changed": [
                 {
                     "from": {
-                        "queue": "stardust-indexes",
-                        "status": 0,
-                        "n": 6
+                        "id": "write_version",
+                        "value": 8
                     },
                     "to": {
-                        "queue": "stardust-indexes",
-                        "status": 0,
-                        "n": 7
+                        "id": "write_version",
+                        "value": 9
                     }
                 }
             ]

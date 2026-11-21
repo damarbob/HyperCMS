@@ -14,52 +14,44 @@
         "success": "Model berhasil dipulihkan!"
     },
     "changes": {
-        "models": {
+        "hyper_models": {
             "changed": [
                 {
                     "from": {
                         "id": 4,
-                        "current_model_data_id": 4,
+                        "sd_model_id": 4,
+                        "name": "Scratch",
+                        "current_revision_id": 4,
+                        "write_version": 1,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     },
                     "to": {
                         "id": 4,
-                        "current_model_data_id": 4,
+                        "sd_model_id": 4,
+                        "name": "Scratch",
+                        "current_revision_id": 4,
+                        "write_version": 2,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 0
                     }
                 }
             ]
         },
-        "model_data": {
+        "hyper_counters": {
             "changed": [
                 {
                     "from": {
-                        "id": 4,
-                        "model_id": 4,
-                        "name": "Scratch",
-                        "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
-                        "group": "Content",
-                        "user_groups": "[]",
-                        "icon": "file-text",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 1
+                        "id": "write_version",
+                        "value": 13
                     },
                     "to": {
-                        "id": 4,
-                        "model_id": 4,
-                        "name": "Scratch",
-                        "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
-                        "group": "Content",
-                        "user_groups": "[]",
-                        "icon": "file-text",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 0
+                        "id": "write_version",
+                        "value": 14
                     }
                 }
             ]

@@ -15,22 +15,56 @@
         "success": "Entri berhasil dihapus!"
     },
     "changes": {
-        "entries": {
+        "hyper_models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 2,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 4,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "hyper_entries": {
             "changed": [
                 {
                     "from": {
                         "id": 4,
                         "model_id": 1,
-                        "current_entry_data_id": 4,
+                        "in_sd": 1,
+                        "current_revision_id": 4,
+                        "payload_bytes": 130,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 4,
                         "model_id": 1,
-                        "current_entry_data_id": 4,
+                        "in_sd": 0,
+                        "current_revision_id": 4,
+                        "payload_bytes": 130,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
@@ -39,57 +73,101 @@
                     "from": {
                         "id": 5,
                         "model_id": 1,
-                        "current_entry_data_id": 5,
+                        "in_sd": 1,
+                        "current_revision_id": 5,
+                        "payload_bytes": 185,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 5,
                         "model_id": 1,
-                        "current_entry_data_id": 5,
+                        "in_sd": 0,
+                        "current_revision_id": 5,
+                        "payload_bytes": 185,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "changed": [
                 {
                     "from": {
                         "id": 4,
                         "entry_id": 4,
-                        "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 4,
                         "entry_id": 4,
-                        "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 1
+                        "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":\"\",\"title\":\"Éclair for beginners\",\"views\":\"40\",\"published_at\":\"\"}",
+                        "creator_id": 1
                     }
                 },
                 {
                     "from": {
                         "id": 5,
                         "entry_id": 5,
-                        "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 5,
                         "entry_id": 5,
-                        "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
+                        "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":\"\",\"title\":\"eclair filling\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\"}",
+                        "creator_id": 1
+                    }
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 3
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 5
+                    }
+                }
+            ]
+        },
+        "sd_entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 4,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": \"\", \"title\": \"Éclair for beginners\", \"views\": \"40\", \"published_at\": \"\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 4,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": \"\", \"title\": \"Éclair for beginners\", \"views\": \"40\", \"published_at\": \"\"}",
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 5,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": \"\", \"title\": \"eclair filling\", \"views\": \"50\", \"published_at\": \"2026-02-06T14:05:00\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 5,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": \"\", \"title\": \"eclair filling\", \"views\": \"50\", \"published_at\": \"2026-02-06T14:05:00\"}",
                         "deleted": 1
                     }
                 }

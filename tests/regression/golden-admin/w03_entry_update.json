@@ -12,37 +12,117 @@
         "success": "Entri 1 berhasil disimpan!"
     },
     "changes": {
-        "entries": {
+        "hyper_models": {
             "changed": [
                 {
                     "from": {
                         "id": 1,
-                        "model_id": 1,
-                        "current_entry_data_id": 45,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 0,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 1,
-                        "model_id": 1,
-                        "current_entry_data_id": 48,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 1,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     }
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entries": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "model_id": 1,
+                        "in_sd": 1,
+                        "current_revision_id": 45,
+                        "payload_bytes": 156,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "model_id": 1,
+                        "in_sd": 1,
+                        "current_revision_id": 48,
+                        "payload_bytes": 102,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "hyper_entry_revisions": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 45,
+                        "entry_id": 1,
+                        "fields": null,
+                        "creator_id": 1
+                    },
+                    "to": {
+                        "id": 45,
+                        "entry_id": 1,
+                        "fields": "{\"body\":\"<p>v3</p>\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\",\"title\":\"Getting started with HyperCMS (edited twice)\",\"views\":\"16\",\"published_at\":\"2026-01-05T09:30\"}",
+                        "creator_id": 1
+                    }
+                }
+            ],
             "added": [
                 {
                     "id": 48,
                     "entry_id": 1,
-                    "fields": "{\"title\":\"Edited by flow\",\"body\":\"<p>x<\\/p>\",\"views\":\"99\",\"published_at\":\"\",\"tags\":[\"tech\"],\"cover\":\"\"}",
-                    "creator_id": 1,
-                    "deleter_id": null,
-                    "deleted": 0
+                    "fields": null,
+                    "creator_id": 1
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 1
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 2
+                    }
+                }
+            ]
+        },
+        "sd_entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<p>v3</p>\", \"tags\": [\"news\", \"tech\"], \"cover\": \"\", \"title\": \"Getting started with HyperCMS (edited twice)\", \"views\": \"16\", \"published_at\": \"2026-01-05T09:30\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "model_id": 1,
+                        "fields": "{\"body\": \"<p>x</p>\", \"tags\": [\"tech\"], \"cover\": \"\", \"title\": \"Edited by flow\", \"views\": \"99\", \"published_at\": \"\"}",
+                        "deleted": 0
+                    }
                 }
             ]
         }

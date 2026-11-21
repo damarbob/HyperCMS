@@ -10,72 +10,56 @@
         "success": "Model Linked berhasil dihapus!"
     },
     "changes": {
-        "models": {
+        "hyper_models": {
             "changed": [
                 {
                     "from": {
                         "id": 3,
-                        "current_model_data_id": 3,
+                        "sd_model_id": 3,
+                        "name": "Linked",
+                        "current_revision_id": 3,
+                        "write_version": 0,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 3,
-                        "current_model_data_id": 3,
+                        "sd_model_id": 3,
+                        "name": "Linked",
+                        "current_revision_id": 3,
+                        "write_version": 2,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
                 }
             ]
         },
-        "model_data": {
-            "changed": [
-                {
-                    "from": {
-                        "id": 3,
-                        "model_id": 3,
-                        "name": "Linked",
-                        "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
-                        "group": "Content",
-                        "user_groups": "[]",
-                        "icon": "file-text",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
-                    },
-                    "to": {
-                        "id": 3,
-                        "model_id": 3,
-                        "name": "Linked",
-                        "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
-                        "group": "Content",
-                        "user_groups": "[]",
-                        "icon": "file-text",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 1
-                    }
-                }
-            ]
-        },
-        "entries": {
+        "hyper_entries": {
             "changed": [
                 {
                     "from": {
                         "id": 38,
                         "model_id": 3,
-                        "current_entry_data_id": 38,
+                        "in_sd": 1,
+                        "current_revision_id": 38,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 38,
                         "model_id": 3,
-                        "current_entry_data_id": 38,
+                        "in_sd": 0,
+                        "current_revision_id": 38,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
@@ -84,16 +68,22 @@
                     "from": {
                         "id": 39,
                         "model_id": 3,
-                        "current_entry_data_id": 39,
+                        "in_sd": 1,
+                        "current_revision_id": 39,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 39,
                         "model_id": 3,
-                        "current_entry_data_id": 39,
+                        "in_sd": 0,
+                        "current_revision_id": 39,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
@@ -102,75 +92,129 @@
                     "from": {
                         "id": 40,
                         "model_id": 3,
-                        "current_entry_data_id": 40,
+                        "in_sd": 1,
+                        "current_revision_id": 40,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": null,
                         "deleted": 0
                     },
                     "to": {
                         "id": 40,
                         "model_id": 3,
-                        "current_entry_data_id": 40,
+                        "in_sd": 0,
+                        "current_revision_id": 40,
+                        "payload_bytes": 38,
                         "creator_id": 1,
+                        "editor_id": 1,
                         "deleter_id": 1,
                         "deleted": 1
                     }
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "changed": [
                 {
                     "from": {
                         "id": 38,
                         "entry_id": 38,
-                        "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 38,
                         "entry_id": 38,
                         "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 1
+                        "creator_id": 1
                     }
                 },
                 {
                     "from": {
                         "id": 39,
                         "entry_id": 39,
-                        "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 39,
                         "entry_id": 39,
                         "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
-                        "deleted": 1
+                        "creator_id": 1
                     }
                 },
                 {
                     "from": {
                         "id": 40,
                         "entry_id": 40,
-                        "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
-                        "creator_id": 1,
-                        "deleter_id": null,
-                        "deleted": 0
+                        "fields": null,
+                        "creator_id": 1
                     },
                     "to": {
                         "id": 40,
                         "entry_id": 40,
                         "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
-                        "creator_id": 1,
-                        "deleter_id": 1,
+                        "creator_id": 1
+                    }
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 9
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 11
+                    }
+                }
+            ]
+        },
+        "sd_entry_data": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 35,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 1\", \"related_model\": \"1\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 35,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 1\", \"related_model\": \"1\"}",
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 36,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 2\", \"related_model\": \"2\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 36,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 2\", \"related_model\": \"2\"}",
+                        "deleted": 1
+                    }
+                },
+                {
+                    "from": {
+                        "id": 37,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 3\", \"related_model\": \"3\"}",
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 37,
+                        "model_id": 3,
+                        "fields": "{\"title\": \"Link 3\", \"related_model\": \"3\"}",
                         "deleted": 1
                     }
                 }

@@ -13,26 +13,73 @@
         "success": "Entri 44 berhasil dibuat!"
     },
     "changes": {
-        "entries": {
+        "hyper_models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 2,
+                        "sd_model_id": 2,
+                        "name": "Product",
+                        "current_revision_id": 2,
+                        "write_version": 0,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 2,
+                        "sd_model_id": 2,
+                        "name": "Product",
+                        "current_revision_id": 2,
+                        "write_version": 1,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                }
+            ]
+        },
+        "hyper_entries": {
             "added": [
                 {
                     "id": 44,
                     "model_id": 2,
-                    "current_entry_data_id": 47,
+                    "in_sd": 1,
+                    "current_revision_id": 47,
+                    "payload_bytes": 74,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": null,
                     "deleted": 0
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "added": [
                 {
                     "id": 47,
                     "entry_id": 44,
-                    "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": null,
+                    "fields": null,
+                    "creator_id": 1
+                }
+            ]
+        },
+        "hyper_counters": {
+            "added": [
+                {
+                    "id": "write_version",
+                    "value": 1
+                }
+            ]
+        },
+        "sd_entry_data": {
+            "added": [
+                {
+                    "id": 39,
+                    "model_id": 2,
+                    "fields": "{\"sku\": \"SKU-NEW\", \"added\": \"2026-04-01T08:00\", \"price\": \"5.00\", \"category\": \"a\"}",
                     "deleted": 0
                 }
             ]

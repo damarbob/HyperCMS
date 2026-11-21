@@ -10,123 +10,220 @@
         "success": "Entri berhasil dihapus!"
     },
     "changes": {
-        "entries": {
+        "hyper_models": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 5,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 1,
+                        "sd_model_id": 1,
+                        "name": "Article",
+                        "current_revision_id": 1,
+                        "write_version": 6,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                },
+                {
+                    "from": {
+                        "id": 2,
+                        "sd_model_id": 2,
+                        "name": "Product",
+                        "current_revision_id": 2,
+                        "write_version": 1,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    },
+                    "to": {
+                        "id": 2,
+                        "sd_model_id": 2,
+                        "name": "Product",
+                        "current_revision_id": 2,
+                        "write_version": 2,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": null,
+                        "deleted": 0
+                    }
+                },
+                {
+                    "from": {
+                        "id": 4,
+                        "sd_model_id": 4,
+                        "name": "Scratch",
+                        "current_revision_id": 4,
+                        "write_version": 0,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    },
+                    "to": {
+                        "id": 4,
+                        "sd_model_id": 4,
+                        "name": "Scratch",
+                        "current_revision_id": 4,
+                        "write_version": 1,
+                        "creator_id": 1,
+                        "editor_id": 1,
+                        "deleter_id": 1,
+                        "deleted": 1
+                    }
+                }
+            ]
+        },
+        "hyper_entries": {
             "removed": [
                 {
                     "id": 3,
                     "model_id": 1,
-                    "current_entry_data_id": 3,
+                    "in_sd": 0,
+                    "current_revision_id": 3,
+                    "payload_bytes": 132,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 4,
                     "model_id": 1,
-                    "current_entry_data_id": 4,
+                    "in_sd": 0,
+                    "current_revision_id": 4,
+                    "payload_bytes": 130,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 5,
                     "model_id": 1,
-                    "current_entry_data_id": 5,
+                    "in_sd": 0,
+                    "current_revision_id": 5,
+                    "payload_bytes": 185,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 25,
                     "model_id": 1,
-                    "current_entry_data_id": 25,
+                    "in_sd": 0,
+                    "current_revision_id": 25,
+                    "payload_bytes": 0,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 37,
                     "model_id": 2,
-                    "current_entry_data_id": 37,
+                    "in_sd": 0,
+                    "current_revision_id": 37,
+                    "payload_bytes": 0,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 41,
                     "model_id": 4,
-                    "current_entry_data_id": 41,
+                    "in_sd": 0,
+                    "current_revision_id": 41,
+                    "payload_bytes": 0,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 },
                 {
                     "id": 42,
                     "model_id": 4,
-                    "current_entry_data_id": 42,
+                    "in_sd": 0,
+                    "current_revision_id": 42,
+                    "payload_bytes": 0,
                     "creator_id": 1,
+                    "editor_id": 1,
                     "deleter_id": 1,
                     "deleted": 1
                 }
             ]
         },
-        "entry_data": {
+        "hyper_entry_revisions": {
             "removed": [
                 {
                     "id": 3,
                     "entry_id": 3,
-                    "fields": "{\"title\":\"Apple pie recipe\",\"body\":\"Plain body 3\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"body\":\"Plain body 3\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\",\"title\":\"Apple pie recipe\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 4,
                     "entry_id": 4,
-                    "fields": "{\"title\":\"Éclair for beginners\",\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"views\":\"40\",\"published_at\":\"\",\"tags\":[\"news\"],\"cover\":\"\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":\"\",\"title\":\"Éclair for beginners\",\"views\":\"40\",\"published_at\":\"\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 5,
                     "entry_id": 5,
-                    "fields": "{\"title\":\"eclair filling\",\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\",\"tags\":[],\"cover\":\"\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":\"\",\"title\":\"eclair filling\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 25,
                     "entry_id": 25,
-                    "fields": "[{\"id\":\"title\",\"value\":\"Sample post 25\"},{\"id\":\"views\",\"value\":\"250\"},{\"id\":\"body\",\"value\":\"<p>Body of post 25 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\"}]",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "fields": "{\"title\":\"Sample post 25\",\"views\":\"250\",\"body\":\"<p>Body of post 25 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\"}",
+                    "creator_id": 1
                 },
                 {
                     "id": 37,
                     "entry_id": 37,
                     "fields": "{\"sku\":\"SKU-012\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-12T08:00\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 41,
                     "entry_id": 41,
                     "fields": "{\"note\":\"one\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
                 },
                 {
                     "id": 42,
                     "entry_id": 42,
                     "fields": "{\"note\":\"two\"}",
-                    "creator_id": 1,
-                    "deleter_id": 1,
-                    "deleted": 1
+                    "creator_id": 1
+                }
+            ]
+        },
+        "hyper_counters": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "write_version",
+                        "value": 6
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 7
+                    }
                 }
             ]
         }
