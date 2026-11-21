@@ -286,6 +286,70 @@ class EntryWriter
     }
 
     /**
+     * Finish a write that stopped halfway, as `hyper:repair` does.
+     *
+     * - A live entry whose current version still holds a payload has it compared with StarDust. When StarDust
+     *   has the same, the copy is cleared. When it does not, the payload is written again, with a write when the
+     *   entry has no StarDust id and an update when it has.
+     * - A trashed entry that still has a StarDust id has that row deleted.
+     *
+     * The entry is left alone when nothing is unfinished.
+     *
+     * @return string One of `rewritten`, `cleared`, `deleted` and `nothing`.
+     *
+     * @throws InvalidArgumentException When the payload it holds is not an object.
+     */
+    public function complete(int $id): string
+    {
+        return $this->locks()->run(NamedLock::forEntry($id), function () use ($id): string {
+            $entry = $this->entryRow($id);
+            if ($entry === null) {
+                return 'nothing';
+            }
+
+            $db = $this->db();
+
+            if ($entry['deleted_at'] !== null) {
+                if ($entry['sd_entry_id'] === null) {
+                    return 'nothing';
+                }
+
+                $this->engine()->delete((int) $entry['sd_entry_id']);
+                $db->table('hyper_entries')->where('id', $id)->update(['sd_entry_id' => null]);
+                $this->versions()->bump([(int) $entry['model_id']]);
+
+                return 'deleted';
+            }
+
+            $current = $this->currentRevision($entry);
+            $pending = $current !== null && $current['fields'] !== null;
+            if ($entry['sd_entry_id'] !== null && ! $pending) {
+                return 'nothing';
+            }
+
+            $fields = $this->fieldsOf($current['fields'] ?? null);
+
+            $live = $entry['sd_entry_id'] !== null ? $this->engine()->get((int) $entry['sd_entry_id']) : null;
+            if ($live !== null && $live == $fields) {
+                $db->table('hyper_entry_revisions')->where('id', (int) $current['id'])->update(['fields' => null]);
+                $this->versions()->bump([(int) $entry['model_id']]);
+
+                return 'cleared';
+            }
+
+            $sdId = $this->push($entry, $fields);
+            if ($current === null) {
+                $db->table('hyper_entries')->where('id', $id)->update(['sd_entry_id' => $sdId]);
+            } else {
+                $this->recordLive($id, $sdId, (int) $current['id']);
+            }
+            $this->versions()->bump([(int) $entry['model_id']]);
+
+            return 'rewritten';
+        });
+    }
+
+    /**
      * Trash one live entry. An entry that is missing or already in the trash is left as it is.
      *
      * The live payload is copied out of StarDust into the entry's current version first, so the trash view and a
