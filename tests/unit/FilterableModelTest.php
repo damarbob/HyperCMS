@@ -262,6 +262,33 @@ final class FilterableModelTest extends CIUnitTestCase
         $this->assertSame('2025-03-20 10:30:00', $this->stored($id)['when']);
     }
 
+    public function testEntriesFromBeforeTheFlagAreCleanedInPlaceSoTheIndexHoldsTheirDates(): void
+    {
+        $modelId = $this->models->create(['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local"}]'], 1);
+        $late    = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Late","when":"2025-03-20T10:30"}'], 1);
+        $early   = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Early","when":"2024-01-05T09:30"}'], 1);
+        $blank   = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Blank","when":""}'], 1);
+        $odd     = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Odd","when":"next week"}'], 1);
+
+        $this->models->update($modelId, ['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $this->indexUntilDone($modelId);
+        [$sdLate, $sdEarly, $sdBlank, $sdOdd] = $this->sdIds([$late, $early, $blank, $odd]);
+
+        // StarDust's backfill reads only dates with seconds, so the index holds no date yet and the order is by id.
+        $this->assertSame([$sdLate, $sdEarly, $sdBlank, $sdOdd], $this->readIds($modelId, SortSpec::byField('when')));
+
+        $report = $this->writer->normaliseModel($modelId);
+
+        $this->assertSame(['checked' => 3, 'rewritten' => 3], ['checked' => $report['checked'], 'rewritten' => $report['rewritten']]);
+        $this->assertSame([$odd], array_keys($report['failed']), 'A value that is not a date is left as it is and reported.');
+        $this->assertSame([$sdBlank, $sdOdd, $sdEarly, $sdLate], $this->readIds($modelId, SortSpec::byField('when')), 'Entries with no date first, then by date.');
+        $this->assertSame('2024-01-05 09:30:00', $this->stored($early)['when']);
+        $this->assertNull($this->stored($blank)['when']);
+        $this->assertSame('next week', $this->stored($odd)['when']);
+        $this->assertSame(1, self::$conn->table('hyper_entry_revisions')->where('entry_id', $early)->countAllResults(), 'No version is added.');
+        $this->assertSame(0, $this->writer->normaliseModel($modelId)['rewritten'], 'A second run changes nothing.');
+    }
+
     public function testAModelWithAFieldStillBeingIndexedStaysInTheTrashWithAMessage(): void
     {
         $modelId = $this->models->create(['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime-local"}]'], 1);

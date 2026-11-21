@@ -365,6 +365,80 @@ class EntryWriter
     }
 
     /**
+     * Clean the stored values of a model's filterable fields in the live entries, as a save would have.
+     *
+     * Entries written before a field became filterable hold a date such as `2025-03-20T10:30`, which StarDust's
+     * backfill cannot read, so their index holds no value. Writing the clean value back fills it. The entry is
+     * rewritten in place and gets no new version, because only the form of a value changes. An entry holding a value
+     * that cannot be read is left as it is and reported.
+     *
+     * @return array{checked: int, rewritten: int, failed: array<int, string>} The reason for each entry id that could not be cleaned.
+     */
+    public function normaliseModel(int $modelId): array
+    {
+        $kinds  = $this->filterableKinds($modelId);
+        $report = ['checked' => 0, 'rewritten' => 0, 'failed' => []];
+        if ($kinds === []) {
+            return $report;
+        }
+
+        $lastId = 0;
+        while (true) {
+            $rows = $this->db()->query(
+                'SELECT id FROM hyper_entries WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
+                [$modelId, $lastId]
+            )->getResultArray();
+            if ($rows === []) {
+                break;
+            }
+            $lastId = (int) end($rows)['id'];
+
+            foreach ($rows as $row) {
+                $id = (int) $row['id'];
+
+                try {
+                    $changed = $this->locks()->run(NamedLock::forEntry($id), function () use ($id, $kinds): ?bool {
+                        $entry = $this->entryRow($id);
+                        if ($entry === null || $entry['deleted_at'] !== null || $entry['sd_entry_id'] === null) {
+                            return null;
+                        }
+
+                        $live = $this->engine()->get((int) $entry['sd_entry_id']);
+                        if ($live === null) {
+                            return null;
+                        }
+
+                        $clean = FilterableFields::normalise($live, $kinds);
+                        if (json_encode($clean) === json_encode($live)) {
+                            return false;
+                        }
+
+                        $this->engine()->update((int) $entry['sd_entry_id'], $clean);
+                        $this->db()->table('hyper_entries')->where('id', $id)->update(['payload_bytes' => strlen(Payload::encode((object) $clean))]);
+
+                        return true;
+                    });
+                } catch (InvalidArgumentException $e) {
+                    $report['failed'][$id] = $e->getMessage();
+
+                    continue;
+                }
+
+                if ($changed !== null) {
+                    $report['checked']++;
+                    $report['rewritten'] += $changed ? 1 : 0;
+                }
+            }
+        }
+
+        if ($report['rewritten'] > 0) {
+            $this->versions()->bump([$modelId]);
+        }
+
+        return $report;
+    }
+
+    /**
      * Trash one live entry. An entry that is missing or already in the trash is left as it is.
      *
      * The live payload is copied out of StarDust into the entry's current version first, so the trash view and a
