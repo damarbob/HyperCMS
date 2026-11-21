@@ -224,7 +224,16 @@ class EntryWriter
      */
     public function trashForModels(array $modelIds, int $userId): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($modelIds) as $modelId) {
+            $trashed = false;
+            foreach ($this->entryIdsOf($modelId, false) as $id) {
+                $trashed = $this->trashOne($id, $userId, false) !== null || $trashed;
+            }
+
+            if ($trashed) {
+                $this->versions()->bump([$modelId]);
+            }
+        }
     }
 
     /**
@@ -234,7 +243,16 @@ class EntryWriter
      */
     public function restoreForModels(array $modelIds): void
     {
-        throw $this->notPorted(__FUNCTION__);
+        foreach ($this->ids($modelIds) as $modelId) {
+            $restored = false;
+            foreach ($this->entryIdsOf($modelId, true) as $id) {
+                $restored = $this->restoreOne($id, false, false) !== null || $restored;
+            }
+
+            if ($restored) {
+                $this->versions()->bump([$modelId]);
+            }
+        }
     }
 
     /**
@@ -372,6 +390,22 @@ class EntryWriter
 
             return (int) $entry['model_id'];
         });
+    }
+
+    /**
+     * The ids of the live or the trashed entries of a model.
+     *
+     * @return list<int>
+     */
+    protected function entryIdsOf(int $modelId, bool $trashed): array
+    {
+        return array_map(
+            static fn (array $row): int => (int) $row['id'],
+            $this->db()->query(
+                'SELECT id FROM hyper_entries WHERE model_id = ? AND deleted_at IS ' . ($trashed ? 'NOT ' : '') . 'NULL ORDER BY id',
+                [$modelId]
+            )->getResultArray()
+        );
     }
 
     /**
