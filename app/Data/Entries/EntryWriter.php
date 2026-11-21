@@ -244,7 +244,27 @@ class EntryWriter
      */
     public function clearHistory(int|string $entryId): ?int
     {
-        throw $this->notPorted(__FUNCTION__);
+        $id = (int) $entryId;
+
+        // The lock keeps a save from adding a version while the older ones go.
+        return $this->locks()->run(NamedLock::forEntry($id), function () use ($id): ?int {
+            $db     = $this->db();
+            $newest = $db->table('hyper_entry_revisions')->selectMax('id', 'newest')->where('entry_id', $id)->get()->getRow()->newest ?? null;
+            if ($newest === null) {
+                return null;
+            }
+
+            // The current version is the newest one, and it is kept in any case because it may be the only copy of the payload.
+            $keep = [(int) $newest];
+            $current = $db->table('hyper_entries')->select('current_revision_id')->where('id', $id)->get()->getRow()->current_revision_id ?? null;
+            if ($current !== null) {
+                $keep[] = (int) $current;
+            }
+
+            $db->table('hyper_entry_revisions')->where('entry_id', $id)->whereNotIn('id', array_unique($keep))->delete();
+
+            return $db->affectedRows();
+        });
     }
 
     /**
