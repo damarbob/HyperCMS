@@ -232,6 +232,28 @@ class EntryStore
     }
 
     /**
+     * The fields of a model that lists can sort and filter on right now, with the StarDust type of each.
+     *
+     * @return array<string, string> By field id.
+     */
+    public function indexedFields(int $modelId): array
+    {
+        return $this->lists->indexedFields($modelId);
+    }
+
+    /**
+     * Read one page of a model's entries through its indexed fields, for the token API.
+     *
+     * @param int $countCap The most matches to count for the total.
+     *
+     * @return array{data: list<array>, total: int|null, more: bool} `total` is null when the count stopped at the cap.
+     */
+    public function fieldPage(int $modelId, array $hiddenModelIds, ?\StarDust\Read\SortSpec $sort, ?\StarDust\Filter\Ast\FilterNode $filter, int $limit, int $page, int $countCap): array
+    {
+        return $this->lists->fieldPage($modelId, $hiddenModelIds, $sort, $filter, $limit, $page, $countCap);
+    }
+
+    /**
      * Read one entry by its id, or null when there is none.
      */
     public function findRow($id): ?array

@@ -11,6 +11,9 @@ use CodeIgniter\Database\BaseBuilder;
 use CodeIgniter\Database\BaseConnection;
 use CodeIgniter\Database\Exceptions\DatabaseException;
 use InvalidArgumentException;
+use StarDust\Filter\Ast\FilterNode;
+use StarDust\Read\SortDirection;
+use StarDust\Read\SortSpec;
 
 /**
  * Lists of entries for the admin tables and the token API.
@@ -20,6 +23,9 @@ use InvalidArgumentException;
  * on a model field needs the fields themselves, so those use a saved list: the ordered ids that one search and
  * sort matched, built once by scanning the entries and kept in the cache under the write version of the model, or
  * the global one for a list across models. The trash view stays in SQL, because trashed fields live in HyperCMS.
+ *
+ * A sort on a field the model marks filterable, once StarDust has indexed it, is the exception. StarDust orders the
+ * entries itself, so the list is read through the index and needs no scan, and the page is fetched the same way.
  *
  * A saved list stores each id with its model id and ignores who is asking. Each request drops the models hidden from
  * the caller before it counts and pages.
@@ -34,6 +40,7 @@ class EntryLists
         private ?SavedLists $lists = null,
         private ?WriteVersions $versions = null,
         private ?ListScan $scan = null,
+        private ?IndexedReads $indexed = null,
     ) {
     }
 
@@ -226,6 +233,12 @@ class EntryLists
             }
         }
 
+        // A sort on an indexed field needs no scan. A search or a find filter still does, and keeps the saved list.
+        if ($live && $find === null && $term === '' && $kind !== null && in_array((string) $orderColumn, $modelInfo['filterableFields'], true)
+            && isset($this->indexedReads()->indexed((int) $modelId)[(string) $orderColumn])) {
+            return $this->indexedModelDataTable((int) $modelId, (string) $orderColumn, $this->direction($orderDir), $draw, $start, $length, $codeFields);
+        }
+
         if ($find === null && $term === '' && $kind === null) {
             return $this->sqlModelDataTable((int) $modelId, ! $live, $orderColumn, $orderDir, $draw, $start, $length, $codeFields);
         }
@@ -289,6 +302,94 @@ class EntryLists
     }
 
     /**
+     * The list of one model sorted on a field StarDust has indexed.
+     *
+     * The totals count the model's live entries, as the other lists do, and the page is read through the index.
+     */
+    private function indexedModelDataTable(int $modelId, string $field, string $direction, mixed $draw, mixed $start, mixed $length, array $codeFields): array
+    {
+        $totalRecords = $this->rows()->query()->where('e.model_id', $modelId)->countAllResults();
+
+        // A length of -1 means no limit, and a length of 0 has always meant the same for a sort on a field.
+        $limit  = $length != -1 && intval($length) !== 0 ? intval($length) : null;
+        $offset = $limit === null ? 0 : max(0, intval($start));
+
+        $sort = SortSpec::byField($field, $direction === 'DESC' ? SortDirection::Desc : SortDirection::Asc);
+        $ids  = $this->indexedReads()->page($modelId, $sort, null, $offset, $limit)['ids'];
+
+        return [
+            'draw'            => intval($draw),
+            'recordsTotal'    => $totalRecords,
+            'recordsFiltered' => $totalRecords,
+            'data'            => $this->pivotRows($this->rowsOf($modelId, $ids), $codeFields),
+        ];
+    }
+
+    /**
+     * The rows of the live entries of a model that StarDust returned, in the order it returned them.
+     *
+     * An entry StarDust still returns after HyperCMS has trashed it, in the moment between the two steps of a trash,
+     * has no live row and is left out.
+     *
+     * @param list<int> $sdIds StarDust entry ids.
+     *
+     * @return list<array> Legacy rows, with the fields read from StarDust.
+     */
+    private function rowsOf(int $modelId, array $sdIds): array
+    {
+        $bySd = [];
+        foreach (array_chunk($sdIds, 1000) as $chunk) {
+            foreach ($this->rows()->query()->where('e.model_id', $modelId)->whereIn('e.sd_entry_id', $chunk)->get()->getResultArray() as $row) {
+                $bySd[(int) $row['sd_entry_id']] = $row;
+            }
+        }
+
+        $ordered = [];
+        foreach ($sdIds as $sdId) {
+            if (isset($bySd[$sdId])) {
+                $ordered[] = $bySd[$sdId];
+            }
+        }
+
+        return $this->rows()->hydrate($ordered);
+    }
+
+    /**
+     * Read one page of the entries of a model through its indexed fields, for the token API.
+     *
+     * The order is a sort on an indexed field, or StarDust's own order of creation. The search and the other sort
+     * keys of `page()` are not available here, because StarDust can order by an index only.
+     *
+     * @param FilterNode|null $filter What the entries must match, on indexed fields.
+     * @param int $countCap The most matches to count for the total. StarDust cannot count, so a larger match set has no total.
+     *
+     * @return array{data: list<array>, total: int|null, more: bool} `total` is null when the count stopped at the cap.
+     */
+    public function fieldPage(int $modelId, array $hiddenModelIds, ?SortSpec $sort, ?FilterNode $filter, int $limit, int $page, int $countCap): array
+    {
+        if (in_array($modelId, array_map('intval', $hiddenModelIds), true)) {
+            return ['data' => [], 'total' => 0, 'more' => false];
+        }
+
+        $read  = $this->indexedReads()->page($modelId, $sort, $filter, ($page - 1) * $limit, $limit);
+        $total = $filter === null
+            ? $this->rows()->query()->where('e.model_id', $modelId)->countAllResults()
+            : $this->indexedReads()->count($modelId, $filter, $countCap);
+
+        return ['data' => $this->rowsOf($modelId, $read['ids']), 'total' => $total, 'more' => $read['more']];
+    }
+
+    /**
+     * The fields of a model that can be sorted and filtered on right now, with the StarDust type of each.
+     *
+     * @return array<string, string> By field id.
+     */
+    public function indexedFields(int $modelId): array
+    {
+        return $this->indexedReads()->indexed($modelId);
+    }
+
+    /**
      * Read the model and sort its fields by type.
      */
     protected function modelInfo(int|string $modelId): array
@@ -305,7 +406,7 @@ class EntryLists
     /**
      * Sort a model definition's fields by type.
      *
-     * @return array{dateFields: list<string>, numericFields: list<string>, codeFields: list<string>}
+     * @return array{dateFields: list<string>, numericFields: list<string>, codeFields: list<string>, filterableFields: list<string>}
      */
     private function fieldTypes(?string $definition): array
     {
@@ -325,7 +426,7 @@ class EntryLists
             }
         }
 
-        return ['dateFields' => $dateFields, 'numericFields' => $numericFields, 'codeFields' => $codeFields];
+        return ['dateFields' => $dateFields, 'numericFields' => $numericFields, 'codeFields' => $codeFields, 'filterableFields' => array_map('strval', array_keys(FilterableFields::read($definition)['fields']))];
     }
 
     /**
@@ -713,5 +814,10 @@ class EntryLists
     private function scan(): ListScan
     {
         return $this->scan ??= new ListScan($this->payloads());
+    }
+
+    private function indexedReads(): IndexedReads
+    {
+        return $this->indexed ??= new IndexedReads(null, $this->db());
     }
 }

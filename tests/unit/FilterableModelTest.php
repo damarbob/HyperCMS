@@ -1,6 +1,11 @@
 <?php
 
+use App\Data\Entries\EntryLists;
+use App\Data\Entries\EntryPayloads;
+use App\Data\Entries\EntryRows;
 use App\Data\Entries\EntryWriter;
+use App\Data\Entries\IndexedReads;
+use App\Data\Entries\SavedLists;
 use App\Data\Entries\StarDustEntries;
 use App\Data\IndexingFailed;
 use App\Data\ModelStore;
@@ -296,6 +301,68 @@ final class FilterableModelTest extends CIUnitTestCase
         }
         $this->assertStringContainsString('datetime-local', self::$conn->table('hyper_models')->where('id', $modelId)->get()->getRow()->fields, 'The model itself was saved.');
         $this->indexUntilDone($modelId);
+    }
+
+    public function testAListSortedOnAnIndexedFieldReadsThroughTheIndexAndPagesLikeTheSavedList(): void
+    {
+        $lists = $this->lists();
+        // The same entries in a model whose field is not filterable, which the saved list sorts in PHP.
+        $flagged = $this->models->create(['name' => 'Indexed list', 'fields' => '[{"id":"title","type":"text"},{"id":"views","type":"number","filterable":true}]'], 1);
+        $plain   = $this->models->create(['name' => 'Saved list', 'fields' => '[{"id":"title","type":"text"},{"id":"views","type":"number"}]'], 1);
+        $this->indexUntilDone($flagged);
+        foreach ([['A', '30'], ['B', '5'], ['C', ''], ['D', '12.5'], ['E', '100']] as [$title, $views]) {
+            foreach ([$flagged, $plain] as $model) {
+                $this->writer->create(['model_id' => $model, 'fields' => json_encode(['title' => $title, 'views' => $views])], 1);
+            }
+        }
+
+        $request = static fn (int $model, string $dir, int $start, int $length): array => [
+            'id' => $model, 'draw' => 3, 'start' => $start, 'length' => $length,
+            'order' => [['column' => 0, 'dir' => $dir]], 'columns' => [['data' => 'views']],
+        ];
+
+        foreach (['desc' => ['E', 'A', 'D', 'B', 'C'], 'asc' => ['C', 'B', 'D', 'A', 'E']] as $dir => $expected) {
+            foreach ([0, 2, 4] as $start) {
+                $indexed = $lists->modelDataTable($request($flagged, $dir, $start, 2));
+                $saved   = $lists->modelDataTable($request($plain, $dir, $start, 2));
+
+                $this->assertSame(array_slice($expected, $start, 2), array_map(static fn (array $row): string => json_decode($row['fields'] ?? '{}', true)['title'] ?? $row['title'], $indexed['data']), "$dir from $start");
+                $this->assertSame(array_column($saved['data'], 'title'), array_column($indexed['data'], 'title'), 'The same page as the saved list.');
+                $this->assertSame($saved['recordsTotal'], $indexed['recordsTotal']);
+                $this->assertSame($saved['recordsFiltered'], $indexed['recordsFiltered']);
+                $this->assertSame(array_keys($saved['data'][0]), array_keys($indexed['data'][0]), 'The same row shape.');
+            }
+        }
+
+        $all = $lists->modelDataTable($request($flagged, 'desc', 0, -1));
+        $this->assertSame(['E', 'A', 'D', 'B', 'C'], array_column($all['data'], 'title'), 'A length of -1 lists every entry.');
+        $this->assertSame(5, $all['recordsTotal']);
+        $this->assertSame(3, $all['draw']);
+    }
+
+    public function testAnEntryTrashedAfterTheIndexIsLeftOutOfTheIndexedList(): void
+    {
+        $lists   = $this->lists();
+        $modelId = $this->models->create(['name' => 'Trashed from list', 'fields' => '[{"id":"views","type":"number","filterable":true}]'], 1);
+        $this->indexUntilDone($modelId);
+        $one = $this->writer->create(['model_id' => $modelId, 'fields' => '{"views":"1"}'], 1);
+        $this->writer->create(['model_id' => $modelId, 'fields' => '{"views":"2"}'], 1);
+        $this->writer->trash([$one], 1);
+
+        $table = $lists->modelDataTable(['id' => $modelId, 'draw' => 1, 'start' => 0, 'length' => 10, 'order' => [['column' => 0, 'dir' => 'asc']], 'columns' => [['data' => 'views']]]);
+
+        $this->assertSame(['2'], array_column($table['data'], 'views'));
+        $this->assertSame(1, $table['recordsTotal']);
+    }
+
+    private function lists(): EntryLists
+    {
+        self::$conn->query('CREATE TABLE IF NOT EXISTS users (id INT PRIMARY KEY, username VARCHAR(100))');
+        self::$conn->query("INSERT IGNORE INTO users (id, username) VALUES (1, 'tester')");
+
+        $payloads = new EntryPayloads(self::$stardust);
+
+        return new EntryLists(self::$conn, new EntryRows(self::$conn, $payloads), null, $payloads, new SavedLists(), new WriteVersions(self::$conn), null, new IndexedReads(self::$stardust, self::$conn));
     }
 
     private function described(int $modelId): \StarDust\Schema\ModelDescription
