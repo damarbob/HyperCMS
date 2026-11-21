@@ -104,17 +104,33 @@ class EntryRows
             'd.' . $users['name'] . ' AS deleted_by',
             'e.sd_entry_id',
         ];
-
-        $builder = $this->db()->table('hyper_entries AS e');
         if ($trashed) {
             $select[] = 'r.fields';
-            $builder->select($select)->select('COALESCE(LENGTH(r.fields), 0) AS payload_bytes', false);
-        } else {
-            $select[] = 'e.payload_bytes';
-            $builder->select($select);
         }
 
-        $builder
+        return $this->withBytes($this->base($trashed)->select($select), $trashed);
+    }
+
+    /**
+     * The same entries and joins as `query()`, with only what a scan needs: `id`, `model_id`, `sd_entry_id` and
+     * `payload_bytes`. A list reads every candidate this way, so it must not drag each model's definition along.
+     */
+    public function lean(bool $trashed = false): BaseBuilder
+    {
+        return $this->withBytes($this->base($trashed)->select(['e.id', 'e.model_id', 'e.sd_entry_id']), $trashed);
+    }
+
+    private function withBytes(BaseBuilder $builder, bool $trashed): BaseBuilder
+    {
+        return $trashed
+            ? $builder->select('COALESCE(LENGTH(r.fields), 0) AS payload_bytes', false)
+            : $builder->select('e.payload_bytes');
+    }
+
+    private function base(bool $trashed): BaseBuilder
+    {
+        $users   = $this->users();
+        $builder = $this->db()->table('hyper_entries AS e')
             ->join('hyper_models AS m', 'e.model_id = m.id', 'left')
             ->join($users['table'] . ' AS c', 'e.creator_id = c.' . $users['id'], 'left')
             ->join($users['table'] . ' AS ed', 'e.editor_id = ed.' . $users['id'], 'left')
