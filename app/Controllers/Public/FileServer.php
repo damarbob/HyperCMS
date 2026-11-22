@@ -28,6 +28,7 @@ class FileServer extends ApiController
 
         // Use CodeIgniter’s response object to serve the file.
         return $this->response
+            ->setHeader('X-Content-Type-Options', 'nosniff')
             ->setHeader('Content-Type', $result['content_type'])
             ->setBody($result['body']);
     }
