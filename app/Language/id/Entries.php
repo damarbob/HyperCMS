@@ -81,6 +81,7 @@ return [
     'clearHistory'     => 'Hapus versi yang lebih lama',
     'confirmClearHistory' => 'Hapus semua versi kecuali yang sekarang? Tindakan ini tidak bisa dibatalkan.',
     'historyCleared'   => 'Versi yang lebih lama sudah dihapus.',
+    'restoreVersion'   => 'Simpan versi ini lagi',
     'back'             => 'Kembali ke entri',
 
     // Daftar semua entri

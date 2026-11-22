@@ -81,6 +81,7 @@ return [
     'clearHistory'     => 'Delete the older versions',
     'confirmClearHistory' => 'Delete every version except the current one? This cannot be undone.',
     'historyCleared'   => 'The older versions were deleted.',
+    'restoreVersion'   => 'Save this version again',
     'back'             => 'Back to the entry',
 
     // The list of every entry

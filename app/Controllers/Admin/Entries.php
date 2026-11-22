@@ -125,6 +125,113 @@ class Entries extends AdminController
         return $this->form($model, is_array($saved) ? $saved : $entry, $values, [], '', 200, lang('Entries.saved'));
     }
 
+    /* The versions of one entry ------------------------------------------------------------------------------ */
+
+    public function history($modelId, $id)
+    {
+        $model = $this->model($modelId, 'entries.history');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
+
+        $definition = $this->definition($model);
+        $versions   = array_reverse(service('entryStore')->versionsOf((int) $id));
+        $total      = count($versions);
+
+        $rows = [];
+        foreach ($versions as $position => $version) {
+            $values = json_decode((string) ($version['fields'] ?? ''), true);
+            $rows[] = [
+                'id'      => (int) $version['id'],
+                'number'  => $total - $position,
+                'current' => $position === 0,
+                'date'    => $version['date_created'],
+                'by'      => $version['created_by'],
+                'values'  => is_array($values) && ! array_is_list($values) ? $values : [],
+            ];
+        }
+
+        $label = $this->labelOf($model, $this->valuesOf($entry), (int) $id);
+        $this->data = array_merge($this->data, [
+            'title'       => lang('Entries.historyTitle', ['name' => $label]),
+            'crumbs'      => [[lang('Admin.entries'), base_url('admin/entries')], [$model['name'], base_url('admin/model/' . (int) $modelId)], [$label, base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit')], [lang('Entries.history'), null]],
+            'model'       => $model,
+            'entry'       => $entry,
+            'label'       => $label,
+            'versions'    => $rows,
+            'definitions' => $definition,
+            'types'       => FieldTypes::core(),
+            'editUrl'     => base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'),
+            'baseUrl'     => base_url('admin/model/' . (int) $modelId . '/' . (int) $id),
+            'can'         => ['restore' => can('entries.update', (int) $modelId), 'clear' => can('entries.delete', (int) $modelId)],
+        ]);
+
+        return view('admin/entry_history', $this->data);
+    }
+
+    /**
+     * Save the values of an older version as a new version, so the older one stays in the history.
+     */
+    public function restoreVersion($modelId, $id, $versionId)
+    {
+        $model = $this->model($modelId, 'entries.update');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
+
+        $back = base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/history');
+        $found = null;
+        foreach (service('entryStore')->versionsOf((int) $id) as $version) {
+            if ((int) $version['id'] === (int) $versionId) {
+                $found = $version;
+            }
+        }
+        if ($found === null) {
+            return $this->leave($back, lang('Entries.noEntry'));
+        }
+
+        try {
+            service('entryStore')->update((int) $id, ['fields' => (string) $found['fields']], (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($back, $e->getMessage());
+        }
+        session()->setFlashdata('success', lang('Entries.saved'));
+
+        return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'))->setStatusCode(204) : redirect()->to(base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'));
+    }
+
+    /**
+     * Delete every version of the entry except the current one.
+     */
+    public function clearHistory($modelId, $id)
+    {
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
+
+        $back = base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/history');
+        try {
+            service('entryStore')->clearHistory((int) $id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($back, $e->getMessage());
+        }
+        session()->setFlashdata('success', lang('Entries.historyCleared'));
+
+        return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', $back)->setStatusCode(204) : redirect()->to($back);
+    }
     /* The list actions -------------------------------------------------------------------------------------- */
 
     public function trash($modelId)

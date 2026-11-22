@@ -47,6 +47,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
                 $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
                 $routes->post('(:num)', 'Entries::update/$1/$2');
                 $routes->post('(:num)/trash', 'Entries::trashOne/$1/$2');
+                $routes->get('(:num)/history', 'Entries::history/$1/$2');
+                $routes->post('(:num)/history/clear', 'Entries::clearHistory/$1/$2');
+                $routes->post('(:num)/versions/(:num)/restore', 'Entries::restoreVersion/$1/$2/$3');
             });
             $routes->addRedirect('/', 'admin/entries', 301);
         });
@@ -76,16 +79,6 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
 
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
-
-        // Entry data
-        $routes->resource('entry-data', [
-            'controller' => 'EntryData',
-            'websafe' => 1,
-            'placeholder' => '(:num)',
-            'only' => ['show'],
-            'filter' => 'model-user-group:entry',
-        ]);
-        $routes->post('entry-data/clear-history/(:num)', 'EntryData::clearHistory/$1', ['filter' => 'model-user-group:entry,3']);
 
         // File Manager
         $routes->get('file-manager', 'FileManager', ['filter' => 'group-not:user']);

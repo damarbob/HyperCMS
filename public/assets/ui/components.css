@@ -266,3 +266,16 @@
     .details { position: static; }
   }
 }
+
+@layer components {
+  .versions { list-style: none; display: flex; flex-direction: column; gap: var(--s3); max-width: 860px; }
+  .versions summary { display: flex; align-items: center; gap: var(--s3); padding: var(--s3) var(--s4); cursor: pointer; list-style: none; flex-wrap: wrap; }
+  .versions summary::-webkit-details-marker { display: none; }
+  .versions summary::before { content: ""; width: 7px; height: 7px; border-right: 1.6px solid var(--ink-3); border-bottom: 1.6px solid var(--ink-3); transform: rotate(-45deg); transition: transform var(--fast) var(--ease); flex: none; }
+  .versions details[open] summary::before { transform: rotate(45deg); }
+  .version-title { font-weight: 550; }
+  .values { display: grid; grid-template-columns: minmax(120px, 200px) minmax(0, 1fr); gap: var(--s2) var(--s4); margin: 0; padding: var(--s3) var(--s4) var(--s4); border-top: 1px solid var(--line); }
+  .values dt { color: var(--ink-3); font-size: var(--t-sm); }
+  .values dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .version-actions { padding: 0 var(--s4) var(--s4); }
+}

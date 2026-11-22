@@ -33,7 +33,7 @@ $stamp = static fn (?string $value): string => $value === null || $value === '' 
         </div>
         <div class="actions">
             <?= $toolbar ?>
-            <?= ui('button', ['label' => lang('Entries.history'), 'href' => base_url('admin/entry-data/' . $entryId), 'icon' => 'history']) ?>
+            <?= ui('button', ['label' => lang('Entries.history'), 'href' => base_url('admin/model/' . (int) $model['id'] . '/' . $entryId . '/history'), 'icon' => 'history']) ?>
             <?php if ($can['update']) : ?><?= ui('button', ['label' => $isNew ? lang('Entries.create') : lang('Entries.save'), 'type' => 'submit', 'variant' => 'primary', 'attrs' => ['form' => 'entry-form']]) ?><?php endif ?>
         </div>
     </div>
@@ -80,7 +80,7 @@ $stamp = static fn (?string $value): string => $value === null || $value === '' 
                     <dt><?= esc(lang('Entries.editedBy')) ?></dt><dd><?= esc((string) ($entry['edited_by'] ?? '')) ?></dd>
                 </dl>
                 <div class="details-links">
-                    <?php if ($can['history']) : ?><a href="<?= attr(base_url('admin/entry-data/' . $entryId)) ?>"><?= esc(lang('Entries.seeHistory')) ?></a><?php endif ?>
+                    <?php if ($can['history']) : ?><a href="<?= attr(base_url('admin/model/' . (int) $model['id'] . '/' . $entryId . '/history')) ?>"><?= esc(lang('Entries.seeHistory')) ?></a><?php endif ?>
                     <?php if ($can['delete']) : ?>
                         <form method="post" action="<?= attr($formUrl . '/trash') ?>" hx-post="<?= attr($formUrl . '/trash') ?>" hx-confirm="<?= attr(lang('Entries.confirmTrash')) ?>">
                             <?= csrf_field() ?>
