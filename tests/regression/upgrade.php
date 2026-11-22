@@ -61,6 +61,10 @@ $newTables = fn(): array => $hashes(array_values(array_filter($tables(), fn(stri
 
 /** Sort the keys of every object, so two payloads compare by content, and write them as one string. */
 $canon = function (mixed $value) use (&$canon): mixed {
+    // MySQL keeps 2.0 as the integer 2, so a number with no fraction is compared as an integer.
+    if (is_float($value) && is_finite($value) && $value === floor($value) && abs($value) < 9.0E15) {
+        return (int) $value;
+    }
     if (! is_array($value)) {
         return $value;
     }
@@ -164,6 +168,49 @@ foreach ($rows('SELECT id, entry_id, fields, creator_id, created_at FROM entry_d
     ];
 }
 $listCount = count(array_filter($wantVersions, fn(array $v): bool => $v['wasList']));
+
+// The conversion steps rewrite definitions and values after the copy, so what the database must hold is the seed run
+// through the same conversions. The conversions themselves are tested on arrays. Here the run proves they were applied
+// to every model, every live entry and every saved version.
+require $repo . '/vendor/autoload.php';
+$fieldTypes    = App\Fields\FieldTypes::core();
+$convertFields = new App\Libraries\Upgrade\Convert\ModelFields($fieldTypes);
+$convertValues = new App\Libraries\Upgrade\Convert\EntryValues($fieldTypes);
+$modelIdsByName = [];
+foreach ($wantModels as $modelId => $model) {
+    $modelIdsByName[$model['name']] ??= (int) $modelId;
+}
+$wantDefinitions = [];
+foreach (array_keys($wantModels) as $modelId) {
+    $old = json_decode($wantModels[$modelId]['fields'], true);
+    $wantDefinitions[$modelId] = is_array($old) ? $convertFields->convert($old, $modelIdsByName)['fields'] : [];
+    $wantModels[$modelId]['fields'] = json_encode($wantDefinitions[$modelId], FLAGS);
+}
+foreach ($wantModelRevisions as $revisionId => $revision) {
+    $old = json_decode($revision['fields'], true);
+    if (is_array($old)) {
+        $wantModelRevisions[$revisionId]['fields'] = json_encode($convertFields->convert($old, $modelIdsByName)['fields'], FLAGS);
+    }
+}
+/** The text and the payload a version must hold once its values are converted. Text that did not change is kept. */
+$convertVersion = function (array $want, int $modelId) use ($convertValues, $wantDefinitions, $payload): array {
+    $decoded = json_decode($want['text'], true);
+    if (! is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) {
+        return $want;
+    }
+    $converted = $convertValues->convert($decoded, $wantDefinitions[$modelId] ?? [])['fields'];
+    if (json_encode($converted) !== json_encode($decoded)) {
+        $want['text'] = App\Libraries\Upgrade\Payload::encode((object) $converted);
+    }
+    $want['payload'] = $payload($want['text']);
+
+    return $want;
+};
+foreach ($wantVersions as $versionId => $want) {
+    $entryId = $want['entry_id'];
+    $modelId = (int) ($wantEntries[$entryId]['model_id'] ?? 0);
+    $wantVersions[$versionId] = $convertVersion($want, $modelId);
+}
 
 // ---------------------------------------------------------------------------------------------
 // Put the database into the 0.1 shape.
@@ -337,6 +384,21 @@ $check('the seed had entries in the old list format to convert', $listCount >= 5
 $verify('first run', 0);
 $odd = $rows("SELECT fields FROM hyper_entry_revisions WHERE id = $oddId");
 $check('the odd version is copied as it was, as text', ($odd[0]['fields'] ?? null) === '["loose", "list"]');
+
+// The conversion steps ran, and the shapes of the old form came out as the new ones.
+$check('the schema version is the latest after a complete run', (int) $pdo->query("SELECT value FROM hyper_counters WHERE name = 'schema_version'")->fetchColumn() === App\Libraries\Upgrade\Steps\Steps::LATEST);
+$labels = $pairs('SELECT name, label_field FROM hyper_models ORDER BY id');
+$check('every model got the label field its fields suggest', ($labels['Article'] ?? null) === 'title' && ($labels['Product'] ?? null) === 'sku' && ($labels['Shapes'] ?? null) === 'title' && ($labels['Pages'] ?? null) === 'path' && ($labels['Guarded'] ?? null) === 'note', json_encode($labels));
+$shapeId  = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Shapes'")->fetchColumn();
+$shapeDef = array_column(json_decode((string) $pdo->query("SELECT fields FROM hyper_models WHERE id = $shapeId")->fetchColumn(), true), null, 'id');
+$check('the old field shapes became version 2 types', array_map(fn($f) => $f['type'], $shapeDef) === ['title' => 'text', 'mail' => 'text', 'body' => 'richtext', 'snippet' => 'code', 'logo' => 'file', 'photos' => 'file', 'rating' => 'number', 'count' => 'number', 'price' => 'number', 'active' => 'boolean', 'size' => 'choice', 'tags' => 'choice', 'kind' => 'choice', 'colour' => 'color', 'starts' => 'datetime', 'secret' => 'hidden'], json_encode(array_map(fn($f) => $f['type'], $shapeDef)));
+$queryDef = array_column(json_decode((string) $pdo->query("SELECT fields FROM hyper_models WHERE name = 'Queries'")->fetchColumn(), true), 'type', 'id');
+$check('data queries became model, relation and hook fields, and the rest became text', $queryDef === ['title' => 'text', 'model' => 'model', 'shape' => 'relation', 'hook' => 'hook', 'whole' => 'text', 'owner' => 'text'], json_encode($queryDef));
+$shapeEntry = $pdo->query("SELECT d.fields FROM hyper_entries e JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE e.model_id = $shapeId ORDER BY e.id LIMIT 1")->fetchColumn();
+$shapeValues = json_decode((string) $shapeEntry, true);
+$check('the values of a Shapes entry took the new shape', is_array($shapeValues) && $shapeValues['rating'] === 7 && $shapeValues['count'] === 3 && $shapeValues['price'] === 12.5 && $shapeValues['active'] === true && $shapeValues['tags'] === ['b'] && $shapeValues['starts'] === '2026-03-01 08:30:00' && $shapeValues['colour'] === '#aa00ff' && $shapeValues['photos'] === ['uploads/photo-one.png', 'uploads/photo-two.png'] && is_string($shapeValues['logo']), (string) $shapeEntry);
+$oddValues = json_decode((string) $pdo->query("SELECT d.fields FROM hyper_entries e JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE e.model_id = $shapeId ORDER BY e.id LIMIT 1 OFFSET 2")->fetchColumn(), true);
+$check('a value that fits no rule is kept as it was', is_array($oddValues) && $oddValues['count'] === 'many' && $oddValues['active'] === 'maybe' && $oddValues['starts'] === 'soon', json_encode($oddValues));
 
 // ---------------------------------------------------------------------------------------------
 // A second run finds nothing to do, and no row of any new table changes.

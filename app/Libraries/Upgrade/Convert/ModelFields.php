@@ -51,7 +51,14 @@ final class ModelFields
             }
 
             $seen[$result['field']['id']] = true;
-            $fields[]                     = $result['field'];
+
+            // StarDust indexes text, numbers and dates, so a yes or no cannot be filterable. The old checkbox could be.
+            if (($result['field']['type'] ?? null) === 'boolean' && isset($result['field']['filterable'])) {
+                unset($result['field']['filterable']);
+                $problems[] = ['field' => $result['field']['id'], 'problem' => 'the checkbox was filterable, which a yes or no cannot be, so the flag was removed'];
+            }
+
+            $fields[] = $result['field'];
 
             if ($result['labelField'] !== null && ($result['field']['type'] ?? null) === 'relation') {
                 $labels[] = ['model' => (int) $result['field']['model'], 'field' => $result['labelField'], 'from' => $result['field']['id']];

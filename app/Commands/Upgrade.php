@@ -2,7 +2,9 @@
 
 namespace App\Commands;
 
-use App\Libraries\Upgrade\ConversionStep;
+use App\Fields\FieldTypes;
+use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\ModelFields;
 use App\Libraries\Upgrade\Converters;
 use App\Libraries\Upgrade\CounterSchemaStore;
 use App\Libraries\Upgrade\EntryCopier;
@@ -10,6 +12,7 @@ use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\PayloadWriter;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
+use App\Libraries\Upgrade\Steps\Steps;
 use App\Libraries\Upgrade\Verifier;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
@@ -151,7 +154,8 @@ class Upgrade extends BaseCommand
             $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
             CLI::write("Wrote {$payloads['written']} entries to StarDust.");
 
-            $result = (new Verifier($db, $engine, $tenant))->verify();
+            $types  = FieldTypes::core();
+            $result = (new Verifier($db, $engine, $tenant, new EntryValues($types), new ModelFields($types)))->verify();
         } catch (Throwable $e) {
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());
@@ -190,11 +194,24 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
+        // Rows that were just copied, or written to StarDust again, are in the old shape, so the conversions go again
+        // from the start. They change nothing that is already converted.
+        $store = new CounterSchemaStore($db);
+        if ($copied['models'] > 0 || $copied['revisions'] > 0 || $added > 0 || $revisions['count'] > 0 || $payloads['written'] > 0) {
+            $store->setVersion(0);
+            for ($step = 1; $step <= Steps::LATEST; $step++) {
+                $store->clearCursor($step);
+            }
+        }
+
         try {
-            foreach ((new Converters($this->steps()))->run(new CounterSchemaStore($db)) as $step) {
+            foreach ((new Converters(Steps::make($db)))->run($store) as $step) {
                 CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
-                foreach ($step['problems'] as $problem) {
+                foreach (array_slice($step['problems'], 0, 50) as $problem) {
                     CLI::write("  $problem", 'yellow');
+                }
+                if (count($step['problems']) > 50) {
+                    CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
                 }
             }
         } catch (Throwable $e) {
@@ -212,16 +229,6 @@ class Upgrade extends BaseCommand
         CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');
 
         return EXIT_SUCCESS;
-    }
-
-    /**
-     * The conversion steps that run after the copy, in order. There are none yet.
-     *
-     * @return list<ConversionStep>
-     */
-    private function steps(): array
-    {
-        return [];
     }
 
     /**
