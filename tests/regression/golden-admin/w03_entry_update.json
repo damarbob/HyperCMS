@@ -1,16 +1,22 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/1",
+        "path": "admin/model/1/1",
         "form": {
-            "fields": "{\"title\":\"Edited by flow\",\"body\":\"<p>x</p>\",\"views\":\"99\",\"published_at\":\"\",\"tags\":[\"tech\"],\"cover\":\"\"}"
+            "fields": {
+                "title": "Edited by flow",
+                "body": "<p>x</p>",
+                "views": "99",
+                "published_at": "",
+                "tags": [
+                    "tech"
+                ]
+            }
         }
     },
     "status": 200,
     "location": null,
-    "body": {
-        "success": "Entri 1 berhasil disimpan!"
-    },
+    "body": "Ubah Article Langsung ke konten Hyper CMS Dasbor AI Voltic AI Data Model Entri Perbandingan Data Content Article 23 Product 12 Linked 3 Lainnya Manajer Berkas Pengguna Pengaturan Versi 0.1.0-alpha.8 E",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -20,7 +26,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 0,
+                        "write_version": 1,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -31,7 +37,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 1,
+                        "write_version": 2,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -48,7 +54,7 @@
                         "model_id": 1,
                         "in_sd": 1,
                         "current_revision_id": 45,
-                        "payload_bytes": 156,
+                        "payload_bytes": 159,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -59,7 +65,7 @@
                         "model_id": 1,
                         "in_sd": 1,
                         "current_revision_id": 48,
-                        "payload_bytes": 102,
+                        "payload_bytes": 104,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -80,7 +86,7 @@
                     "to": {
                         "id": 45,
                         "entry_id": 1,
-                        "fields": "{\"body\":\"<p>v3</p>\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\",\"title\":\"Getting started with HyperCMS (edited twice)\",\"views\":\"16\",\"published_at\":\"2026-01-05T09:30\"}",
+                        "fields": "{\"body\":\"<p>v3</p>\",\"tags\":[\"news\",\"tech\"],\"cover\":null,\"title\":\"Getting started with HyperCMS (edited twice)\",\"views\":16,\"published_at\":\"2026-01-05 09:30:00\"}",
                         "creator_id": 1
                     }
                 }
@@ -99,11 +105,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 1
+                        "value": 2
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 2
+                        "value": 3
                     }
                 }
             ]
@@ -114,13 +120,13 @@
                     "from": {
                         "id": 1,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<p>v3</p>\", \"tags\": [\"news\", \"tech\"], \"cover\": \"\", \"title\": \"Getting started with HyperCMS (edited twice)\", \"views\": \"16\", \"published_at\": \"2026-01-05T09:30\"}",
+                        "fields": "{\"body\": \"<p>v3</p>\", \"tags\": [\"news\", \"tech\"], \"cover\": null, \"title\": \"Getting started with HyperCMS (edited twice)\", \"views\": 16, \"published_at\": \"2026-01-05 09:30:00\"}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 1,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<p>x</p>\", \"tags\": [\"tech\"], \"cover\": \"\", \"title\": \"Edited by flow\", \"views\": \"99\", \"published_at\": \"\"}",
+                        "fields": "{\"body\": \"<p>x</p>\", \"tags\": [\"tech\"], \"cover\": null, \"title\": \"Edited by flow\", \"views\": 99, \"published_at\": null}",
                         "deleted": 0
                     }
                 }

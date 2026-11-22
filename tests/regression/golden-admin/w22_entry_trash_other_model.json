@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/model/1/trash",
+        "form": {
+            "ids": [
+                43
+            ]
+        }
+    },
+    "status": 303,
+    "location": "/admin/model/1",
+    "body": "",
+    "changes": []
+}

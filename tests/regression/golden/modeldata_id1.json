@@ -17,7 +17,7 @@
             {
                 "data_id": "1",
                 "name": "Article",
-                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"choice\",\"multiple\":true,\"widget\":\"checkboxes\",\"choices\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\",\"multiple\":false,\"accept\":\"any\"}]",
                 "icon": "file-text",
                 "date_created": "2026-11-14 11:13:35",
                 "id": "1",

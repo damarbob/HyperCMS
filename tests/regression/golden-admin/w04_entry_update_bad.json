@@ -1,13 +1,16 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/1",
-        "form": []
+        "path": "admin/model/1/1",
+        "form": {
+            "fields": {
+                "title": "",
+                "views": "many"
+            }
+        }
     },
-    "status": 200,
+    "status": 422,
     "location": null,
-    "body": {
-        "error": "Kolom fields wajib diisi."
-    },
+    "body": "Ubah Article Langsung ke konten Hyper CMS Dasbor AI Voltic AI Data Model Entri Perbandingan Data Content Article 23 Product 12 Linked 3 Lainnya Manajer Berkas Pengguna Pengaturan Versi 0.1.0-alpha.8 E",
     "changes": []
 }

@@ -1,7 +1,7 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/delete",
+        "path": "admin/model/1/trash",
         "form": {
             "ids": [
                 4,
@@ -9,11 +9,9 @@
             ]
         }
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Entri berhasil dihapus!"
-    },
+    "status": 303,
+    "location": "/admin/model/1",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -23,7 +21,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 2,
+                        "write_version": 3,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -34,7 +32,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 4,
+                        "write_version": 5,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -51,7 +49,7 @@
                         "model_id": 1,
                         "in_sd": 1,
                         "current_revision_id": 4,
-                        "payload_bytes": 130,
+                        "payload_bytes": 132,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -62,7 +60,7 @@
                         "model_id": 1,
                         "in_sd": 0,
                         "current_revision_id": 4,
-                        "payload_bytes": 130,
+                        "payload_bytes": 132,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -107,7 +105,7 @@
                     "to": {
                         "id": 4,
                         "entry_id": 4,
-                        "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":\"\",\"title\":\"Éclair for beginners\",\"views\":\"40\",\"published_at\":\"\"}",
+                        "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":null,\"title\":\"Éclair for beginners\",\"views\":40,\"published_at\":null}",
                         "creator_id": 1
                     }
                 },
@@ -121,7 +119,7 @@
                     "to": {
                         "id": 5,
                         "entry_id": 5,
-                        "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":\"\",\"title\":\"eclair filling\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\"}",
+                        "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":null,\"title\":\"eclair filling\",\"views\":50,\"published_at\":\"2026-02-06 14:05:00\"}",
                         "creator_id": 1
                     }
                 }
@@ -132,11 +130,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 3
+                        "value": 4
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 5
+                        "value": 6
                     }
                 }
             ]
@@ -147,13 +145,13 @@
                     "from": {
                         "id": 4,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": \"\", \"title\": \"Éclair for beginners\", \"views\": \"40\", \"published_at\": \"\"}",
+                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": null, \"title\": \"Éclair for beginners\", \"views\": 40, \"published_at\": null}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 4,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": \"\", \"title\": \"Éclair for beginners\", \"views\": \"40\", \"published_at\": \"\"}",
+                        "fields": "{\"body\": \"<div class=\\\"x\\\">Post 4</div>\", \"tags\": [\"news\"], \"cover\": null, \"title\": \"Éclair for beginners\", \"views\": 40, \"published_at\": null}",
                         "deleted": 1
                     }
                 },
@@ -161,13 +159,13 @@
                     "from": {
                         "id": 5,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": \"\", \"title\": \"eclair filling\", \"views\": \"50\", \"published_at\": \"2026-02-06T14:05:00\"}",
+                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": null, \"title\": \"eclair filling\", \"views\": 50, \"published_at\": \"2026-02-06 14:05:00\"}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 5,
                         "model_id": 1,
-                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": \"\", \"title\": \"eclair filling\", \"views\": \"50\", \"published_at\": \"2026-02-06T14:05:00\"}",
+                        "fields": "{\"body\": \"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\", \"tags\": [], \"cover\": null, \"title\": \"eclair filling\", \"views\": 50, \"published_at\": \"2026-02-06 14:05:00\"}",
                         "deleted": 1
                     }
                 }

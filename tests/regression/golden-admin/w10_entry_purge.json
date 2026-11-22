@@ -1,14 +1,12 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/purge-deleted",
+        "path": "admin/model/1/purge",
         "form": []
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Entri berhasil dihapus!"
-    },
+    "status": 303,
+    "location": "/admin/model/1",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -18,7 +16,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 5,
+                        "write_version": 6,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -29,7 +27,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 6,
+                        "write_version": 7,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -42,7 +40,7 @@
                         "sd_model_id": 2,
                         "name": "Product",
                         "current_revision_id": 2,
-                        "write_version": 1,
+                        "write_version": 2,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -53,7 +51,7 @@
                         "sd_model_id": 2,
                         "name": "Product",
                         "current_revision_id": 2,
-                        "write_version": 2,
+                        "write_version": 3,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -93,7 +91,7 @@
                     "model_id": 1,
                     "in_sd": 0,
                     "current_revision_id": 3,
-                    "payload_bytes": 132,
+                    "payload_bytes": 136,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -104,7 +102,7 @@
                     "model_id": 1,
                     "in_sd": 0,
                     "current_revision_id": 4,
-                    "payload_bytes": 130,
+                    "payload_bytes": 132,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -172,31 +170,31 @@
                 {
                     "id": 3,
                     "entry_id": 3,
-                    "fields": "{\"body\":\"Plain body 3\",\"tags\":[\"news\",\"tech\"],\"cover\":\"\",\"title\":\"Apple pie recipe\",\"views\":\"\",\"published_at\":\"2026-02-04T14:05:00\"}",
+                    "fields": "{\"body\":\"Plain body 3\",\"tags\":[\"news\",\"tech\"],\"cover\":null,\"title\":\"Apple pie recipe\",\"views\":null,\"published_at\":\"2026-02-04 14:05:00\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 4,
                     "entry_id": 4,
-                    "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":\"\",\"title\":\"Éclair for beginners\",\"views\":\"40\",\"published_at\":\"\"}",
+                    "fields": "{\"body\":\"<div class=\\\"x\\\">Post 4</div>\",\"tags\":[\"news\"],\"cover\":null,\"title\":\"Éclair for beginners\",\"views\":40,\"published_at\":null}",
                     "creator_id": 1
                 },
                 {
                     "id": 5,
                     "entry_id": 5,
-                    "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":\"\",\"title\":\"eclair filling\",\"views\":\"50\",\"published_at\":\"2026-02-06T14:05:00\"}",
+                    "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":null,\"title\":\"eclair filling\",\"views\":50,\"published_at\":\"2026-02-06 14:05:00\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 25,
                     "entry_id": 25,
-                    "fields": "{\"title\":\"Sample post 25\",\"views\":\"250\",\"body\":\"<p>Body of post 25 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\"}",
+                    "fields": "{\"title\":\"Sample post 25\",\"views\":250,\"body\":\"<p>Body of post 25 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 37,
                     "entry_id": 37,
-                    "fields": "{\"sku\":\"SKU-012\",\"price\":\"\",\"category\":\"b\",\"added\":\"2026-03-12T08:00\"}",
+                    "fields": "{\"sku\":\"SKU-012\",\"price\":null,\"category\":\"b\",\"added\":\"2026-03-12 08:00:00\"}",
                     "creator_id": 1
                 },
                 {
@@ -218,11 +216,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 6
+                        "value": 7
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 7
+                        "value": 8
                     }
                 }
             ]

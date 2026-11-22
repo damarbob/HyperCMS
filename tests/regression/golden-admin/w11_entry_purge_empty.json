@@ -1,11 +1,11 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/purge-deleted",
+        "path": "admin/model/1/purge",
         "form": []
     },
-    "status": 400,
-    "location": null,
+    "status": 303,
+    "location": "/admin/model/1",
     "body": "",
     "changes": []
 }

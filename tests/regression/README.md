@@ -1,6 +1,6 @@
 # Regression captures
 
-A capture is a saved copy of what one request returned. This folder holds 148 of them, taken from a seeded database, together with the scripts that send the same requests again and name every answer that changed. Run it before and after a change that should leave the API and the admin answering as they did, such as a refactor of the data layer.
+A capture is a saved copy of what one request returned. This folder holds 99 of them, taken from a seeded database, together with the scripts that send the same requests again and name every answer that changed. Run it before and after a change that should leave the API and the admin answering as they did, such as a refactor of the data layer.
 
 Nothing here asserts that an answer is right. The check tells you which answers differ from the baseline, and you decide whether a difference is the change you meant to make.
 
@@ -8,8 +8,8 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 
 | Path | Contents |
 | :-- | :-- |
-| `golden/` | 86 answers from the `api/v1` endpoints, one JSON file per request |
-| `golden-admin/` | 30 admin page requests, 11 API calls made with an admin session, and 21 write flows |
+| `golden/` | 43 answers from the `api/v1` endpoints, one JSON file per request |
+| `golden-admin/` | 30 admin page requests, 5 API calls made with an admin session, and 21 write flows |
 | `seed.sql` | The database the captures were taken from |
 | `harness.php` | Sends the API requests, and compares two folders of captures |
 | `admin_harness.php` | Signs in, loads the admin pages and runs the write flows |
@@ -24,7 +24,7 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 
 An API capture stores the request, the status code and the JSON body. An admin page capture stores the status, the redirect target, the page title, and the size and SHA-1 of the HTML with its CSRF tokens masked. A write flow capture also lists the rows the request added, changed or removed in `hyper_models`, `hyper_model_revisions`, `hyper_entries`, `hyper_entry_revisions`, `hyper_counters`, `sd_entry_data` and `settings`.
 
-The seed has three accounts, so the captures cover who gets in as well as what comes back. `capture_admin` is a superadmin and makes most of the requests. `capture_dev` is a developer, and `capture_user` is in the `user` group, which is outside the staff groups. Files that start with `anon_` were sent with no login at all. Product is the one model marked public, and Restricted is open to developers only.
+The seed has three accounts, so the captures cover who gets in as well as what comes back. `capture_admin` is a superadmin and makes most of the requests. `capture_dev` is a developer, and `capture_user` is in the `user` group, which is outside the staff groups. Files that start with `anon_` were sent with no login at all. Product is the one model marked public, which no endpoint reads without a login any more, and Restricted is open to developers only.
 
 ## Before you run it
 
@@ -42,9 +42,9 @@ Without switches only the API captures run. `-Admin` adds the admin pages and wr
 
 ```text
 --- golden
-86 files compared, 0 differ
+43 files compared, 0 differ
 --- golden-admin
-62 files compared, 0 differ
+56 files compared, 0 differ
 ```
 
 A file that differs is named on a line of its own. The answers from the run are in `captures/api` and `captures/admin`, which git ignores, so compare the named file with the one in the baseline folder to see what moved. For an admin page the full HTML of the run is in `captures/admin/bodies`.

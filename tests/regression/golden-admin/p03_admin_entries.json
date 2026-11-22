@@ -2,7 +2,7 @@
     "request": "GET admin/entries",
     "status": 200,
     "location": null,
-    "title": "Entri",
-    "bytes": 137877,
-    "sha1": "4a2fe8d68638d92416f8846c15ee858a5d6004a2"
+    "title": "Semua entri",
+    "bytes": 61069,
+    "sha1": "6441be06bf120fc416a4baa16131cda5bd7759e5"
 }

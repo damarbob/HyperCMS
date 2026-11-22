@@ -18,7 +18,7 @@
                         "sd_model_id": 3,
                         "name": "Linked",
                         "current_revision_id": 3,
-                        "write_version": 0,
+                        "write_version": 1,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -29,7 +29,7 @@
                         "sd_model_id": 3,
                         "name": "Linked",
                         "current_revision_id": 3,
-                        "write_version": 2,
+                        "write_version": 3,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -46,7 +46,7 @@
                         "model_id": 3,
                         "in_sd": 1,
                         "current_revision_id": 38,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -57,7 +57,7 @@
                         "model_id": 3,
                         "in_sd": 0,
                         "current_revision_id": 38,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -70,7 +70,7 @@
                         "model_id": 3,
                         "in_sd": 1,
                         "current_revision_id": 39,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -81,7 +81,7 @@
                         "model_id": 3,
                         "in_sd": 0,
                         "current_revision_id": 39,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -94,7 +94,7 @@
                         "model_id": 3,
                         "in_sd": 1,
                         "current_revision_id": 40,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -105,7 +105,7 @@
                         "model_id": 3,
                         "in_sd": 0,
                         "current_revision_id": 40,
-                        "payload_bytes": 38,
+                        "payload_bytes": 36,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -126,7 +126,7 @@
                     "to": {
                         "id": 38,
                         "entry_id": 38,
-                        "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
+                        "fields": "{\"title\":\"Link 1\",\"related_model\":1}",
                         "creator_id": 1
                     }
                 },
@@ -140,7 +140,7 @@
                     "to": {
                         "id": 39,
                         "entry_id": 39,
-                        "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
+                        "fields": "{\"title\":\"Link 2\",\"related_model\":2}",
                         "creator_id": 1
                     }
                 },
@@ -154,7 +154,7 @@
                     "to": {
                         "id": 40,
                         "entry_id": 40,
-                        "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
+                        "fields": "{\"title\":\"Link 3\",\"related_model\":3}",
                         "creator_id": 1
                     }
                 }
@@ -165,11 +165,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 9
+                        "value": 10
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 11
+                        "value": 12
                     }
                 }
             ]
@@ -180,13 +180,13 @@
                     "from": {
                         "id": 35,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 1\", \"related_model\": \"1\"}",
+                        "fields": "{\"title\": \"Link 1\", \"related_model\": 1}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 35,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 1\", \"related_model\": \"1\"}",
+                        "fields": "{\"title\": \"Link 1\", \"related_model\": 1}",
                         "deleted": 1
                     }
                 },
@@ -194,13 +194,13 @@
                     "from": {
                         "id": 36,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 2\", \"related_model\": \"2\"}",
+                        "fields": "{\"title\": \"Link 2\", \"related_model\": 2}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 36,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 2\", \"related_model\": \"2\"}",
+                        "fields": "{\"title\": \"Link 2\", \"related_model\": 2}",
                         "deleted": 1
                     }
                 },
@@ -208,13 +208,13 @@
                     "from": {
                         "id": 37,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 3\", \"related_model\": \"3\"}",
+                        "fields": "{\"title\": \"Link 3\", \"related_model\": 3}",
                         "deleted": 0
                     },
                     "to": {
                         "id": 37,
                         "model_id": 3,
-                        "fields": "{\"title\": \"Link 3\", \"related_model\": \"3\"}",
+                        "fields": "{\"title\": \"Link 3\", \"related_model\": 3}",
                         "deleted": 1
                     }
                 }
