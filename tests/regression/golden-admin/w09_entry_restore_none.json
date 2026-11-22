@@ -1,13 +1,11 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/restore",
+        "path": "admin/model/1/restore",
         "form": []
     },
-    "status": 400,
-    "location": null,
-    "body": {
-        "error": "Tidak ada entri dipilih"
-    },
+    "status": 303,
+    "location": "/admin/model/1",
+    "body": "",
     "changes": []
 }

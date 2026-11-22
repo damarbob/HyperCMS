@@ -28,7 +28,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 7,
-                        "write_version": 7,
+                        "write_version": 8,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -39,7 +39,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 8,
-                        "write_version": 8,
+                        "write_version": 9,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -67,11 +67,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 16
+                        "value": 17
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 17
+                        "value": 18
                     }
                 }
             ]

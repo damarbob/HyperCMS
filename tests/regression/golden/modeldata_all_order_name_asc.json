@@ -27,7 +27,7 @@
             {
                 "data_id": "1",
                 "name": "Article",
-                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime-local\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"checkboxes\",\"options\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\"}]",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"choice\",\"multiple\":true,\"widget\":\"checkboxes\",\"choices\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\",\"multiple\":false,\"accept\":\"any\"}]",
                 "icon": "file-text",
                 "date_created": "2026-11-14 11:13:35",
                 "id": "1",
@@ -36,7 +36,7 @@
             {
                 "data_id": "3",
                 "name": "Linked",
-                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"model\"}]",
                 "icon": "file-text",
                 "date_created": "2026-11-14 11:13:35",
                 "id": "3",
@@ -45,7 +45,7 @@
             {
                 "data_id": "2",
                 "name": "Product",
-                "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"choice\",\"multiple\":false,\"widget\":\"select\",\"choices\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime\"}]",
                 "icon": "file-text",
                 "date_created": "2026-11-14 11:13:35",
                 "id": "2",

@@ -32,6 +32,11 @@ use StarDust\Read\SortSpec;
  */
 class EntryLists
 {
+    /**
+     * Whether the rows of the list in progress spread their fields over the columns.
+     */
+    private bool $pivot = true;
+
     public function __construct(
         private ?BaseConnection $db = null,
         private ?EntryRows $rows = null,
@@ -83,7 +88,7 @@ class EntryLists
                 'draw'      => $draw,
                 'start'     => $start,
                 'length'    => $length,
-                'term'      => empty($search) ? '' : esc($search),
+                'term'      => empty($search) ? '' : (string) $search,
                 'modelId'   => $modelId,
                 'column'    => $safe ? $orderColumn : null,
                 'direction' => $direction,
@@ -94,9 +99,9 @@ class EntryLists
         // The three matches sit in one group. Without it their OR would let a row past the filters above.
         if (! empty($search)) {
             $builder->groupStart();
-            $builder->like('m.name', esc($search));
-            $builder->orLike($this->rows()->column('fields', true), esc($search));
-            $builder->orLike($this->rows()->column('created_by'), esc($search));
+            $builder->like('m.name', (string) $search);
+            $builder->orLike($this->rows()->column('fields', true), (string) $search);
+            $builder->orLike($this->rows()->column('created_by'), (string) $search);
             $builder->groupEnd();
         }
 
@@ -204,6 +209,9 @@ class EntryLists
         $find = $params['find'] ?? null;
         $trash = $params['trash'] ?? false;
 
+        // A caller that wants each row's fields as one text, with no field spread over the columns, asks for `pivot` off.
+        $this->pivot = (bool) ($params['pivot'] ?? true);
+
         if (! $modelId) {
             throw new InvalidArgumentException('No model id provided.');
         }
@@ -216,8 +224,7 @@ class EntryLists
         $live = ! $trash || $trash == 'false';
 
         $find = is_array($find) && ! empty($find['field']) && ! empty($find['value']) ? ['field' => (string) $find['field'], 'value' => (string) $find['value']] : null;
-        $term = esc($search);
-        $term = empty($term) ? '' : $term;
+        $term = (string) $search;
 
         // The order. A fixed column is sorted in SQL, a model field from its fields, and with no order the newest edit comes first.
         $orderColumn = null;
@@ -416,7 +423,7 @@ class EntryLists
 
         foreach (json_decode((string) $definition) ?? [] as $field) {
             if (! empty($field->type)) {
-                if ($field->type === 'datetime-local') {
+                if ($field->type === 'datetime') {
                     $dateFields[] = $field->id;
                 } elseif ($field->type === 'number') {
                     $numericFields[] = $field->id;
@@ -434,6 +441,10 @@ class EntryLists
      */
     protected function pivotRows(array $data, array $codeFields): array
     {
+        if (! $this->pivot) {
+            return $data;
+        }
+
         foreach ($data as &$row) {
             if (isset($row['fields'])) {
                 $fieldsArray = json_decode($row['fields'], true);
@@ -458,132 +469,7 @@ class EntryLists
         }
         unset($row);
 
-        foreach ($data as $i => $item) {
-            foreach ($codeFields as $x) {
-                if (isset($item[$x])) {
-                    $data[$i][$x] = htmlspecialchars($item[$x]);
-                }
-            }
-        }
-
         return $data;
-    }
-
-    /**
-     * Answer one DataTables request for the saved versions of one entry.
-     *
-     * An entry has few versions, so they are all read, then filtered, sorted and paged here.
-     *
-     * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns, find).
-     * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
-     * @throws \App\Data\LookupException When the entry id is missing or names no entry, or the entry names no model.
-     */
-    public function versionsDataTable(array $post): array
-    {
-        $entryId = $post['id'] ?? null;
-        $draw = $post['draw'] ?? 1;
-        $start = $post['start'] ?? 0;
-        $length = $post['length'] ?? 10;
-        $search = $post['search']['value'] ?? '';
-        $order = $post['order'] ?? null;
-        $columns = $post['columns'] ?? null;
-        $find = $post['find'] ?? null;
-
-        if (! $entryId) {
-            throw new LookupException('No entry id provided.');
-        }
-
-        $versions = $this->reader()->revisions($entryId);
-
-        if ($versions === []) {
-            throw new LookupException("Entry with id $entryId not found.");
-        }
-
-        $modelId = $versions[0]['model_id'];
-        $model   = $this->db()->table('hyper_models')->select('fields')->where('id', $modelId)->where('deleted_at', null)->get()->getRow();
-
-        if (! $model) {
-            throw new LookupException("Model with id $modelId not found.");
-        }
-
-        $types         = $this->fieldTypes($model->fields);
-        $dateFields    = $types['dateFields'];
-        $numericFields = $types['numericFields'];
-        $codeFields    = $types['codeFields'];
-
-        // Every version is read once, and its fields are decoded for the filters and the sort.
-        $decoded = [];
-        foreach ($versions as $i => $version) {
-            $decoded[$i] = $this->decode($version['fields']);
-        }
-        $indexes = array_keys($versions);
-
-        if (is_array($find) && ! empty($find['field']) && ! empty($find['value'])) {
-            $indexes = array_values(array_filter($indexes, static fn (int $i): bool => FieldRules::findMatches($decoded[$i], (string) $find['field'], (string) $find['value'])));
-        }
-
-        // The total counts this entry's versions after the find filter, before the search.
-        $totalRecords = count($indexes);
-
-        if (! empty($search)) {
-            $term    = esc($search);
-            $indexes = array_values(array_filter($indexes, static fn (int $i): bool => FieldRules::contains((string) ($versions[$i]['fields'] ?? ''), $term)));
-        }
-
-        $recordsFiltered = count($indexes);
-
-        $keys = [];
-        if (! empty($order)) {
-            $orderColumnIndex = $order[0]['column'];
-            $orderDir         = $order[0]['dir'];
-            $orderColumn      = $columns[$orderColumnIndex]['data']; // The field key for dynamic fields.
-
-            if (in_array($orderColumn, EntryDataStaticFields::FIELD_LIST)) {
-                if ($orderColumn === EntryDataStaticFields::CREATED_BY) {
-                    foreach ($indexes as $i) {
-                        $keys[$i] = $versions[$i]['created_by'] === null ? null : FieldRules::sortFold((string) $versions[$i]['created_by']);
-                    }
-                } elseif ($orderColumn === EntryDataStaticFields::DATE_CREATED) {
-                    foreach ($indexes as $i) {
-                        $keys[$i] = (string) $versions[$i]['date_created'];
-                    }
-                } else {
-                    // A version has no deleter and no deletion date of its own, and the list of versions never had these columns.
-                    throw new DatabaseException("Unknown column '$orderColumn' in 'order clause'", 1054);
-                }
-            } else {
-                $kind = in_array($orderColumn, $dateFields) ? 'date' : (in_array($orderColumn, $numericFields) ? 'number' : 'text');
-                foreach ($indexes as $i) {
-                    $keys[$i] = FieldRules::sortKey($kind, $decoded[$i], (string) $orderColumn);
-                }
-            }
-            $descending = $this->direction($orderDir) === 'DESC';
-        } else {
-            foreach ($indexes as $i) {
-                $keys[$i] = (string) $versions[$i]['date_created'];
-            }
-            $descending = true;
-        }
-
-        usort($indexes, static function (int $a, int $b) use ($keys, $versions, $descending): int {
-            $cmp = FieldRules::compare($keys[$a], $keys[$b]);
-
-            return ($descending ? -$cmp : $cmp) ?: (int) $versions[$a]['id'] <=> (int) $versions[$b]['id'];
-        });
-
-        $rows = array_map(static fn (int $i): array => $versions[$i], $indexes);
-
-        // A length of -1 means no limit.
-        if ($length != -1 && intval($length) !== 0) {
-            $rows = array_slice($rows, intval($start), intval($length));
-        }
-
-        return [
-            'draw'            => intval($draw),
-            'recordsTotal'    => $totalRecords,
-            'recordsFiltered' => $recordsFiltered,
-            'data'            => $this->pivotRows($rows, $codeFields),
-        ];
     }
 
     /**

@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/model/1/999/history",
+    "status": 302,
+    "location": "/admin/model/1",
+    "title": null,
+    "bytes": 28722,
+    "sha1": "6cc830078df77019edc0f48c376ca42459320e70"
+}

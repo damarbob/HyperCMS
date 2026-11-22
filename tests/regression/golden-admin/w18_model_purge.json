@@ -17,7 +17,7 @@
                     "sd_model_id": 2,
                     "name": "Product",
                     "current_revision_id": 2,
-                    "write_version": 4,
+                    "write_version": 5,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -28,7 +28,7 @@
                     "sd_model_id": 3,
                     "name": "Linked",
                     "current_revision_id": 3,
-                    "write_version": 2,
+                    "write_version": 3,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -42,7 +42,7 @@
                     "id": 2,
                     "model_id": 2,
                     "name": "Product",
-                    "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"select\",\"options\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime-local\"}]",
+                    "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"choice\",\"multiple\":false,\"widget\":\"select\",\"choices\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime\"}]",
                     "group": "Content",
                     "user_groups": "[\"superadmin\"]",
                     "icon": "file-text",
@@ -52,7 +52,7 @@
                     "id": 3,
                     "model_id": 3,
                     "name": "Linked",
-                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"select\",\"options\":{\"type\":\"data\",\"content\":{\"table\":\"models\",\"select\":\"id as value, name as label\"}}}]",
+                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"related_model\",\"label\":\"Model\",\"type\":\"model\"}]",
                     "group": "Content",
                     "user_groups": "[]",
                     "icon": "file-text",
@@ -100,7 +100,7 @@
                     "model_id": 2,
                     "in_sd": 0,
                     "current_revision_id": 29,
-                    "payload_bytes": 70,
+                    "payload_bytes": 75,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -144,7 +144,7 @@
                     "model_id": 2,
                     "in_sd": 0,
                     "current_revision_id": 33,
-                    "payload_bytes": 70,
+                    "payload_bytes": 75,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -188,7 +188,7 @@
                     "model_id": 3,
                     "in_sd": 0,
                     "current_revision_id": 38,
-                    "payload_bytes": 38,
+                    "payload_bytes": 36,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -199,7 +199,7 @@
                     "model_id": 3,
                     "in_sd": 0,
                     "current_revision_id": 39,
-                    "payload_bytes": 38,
+                    "payload_bytes": 36,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -210,7 +210,7 @@
                     "model_id": 3,
                     "in_sd": 0,
                     "current_revision_id": 40,
-                    "payload_bytes": 38,
+                    "payload_bytes": 36,
                     "creator_id": 1,
                     "editor_id": 1,
                     "deleter_id": 1,
@@ -234,91 +234,91 @@
                 {
                     "id": 26,
                     "entry_id": 26,
-                    "fields": "{\"sku\":\"SKU-001\",\"added\":\"2026-03-01T08:00\",\"price\":\"3.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-001\",\"added\":\"2026-03-01 08:00:00\",\"price\":3.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 27,
                     "entry_id": 27,
-                    "fields": "{\"sku\":\"SKU-002\",\"added\":\"2026-03-02T08:00\",\"price\":\"7.00\",\"category\":\"b\"}",
+                    "fields": "{\"sku\":\"SKU-002\",\"added\":\"2026-03-02 08:00:00\",\"price\":7,\"category\":\"b\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 28,
                     "entry_id": 28,
-                    "fields": "{\"sku\":\"SKU-003\",\"added\":\"2026-03-03T08:00\",\"price\":\"10.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-003\",\"added\":\"2026-03-03 08:00:00\",\"price\":10.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 29,
                     "entry_id": 29,
-                    "fields": "{\"sku\":\"SKU-004\",\"added\":\"2026-03-04T08:00\",\"price\":\"\",\"category\":\"b\"}",
+                    "fields": "{\"sku\":\"SKU-004\",\"added\":\"2026-03-04 08:00:00\",\"price\":null,\"category\":\"b\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 30,
                     "entry_id": 30,
-                    "fields": "{\"sku\":\"SKU-005\",\"added\":\"2026-03-05T08:00\",\"price\":\"17.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-005\",\"added\":\"2026-03-05 08:00:00\",\"price\":17.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 31,
                     "entry_id": 31,
-                    "fields": "{\"sku\":\"SKU-006\",\"added\":\"2026-03-06T08:00\",\"price\":\"21.00\",\"category\":\"b\"}",
+                    "fields": "{\"sku\":\"SKU-006\",\"added\":\"2026-03-06 08:00:00\",\"price\":21,\"category\":\"b\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 32,
                     "entry_id": 32,
-                    "fields": "{\"sku\":\"SKU-007\",\"added\":\"2026-03-07T08:00\",\"price\":\"24.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-007\",\"added\":\"2026-03-07 08:00:00\",\"price\":24.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 33,
                     "entry_id": 33,
-                    "fields": "{\"sku\":\"SKU-008\",\"added\":\"2026-03-08T08:00\",\"price\":\"\",\"category\":\"b\"}",
+                    "fields": "{\"sku\":\"SKU-008\",\"added\":\"2026-03-08 08:00:00\",\"price\":null,\"category\":\"b\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 34,
                     "entry_id": 34,
-                    "fields": "{\"sku\":\"SKU-009\",\"added\":\"2026-03-09T08:00\",\"price\":\"31.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-009\",\"added\":\"2026-03-09 08:00:00\",\"price\":31.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 35,
                     "entry_id": 35,
-                    "fields": "{\"sku\":\"SKU-010\",\"added\":\"2026-03-10T08:00\",\"price\":\"35.00\",\"category\":\"b\"}",
+                    "fields": "{\"sku\":\"SKU-010\",\"added\":\"2026-03-10 08:00:00\",\"price\":35,\"category\":\"b\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 36,
                     "entry_id": 36,
-                    "fields": "{\"sku\":\"SKU-011\",\"added\":\"2026-03-11T08:00\",\"price\":\"38.50\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-011\",\"added\":\"2026-03-11 08:00:00\",\"price\":38.5,\"category\":\"a\"}",
                     "creator_id": 1
                 },
                 {
                     "id": 38,
                     "entry_id": 38,
-                    "fields": "{\"title\":\"Link 1\",\"related_model\":\"1\"}",
+                    "fields": "{\"title\":\"Link 1\",\"related_model\":1}",
                     "creator_id": 1
                 },
                 {
                     "id": 39,
                     "entry_id": 39,
-                    "fields": "{\"title\":\"Link 2\",\"related_model\":\"2\"}",
+                    "fields": "{\"title\":\"Link 2\",\"related_model\":2}",
                     "creator_id": 1
                 },
                 {
                     "id": 40,
                     "entry_id": 40,
-                    "fields": "{\"title\":\"Link 3\",\"related_model\":\"3\"}",
+                    "fields": "{\"title\":\"Link 3\",\"related_model\":3}",
                     "creator_id": 1
                 },
                 {
                     "id": 47,
                     "entry_id": 44,
-                    "fields": "{\"sku\":\"SKU-NEW\",\"added\":\"2026-04-01T08:00\",\"price\":\"5.00\",\"category\":\"a\"}",
+                    "fields": "{\"sku\":\"SKU-NEW\",\"added\":\"2026-04-01 08:00:00\",\"price\":5,\"category\":\"a\"}",
                     "creator_id": 1
                 }
             ]
@@ -328,11 +328,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 14
+                        "value": 15
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 16
+                        "value": 17
                     }
                 }
             ]

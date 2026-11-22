@@ -1,18 +1,16 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries/restore",
+        "path": "admin/model/1/restore",
         "form": {
             "ids": [
                 24
             ]
         }
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Entri Article berhasil dipulihkan!"
-    },
+    "status": 303,
+    "location": "/admin/model/1",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -22,7 +20,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 4,
+                        "write_version": 5,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -33,7 +31,7 @@
                         "sd_model_id": 1,
                         "name": "Article",
                         "current_revision_id": 1,
-                        "write_version": 5,
+                        "write_version": 6,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -61,7 +59,7 @@
                         "model_id": 1,
                         "in_sd": 1,
                         "current_revision_id": 24,
-                        "payload_bytes": 63,
+                        "payload_bytes": 61,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": 1,
@@ -76,7 +74,7 @@
                     "from": {
                         "id": 24,
                         "entry_id": 24,
-                        "fields": "{\"title\":\"Sample post 24\",\"views\":\"240\",\"body\":\"Plain body 24\"}",
+                        "fields": "{\"title\":\"Sample post 24\",\"views\":240,\"body\":\"Plain body 24\"}",
                         "creator_id": 1
                     },
                     "to": {
@@ -93,11 +91,11 @@
                 {
                     "from": {
                         "id": "write_version",
-                        "value": 5
+                        "value": 6
                     },
                     "to": {
                         "id": "write_version",
-                        "value": 6
+                        "value": 7
                     }
                 }
             ]
@@ -107,7 +105,7 @@
                 {
                     "id": 40,
                     "model_id": 1,
-                    "fields": "{\"body\": \"Plain body 24\", \"title\": \"Sample post 24\", \"views\": \"240\"}",
+                    "fields": "{\"body\": \"Plain body 24\", \"title\": \"Sample post 24\", \"views\": 240}",
                     "deleted": 0
                 }
             ]

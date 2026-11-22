@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/settings/models",
+    "status": 200,
+    "location": null,
+    "title": "Pengaturan",
+    "bytes": 149107,
+    "sha1": "2becabdb3d73705a8464099cd8d65e56ba892166"
+}

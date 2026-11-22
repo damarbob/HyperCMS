@@ -37,6 +37,8 @@ $initials = mb_strtoupper(mb_substr($username !== '' ? $username : '?', 0, 2));
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-header" content="<?= attr(csrf_header()) ?>">
     <meta name="csrf-token" content="<?= attr(csrf_hash()) ?>">
+    <meta name="assets-base" content="<?= attr(base_url('assets/')) ?>">
+    <meta name="site-base" content="<?= attr(base_url()) ?>">
     <title><?= esc($title ?? $hyperConfig->appName) ?></title>
     <link rel="stylesheet" href="<?= $asset('ui/tokens.css') ?>">
     <link rel="stylesheet" href="<?= $asset('ui/base.css') ?>">

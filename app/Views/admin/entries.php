@@ -1,159 +1,48 @@
 <?php
-helper('hyper_text');
+/**
+ * The list of every entry of the models the person may open.
+ *
+ * @var array<string, mixed>       $request
+ * @var array<int, array<string, mixed>> $models
+ * @var array<string, mixed>       $links
+ */
+
+$hidden = '';
+foreach (['sort' => $request['sort'], 'dir' => $request['sort'] !== '' ? $request['dir'] : '', 'per' => $request['per'] !== 25 ? $request['per'] : ''] as $name => $value) {
+    if ($value !== '') {
+        $hidden .= '<input type="hidden" name="' . attr($name) . '" value="' . attr((string) $value) . '">';
+    }
+}
+
+$choices = '<option value="">' . esc(lang('Entries.allModels')) . '</option>';
+foreach ($models as $id => $model) {
+    $choices .= '<option value="' . $id . '"' . ($request['model'] === $id ? ' selected' : '') . '>' . esc((string) $model['name']) . '</option>';
+}
+$modelFilter = '<label class="visually-hidden" for="model-filter">' . esc(lang('Entries.model')) . '</label><select class="select" id="model-filter" name="model">' . $choices . '</select>';
+
+$creatable = array_filter($models, static fn (array $model): bool => can('entries.create', (int) $model['id']));
 ?>
-<?= $this->extend('admin/layout/page') ?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<table id="hyperTable" class="table is-striped" style="width:100%">
-</table>
-
-<!-- New entry modal -->
-<div id="newModal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon mr-4">
-                    <i class="fa-solid fa-plus"></i>
-                </span>
-                <span>
-                    <?= lang('Admin.newEntry') ?>
-                </span>
-            </p>
-            <button class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div id="users">
-                <div class="field has-addons">
-                    <div class="control">
-                        <input class="search input is-small" type="text" placeholder=lang.search>
-                    </div>
-                    <div class="control">
-                        <button class="sort button is-small" data-sort="model-name">
-                            <?= lang('Admin.sortByName') ?>
-                        </button>
-                    </div>
-                </div>
-                <div class="menu">
-                    <ul class="list menu-list">
-                        <?php foreach ($models as $model) : ?>
-                            <li>
-                                <a href="<?= replace_placeholders($links['new'], ['id' => $model['id']]) ?>" class="is-flex is-gap-1">
-                                    <span class="icon">
-                                        <i class="<?= !empty($model['icon']) ? $model['icon'] : 'fa-solid fa-box-open' ?>"></i>
-                                    </span>
-                                    <span class="model-name is-flex-grow-1">
-                                        <?= lang('Admin.newx', ['x' => $model['name']]) ?>
-                                    </span>
-                                    <span class="icon">
-                                        <i class="fa-solid fa-chevron-right"></i>
-                                    </span>
-                                </a>
-                            </li>
-                        <?php endforeach; ?>
-                    </ul>
-                    </ul>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <div class="buttons">
-                <button class="button dismiss"><?= lang('Admin.cancel') ?></button>
-            </div>
-        </footer>
+<div class="page-head">
+    <div>
+        <h1><?= esc(lang('Entries.allTitle')) ?></h1>
+        <p><?= esc($total === 1 ? lang('Entries.oneEntry') : lang('Entries.entryCount', ['count' => $total])) ?>. <?= esc(lang('Entries.allText')) ?></p>
     </div>
+    <?php if ($creatable !== []) : ?>
+        <div class="actions" x-data="menu" @click.outside="close()" @keydown.escape="close()" style="position: relative">
+            <button class="btn primary" type="button" @click="toggle()" :aria-expanded="open" aria-haspopup="menu"><?= icon('plus') ?><span><?= esc(lang('Entries.create')) ?></span><?= icon('down') ?></button>
+            <div class="menu" role="menu" x-ref="list" x-show="open" x-cloak style="right: 0; top: 38px" @keydown.arrow-down.prevent="move(1)" @keydown.arrow-up.prevent="move(-1)">
+                <?php foreach ($creatable as $id => $model) : ?>
+                    <a role="menuitem" href="<?= attr(str_replace('{id}', (string) $id, $links['new'])) ?>"><?= esc((string) $model['name']) ?></a>
+                <?php endforeach ?>
+            </div>
+        </div>
+    <?php endif ?>
 </div>
 
-<!-- Filter modal -->
-<div id="filterModal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card">
-        <header class="modal-card-head">
-            <p class="modal-card-title">
-                <span class="icon mr-4">
-                    <i class="fa-solid fa-filter"></i>
-                </span>
-                <span>
-                    <?= lang('Admin.filter') ?>
-                </span>
-            </p>
-            <!-- The delete button has a "modal-close" class so that it can be closed via JS -->
-            <button class="delete" aria-label="close"></button>
-        </header>
-        <section class="modal-card-body">
-            <div id="filterModels">
-                <h2 class="subtitle"><?= lang('Admin.models') ?></h2>
-                <div class="buttons">
-                    <!-- A button to remove filtering and show "all" models -->
-                    <button type="button" class="button is-light filter-model-reset">
-                        <?= lang('Admin.all') ?>
-                    </button>
-                    <?php foreach ($models as $model): ?>
-                        <button type="button"
-                            class="button filter-model-btn"
-                            data-model-id="<?= $model['id'] ?>">
-                            <span class="icon">
-                                <i class="<?= !empty($model['icon']) ? $model['icon'] : 'fa-solid fa-box-open' ?>"></i>
-                            </span>
-                            <span>
-                                <?= $model['name'] ?>
-                            </span>
-                        </button>
-                    <?php endforeach; ?>
-                </div>
-            </div>
-        </section>
-        <footer class="modal-card-foot">
-            <button type="button" class="button dismiss"><?= lang('Admin.cancel') ?></button>
-        </footer>
-    </div>
-</div>
+<?= ui('filterBar', ['action' => $urls['list'], 'searchLabel' => lang('Entries.searchAll'), 'q' => $request['q'], 'target' => '#entries', 'fields' => $hidden . $modelFilter]) ?>
 
-
-<?= $this->endSection() ?>
-
-<?= $this->section('head') ?>
-<link href="<?= base_url('assets/vendor/datatables.net-bm/css/dataTables.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-buttons-bm/css/buttons.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-colreorder-bm/css/colReorder.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-fixedheader-bm/css/fixedHeader.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-responsive-bm/css/responsive.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-select-bm/css/select.bulma.css') ?>" rel="stylesheet">
-
-<script src="<?= base_url('assets/vendor/jquery/dist/jquery.min.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/jszip/dist/jszip.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/pdfmake/build/pdfmake.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/pdfmake/build/vfs_fonts.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net/js/dataTables.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-bm/js/dataTables.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/dataTables.buttons.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons-bm/js/buttons.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.colVis.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.html5.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.print.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-colreorder/js/dataTables.colReorder.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-responsive/js/dataTables.responsive.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-responsive-bm/js/responsive.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-select/js/dataTables.select.js') ?>"></script>
-<?= $this->endSection() ?>
-
-<?= $this->section('footer') ?>
-
-<!-- HTML Entity -->
-<script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
-
-<!-- List.js -->
-<script src="//cdnjs.cloudflare.com/ajax/libs/list.js/2.3.1/list.min.js"></script>
-
-<script>
-    /* Initialize List.js */
-    var options = {
-        valueNames: ['model-name']
-    };
-
-    var userList = new List('users', options);
-</script>
-
-<script type="module" src="<?= base_url('assets/App/admin/entries_table.js'); ?>"></script>
+<?= view('admin/partials/all_results', get_defined_vars()) ?>
 <?= $this->endSection() ?>

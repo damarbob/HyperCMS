@@ -74,6 +74,74 @@ final class ChoiceField extends AbstractField
         return null;
     }
 
+    protected function show(mixed $value, array $definition): string
+    {
+        $labels = self::labels($definition);
+        $chips  = '';
+        foreach (is_array($value) ? $value : [$value] as $item) {
+            $key    = is_scalar($item) ? (string) $item : '';
+            $chips .= '<span class="chip">' . esc($labels[$key] ?? $key) . '</span>';
+        }
+
+        return '<div class="chips">' . $chips . '</div>';
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $many   = self::flag($definition['multiple'] ?? false);
+        $widget = in_array($definition['widget'] ?? null, self::WIDGETS, true) ? $definition['widget'] : ($many ? 'checkboxes' : 'select');
+        $picked = array_map('strval', array_filter(is_array($value) ? $value : [$value], 'is_scalar'));
+        $labels = self::labels($definition);
+
+        if ($widget === 'select') {
+            $attributes = self::inputAttributes($definition, $error, $many) + ['multiple' => $many];
+            $options    = $many || self::flag($definition['required'] ?? false) ? '' : '<option value="">' . esc(lang('Fields.chooseOne')) . '</option>';
+            foreach ($labels as $key => $label) {
+                $options .= '<option value="' . attr((string) $key) . '"' . (in_array((string) $key, $picked, true) ? ' selected' : '') . '>' . esc($label) . '</option>';
+            }
+
+            return $this->field($definition, '<select class="select"' . attrs($attributes) . '>' . $options . '</select>', $error);
+        }
+
+        // Radio buttons and check boxes are several inputs that share a name and a label.
+        $type       = $widget === 'radio' && ! $many ? 'radio' : 'checkbox';
+        $attributes = self::inputAttributes($definition, $error, $type === 'checkbox');
+        $rows       = '';
+        $index      = 0;
+        foreach ($labels as $key => $label) {
+            $one = ['id' => $attributes['id'] . '-' . $index++, 'value' => (string) $key, 'checked' => in_array((string) $key, $picked, true)] + array_diff_key($attributes, ['id' => 1]);
+            $rows .= '<label class="check"><input type="' . $type . '"' . attrs($one) . '>' . esc($label) . '</label>';
+        }
+
+        // An empty list of check boxes posts nothing, so a hidden marker says the field was on the form.
+        $marker = $type === 'checkbox' ? '<input type="hidden" name="' . attr((string) $attributes['name']) . '" value="">' : '';
+
+        return $this->field($definition, $marker . '<div class="options">' . $rows . '</div>', $error, true);
+    }
+
+    public function filters(array $definition): array
+    {
+        return self::flag($definition['multiple'] ?? false) ? [] : [['op' => 'eq', 'label' => lang('Fields.filterIs'), 'control' => 'select', 'choices' => self::labels($definition)]];
+    }
+
+    /**
+     * The choices of a definition as label by value.
+     *
+     * @param array<string, mixed> $definition
+     *
+     * @return array<string, string>
+     */
+    private static function labels(array $definition): array
+    {
+        $labels = [];
+        foreach (is_array($definition['choices'] ?? null) ? $definition['choices'] : [] as $choice) {
+            if (is_array($choice) && is_scalar($choice['value'] ?? null)) {
+                $labels[(string) $choice['value']] = is_scalar($choice['label'] ?? null) ? (string) $choice['label'] : (string) $choice['value'];
+            }
+        }
+
+        return $labels;
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $type = $old['type'] ?? null;

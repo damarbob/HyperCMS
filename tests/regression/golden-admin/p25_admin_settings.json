@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/settings",
+    "status": 200,
+    "location": null,
+    "title": "Pengaturan",
+    "bytes": 148624,
+    "sha1": "f34351cb01edb26aa0afd275c1b69d576f9ef656"
+}

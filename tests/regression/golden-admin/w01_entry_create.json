@@ -1,17 +1,19 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/entries",
+        "path": "admin/model/2",
         "form": {
-            "model_id": 2,
-            "fields": "{\"sku\":\"SKU-NEW\",\"price\":\"5.00\",\"category\":\"a\",\"added\":\"2026-04-01T08:00\"}"
+            "fields": {
+                "sku": "SKU-NEW",
+                "price": "5.00",
+                "category": "a",
+                "added": "2026-04-01T08:00"
+            }
         }
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Entri 44 berhasil dibuat!"
-    },
+    "status": 303,
+    "location": "/admin/model/2/44/edit",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -21,7 +23,7 @@
                         "sd_model_id": 2,
                         "name": "Product",
                         "current_revision_id": 2,
-                        "write_version": 0,
+                        "write_version": 1,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -32,7 +34,7 @@
                         "sd_model_id": 2,
                         "name": "Product",
                         "current_revision_id": 2,
-                        "write_version": 1,
+                        "write_version": 2,
                         "creator_id": 1,
                         "editor_id": 1,
                         "deleter_id": null,
@@ -67,10 +69,16 @@
             ]
         },
         "hyper_counters": {
-            "added": [
+            "changed": [
                 {
-                    "id": "write_version",
-                    "value": 1
+                    "from": {
+                        "id": "write_version",
+                        "value": 1
+                    },
+                    "to": {
+                        "id": "write_version",
+                        "value": 2
+                    }
                 }
             ]
         },
@@ -79,7 +87,7 @@
                 {
                     "id": 39,
                     "model_id": 2,
-                    "fields": "{\"sku\": \"SKU-NEW\", \"added\": \"2026-04-01T08:00\", \"price\": \"5.00\", \"category\": \"a\"}",
+                    "fields": "{\"sku\": \"SKU-NEW\", \"added\": \"2026-04-01 08:00:00\", \"price\": 5, \"category\": \"a\"}",
                     "deleted": 0
                 }
             ]

@@ -20,6 +20,7 @@
                 "date_deleted": "2026-11-14 11:13:38",
                 "name": "Scratch",
                 "fields": "[{\"id\":\"note\",\"label\":\"Note\",\"type\":\"text\"}]",
+                "label_field": "note",
                 "group": "Content",
                 "user_groups": "[]",
                 "icon": "file-text",

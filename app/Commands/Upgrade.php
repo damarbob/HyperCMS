@@ -2,7 +2,9 @@
 
 namespace App\Commands;
 
-use App\Libraries\Upgrade\ConversionStep;
+use App\Fields\FieldTypes;
+use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\ModelFields;
 use App\Libraries\Upgrade\Converters;
 use App\Libraries\Upgrade\CounterSchemaStore;
 use App\Libraries\Upgrade\EntryCopier;
@@ -10,6 +12,7 @@ use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\PayloadWriter;
 use App\Libraries\Upgrade\Preflight;
 use App\Libraries\Upgrade\Source;
+use App\Libraries\Upgrade\Steps\Steps;
 use App\Libraries\Upgrade\Verifier;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
@@ -82,6 +85,7 @@ class Upgrade extends BaseCommand
 
         if ($dryRun) {
             CLI::newLine();
+            $this->reportConversions($db);
             CLI::write('Dry run, nothing was changed.');
 
             return $blocked ? EXIT_ERROR : EXIT_SUCCESS;
@@ -151,10 +155,41 @@ class Upgrade extends BaseCommand
             $payloads = (new PayloadWriter($db, $engine, $tenant))->write();
             CLI::write("Wrote {$payloads['written']} entries to StarDust.");
 
-            $result = (new Verifier($db, $engine, $tenant))->verify();
+            $types  = FieldTypes::core();
+            $result = (new Verifier($db, $engine, $tenant, new EntryValues($types), new ModelFields($types)))->verify();
         } catch (Throwable $e) {
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());
+            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
+
+            return EXIT_ERROR;
+        }
+
+        // The conversions run on what was copied even when some entries could not be written, so the rows that are there are
+        // in the new shape. The entries that were left out are converted when a rerun copies them.
+        // Rows that were just copied, or written to StarDust again, are in the old shape, so the conversions go again
+        // from the start. They change nothing that is already converted.
+        $store = new CounterSchemaStore($db);
+        if ($copied['models'] > 0 || $copied['revisions'] > 0 || $added > 0 || $revisions['count'] > 0 || $payloads['written'] > 0) {
+            $store->setVersion(0);
+            for ($step = 1; $step <= Steps::LATEST; $step++) {
+                $store->clearCursor($step);
+            }
+        }
+
+        try {
+            foreach ((new Converters(Steps::make($db)))->run($store) as $step) {
+                CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
+                foreach (array_slice($step['problems'], 0, 50) as $problem) {
+                    CLI::write("  $problem", 'yellow');
+                }
+                if (count($step['problems']) > 50) {
+                    CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
+                }
+            }
+        } catch (Throwable $e) {
+            CLI::newLine();
+            CLI::error('A conversion step stopped. ' . $e->getMessage());
             CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
 
             return EXIT_ERROR;
@@ -190,21 +225,6 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
-        try {
-            foreach ((new Converters($this->steps()))->run(new CounterSchemaStore($db)) as $step) {
-                CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
-                foreach ($step['problems'] as $problem) {
-                    CLI::write("  $problem", 'yellow');
-                }
-            }
-        } catch (Throwable $e) {
-            CLI::newLine();
-            CLI::error('A conversion step stopped. ' . $e->getMessage());
-            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
-
-            return EXIT_ERROR;
-        }
-
         // The docker entrypoint starts the app and the tick only when this mark exists on an old database.
         $db->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
 
@@ -215,13 +235,43 @@ class Upgrade extends BaseCommand
     }
 
     /**
-     * The conversion steps that run after the copy, in order. There are none yet.
+     * Report what the pending conversion steps would change, without changing anything.
      *
-     * @return list<ConversionStep>
+     * The steps read the version 2 tables, so before the copy and the migrations there is nothing to count.
      */
-    private function steps(): array
+    private function reportConversions(BaseConnection $db): void
     {
-        return [];
+        $ready = $db->tableExists('hyper_counters') && $db->tableExists('hyper_models') && $db->fieldExists('label_field', 'hyper_models');
+        if (! $ready) {
+            CLI::write('The conversions of stored values run after the copy, so they are counted on the first real run.');
+
+            return;
+        }
+
+        try {
+            $store  = new CounterSchemaStore($db);
+            $report = (new Converters(Steps::make($db)))->run($store, true);
+        } catch (Throwable $e) {
+            CLI::write('The conversions could not be counted. ' . $e->getMessage(), 'yellow');
+
+            return;
+        }
+
+        if ($report === []) {
+            CLI::write('No conversion is pending.');
+
+            return;
+        }
+
+        foreach ($report as $step) {
+            CLI::write("Step {$step['number']}, {$step['name']}, would change {$step['changed']}.");
+            foreach (array_slice($step['problems'], 0, 50) as $problem) {
+                CLI::write("  $problem", 'yellow');
+            }
+            if (count($step['problems']) > 50) {
+                CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
+            }
+        }
     }
 
     /**

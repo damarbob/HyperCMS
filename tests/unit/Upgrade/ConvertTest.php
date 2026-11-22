@@ -64,6 +64,15 @@ final class ConvertTest extends CIUnitTestCase
         $this->assertSame(['#2', 'q', 'd'], array_column($result['problems'], 'field'));
     }
 
+    public function testAFilterableCheckboxLosesTheFlagAndIsReported(): void
+    {
+        $result = (new ModelFields($this->types))->convert([['id' => 'on', 'type' => 'checkbox', 'filterable' => true], ['id' => 'ok', 'type' => 'text', 'filterable' => true]]);
+
+        $this->assertSame(['id' => 'on', 'label' => 'on', 'type' => 'boolean'], $result['fields'][0]);
+        $this->assertTrue($result['fields'][1]['filterable']);
+        $this->assertSame(['on'], array_column($result['problems'], 'field'));
+    }
+
     public function testARelationReportsTheLabelFieldOfItsTarget(): void
     {
         $old = [['id' => 'rel', 'type' => 'select', 'options' => ['type' => 'data', 'content' => ['table' => 'entries', 'select' => 'id as value, {{field:title}} as label', 'where' => "model_name = 'Article'"]]]];

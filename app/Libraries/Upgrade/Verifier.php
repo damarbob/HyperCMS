@@ -2,6 +2,9 @@
 
 namespace App\Libraries\Upgrade;
 
+use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\ModelFields;
+use App\Libraries\Upgrade\Steps\ConvertModelFields;
 use CodeIgniter\Database\BaseConnection;
 use StarDust\StarDust;
 
@@ -12,6 +15,9 @@ use StarDust\StarDust;
  * StarDust. And the fields StarDust returns for each live entry must equal that entry's current version
  * in `entry_data`, converted the way the upgrade converts it. The comparison is on the decoded values,
  * because MySQL rewrites the text of a JSON column, so key order and spacing differ and mean nothing.
+ *
+ * The conversion steps rewrite the values after the copy, so an entry that StarDust returns is accepted when it equals
+ * the source as it was copied, or the source after the same conversion.
  */
 final class Verifier
 {
@@ -19,6 +25,8 @@ final class Verifier
         private readonly BaseConnection $db,
         private readonly StarDust $engine,
         private readonly int $tenantId,
+        private readonly EntryValues $values,
+        private readonly ModelFields $fields,
     ) {
     }
 
@@ -35,11 +43,18 @@ final class Verifier
         $models     = [];
         $mismatched = [];
 
-        foreach ($this->db->query('SELECT id, name FROM hyper_models ORDER BY id')->getResultArray() as $model) {
-            $expected = 0;
-            $found    = 0;
+        $all      = $this->db->query('SELECT id, name, fields FROM hyper_models ORDER BY id')->getResultArray();
+        $modelIds = [];
+        foreach ($all as $model) {
+            $modelIds[(string) $model['name']] ??= (int) $model['id'];
+        }
 
-            $this->eachChunk((int) $model['id'], function (array $rows) use (&$expected, &$found, &$mismatched): void {
+        foreach ($all as $model) {
+            $expected   = 0;
+            $found      = 0;
+            $definition = $this->definitionOf($model['fields'], $modelIds);
+
+            $this->eachChunk((int) $model['id'], function (array $rows) use (&$expected, &$found, &$mismatched, $definition): void {
                 $expected += count($rows);
 
                 $entries = $this->engine->getMany($this->tenantId, array_map('intval', array_column($rows, 'sd_entry_id')));
@@ -58,7 +73,14 @@ final class Verifier
                     $found++;
 
                     $want = Payload::fieldsFor(Payload::convert($sources[(int) $row['current_revision_id']] ?? null));
-                    if ($want === null || self::canonical($want) !== self::canonical($entry->fields)) {
+                    if ($want === null) {
+                        $mismatched[] = (int) $row['id'];
+
+                        continue;
+                    }
+
+                    $got = self::canonical($entry->fields);
+                    if ($got !== self::canonical($want) && $got !== self::canonical($this->values->convert($want, $definition)['fields'])) {
                         $mismatched[] = (int) $row['id'];
                     }
                 }
@@ -75,6 +97,22 @@ final class Verifier
         ];
     }
 
+    /**
+     * The version 2 definition of a model, whether its stored definition has been converted yet or not.
+     *
+     * @param array<string, int> $modelIds
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function definitionOf(?string $json, array $modelIds): array
+    {
+        $old = json_decode((string) $json, true);
+        if (! is_array($old) || ! array_is_list($old)) {
+            return [];
+        }
+
+        return ConvertModelFields::isVersion2($old) ? array_values(array_filter($old, 'is_array')) : $this->fields->convert($old, $modelIds)['fields'];
+    }
     /**
      * Hand the live, written entries of one model to the callback in chunks that stay under 1,000 entries and the byte budget.
      *

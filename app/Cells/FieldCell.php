@@ -44,6 +44,9 @@ class FieldCell extends Cell
     /** Input drawn by the caller, as HTML the caller has already made safe. */
     public string $input = '';
 
+    /** Whether the input is several controls that share one label, which is then a legend of a fieldset. */
+    public bool $group = false;
+
     /**
      * Extra attributes for the input.
      *

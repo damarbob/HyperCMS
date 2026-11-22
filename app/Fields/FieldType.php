@@ -49,6 +49,33 @@ interface FieldType
     public function sortKey(mixed $value): string|float|null;
 
     /**
+     * The HTML a list shows for a value, already escaped. A missing value is a muted dash.
+     *
+     * @param array<string, mixed> $definition
+     */
+    public function cell(mixed $value, array $definition): string;
+
+    /**
+     * The HTML of the whole field in the entry form: its label, its input, its help and its error. The input posts as
+     * `fields[<id>]`, or as `fields[<id>][]` when it holds a list.
+     *
+     * @param array<string, mixed> $definition
+     * @param string|null          $error      The message to show under the input, or null.
+     */
+    public function input(mixed $value, array $definition, ?string $error = null): string;
+
+    /**
+     * The conditions a list can filter this field by, for a field that is filterable.
+     *
+     * Each one names an operator of the token API's filter (`eq`, `prefix`, `gte`, `lte`), a label for the control, the
+     * kind of control to draw, and for a `select` the choices as value to label.
+     *
+     * @param array<string, mixed> $definition
+     *
+     * @return list<array{op: string, label: string, control: 'text'|'number'|'datetime-local'|'select', choices?: array<string, string>}>
+     */
+    public function filters(array $definition): array;
+    /**
      * Read a field of the old format and return it as a version 2 definition of this type.
      *
      * @param array<string, mixed> $old     One entry of the old definition.

@@ -37,7 +37,7 @@ use StarDust\StarDust;
  */
 final class FilterableModelTest extends CIUnitTestCase
 {
-    private const DEFINITION = '[{"id":"title","type":"text","filterable":true},{"id":"views","type":"number","filterable":true},{"id":"when","type":"datetime-local","filterable":true},{"id":"body","type":"textarea"}]';
+    private const DEFINITION = '[{"id":"title","type":"text","filterable":true},{"id":"views","type":"number","filterable":true},{"id":"when","type":"datetime","filterable":true},{"id":"body","type":"longtext"}]';
 
     private static string $name = '';
 
@@ -148,7 +148,7 @@ final class FilterableModelTest extends CIUnitTestCase
 
     public function testAModelWithoutTheFlagIsRegisteredAsBefore(): void
     {
-        $modelId = $this->models->create(['name' => 'Plain', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local"}]'], 1);
+        $modelId = $this->models->create(['name' => 'Plain', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime"}]'], 1);
 
         $described = $this->described($modelId);
         foreach ($described->fields as $field) {
@@ -163,7 +163,7 @@ final class FilterableModelTest extends CIUnitTestCase
         foreach (['create', 'update'] as $call) {
             try {
                 $call === 'create'
-                    ? $this->models->create(['name' => 'Refused', 'fields' => '[{"id":"body","type":"textarea","filterable":true}]'], 1)
+                    ? $this->models->create(['name' => 'Refused', 'fields' => '[{"id":"body","type":"longtext","filterable":true}]'], 1)
                     : $this->models->update($this->models->create(['name' => 'Fine', 'fields' => '[{"id":"title","type":"text"}]'], 1), ['name' => 'Fine', 'fields' => '[{"id":"files","type":"file","filterable":true}]'], 1);
                 $this->fail('The flag should have been refused.');
             } catch (InvalidArgumentException $e) {
@@ -232,7 +232,7 @@ final class FilterableModelTest extends CIUnitTestCase
         $this->indexUntilDone($modelId);
         $id = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Kept","when":"2025-03-20T10:30"}'], 1);
 
-        $this->models->update($modelId, ['name' => 'Switch', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local"},{"id":"views","type":"number","filterable":true},{"id":"body","type":"textarea"}]'], 1);
+        $this->models->update($modelId, ['name' => 'Switch', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime"},{"id":"views","type":"number","filterable":true},{"id":"body","type":"longtext"}]'], 1);
 
         $described = $this->described($modelId);
         $this->assertFalse($described->field('title')->isFilterable);
@@ -250,12 +250,12 @@ final class FilterableModelTest extends CIUnitTestCase
 
     public function testAnEntryTrashedBeforeTheFlagComesBackCleaned(): void
     {
-        $modelId = $this->models->create(['name' => 'Restore', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local"}]'], 1);
+        $modelId = $this->models->create(['name' => 'Restore', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime"}]'], 1);
         $id      = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Old","when":"2025-03-20T10:30"}'], 1);
         $this->assertSame('2025-03-20T10:30', $this->stored($id)['when'], 'Before the flag the value is kept as it was written.');
         $this->writer->trash([$id], 1);
 
-        $this->models->update($modelId, ['name' => 'Restore', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $this->models->update($modelId, ['name' => 'Restore', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime","filterable":true}]'], 1);
         $this->indexUntilDone($modelId);
         $this->writer->restore([$id]);
 
@@ -265,13 +265,13 @@ final class FilterableModelTest extends CIUnitTestCase
 
     public function testEntriesFromBeforeTheFlagAreCleanedInPlaceSoTheIndexHoldsTheirDates(): void
     {
-        $modelId = $this->models->create(['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local"}]'], 1);
+        $modelId = $this->models->create(['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime"}]'], 1);
         $late    = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Late","when":"2025-03-20T10:30"}'], 1);
         $early   = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Early","when":"2024-01-05T09:30"}'], 1);
         $blank   = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Blank","when":""}'], 1);
         $odd     = $this->writer->create(['model_id' => $modelId, 'fields' => '{"title":"Odd","when":"next week"}'], 1);
 
-        $this->models->update($modelId, ['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $this->models->update($modelId, ['name' => 'Backfill', 'fields' => '[{"id":"title","type":"text"},{"id":"when","type":"datetime","filterable":true}]'], 1);
         $this->indexUntilDone($modelId);
         [$sdLate, $sdEarly, $sdBlank, $sdOdd] = $this->sdIds([$late, $early, $blank, $odd]);
 
@@ -361,11 +361,11 @@ final class FilterableModelTest extends CIUnitTestCase
 
     public function testAModelWithAFieldStillBeingIndexedStaysInTheTrashWithAMessage(): void
     {
-        $modelId = $this->models->create(['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime-local"}]'], 1);
+        $modelId = $this->models->create(['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime"}]'], 1);
         $this->writer->create(['model_id' => $modelId, 'fields' => '{"when":"2025-03-20T10:30"}'], 1);
 
         // The model has an entry, so promoting leaves a backfill running until a tick has finished it.
-        $this->models->update($modelId, ['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $this->models->update($modelId, ['name' => 'Busy', 'fields' => '[{"id":"when","type":"datetime","filterable":true}]'], 1);
         $this->assertSame(['when' => 'indexing'], $this->models->filterableState($modelId));
         $this->models->trash([$modelId], 1);
 
@@ -392,12 +392,12 @@ final class FilterableModelTest extends CIUnitTestCase
         // Changing the type of a filterable field starts a retype, and a second change before it ends is refused.
         $this->models->update($modelId, ['name' => 'Failing', 'fields' => '[{"id":"views","type":"text","filterable":true}]'], 1);
         try {
-            $this->models->update($modelId, ['name' => 'Failing', 'fields' => '[{"id":"views","type":"datetime-local","filterable":true}]'], 1);
+            $this->models->update($modelId, ['name' => 'Failing', 'fields' => '[{"id":"views","type":"datetime","filterable":true}]'], 1);
             $this->fail('StarDust should refuse a second retype of the field.');
         } catch (IndexingFailed $e) {
             $this->assertStringContainsString('views', $e->getMessage());
         }
-        $this->assertStringContainsString('datetime-local', self::$conn->table('hyper_models')->where('id', $modelId)->get()->getRow()->fields, 'The model itself was saved.');
+        $this->assertStringContainsString('datetime', self::$conn->table('hyper_models')->where('id', $modelId)->get()->getRow()->fields, 'The model itself was saved.');
         $this->indexUntilDone($modelId);
     }
 
@@ -456,7 +456,7 @@ final class FilterableModelTest extends CIUnitTestCase
     public function testTheTokenApiPageFiltersAndSortsOnIndexedFields(): void
     {
         $lists   = $this->lists();
-        $modelId = $this->models->create(['name' => 'Api page', 'fields' => '[{"id":"title","type":"text","filterable":true},{"id":"views","type":"number","filterable":true},{"id":"when","type":"datetime-local","filterable":true}]'], 1);
+        $modelId = $this->models->create(['name' => 'Api page', 'fields' => '[{"id":"title","type":"text","filterable":true},{"id":"views","type":"number","filterable":true},{"id":"when","type":"datetime","filterable":true}]'], 1);
         $this->indexUntilDone($modelId);
         foreach ([['A', '30', '2025-01-01T10:00'], ['B', '5', '2025-02-01T10:00'], ['C', '', ''], ['D', '12.5', '2025-03-01T10:00'], ['E', '100', '2025-04-01T10:00']] as [$title, $views, $when]) {
             $this->writer->create(['model_id' => $modelId, 'fields' => json_encode(['title' => $title, 'views' => $views, 'when' => $when])], 1);

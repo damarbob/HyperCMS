@@ -77,37 +77,6 @@ $post = [
     'models_search_art'     => ['api/v1/models', $dt(['search' => ['value' => 'Art'], 'start' => 0, 'length' => 10])],
     'models_trash'          => ['api/v1/models', $dt(['trash' => 'true'])],
     'models_order_name_asc' => ['api/v1/models', $dt($ord('name', 'asc'))],
-    // entries across models
-    'entries_page1'         => ['api/v1/entries', $dt(['start' => 0, 'length' => 10])],
-    'entries_page3'         => ['api/v1/entries', $dt(['start' => 20, 'length' => 10])],
-    'entries_model1'        => ['api/v1/entries', $dt(['model_id' => 1])],
-    'entries_search_apple'  => ['api/v1/entries', $dt(['search' => ['value' => 'apple'], 'start' => 0, 'length' => 10])],
-    'entries_search_markup' => ['api/v1/entries', $dt(['search' => ['value' => 'markup'], 'start' => 0, 'length' => 10])],
-    'entries_trash'         => ['api/v1/entries', $dt(['trash' => 'true'])],
-    'entries_order_model'   => ['api/v1/entries', $dt(array_merge($ord('model_name', 'asc'), ['start' => 0, 'length' => 10]))],
-    'entries_ids'           => ['api/v1/entries', $dt(['ids' => [1, 2, 3]])],
-    // entries of one model
-    'model1_page1'          => ['api/v1/model', $m1()],
-    'model1_page2'          => ['api/v1/model', $m1(['start' => 10])],
-    'model1_page3'          => ['api/v1/model', $m1(['start' => 20])],
-    'model1_all'            => ['api/v1/model', $m1(['length' => -1])],
-    'model1_search_apple'   => ['api/v1/model', $m1(['search' => ['value' => 'apple']])],
-    'model1_search_markup'  => ['api/v1/model', $m1(['search' => ['value' => 'markup']])],
-    'model1_search_none'    => ['api/v1/model', $m1(['search' => ['value' => 'zzznomatch']])],
-    'model1_order_title_asc'  => ['api/v1/model', $m1($ord('title', 'asc'))],
-    'model1_order_title_desc' => ['api/v1/model', $m1($ord('title', 'desc'))],
-    'model1_order_views_asc'  => ['api/v1/model', $m1($ord('views', 'asc'))],
-    'model1_order_pub_desc'   => ['api/v1/model', $m1($ord('published_at', 'desc'))],
-    'model1_order_id_desc'    => ['api/v1/model', $m1($ord('id', 'desc'))],
-    'model1_trash'          => ['api/v1/model', $m1(['trash' => 'true'])],
-    'model1_find_title'     => ['api/v1/model', $m1(['find' => ['field' => 'title', 'value' => 'apple']])],
-    'model2_price_desc'     => ['api/v1/model', $m1(array_merge(['id' => 2, 'length' => -1], $ord('price', 'desc')))],
-    'model2_trash'          => ['api/v1/model', $m1(['id' => 2, 'trash' => 'true'])],
-    'model3_all'            => ['api/v1/model', $m1(['id' => 3, 'length' => -1])],
-    'model_missing'         => ['api/v1/model', $m1(['id' => 999])],
-    'model_noid'            => ['api/v1/model', $dt()],
-    // Model 5 is open to developers only, and capture_admin is not one.
-    'model5_restricted'     => ['api/v1/model', $m1(['id' => 5])],
     // model versions
     'modeldata_id1'         => ['api/v1/model-data', $dt(['id' => 1])],
     'modeldata_all'         => ['api/v1/model-data', $dt()],
@@ -115,14 +84,6 @@ $post = [
     'modeldata_id1_order_created_desc' => ['api/v1/model-data', $dt(array_merge(['id' => 1], $ord('date_created', 'desc')))],
     'modeldata_all_order_name_asc'     => ['api/v1/model-data', $dt($ord('name', 'asc'))],
     'modeldata_search_order_name'      => ['api/v1/model-data', $dt(array_merge(['search' => ['value' => 'Art']], $ord('name', 'asc')))],
-    // entry versions
-    'entrydata_id1'         => ['api/v1/entry-data', $dt(['id' => 1])],
-    'entrydata_id1_page2'   => ['api/v1/entry-data', $dt(['id' => 1, 'start' => 1, 'length' => 1])],
-    'entrydata_id2'         => ['api/v1/entry-data', $dt(['id' => 2])],
-    'entrydata_noid'        => ['api/v1/entry-data', $dt()],
-    'entrydata_missing'     => ['api/v1/entry-data', $dt(['id' => 9999])],
-    // Entry 43 belongs to model 5.
-    'entrydata_restricted'  => ['api/v1/entry-data', $dt(['id' => 43])],
 ];
 
 $summary = [];
@@ -161,16 +122,10 @@ foreach ($post as $name => [$path, $form]) {
     $save($name, ['method' => 'POST', 'path' => $path, 'form' => $form, 'auth' => 'bearer'], $status, $body);
 }
 
-// What a caller without a login gets. Model 2 is the public one.
+// What a caller without a login gets.
 $anon = [
     'anon_models'              => ['api/v1/models', $dt()],
     'anon_model_data'          => ['api/v1/model-data', $dt(['id' => 1])],
-    'anon_entries'             => ['api/v1/entries', $dt()],
-    'anon_entry_data'          => ['api/v1/entry-data', $dt(['id' => 1])],
-    'anon_model1'              => ['api/v1/model', $m1()],
-    'anon_model_noid'          => ['api/v1/model', $dt()],
-    'anon_model2_public'       => ['api/v1/model', $m1(['id' => 2, 'length' => -1])],
-    'anon_model2_public_trash' => ['api/v1/model', $m1(['id' => 2, 'length' => -1, 'trash' => 'true'])],
 ];
 foreach ($anon as $name => [$path, $form]) {
     [$status, $body] = call('POST', $base . $path, $form);
@@ -234,9 +189,6 @@ $devToken = json_decode($body, true)['access_token'] ?? '';
 // The login clears the two login tokens that can no longer sign in, and leaves the personal ones.
 $save('dev_tokens_after_login', ['check' => 'access tokens of capture_dev by name, before and after the login'], 0, (string) json_encode(['before' => $before, 'after' => $tokensOf()]));
 $dev = [
-    'dev_model5'     => ['api/v1/model', $m1(['id' => 5])],
-    'dev_entries'    => ['api/v1/entries', $dt(['length' => 2])],
-    'dev_entrydata'  => ['api/v1/entry-data', $dt(['id' => 43])],
     'dev_models'     => ['api/v1/models', $dt()],
     'dev_model_data' => ['api/v1/model-data', $dt(['id' => 1])],
 ];

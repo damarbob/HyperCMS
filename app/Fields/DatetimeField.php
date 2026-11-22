@@ -47,6 +47,48 @@ final class DatetimeField extends AbstractField
             : lang('Fields.notDate', ['field' => self::labelOf($definition), 'value' => self::shown($value)]);
     }
 
+    protected function show(mixed $value, array $definition): string
+    {
+        $parsed = is_string($value) ? self::parse($value) : null;
+        if ($parsed === null) {
+            return esc(is_scalar($value) ? (string) $value : '');
+        }
+
+        $time      = strtotime(substr($parsed, 0, 19) . ' UTC');
+        $formatter = class_exists(IntlDateFormatter::class) ? IntlDateFormatter::create(service('request')->getLocale(), IntlDateFormatter::MEDIUM, IntlDateFormatter::SHORT, 'UTC') : null;
+        $text      = $formatter !== null && $time !== false ? $formatter->format($time) : substr($parsed, 0, 16);
+
+        return '<time datetime="' . attr(str_replace(' ', 'T', substr($parsed, 0, 19))) . '">' . esc((string) $text) . '</time>';
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $parsed = is_string($value) ? self::parse($value) : null;
+        $local  = '';
+        $step   = null;
+        if ($parsed !== null) {
+            // The box shows seconds only when they are not zero, so a stored value is not changed by opening and saving it.
+            $local = str_replace(' ', 'T', substr($parsed, 0, 19));
+            if (str_ends_with($local, ':00')) {
+                $local = substr($local, 0, 16);
+            } else {
+                $step = 1;
+            }
+        }
+
+        $attributes = self::inputAttributes($definition, $error) + ['step' => $step];
+        $control    = '<input class="input" type="datetime-local" value="' . attr($local) . '"' . attrs($attributes) . '>';
+
+        return $this->field($definition, $control, $error);
+    }
+
+    public function filters(array $definition): array
+    {
+        return [
+            ['op' => 'gte', 'label' => lang('Fields.filterFrom'), 'control' => 'datetime-local'],
+            ['op' => 'lte', 'label' => lang('Fields.filterTo'), 'control' => 'datetime-local'],
+        ];
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $default = is_string($old['value'] ?? null) ? self::parse($old['value']) : null;

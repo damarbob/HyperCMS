@@ -161,15 +161,15 @@ $save('p00_anon_admin_entries', ['request' => 'GET admin/entries'] + $page($c->r
 // sign in through the real form, with its CSRF token
 $c->request('GET', 'auth/login'); // sets the session cookie and reads the CSRF token from the form
 $login = $c->request('POST', 'auth/login', ['email' => 'capture_admin@example.test', 'password' => 'Capture-Admin-2026']);
-$c->request('GET', 'admin/entries/1/new'); // a page with a form, to pick up a token for the signed-in session
+$c->request('GET', 'admin/model/1/new'); // a page with a form, to pick up a token for the signed-in session
 $save('p01_login', ['request' => 'POST auth/login'] + $page($login));
 
 $pages = [
-    'admin/dashboard', 'admin/entries', 'admin/entries/1/new', 'admin/entries/2/new', 'admin/entries/1/1/edit',
-    'admin/entries/1/24/edit', 'admin/entries/1/999/edit', 'admin/model/1', 'admin/model/1/new', 'admin/model/1/1/edit',
+    'admin/dashboard', 'admin/entries', 'admin/model/2/new', 'admin/model/1/24/edit', 'admin/model/1/999/edit',
+    'admin/model/1/1/history', 'admin/model/1/999/history', 'admin/model/1', 'admin/model/1/new', 'admin/model/1/1/edit',
     'admin/model/2', 'admin/model/3', 'admin/model/3/new', 'admin/model/4', 'admin/model/5', 'admin/model/999',
     'admin/models', 'admin/models/new', 'admin/models/1/edit', 'admin/models/3/edit', 'admin/models/999/edit',
-    'admin/model-data/1', 'admin/model-data/999', 'admin/entry-data/1', 'admin/entry-data/999',
+    'admin/model-data/1', 'admin/model-data/999',
     'admin/settings', 'admin/settings/models',
     'admin/models/2/edit', // the public model, with its box ticked
 ];
@@ -188,9 +188,6 @@ foreach ($pages as $i => $p) {
 $apiCalls = [
     'a01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
     'a02_api_model_data'       => ['POST', 'api/v1/model-data', ['draw' => 1, 'id' => 1, 'order' => [['column' => 0, 'dir' => 'asc']], 'columns' => [['data' => 'name']]]],
-    'a03_api_entries'          => ['POST', 'api/v1/entries', ['draw' => 1, 'start' => 0, 'length' => 2]],
-    'a04_api_entry_data'       => ['POST', 'api/v1/entry-data', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
-    'a05_api_model'            => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
     'a06_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
 ];
 foreach ($apiCalls as $name => [$method, $path, $form]) {
@@ -204,9 +201,6 @@ $u->request('GET', 'auth/login');
 $u->request('POST', 'auth/login', ['email' => 'capture_user@example.test', 'password' => 'Capture-User-2026']);
 $userCalls = [
     'u01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
-    'u02_api_entries'          => ['POST', 'api/v1/entries', ['draw' => 1, 'start' => 0, 'length' => 2]],
-    'u03_api_model1'           => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 1, 'start' => 0, 'length' => 2]],
-    'u04_api_model5'           => ['POST', 'api/v1/model', ['draw' => 1, 'id' => 5, 'start' => 0, 'length' => 2]],
     'u05_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
 ];
 foreach ($userCalls as $name => [$method, $path, $form]) {
@@ -216,7 +210,7 @@ foreach ($userCalls as $name => [$method, $path, $form]) {
 
 // write flows, each followed by the rows it changed
 $j = fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-$productFields = fn(string $sku) => $j(['sku' => $sku, 'price' => '5.00', 'category' => 'a', 'added' => '2026-04-01T08:00']);
+$productFields = fn(string $sku) => ['sku' => $sku, 'price' => '5.00', 'category' => 'a', 'added' => '2026-04-01T08:00'];
 $articleModelFields = $j([
     ['id' => 'title', 'label' => 'Title', 'type' => 'text'],
     ['id' => 'body', 'label' => 'Body', 'type' => 'textarea'],
@@ -224,17 +218,19 @@ $articleModelFields = $j([
     ['id' => 'summary', 'label' => 'Summary', 'type' => 'text'],
 ]);
 $flows = [
-    'w01_entry_create'        => ['admin/entries', ['model_id' => 2, 'fields' => $productFields('SKU-NEW')]],
-    'w02_entry_create_bad'    => ['admin/entries', ['model_id' => 2]],
-    'w03_entry_update'        => ['admin/entries/1', ['fields' => $j(['title' => 'Edited by flow', 'body' => '<p>x</p>', 'views' => '99', 'published_at' => '', 'tags' => ['tech'], 'cover' => ''])]],
-    'w04_entry_update_bad'    => ['admin/entries/1', []],
-    'w05_entry_delete_single' => ['admin/model/1/3/delete', []],
-    'w06_entry_delete_bulk'   => ['admin/entries/delete', ['ids' => [4, 5]]],
-    'w07_entry_delete_none'   => ['admin/entries/delete', []],
-    'w08_entry_restore'       => ['admin/entries/restore', ['ids' => [24]]],
-    'w09_entry_restore_none'  => ['admin/entries/restore', []],
-    'w10_entry_purge'         => ['admin/entries/purge-deleted', []],
-    'w11_entry_purge_empty'   => ['admin/entries/purge-deleted', []],
+    'w01_entry_create'        => ['admin/model/2', ['fields' => $productFields('SKU-NEW')]],
+    'w02_entry_create_bad'    => ['admin/model/2', ['fields' => ['sku' => 'SKU-BAD', 'price' => 'not a number']]],
+    'w03_entry_update'        => ['admin/model/1/1', ['fields' => ['title' => 'Edited by flow', 'body' => '<p>x</p>', 'views' => '99', 'published_at' => '', 'tags' => ['tech']]]],
+    'w04_entry_update_bad'    => ['admin/model/1/1', ['fields' => ['title' => '', 'views' => 'many']]],
+    'w05_entry_delete_single' => ['admin/model/1/3/trash', []],
+    'w06_entry_delete_bulk'   => ['admin/model/1/trash', ['ids' => [4, 5]]],
+    'w07_entry_delete_none'   => ['admin/model/1/trash', []],
+    'w08_entry_restore'       => ['admin/model/1/restore', ['ids' => [24]]],
+    'w09_entry_restore_none'  => ['admin/model/1/restore', []],
+    'w10_entry_purge'         => ['admin/model/1/purge', []],
+    'w11_entry_purge_empty'   => ['admin/model/1/purge', []],
+    'w22_entry_trash_other_model' => ['admin/model/1/trash', ['ids' => [43]]],
+    'w23_entry_history_clear' => ['admin/model/1/1/history/clear', []],
     'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'user_groups' => ['superadmin'], 'icon' => 'image']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
     'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],

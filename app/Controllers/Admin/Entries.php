@@ -3,513 +3,590 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
-use CodeIgniter\HTTP\RequestInterface;
+use App\Fields\FieldTypes;
+use App\Libraries\AllEntriesPage;
+use App\Libraries\ModelListPage;
+use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
-use App\Libraries\SyntaxProcessor;
 use InvalidArgumentException;
 use RuntimeException;
-use CodeIgniter\HTTP\Files\UploadedFile;
-use Psr\Log\LoggerInterface;
 
+/**
+ * The entry form and the actions on entries: create, save, move to the trash, restore and empty the trash.
+ *
+ * Every action names the model in its address, and every entry it touches is checked to belong to that model, so the
+ * permission checked for the model is the one that decides for the entry.
+ */
 class Entries extends AdminController
 {
-    // Instance of SyntaxProcessor for handling code or text formatting
-    protected SyntaxProcessor $syntaxProcessor;
+    private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION;
 
-    // Path where uploaded files will be stored, varies by environment
-    protected string $uploadDestination;
-
-    // Initialize controller, helpers, and environment-specific settings
-    public function initController(RequestInterface $request, ResponseInterface $response, LoggerInterface $logger)
+    /**
+     * The list of every entry of the models the person may open.
+     */
+    public function index()
     {
-        // Do Not Edit This Line: Call parent initialization
-        parent::initController($request, $response, $logger);
+        $per  = (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25);
+        $data = (new AllEntriesPage(FieldTypes::core()))->build($this->request->getGet(), $per);
 
-        // Retrieve the syntax processor helper instance
-        $this->syntaxProcessor = new SyntaxProcessor();
+        // A module may change where the New entry links go, as the paging system does for its page models.
+        $data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $data);
 
-        // Determine upload directory based on current environment
-        if (ENVIRONMENT === 'production') {
-            $this->uploadDestination = 'uploads' . DIRECTORY_SEPARATOR;
-        } else {
-            $this->uploadDestination = '.hyper-dev' . DIRECTORY_SEPARATOR . 'uploads' . DIRECTORY_SEPARATOR;
+        if (Model::wantsTheList($this->request)) {
+            return view('admin/partials/all_results', $data);
         }
+
+        $this->data = array_merge($this->data, $data, ['title' => lang('Entries.allTitle'), 'crumbs' => [[lang('Entries.allTitle'), null]]]);
+
+        return view('admin/entries', $this->data);
     }
 
-    // Show the entries list page with pagination and action links
-    public function index(): string
+    /* The form ---------------------------------------------------------------------------------------------- */
+
+    public function new($modelId)
     {
-        // Get the user's preferred page length for the entries datatable (default to 10)
-        $this->data['pageLength'] = service('settings')
-            ->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
+        $model = $this->model($modelId, 'entries.create');
+        if (! is_array($model)) {
+            return $model;
+        }
 
-        // Set the page title using the language file
-        $this->data['title'] = lang('Admin.entries');
+        $values = [];
+        foreach ($this->definition($model) as $field) {
+            $values[$field['id']] = $field['default'] ?? null;
+        }
 
-        // Define action URLs for new, edit, delete, restore, and purge operations
-        $this->data['links'] = [
-            // The ID placeholder must be separate from the base URL to avoid URL encoding
-            'new' => base_url('admin/entries') . '/{id}/new',
-            'edit' => base_url('admin/entries') . '/{modelId}/{id}/edit',
-            'delete' => base_url('admin/entries/delete'),
-            'restore' => base_url('admin/entries/restore'),
-            'purge' => base_url('admin/entries/purge-deleted'),
-        ];
-
-        /* Filters */
-
-        // Allow other modules or hooks to modify the data before rendering
-        $this->data = $this->hooks->filter(
-            hook('Backend.controller:entries:index:data'),
-            $this->data
-        );
-
-        /* End of filters */
-
-        // Render the entries view template with the prepared data
-        return render('admin/entries', $this->data);
-    }
-
-    public function new($model_id)
-    {
-        $hooks = $this->hooks;
-        $action = 'new';
-
-        $modelId = $model_id ?: $this->request->getGet('model_id');
-
-        // Check if the model ID is empty
-        if (empty($modelId))
-            return redirect('admin/entries')
-                ->with('error', lang('Admin.noModelFound'));
-
-        $model = service('modelStore')->findArray($modelId);
-
-        // Check if the model does not exist
-        if (!$model)
-            return redirect('admin/entries')
-                ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelId]));
-
-        $this->data['model'] = $model;
-        $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']); // Process data syntax on the model fields
-        $this->data['title'] = lang('Admin.newx', ['x' => $model['name']]);
-        $this->data['type'] = $action;
-
-        /* Register views */
-
-        $hooks->register(hook('Backend.view:entries:new'), function () use ($model, $action) {
-            return render('admin/partials/entries_form', [
-                'action' => $action,
-                'formAction' => base_url('admin/entries'),
-                'model' => $model
-            ]);
-        });
-
-        /* End of register views */
-
-        return render('admin/entries_action', array_merge($this->data, [
-            'action' => 'new'
-        ]));
+        return $this->form($model, null, $values, []);
     }
 
     public function edit($modelId, $id)
     {
-        $hooks = $this->hooks;
-        $action = 'edit';
-
-        /* Entry */
-
-        $entry = service('entryStore')->findArray($id);
-
-        // Check if the entry exists
-        if (!$entry)
-            return redirect('admin/entries')
-                ->with('error', lang('Admin.noEntryFoundWithIdx', ['x' => $id]));
-
-        /* End of entry */
-
-        /* Model */
-
-        $model = service('modelStore')->findArray($modelId);
-
-        // Check if the model exists
-        if (empty($model))
-            return redirect('admin/entries')
-                ->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelId]));
-
-        /* End of model */
-
-        /* View data */
-        // View data should be declared before filter hooks to allow modification
-
-        $this->data['model'] = $model;
-        $this->data['processed_model_fields'] = $this->syntaxProcessor->process($model['fields']); // Process data syntax on model fields
-        $this->data['entry'] = $entry;
-
-        // Page title
-        $this->data['title'] = lang('Admin.editx', ['x' => $entry['model_name']]);
-
-        /* End of view data */
-
-        /* Hooks */
-
-        // Filtered data
-        // Passes controller data to the hook
-        $this->data = $hooks->filter(hook('Backend.controller:entries:edit:data'), $this->data);
-
-        // Hook for entry edit
-        // Passes the model and entry data to the hook
-        $hooks->trigger(hook('Backend.controller:entries:edit'), [$this->data]);
-
-        /* End of hooks */
-
-        /* Register views */
-
-        $hooks->register(hook('Backend.view:entries:edit'), function () use ($modelId, $entry, $action) {
-            $entryId = $entry['id'];
-
-            return render('admin/partials/entries_form', [
-                'action' => $action,
-                'formAction' => base_url('admin/entries/' . $entry['id']),
-                'deleteFormAction' => base_url("admin/model/{$modelId}/{$entryId}/delete"),
-                'entry' => $entry
-            ]);
-        });
-
-        /* End of register views */
-
-        return render('admin/entries_action', array_merge($this->data, [
-            'action' => 'edit'
-        ]));
-    }
-
-    public function create()
-    {
-
-        $rules = [
-            'model_id' => 'required',
-            'fields' => 'required',
-        ];
-
-        $data = $this->request->getPost(array_keys($rules));
-
-        // Validate data – using CodeIgniter’s built-in validation.
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
+        $model = $this->model($modelId, 'entries.read');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
         }
 
-        // Get the validated data.
-        $validData = $this->validator->getValidated();
-        $userId = auth()->user()->id;
+        return $this->form($model, $entry, $this->valuesOf($entry), []);
+    }
 
-        // Process file uploads. This returns an array of file URLs and a log array.
-        list($fileUrls, $fileLog) = $this->processUploadedFiles();
+    public function create($modelId)
+    {
+        $model = $this->model($modelId, 'entries.create');
+        if (! is_array($model)) {
+            return $model;
+        }
 
-        if (!empty($fileLog['file_errors'])) {
-
-            $fileErrors = [];
-            foreach ($fileLog['file_errors'] as $error) {
-                array_push($fileErrors, $error['error_message']);
+        [$values, $errors] = $this->read($model, [], $this->posted());
+        if ($errors === []) {
+            try {
+                $id = service('entryStore')->create(['model_id' => (int) $modelId, 'fields' => json_encode($values, self::JSON_FLAGS)], (int) auth()->user()->id);
+            } catch (InvalidArgumentException | RuntimeException $e) {
+                return $this->form($model, null, $values, [], $e->getMessage(), 422);
             }
 
-            return $this->respond(implode(' ', $fileErrors), success: false);
+            $edit = base_url('admin/model/' . (int) $modelId . '/' . $id . '/edit');
+            session()->setFlashdata('success', lang('Entries.created'));
+
+            // htmx follows this header, and a plain form post follows the redirect.
+            return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', $edit)->setStatusCode(204) : redirect()->to($edit);
+        }
+
+        return $this->form($model, null, $values, $errors, lang('Entries.fixErrors'), 422);
+    }
+
+    public function update($modelId, $id)
+    {
+        $model = $this->model($modelId, 'entries.update');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
+
+        [$values, $errors] = $this->read($model, $this->valuesOf($entry), $this->posted());
+        if ($errors !== []) {
+            return $this->form($model, $entry, $values, $errors, lang('Entries.fixErrors'), 422);
         }
 
         try {
-
-            // Prepare final data
-            $finalData = $validData;
-
-            // Update meta fields with any file URLs.
-            $finalData['fields'] = $this->updateMetaFields($validData['fields'], $fileUrls);
-
-            // Delegate the creation process to the service
-            $entryId = service('entryStore')->create($finalData, $userId);
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
+            service('entryStore')->update((int) $id, ['fields' => json_encode($values, self::JSON_FLAGS)], (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->form($model, $entry, $values, [], $e->getMessage(), 422);
         }
 
-        return $this->respond(lang('Admin.entryxSuccessfullyCreated', ['x' => $entryId]), 'admin/entries');
+        // The form is drawn again from what was saved, so the details beside it show the new version.
+        $saved = service('entryStore')->findArray((int) $id);
+
+        return $this->form($model, is_array($saved) ? $saved : $entry, $values, [], '', 200, lang('Entries.saved'));
     }
 
-    public function update($id)
+    /* The versions of one entry ------------------------------------------------------------------------------ */
+
+    public function history($modelId, $id)
     {
-
-        $rules = [
-            'fields' => 'required',
-        ];
-
-        $data = $this->request->getPost(array_keys($rules));
-
-        // Validate data – using CodeIgniter’s built-in validation.
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
+        $model = $this->model($modelId, 'entries.history');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
         }
 
-        // Get the validated data.
-        $validData = $this->validator->getValidated();
-        $userId = auth()->user()->id;
+        $definition = $this->definition($model);
+        $versions   = array_reverse(service('entryStore')->versionsOf((int) $id));
+        $total      = count($versions);
 
-        // Process file uploads. This returns an array of file URLs and a log array.
-        list($fileUrls, $fileLog) = $this->processUploadedFiles();
-
-        if (!empty($fileLog['file_errors'])) {
-
-            $fileErrors = [];
-            foreach ($fileLog['file_errors'] as $error) {
-                array_push($fileErrors, $error['error_message']);
-            }
-
-            return $this->respond(implode(' ', $fileErrors), success: false);
+        $rows = [];
+        foreach ($versions as $position => $version) {
+            $values = json_decode((string) ($version['fields'] ?? ''), true);
+            $rows[] = [
+                'id'      => (int) $version['id'],
+                'number'  => $total - $position,
+                'current' => $position === 0,
+                'date'    => $version['date_created'],
+                'by'      => $version['created_by'],
+                'values'  => is_array($values) && ! array_is_list($values) ? $values : [],
+            ];
         }
 
-        try {
+        $label = $this->labelOf($model, $this->valuesOf($entry), (int) $id);
+        $this->data = array_merge($this->data, [
+            'title'       => lang('Entries.historyTitle', ['name' => $label]),
+            'crumbs'      => [[lang('Admin.entries'), base_url('admin/entries')], [$model['name'], base_url('admin/model/' . (int) $modelId)], [$label, base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit')], [lang('Entries.history'), null]],
+            'model'       => $model,
+            'entry'       => $entry,
+            'label'       => $label,
+            'versions'    => $rows,
+            'definitions' => $definition,
+            'types'       => FieldTypes::core(),
+            'editUrl'     => base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'),
+            'baseUrl'     => base_url('admin/model/' . (int) $modelId . '/' . (int) $id),
+            'can'         => ['restore' => can('entries.update', (int) $modelId), 'clear' => can('entries.delete', (int) $modelId)],
+        ]);
 
-            // Prepare final data
-            $finalData = $validData;
-
-            // Update meta fields with any file URLs.
-            $finalData['fields'] = $this->updateMetaFields($validData['fields'], $fileUrls);
-
-            // Delegate the creation process to the service
-            service('entryStore')->update($id, $finalData, $userId);
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
-        }
-
-        return $this->respond(lang('Admin.entryxSuccessfullySaved', ['x' => $id]), 'admin/entries');
+        return view('admin/entry_history', $this->data);
     }
 
-    public function delete($modelId = null, $id = null)
+    /**
+     * Save the values of an older version as a new version, so the older one stays in the history.
+     */
+    public function restoreVersion($modelId, $id, $versionId)
     {
-        /* Validation */
-
-        // Retrieve an array of IDs from POST data
-        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
-
-        // If we still don't have any IDs, respond accordingly.
-        if (empty($ids)) {
-            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400, success: false);
+        $model = $this->model($modelId, 'entries.update');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
         }
 
-        /* End of validation */
-
-        /* Action */
-
-        // Get the current authenticated user's ID (using CI Shield)
-        $deleterId = auth()->user()->id;
-
-        try {
-            // Delete entries and data
-            service('entryStore')->trash($ids, $deleterId);
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
-        }
-
-        /* End of action */
-
-        /* Response */
-
-        $deletedEntries = service('entryStore')->trashed($ids);
-
-        // Build a success response.
-        $successMessage = (count($deletedEntries) > 1) ? lang('Admin.entriesSuccessfullyDeleted') : lang('Admin.entryxSuccessfullyDeleted', ['x' => $deletedEntries[0]['model_name']]);
-
-        return $this->respond(
-            $successMessage,
-            $modelId ? "admin/model/$modelId" : null
-        );
-
-        /* End of response */
-    }
-
-    public function purgeDeleted()
-    {
-
-        /* Validation */
-
-        $deleteableEntries = service('entryStore')->countTrashed();
-
-        if (!$deleteableEntries) {
-            return $this->response->setStatusCode(400, lang('Admin.trashIsEmpty'));
-        }
-
-        /* End of validation */
-
-        /* Action */
-
-        try {
-            service('entryStore')->emptyTrash();
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
-        }
-
-        /* End of action */
-
-        /* Response */
-
-        return $this->respond(lang('Admin.entriesSuccessfullyDeleted'));
-
-        /* End of response */
-    }
-
-    public function restore($id = null)
-    {
-        /* Validation */
-
-        // Retrieve an array of IDs from POST data.
-        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
-
-        // If we still don't have any IDs, respond accordingly.
-        if (empty($ids)) {
-            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400, success: false);
-        }
-
-        // List all deleted entries
-        $entries = service('entryStore')->trashed($ids);
-
-        // List restorable entry ids
-        $restorableEntryIds = [];
-
-        // List unrestorable entry ids
-        $unrestorableEntryIds = [];
-
-        foreach ($entries as $entry) {
-            $modelId = $entry['model_id'];
-
-            $model = service('modelStore')->exists($modelId);
-
-            // If the model exists, restore the entry
-            if ($model) {
-                $restorableEntryIds[] = $entry['id'];
-            } else {
-                $unrestorableEntryIds[] = $entry['id'];
+        $back = base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/history');
+        $found = null;
+        foreach (service('entryStore')->versionsOf((int) $id) as $version) {
+            if ((int) $version['id'] === (int) $versionId) {
+                $found = $version;
             }
         }
-
-        if (empty($restorableEntryIds) && $unrestorableEntryIds) {
-            return $this->respond(lang('Admin.noRestorableEntriesFound'), statusCode: 400, success: false);
+        if ($found === null) {
+            return $this->leave($back, lang('Entries.noEntry'));
         }
 
-        /* End of validation */
+        try {
+            service('entryStore')->update((int) $id, ['fields' => (string) $found['fields']], (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($back, $e->getMessage());
+        }
+        session()->setFlashdata('success', lang('Entries.saved'));
 
-        /* Action */
+        return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'))->setStatusCode(204) : redirect()->to(base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/edit'));
+    }
+
+    /**
+     * Delete every version of the entry except the current one.
+     */
+    public function clearHistory($modelId, $id)
+    {
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
+
+        $back = base_url('admin/model/' . (int) $modelId . '/' . (int) $id . '/history');
+        try {
+            service('entryStore')->clearHistory((int) $id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($back, $e->getMessage());
+        }
+        session()->setFlashdata('success', lang('Entries.historyCleared'));
+
+        return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', $back)->setStatusCode(204) : redirect()->to($back);
+    }
+    /* The list actions -------------------------------------------------------------------------------------- */
+
+    public function trash($modelId)
+    {
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+
+        $ids = $this->idsOfModel((int) $modelId, false);
+        if ($ids === []) {
+            return $this->list($model, 'bad', lang('Entries.noneSelected'));
+        }
+
+        try {
+            service('entryStore')->trash($ids, (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->list($model, 'bad', $e->getMessage());
+        }
+
+        return $this->list($model, 'ok', lang('Entries.trashed'));
+    }
+
+    public function restore($modelId)
+    {
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+
+        $ids = $this->idsOfModel((int) $modelId, true);
+        if ($ids === []) {
+            return $this->list($model, 'bad', lang('Entries.noneSelected'));
+        }
 
         try {
             service('entryStore')->restore($ids);
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->list($model, 'bad', $e->getMessage());
         }
 
-        /* End of action */
-
-        /* Response */
-
-        // Prepare a success message.
-        $successMessage = (count($entries) > 1) ? lang('Admin.xentriesSuccessfullyRestored', ['x' => count($restorableEntryIds)]) : lang('Admin.entryxSuccessfullyRestored', ['x' => $entries[0]['model_name']]);
-
-        // If unrestorable entries exist
-        if (!empty($unrestorableEntryIds)) {
-            $successMessage .= ' ' . lang('Admin.unableToRestorexEntries', ['x' => count($unrestorableEntryIds)]);
-        }
-
-        return $this->respond($successMessage);
-
-        /* End of response */
+        return $this->list($model, 'ok', lang('Entries.restored'));
     }
 
     /**
-     * Process any uploaded files.
-     *
-     * Loops through the uploaded files, moves them to a designated folder, 
-     * and collects the resulting URLs.
-     *
-     * @return array  [fileUrls, log]
+     * Move the entry that is open to the trash, and go back to the list of its model.
      */
-    protected function processUploadedFiles(): array
+    public function trashOne($modelId, $id)
     {
-        $files = $this->request->getFiles();
-        $fileUrls = [];
-        $log = [];
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+        $entry = $this->entry($model, $id);
+        if (! is_array($entry)) {
+            return $entry;
+        }
 
-        if ($files) {
-            foreach ($files as $fileInputName => $uploadedFiles) {
-                // Ensure it's an array (wrap single file in an array).
-                if (!is_array($uploadedFiles)) {
-                    $uploadedFiles = [$uploadedFiles];
+        $to = base_url('admin/model/' . (int) $modelId);
+        try {
+            service('entryStore')->trash([(int) $id], (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($to, $e->getMessage());
+        }
+        session()->setFlashdata('success', lang('Entries.trashed'));
+
+        return $this->isHtmx() ? $this->response->setHeader('HX-Redirect', $to)->setStatusCode(204) : redirect()->to($to);
+    }
+    /**
+     * Delete everything in the trash of every model for good. Only a person who may purge can do it.
+     */
+    public function purge($modelId)
+    {
+        $model = $this->model($modelId, 'entries.delete');
+        if (! is_array($model)) {
+            return $model;
+        }
+        if (! can('entries.purge')) {
+            return $this->list($model, 'bad', lang('Entries.notAllowed'));
+        }
+
+        try {
+            service('entryStore')->emptyTrash();
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->list($model, 'bad', $e->getMessage());
+        }
+
+        return $this->list($model, 'ok', lang('Entries.emptied'));
+    }
+
+    /* Helpers ----------------------------------------------------------------------------------------------- */
+
+    /**
+     * The model as a row, or the redirect to send the person to when there is none or they lack the permission.
+     *
+     * @return array<string, mixed>|RedirectResponse
+     */
+    private function model(mixed $modelId, string $permission)
+    {
+        $model = is_numeric($modelId) ? service('modelStore')->findArray((int) $modelId) : false;
+        if (! $model) {
+            return $this->leave(base_url('admin/entries'), lang('Entries.noModel'));
+        }
+        if (! can($permission, (int) $modelId)) {
+            return $this->leave(base_url('admin/dashboard'), lang('Auth.notEnoughPrivilege'));
+        }
+
+        return $model;
+    }
+
+    /**
+     * A live entry of this model, or the redirect to send the person to. An entry of another model is answered as if
+     * it did not exist, so an address cannot reach an entry through a model the person may open.
+     *
+     * @param array<string, mixed> $model
+     *
+     * @return array<string, mixed>|RedirectResponse
+     */
+    private function entry(array $model, mixed $id)
+    {
+        $entry = is_numeric($id) ? service('entryStore')->findArray((int) $id) : false;
+        if (! $entry || (int) $entry['model_id'] !== (int) $model['id']) {
+            $trashed = is_numeric($id) ? (service('entryStore')->trashed([(int) $id]) ?: []) : [];
+            $message = $trashed !== [] && (int) ($trashed[0]['model_id'] ?? 0) === (int) $model['id'] ? lang('Entries.trashedNotice') : lang('Entries.noEntry');
+
+            return $this->leave(base_url('admin/model/' . (int) $model['id']), $message);
+        }
+
+        return $entry;
+    }
+
+    /**
+     * Where to go with a message, for a request that cannot be answered as asked.
+     */
+    private function leave(string $to, string $message): RedirectResponse|ResponseInterface
+    {
+        if ($this->isHtmx()) {
+            return $this->response->setHeader('HX-Redirect', $to)->setStatusCode(204);
+        }
+
+        return redirect()->to($to)->with('error', $message);
+    }
+
+    /**
+     * @param array<string, mixed> $model
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function definition(array $model): array
+    {
+        return (new ModelListPage(FieldTypes::core()))->definition((string) ($model['fields'] ?? ''));
+    }
+
+    /**
+     * The values of an entry as an array by field id.
+     *
+     * @param array<string, mixed> $entry
+     *
+     * @return array<string, mixed>
+     */
+    private function valuesOf(array $entry): array
+    {
+        $values = json_decode((string) ($entry['fields'] ?? ''), true);
+
+        return is_array($values) && ! array_is_list($values) ? $values : [];
+    }
+
+    /**
+     * What the form posted under `fields`.
+     *
+     * @return array<string, mixed>
+     */
+    private function posted(): array
+    {
+        $posted = $this->request->getPost('fields');
+
+        return is_array($posted) ? $posted : [];
+    }
+
+    /**
+     * Read the posted values of a form into the values to store, and the message of each field that cannot be stored.
+     *
+     * A file field keeps what it holds, because files cannot be changed yet. A password left blank keeps the stored one.
+     * A field the definition does not name keeps its value too, so a save never drops what another version of the model
+     * had.
+     *
+     * @param array<string, mixed> $model
+     * @param array<string, mixed> $existing The values of the entry as stored, empty for a new one.
+     * @param array<string, mixed> $posted
+     *
+     * @return array{0: array<string, mixed>, 1: array<string, string>} The values, and the error by field id.
+     */
+    private function read(array $model, array $existing, array $posted): array
+    {
+        $types  = FieldTypes::core();
+        $values = [];
+        $errors = [];
+        $named  = [];
+
+        foreach ($this->definition($model) as $field) {
+            $id        = $field['id'];
+            $named[$id] = true;
+            $type      = $types->get((string) ($field['type'] ?? ''));
+            if ($type === null) {
+                continue;
+            }
+
+            $kind = (string) $field['type'];
+            if ($kind === 'file') {
+                if (array_key_exists($id, $existing)) {
+                    $values[$id] = $existing[$id];
                 }
 
-                foreach ($uploadedFiles as $file) {
-                    if ($file instanceof UploadedFile) {
-                        if ($file->isValid() && !$file->hasMoved()) {
-                            // Log file details (for debugging purposes).
-                            $log['file_details'][] = [
-                                'input_name' => $fileInputName,
-                                'original_name' => $file->getClientName(),
-                                'temp_path' => $file->getTempName(),
-                                'file_size' => $file->getSize(),
-                                'file_type' => $file->getMimeType(),
-                            ];
+                continue;
+            }
+            if ($kind === 'hidden' && ! array_key_exists($id, $posted)) {
+                $values[$id] = $existing[$id] ?? ($field['default'] ?? null);
 
-                            // Use a slugified original name and a random name component.
-                            $originalName = url_title(pathinfo($file->getClientName(), PATHINFO_FILENAME), '-', false);
-                            $randomName = $file->getRandomName();
+                continue;
+            }
 
-                            // @TODO: Make the destination path configurable.
-                            // Final destination path (adjust as necessary).
-                            $destination = FCPATH . $this->uploadDestination;
+            $raw = $posted[$id] ?? null;
+            if ($kind === 'text' && ($field['format'] ?? '') === 'password' && ($raw === null || $raw === '') && array_key_exists($id, $existing)) {
+                $values[$id] = $existing[$id];
 
-                            // Move the file.
-                            $file->move($destination, $originalName . '-' . $randomName);
+                continue;
+            }
+            // A list of check boxes posts an empty marker, so a list with nothing ticked still reaches the server.
+            if (is_array($raw) && $kind === 'choice') {
+                $raw = array_values(array_filter($raw, static fn ($item): bool => $item !== ''));
+            }
 
-                            // Record the relative URL.
-                            $fileUrls[$fileInputName][] = $this->uploadDestination . $originalName . '-' . $randomName;
-                        } else {
-                            // If the file is invalid, log the error.
-                            $log['file_errors'][] = [
-                                'input_name' => $fileInputName,
-                                'error_message' => $file->getErrorString(),
-                            ];
-                        }
-                    }
-                }
+            $value = $type->normalise($raw, $field);
+            $error = $type->validate($value, $field);
+            if ($error !== null) {
+                $errors[$id] = $error;
+            }
+            $values[$id] = $value;
+        }
+
+        foreach ($existing as $id => $value) {
+            if (! isset($named[$id])) {
+                $values[$id] = $value;
             }
         }
 
-        return [$fileUrls, $log];
+        return [$values, $errors];
     }
 
     /**
-     * Update meta fields with file URLs.
+     * Draw the form, as a whole page or, for htmx, as the form alone.
      *
-     * This method decodes the existing JSON meta field data, merges in file upload URLs,
-     * and returns an updated JSON string.
-     *
-     * @param string|null $metaJson  The original JSON string.
-     * @param array       $fileUrls  Uploaded file URLs keyed by input name.
-     *
-     * @return string  Updated JSON-encoded meta data.
+     * @param array<string, mixed>      $model
+     * @param array<string, mixed>|null $entry
+     * @param array<string, mixed>      $values
+     * @param array<string, string>     $errors
      */
-    protected function updateMetaFields(?string $metaJson, array $fileUrls): string
+    private function form(array $model, ?array $entry, array $values, array $errors, string $message = '', int $status = 200, string $saved = '')
     {
-        // Decode the original meta data (now already in key-value format).
-        $metaDataAssoc = json_decode($metaJson, true) ?? [];
+        $id   = (int) $model['id'];
+        $mode = $entry === null ? 'new' : 'edit';
+        $data = [
+            'model'       => $model,
+            'entry'       => $entry,
+            'mode'        => $mode,
+            'values'      => $values,
+            'errors'      => $errors,
+            'definitions' => $this->definition($model),
+            'types'       => FieldTypes::core(),
+            'formUrl'     => $mode === 'new' ? base_url("admin/model/$id") : base_url("admin/model/$id/{$entry['id']}"),
+            'listUrl'     => base_url("admin/model/$id"),
+            'can'         => ['update' => can($mode === 'new' ? 'entries.create' : 'entries.update', $id), 'delete' => can('entries.delete', $id), 'history' => can('entries.history', $id)],
+            'message'     => $message,
+        ];
 
-        // Overwrite or add file URLs.
-        foreach ($fileUrls as $fileInputName => $urls) {
-            $metaDataAssoc[$fileInputName] = $urls;
+        // A module puts its own button beside the save button, as the paging system puts the editor button.
+        $data['toolbar'] = (string) $this->hooks->trigger(hook($mode === 'new' ? 'Backend.view:entries:new' : 'Backend.view:entries:edit'), $mode === 'new' ? [$model] : [$model, $entry]);
+
+        if ($this->isHtmx() && ! $this->request->hasHeader('HX-History-Restore-Request')) {
+            $response = $this->response->setStatusCode($status)->setBody(view('admin/partials/entry_form', $data));
+            $toast    = $status === 422 ? ['type' => 'bad', 'message' => $message] : ($saved !== '' ? ['type' => 'ok', 'message' => $saved] : null);
+
+            return $toast === null ? $response : $response->setHeader('HX-Trigger', json_encode(['hyper:toast' => $toast], JSON_UNESCAPED_UNICODE));
         }
 
-        // log_message('debug', "updateMetaFields: " . json_encode($metaDataAssoc, JSON_PRETTY_PRINT));
+        $name = $mode === 'new' ? lang('Entries.newTitle', ['model' => $model['name']]) : lang('Entries.editTitle', ['model' => $model['name']]);
+        $this->data = array_merge($this->data, $data, [
+            'title'  => $name,
+            'crumbs' => [[lang('Admin.entries'), base_url('admin/entries')], [$model['name'], $data['listUrl']], [$mode === 'new' ? lang('Entries.create') : $this->labelOf($model, $values, (int) ($entry['id'] ?? 0)), null]],
+        ]);
 
-        return json_encode($metaDataAssoc);
+        return $this->response->setStatusCode($status)->setBody(view('admin/entry_form', $this->data));
     }
 
-    protected function validateUserGroup($entryUserGroups, $userGroups): bool
+    /**
+     * The name of an entry for the trail of the page.
+     *
+     * @param array<string, mixed> $model
+     * @param array<string, mixed> $values
+     */
+    private function labelOf(array $model, array $values, int $id): string
     {
-        $entryUserGroupsArray = json_decode($entryUserGroups ?? '', true);
-        if (empty($entryUserGroupsArray))
-            return true;
+        $field = $model['label_field'] ?? null;
 
-        return !empty(array_intersect($entryUserGroupsArray, $userGroups));
+        return is_string($field) && is_scalar($values[$field] ?? null) && (string) $values[$field] !== '' ? (string) $values[$field] : '#' . $id;
+    }
+
+    /**
+     * The ids that were posted, kept to entries of this model in the state the action needs.
+     *
+     * @return list<int>
+     */
+    private function idsOfModel(int $modelId, bool $inTrash): array
+    {
+        $posted = $this->request->getPost('ids');
+        $ids    = array_values(array_unique(array_filter(array_map('intval', is_array($posted) ? $posted : []), static fn (int $id): bool => $id > 0)));
+        if ($ids === []) {
+            return [];
+        }
+
+        $found = [];
+        if ($inTrash) {
+            foreach (service('entryStore')->trashed($ids) ?: [] as $row) {
+                $found[(int) $row['id']] = (int) $row['model_id'];
+            }
+        } else {
+            foreach ($ids as $id) {
+                $found[$id] = service('entryStore')->modelIdOf($id) ?? 0;
+            }
+        }
+
+        return array_values(array_filter($ids, static fn (int $id): bool => ($found[$id] ?? 0) === $modelId));
+    }
+
+    /**
+     * The list of the model as it looks after an action, with a message, under the request the person had.
+     *
+     * @param array<string, mixed> $model
+     */
+    private function list(array $model, string $type, string $message)
+    {
+        $per  = (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25);
+        $data = (new ModelListPage(FieldTypes::core()))->viewData($model, $this->request->getPost() ?: [], $per);
+
+        if ($this->isHtmx()) {
+            return $this->response
+                ->setHeader('HX-Trigger', json_encode(['hyper:toast' => ['type' => $type, 'message' => $message]], JSON_UNESCAPED_UNICODE))
+                ->setBody(view('admin/partials/entry_results', $data));
+        }
+
+        return redirect()->to($data['urls']['list'])->with($type === 'ok' ? 'success' : 'error', $message);
+    }
+
+    private function isHtmx(): bool
+    {
+        return $this->request->hasHeader('HX-Request');
     }
 }

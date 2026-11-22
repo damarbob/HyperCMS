@@ -13,6 +13,41 @@ final class RelationField extends IdField
         return 'relation';
     }
 
+    protected function show(mixed $value, array $definition): string
+    {
+        $ids = array_filter(is_array($value) ? $value : [$value], 'is_int');
+        service('entryLabels')->preload($ids);
+
+        $chips = '';
+        foreach ($ids as $id) {
+            $chips .= '<span class="chip">' . esc(service('entryLabels')->label($id) ?? ('#' . $id)) . '</span>';
+        }
+
+        return '<div class="chips">' . $chips . '</div>';
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $many    = self::flag($definition['multiple'] ?? false);
+        $options = service('entryLabels')->options((int) ($definition['model'] ?? 0));
+        $picked  = array_map('strval', array_filter(is_array($value) ? $value : [$value], 'is_int'));
+        // A chosen entry that is no longer in the first options is kept, so saving does not drop it.
+        foreach ($picked as $id) {
+            $options[(int) $id] ??= service('entryLabels')->label((int) $id) ?? ('#' . $id);
+        }
+
+        $html = $many || self::flag($definition['required'] ?? false) ? '' : '<option value="">' . esc(lang('Fields.chooseOne')) . '</option>';
+        foreach ($options as $id => $label) {
+            $html .= '<option value="' . $id . '"' . (in_array((string) $id, $picked, true) ? ' selected' : '') . '>' . esc($label) . '</option>';
+        }
+
+        return $this->field($definition, '<select class="select"' . attrs(self::inputAttributes($definition, $error, $many) + ['multiple' => $many]) . '>' . $html . '</select>', $error);
+    }
+
+    public function filters(array $definition): array
+    {
+        return self::flag($definition['multiple'] ?? false) ? [] : [['op' => 'eq', 'label' => lang('Fields.filterIs'), 'control' => 'select', 'choices' => array_map('strval', service('entryLabels')->options((int) ($definition['model'] ?? 0)))]];
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $query = LegacyQuery::classify($old['options'] ?? null, $context['modelIds'] ?? []);

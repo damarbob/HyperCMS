@@ -2,6 +2,8 @@
 
 namespace App\Commands;
 
+use App\Libraries\Upgrade\CounterSchemaStore;
+use App\Libraries\Upgrade\Steps\Steps;
 use CodeIgniter\CLI\BaseCommand;
 use CodeIgniter\CLI\CLI;
 use Config\Database;
@@ -97,7 +99,13 @@ class Setup extends BaseCommand
                 exit(1);
             }
             CLI::write('✓ Database migrations completed', 'green');
-        } catch (Throwable $e) {
+
+            // A new install is made in the latest shape, so it has no conversion to run. A database that still holds the
+            // old tables is left for `hyper:upgrade`, which converts it.
+            $db = db_connect();
+            if (! $db->tableExists('model_data')) {
+                (new CounterSchemaStore($db))->setVersion(Steps::LATEST);
+            }        } catch (Throwable $e) {
             CLI::error('Migration failed: ' . $e->getMessage());
             CLI::error('Fix database issues and rerun setup');
             exit(1);

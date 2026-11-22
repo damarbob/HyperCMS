@@ -41,6 +41,104 @@ abstract class AbstractField implements FieldType
         return $old;
     }
 
+    public function cell(mixed $value, array $definition): string
+    {
+        return $this->isEmpty($value) ? self::notSet() : $this->show($value, $definition);
+    }
+
+    public function filters(array $definition): array
+    {
+        return [];
+    }
+
+    /**
+     * The HTML of a value that is not empty. The default shows it as text.
+     *
+     * @param array<string, mixed> $definition
+     */
+    protected function show(mixed $value, array $definition): string
+    {
+        return esc(is_scalar($value) ? (string) $value : (string) json_encode($value, JSON_UNESCAPED_UNICODE));
+    }
+
+    /**
+     * The whole field of the entry form around an input the type has drawn.
+     *
+     * @param array<string, mixed> $definition
+     * @param bool                 $group      True for several inputs that share one label, such as radio buttons.
+     */
+    protected function field(array $definition, string $control, ?string $error, bool $group = false): string
+    {
+        return ui('field', [
+            'id'       => self::domId($definition),
+            'label'    => self::labelOf($definition),
+            'required' => self::flag($definition['required'] ?? false),
+            'help'     => self::help($definition),
+            'error'    => $error ?? '',
+            'input'    => $control,
+            'group'    => $group,
+        ]);
+    }
+
+    /**
+     * The attributes every input of a field shares: its id, the name it posts under, and what points it at the help and
+     * the error.
+     *
+     * @param array<string, mixed> $definition
+     *
+     * @return array<string, string|bool|null>
+     */
+    protected static function inputAttributes(array $definition, ?string $error, bool $many = false): array
+    {
+        $id      = self::domId($definition);
+        $describe = trim((self::help($definition) !== '' ? $id . '-help ' : '') . ($error !== null && $error !== '' ? $id . '-error' : ''));
+
+        return [
+            'id'               => $id,
+            'name'             => 'fields[' . (string) ($definition['id'] ?? '') . ']' . ($many ? '[]' : ''),
+            'required'         => self::flag($definition['required'] ?? false),
+            'aria-invalid'     => $error !== null && $error !== '' ? 'true' : null,
+            'aria-describedby' => $describe !== '' ? $describe : null,
+        ];
+    }
+
+    /**
+     * An id for the page that is safe in an attribute and in a selector, whatever the field id holds.
+     *
+     * @param array<string, mixed> $definition
+     */
+    protected static function domId(array $definition): string
+    {
+        return 'f-' . preg_replace('/[^A-Za-z0-9_-]/', '_', (string) ($definition['id'] ?? ''));
+    }
+
+    /**
+     * The help line of a field. It may hold `[base_url]`, which the old form replaced by the address of the site.
+     *
+     * @param array<string, mixed> $definition
+     */
+    protected static function help(array $definition): string
+    {
+        $help = $definition['help'] ?? '';
+
+        return is_string($help) ? str_replace('[base_url]', base_url(), $help) : '';
+    }
+
+    protected static function notSet(): string
+    {
+        return '<span class="muted">' . esc(lang('Fields.notSet')) . '</span>';
+    }
+
+    /**
+     * Shorten a text for a list, on a word of the text when it can.
+     */
+    protected static function excerpt(string $text, int $length = 80): string
+    {
+        $text = trim((string) preg_replace('/\s+/u', ' ', $text));
+
+        return mb_strlen($text) > $length ? rtrim(mb_substr($text, 0, $length - 1)) . '…' : $text;
+    }
+
     /**
      * Check a value that is not empty. The default accepts everything.
      *

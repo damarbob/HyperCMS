@@ -60,6 +60,46 @@ final class NumberField extends AbstractField
         return null;
     }
 
+    protected function show(mixed $value, array $definition): string
+    {
+        $number = self::numberFrom($value);
+        if ($number === null) {
+            return esc((string) $value);
+        }
+
+        return is_int($number) ? (string) $number : esc(rtrim(rtrim(number_format($number, 10, '.', ''), '0'), '.'));
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $whole  = self::flag($definition['integer'] ?? false);
+        $slider = ($definition['widget'] ?? 'input') === 'slider';
+        $number = self::numberFrom($value);
+
+        $attributes = self::inputAttributes($definition, $error) + [
+            'min'       => $definition['min'] ?? null,
+            'max'       => $definition['max'] ?? null,
+            'step'      => $whole ? 1 : ($definition['step'] ?? 'any'),
+            'inputmode' => $whole ? 'numeric' : 'decimal',
+        ];
+
+        if ($slider) {
+            $start   = $number ?? ($definition['default'] ?? $definition['min'] ?? 0);
+            $control = '<div class="row" x-data="{ v: ' . attr((string) json_encode($start)) . ' }"><input class="slider grow" type="range" x-model="v"' . attrs($attributes) . '><output class="mono" x-text="v"></output></div>';
+        } else {
+            $control = '<input class="input" type="number" value="' . attr($number === null ? '' : (string) $number) . '"' . attrs($attributes) . '>';
+        }
+
+        return $this->field($definition, $control, $error);
+    }
+
+    public function filters(array $definition): array
+    {
+        return [
+            ['op' => 'gte', 'label' => lang('Fields.filterMin'), 'control' => 'number'],
+            ['op' => 'lte', 'label' => lang('Fields.filterMax'), 'control' => 'number'],
+        ];
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $slider = ($old['type'] ?? null) === 'range';
