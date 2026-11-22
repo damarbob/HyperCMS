@@ -85,6 +85,7 @@ class Upgrade extends BaseCommand
 
         if ($dryRun) {
             CLI::newLine();
+            $this->reportConversions($db);
             CLI::write('Dry run, nothing was changed.');
 
             return $blocked ? EXIT_ERROR : EXIT_SUCCESS;
@@ -231,6 +232,46 @@ class Upgrade extends BaseCommand
         CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');
 
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * Report what the pending conversion steps would change, without changing anything.
+     *
+     * The steps read the version 2 tables, so before the copy and the migrations there is nothing to count.
+     */
+    private function reportConversions(BaseConnection $db): void
+    {
+        $ready = $db->tableExists('hyper_counters') && $db->tableExists('hyper_models') && $db->fieldExists('label_field', 'hyper_models');
+        if (! $ready) {
+            CLI::write('The conversions of stored values run after the copy, so they are counted on the first real run.');
+
+            return;
+        }
+
+        try {
+            $store  = new CounterSchemaStore($db);
+            $report = (new Converters(Steps::make($db)))->run($store, true);
+        } catch (Throwable $e) {
+            CLI::write('The conversions could not be counted. ' . $e->getMessage(), 'yellow');
+
+            return;
+        }
+
+        if ($report === []) {
+            CLI::write('No conversion is pending.');
+
+            return;
+        }
+
+        foreach ($report as $step) {
+            CLI::write("Step {$step['number']}, {$step['name']}, would change {$step['changed']}.");
+            foreach (array_slice($step['problems'], 0, 50) as $problem) {
+                CLI::write("  $problem", 'yellow');
+            }
+            if (count($step['problems']) > 50) {
+                CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
+            }
+        }
     }
 
     /**
