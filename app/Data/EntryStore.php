@@ -292,16 +292,4 @@ class EntryStore
     {
         return $this->lists->modelDataTable($params);
     }
-
-    /**
-     * Answer one DataTables request for the saved versions of one entry.
-     *
-     * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns, find).
-     * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
-     * @throws LookupException When the entry id is missing or names no entry, or the entry names no model.
-     */
-    public function versionsDataTable(array $post): array
-    {
-        return $this->lists->versionsDataTable($post);
-    }
 }

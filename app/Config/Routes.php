@@ -198,16 +198,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
             $routes->post('model-data', 'ModelData');
         });
 
-        // Entries and their saved versions
+        // Entries, for the token API
         $routes->group('', ['filter' => 'api-auth:entries.read'], static function ($routes) {
-            $routes->post('entries', 'Entries');
-            $routes->post('entry-data', 'EntryData');
             $routes->resource('entries-resource', ['controller' => 'EntriesResource', 'only' => ['index', 'show']]);
-        });
-
-        // The entries of one model. A visitor without a login may read a model that is marked public.
-        $routes->group('', ['filter' => 'api-auth:entries.read,optional'], static function ($routes) {
-            $routes->post('model', 'Model');
         });
     });
 });

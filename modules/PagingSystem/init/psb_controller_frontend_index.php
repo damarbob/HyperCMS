@@ -1,7 +1,6 @@
 <?php
 
 use StarCore\Service\HyperHooks;
-use App\Controllers\API\v1\Model;
 use App\Data\Entries\ScanLimitExceeded;
 use Masterminds\HTML5;
 
@@ -286,10 +285,9 @@ function pagingSystemProcessDynamicMetaTags($dom): void
             ]
         ];
 
-        // Instantiate the model controller and retrieve the dynamic meta data.
-        $modelController = new Model();
+        // Retrieve the dynamic meta data from the entry store.
         try {
-            $metaData = $modelController->getModelData($postData)['data'];
+            $metaData = service('entryStore')->modelDataTable($postData)['data'];
         } catch (ScanLimitExceeded $e) {
             // The lookup would scan too many entries. The page is shown without this meta value.
             log_message('warning', 'Meta lookup skipped: {message}', ['message' => $e->getMessage()]);
