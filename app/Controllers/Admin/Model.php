@@ -21,13 +21,10 @@ class Model extends AdminController
             return $model;
         }
 
-        $data = (new ModelListPage(FieldTypes::core()))->build($model, $this->request->getGet(), $this->perPage());
-        $data = $this->withPermissions($data, (int) $id);
+        $data = (new ModelListPage(FieldTypes::core()))->viewData($model, $this->request->getGet(), $this->perPage());
 
         // A module may change the address of the New button, as the paging system does for its page models.
-        $data['id']    = $id;
-        $data['links'] = ['new' => $data['urls']['new']];
-        $data          = $this->hooks->filter(hook('Backend.controller:model:index:data'), $data);
+        $data = $this->hooks->filter(hook('Backend.controller:model:index:data'), $data);
 
         // A swap of the list gets the list alone. The browser's own restore of a page after Back needs the whole page.
         if (self::wantsTheList($this->request)) {
@@ -112,24 +109,6 @@ class Model extends AdminController
         }
 
         return $model;
-    }
-
-    /**
-     * What the person may do with the entries of this model, so the page draws only the buttons that will work.
-     *
-     * @param array<string, mixed> $data
-     *
-     * @return array<string, mixed>
-     */
-    private function withPermissions(array $data, int $modelId): array
-    {
-        $data['can'] = [
-            'create' => can('entries.create', $modelId),
-            'delete' => can('entries.delete', $modelId),
-            'purge'  => can('entries.purge'),
-        ];
-
-        return $data;
     }
 
     private function perPage(): int

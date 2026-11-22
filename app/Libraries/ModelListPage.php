@@ -98,6 +98,25 @@ final class ModelListPage
     }
 
     /**
+     * `build()` plus what the person may do and the address of the New button, which is all the list's views need.
+     *
+     * @param array<string, mixed> $model
+     * @param array<string, mixed> $input
+     *
+     * @return array<string, mixed>
+     */
+    public function viewData(array $model, array $input, int $defaultPerPage): array
+    {
+        $data = $this->build($model, $input, $defaultPerPage);
+        $id   = (int) $model['id'];
+
+        $data['can']   = ['create' => can('entries.create', $id), 'delete' => can('entries.delete', $id), 'purge' => can('entries.purge')];
+        $data['id']    = $id;
+        $data['links'] = ['new' => $data['urls']['new']];
+
+        return $data;
+    }
+    /**
      * The fields of the model's definition that are drawn, in order.
      *
      * @return list<array<string, mixed>>

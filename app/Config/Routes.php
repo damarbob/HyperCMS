@@ -40,8 +40,13 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
                 $routes->get('/', 'Model::index/$1');
                 $routes->get('export', 'Model::export/$1');
                 $routes->get('new', 'Entries::new/$1');
+                $routes->post('/', 'Entries::create/$1');
+                $routes->post('trash', 'Entries::trash/$1');
+                $routes->post('restore', 'Entries::restore/$1');
+                $routes->post('purge', 'Entries::purge/$1');
                 $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
-                $routes->post('(:num)/delete', 'Entries::delete/$1/$2');
+                $routes->post('(:num)', 'Entries::update/$1/$2');
+                $routes->post('(:num)/trash', 'Entries::trashOne/$1/$2');
             });
             $routes->addRedirect('/', 'admin/entries', 301);
         });
@@ -70,23 +75,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
 
         // Entries
-        $routes->resource('entries', [
-            'websafe' => 1,
-            'placeholder' => '(:num)',
-            'only' => ['index', 'create', 'update', 'delete'],
-            'filter' => 'group:superadmin,admin,developer',
-        ]);
-        $routes->group('entries', static function ($routes) {
-            $routes->group('(:num)', ['filter' => 'model-user-group:entries'], static function ($routes) {
-                $routes->get('new', 'Entries::new/$1');
-                $routes->get('(:num)/edit', 'Entries::edit/$1/$2');
-            });
-            $routes->group('/', ['filter' => 'group:superadmin,admin,developer'], static function ($routes) {
-                $routes->post('delete', 'Entries::delete');
-                $routes->post('restore', 'Entries::restore');
-            });
-            $routes->post('purge-deleted', 'Entries::purgeDeleted', ['filter' => 'group:superadmin']);
-        });
+        $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
 
         // Entry data
         $routes->resource('entry-data', [
