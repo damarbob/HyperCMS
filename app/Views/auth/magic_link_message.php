@@ -1,24 +1,13 @@
-<?= $this->extend('auth/layout/page') ?>
+<?php $this->setVar('title', lang('Ui.magicLinkSent')); ?>
+<?= $this->extend('auth/layout/bare') ?>
 
 <?= $this->section('content') ?>
-<div class="columns is-centered">
-    <div class="column is-12-mobile is-8-tablet is-5-desktop">
-        <div class="card">
-            <!-- Card Header -->
-            <header class="card-header">
-                <p class="card-header-title">
-                    <?= lang('Auth.useMagicLink') ?>
-                </p>
-            </header>
-
-            <!-- Card Content -->
-            <div class="card-content">
-                <div class="content">
-                    <p><strong><?= lang('Auth.checkYourEmail') ?></strong></p>
-                    <p><?= lang('Auth.magicLinkDetails', [setting('Auth.magicLinkLifetime') / 60]) ?></p>
-                </div>
-            </div>
-        </div>
-    </div>
+<div>
+    <h1><?= esc(lang('Ui.magicLinkSent')) ?></h1>
+    <p class="lede"><?= esc(lang('Ui.magicLinkSentText')) ?></p>
 </div>
+<?= $this->endSection() ?>
+
+<?= $this->section('foot') ?>
+<a href="<?= attr(url_to('login')) ?>"><?= esc(lang('Ui.backToSignIn')) ?></a>
 <?= $this->endSection() ?>

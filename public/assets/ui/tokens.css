@@ -1,0 +1,200 @@
+/*
+ * Design tokens of the HyperCMS admin.
+ *
+ * Every colour pair below was checked for a contrast of at least 4.5 to 1 in both schemes. The scheme comes from the
+ * `data-theme` attribute of the html element, which the server sets from the user's choice. Without the attribute the
+ * admin follows the operating system.
+ */
+
+@layer tokens, base, layout, components, utilities;
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../vendor/_at_fontsource-variable/geist/files/geist-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Geist";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../vendor/_at_fontsource-variable/geist/files/geist-latin-ext-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF, U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
+@font-face {
+  font-family: "Geist Mono";
+  font-style: normal;
+  font-weight: 100 900;
+  font-display: swap;
+  src: url("../vendor/_at_fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2") format("woff2-variations");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@layer tokens {
+  :root {
+    color-scheme: light;
+
+    /* Surfaces. The canvas holds the rail, the sheet holds the work. */
+    --canvas: #eceff0;
+    --sheet: #ffffff;
+    --sunken: #f5f7f7;
+    --hover: #f1f4f4;
+    --line: #e1e6e7;
+    --line-strong: #c5cdcf;
+
+    /* Ink */
+    --ink: #101a17;
+    --ink-2: #3f4e49;
+    --ink-3: #5b6a65;
+
+    /* The mark is lime. The action is deep green in light and lime in dark. */
+    --mark: #cbdc38;
+    --action: #1d5a2c;
+    --action-hover: #154621;
+    --action-ink: #ffffff;
+    --action-tint: #e3f0e5;
+    --focus: #2f8f46;
+
+    /* Meaning */
+    --ok: #17703f;
+    --ok-tint: #dff1e6;
+    --warn: #85500a;
+    --warn-tint: #faefd8;
+    --bad: #b3261e;
+    --bad-tint: #fbe6e3;
+    --chip: #e8edee;
+
+    /* Things that invert with the scheme, such as the pill that floats over the work. */
+    --inverse: #101a17;
+    --inverse-ink: #eef3f0;
+    --inverse-line: #35453f;
+    --code-bg: #101a17;
+    --code-ink: #e0ebe3;
+    --on-mark: #14200f;
+
+    --shadow-sheet: 0 1px 2px rgb(16 26 23 / 0.05), 0 8px 28px -12px rgb(16 26 23 / 0.14);
+    --shadow-float: 0 10px 30px -8px rgb(16 26 23 / 0.35), 0 2px 6px rgb(16 26 23 / 0.2);
+    --shadow-pop: 0 12px 32px -10px rgb(16 26 23 / 0.28), 0 0 0 1px rgb(16 26 23 / 0.06);
+    --shadow-raise: 0 1px 3px rgb(16 26 23 / 0.16);
+    --scrim: rgb(16 26 23 / 0.4);
+
+    /* Type. One family, and a mono for ids and code. */
+    --font: "Geist", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    --mono: "Geist Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+    --t-xs: 0.75rem;
+    --t-sm: 0.8125rem;
+    --t-md: 0.875rem;
+    --t-lg: 1rem;
+    --t-xl: 1.25rem;
+    --t-2xl: 1.875rem;
+
+    /* Space, on a 4px grid. */
+    --s1: 4px;
+    --s2: 8px;
+    --s3: 12px;
+    --s4: 16px;
+    --s5: 24px;
+    --s6: 32px;
+    --s7: 48px;
+
+    /* Shape */
+    --r-sm: 6px;
+    --r-md: 8px;
+    --r-lg: 12px;
+    --r-sheet: 16px;
+
+    /* Layout */
+    --rail: 232px;
+    --bar: 52px;
+    --measure: 46rem;
+
+    /* Motion. Answers to a person's action only. */
+    --ease: cubic-bezier(0.2, 0, 0, 1);
+    --fast: 120ms;
+    --slow: 200ms;
+
+    /* Layers */
+    --z-bar: 5;
+    --z-float: 6;
+    --z-rail: 20;
+    --z-modal: 40;
+    --z-toast: 50;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme]) {
+      color-scheme: dark;
+      --canvas: #0a0f0d;
+      --sheet: #111a16;
+      --sunken: #0e1512;
+      --hover: #17211c;
+      --line: #213029;
+      --line-strong: #34463d;
+      --ink: #e9f0ec;
+      --ink-2: #b2c0b8;
+      --ink-3: #8a9b92;
+      --action: #cbdc38;
+      --action-hover: #d8e854;
+      --action-ink: #0a0f0d;
+      --action-tint: rgb(203 220 56 / 0.13);
+      --focus: #cbdc38;
+      --ok: #6fd39b;
+      --ok-tint: rgb(111 211 155 / 0.14);
+      --warn: #f0be6b;
+      --warn-tint: rgb(240 190 107 / 0.14);
+      --bad: #ff9a92;
+      --bad-tint: rgb(255 154 146 / 0.14);
+      --chip: #1b2721;
+      --inverse: #e9f0ec;
+      --inverse-ink: #0a0f0d;
+      --inverse-line: #b8c6bf;
+      --code-bg: #0a0f0d;
+      --code-ink: #cfe0d5;
+      --shadow-sheet: none;
+      --shadow-float: 0 10px 30px -8px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+      --shadow-pop: 0 12px 32px -10px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.07);
+      --shadow-raise: none;
+      --scrim: rgb(0 0 0 / 0.6);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    color-scheme: dark;
+    --canvas: #0a0f0d;
+    --sheet: #111a16;
+    --sunken: #0e1512;
+    --hover: #17211c;
+    --line: #213029;
+    --line-strong: #34463d;
+    --ink: #e9f0ec;
+    --ink-2: #b2c0b8;
+    --ink-3: #8a9b92;
+    --action: #cbdc38;
+    --action-hover: #d8e854;
+    --action-ink: #0a0f0d;
+    --action-tint: rgb(203 220 56 / 0.13);
+    --focus: #cbdc38;
+    --ok: #6fd39b;
+    --ok-tint: rgb(111 211 155 / 0.14);
+    --warn: #f0be6b;
+    --warn-tint: rgb(240 190 107 / 0.14);
+    --bad: #ff9a92;
+    --bad-tint: rgb(255 154 146 / 0.14);
+    --chip: #1b2721;
+    --inverse: #e9f0ec;
+    --inverse-ink: #0a0f0d;
+    --inverse-line: #b8c6bf;
+    --code-bg: #0a0f0d;
+    --code-ink: #cfe0d5;
+    --shadow-sheet: none;
+    --shadow-float: 0 10px 30px -8px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.06);
+    --shadow-pop: 0 12px 32px -10px rgb(0 0 0 / 0.7), 0 0 0 1px rgb(255 255 255 / 0.07);
+    --shadow-raise: none;
+    --scrim: rgb(0 0 0 / 0.6);
+  }
+}

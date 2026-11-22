@@ -216,6 +216,16 @@ class EntryStore
     }
 
     /**
+     * Count the live entries of every model with one query.
+     *
+     * @return array<int, int> The count by model id. A model with no entries is not in the list.
+     */
+    public function countsByModel(): array
+    {
+        return $this->reader->countsByModel();
+    }
+
+    /**
      * Read one page of entries for the token API.
      *
      * @param array $filters The optional `model_id`, `search` text that matches the model name or the creator's username,

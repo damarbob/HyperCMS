@@ -99,6 +99,7 @@ class Autoload extends AutoloadConfig
             MODULE_NAMESPACE => MODULES_PATH,
         ]);
         $this->helpers[] = 'hyper'; // Load the hook helper
+        $this->helpers[] = 'hyper_ui'; // Icons and the parts of the design system
 
         // Load the default autoload settings
         parent::__construct();
