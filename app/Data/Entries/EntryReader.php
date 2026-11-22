@@ -209,6 +209,23 @@ class EntryReader
     }
 
     /**
+     * Count the live entries of every model with one query.
+     *
+     * @return array<int, int> The count by model id. A model with no entries is not in the list.
+     */
+    public function countsByModel(): array
+    {
+        $rows = $this->db()->table('hyper_entries')
+            ->select('model_id, COUNT(*) AS total', false)
+            ->where('deleted_at', null)
+            ->where('sd_entry_id IS NOT NULL', null, false)
+            ->groupBy('model_id')
+            ->get()->getResultArray();
+
+        return array_map('intval', array_column($rows, 'total', 'model_id'));
+    }
+
+    /**
      * Read the saved versions of one entry as rows. The versions of a trashed entry are not listed, as before.
      */
     public function versionsOf(int|string $entryId): array

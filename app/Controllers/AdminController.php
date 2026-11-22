@@ -2,6 +2,7 @@
 
 namespace App\Controllers;
 
+use App\Data\WriteVersions;
 use App\Libraries\SyntaxProcessor;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -20,6 +21,19 @@ use Psr\Log\LoggerInterface;
  */
 abstract class AdminController extends BaseController
 {
+
+    /**
+     * The number of live entries of every model, for the menu. One grouped query, kept in the cache until anything is
+     * written, because the version of the write counter is part of the key.
+     *
+     * @return array<int, int>
+     */
+    private function entryCounts(): array
+    {
+        $key = 'menu_entry_counts_' . (new WriteVersions())->global();
+
+        return cache()->remember($key, 3600, static fn (): array => service('entryStore')->countsByModel());
+    }
 
     /**
      * @return void
@@ -102,9 +116,10 @@ abstract class AdminController extends BaseController
         ];
 
         $modelsMenu = [];
+        $counts     = $this->entryCounts();
         foreach ($models as $model) {
 
-            $entriesCount = service('entryStore')->countForModel($model['id']);
+            $entriesCount = $counts[(int) $model['id']] ?? 0;
 
             $tag = $entriesCount === 0 ?
                 lang('Admin.(empty)') : ($entriesCount === 1 ?
@@ -123,6 +138,7 @@ abstract class AdminController extends BaseController
                 'url' => base_url('admin/model/' . $model['id']),
                 'text' => $model['name'],
                 'tag' => $tag,
+                'count' => $entriesCount,
                 'icon' => $model['icon'],
                 'tooltip_content' => $model['name'],
                 'tooltip_placement' => 'right'
