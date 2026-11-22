@@ -28,7 +28,7 @@ return [
     'oneEntry'         => '1 entri',
     'inTrash'          => '{count} di tempat sampah',
     'rowsPerPage'      => 'Baris',
-    'selected'         => '{count} dipilih',
+    'selectedLabel'    => 'dipilih',
     'moveToTrash'      => 'Pindahkan ke tempat sampah',
     'restore'          => 'Pulihkan',
     'emptyTrash'       => 'Kosongkan sampah semua model',

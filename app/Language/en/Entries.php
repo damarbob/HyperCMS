@@ -28,7 +28,7 @@ return [
     'oneEntry'         => '1 entry',
     'inTrash'          => '{count} in the trash',
     'rowsPerPage'      => 'Rows',
-    'selected'         => '{count} selected',
+    'selectedLabel'    => 'selected',
     'moveToTrash'      => 'Move to the trash',
     'restore'          => 'Restore',
     'emptyTrash'       => 'Empty the trash of every model',

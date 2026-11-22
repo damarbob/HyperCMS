@@ -44,6 +44,7 @@ class FilterBarCell extends Cell
             $attributes += [
                 'hx-get'      => $this->action,
                 'hx-target'   => $this->target,
+                'hx-swap'     => 'outerHTML',
                 'hx-push-url' => 'true',
                 'hx-trigger'  => 'input changed delay:300ms from:find input[type=search], change',
             ];
