@@ -265,3 +265,18 @@ if (!function_exists('dump_language_keys_grouped')) {
         return $allTranslations;
     }
 }
+
+if (!function_exists('can')) {
+    /**
+     * Whether the signed-in user may do something in the admin, for example `can('entries.update', $modelId)`.
+     *
+     * Routes and views ask this and never name a group. See `App\Data\Permissions` for the permissions and who has them.
+     *
+     * @param string          $permission A permission such as `models.manage` or `entries.read`.
+     * @param int|string|null $modelId    The model, for the permissions that are about one.
+     */
+    function can(string $permission, int|string|null $modelId = null): bool
+    {
+        return service('permissions')->can(auth()->user(), $permission, $modelId);
+    }
+}

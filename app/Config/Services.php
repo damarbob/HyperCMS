@@ -5,6 +5,7 @@ namespace Config;
 use App\Data\EntryStore;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
+use App\Data\Permissions;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
 use PDO;
@@ -91,6 +92,20 @@ class Services extends BaseService
             return static::getSharedInstance('modelAccess');
         }
         return new ModelAccess(static::modelStore(), service('settings'));
+    }
+
+    /**
+     * Permissions service, which answers what a user may do in the admin.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Permissions
+     */
+    public static function permissions(bool $getShared = true): Permissions
+    {
+        if ($getShared) {
+            return static::getSharedInstance('permissions');
+        }
+        return new Permissions(static::modelStore());
     }
 
     /**
