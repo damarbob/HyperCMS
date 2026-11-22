@@ -64,8 +64,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['show'],
+            'filter' => 'model-user-group:model',
         ]);
-        $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1');
+        $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
 
         // Entries
         $routes->resource('entries', [
@@ -92,8 +93,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['show'],
+            'filter' => 'model-user-group:entry',
         ]);
-        $routes->post('entry-data/clear-history/(:num)', 'EntryData::clearHistory/$1');
+        $routes->post('entry-data/clear-history/(:num)', 'EntryData::clearHistory/$1', ['filter' => 'model-user-group:entry,3']);
 
         // File Manager
         $routes->get('file-manager', 'FileManager', ['filter' => 'group-not:user']);
