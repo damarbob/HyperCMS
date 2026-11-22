@@ -38,8 +38,8 @@ class FileManager extends ApiController
     /**
      * Base directory for file management operations.
      *
-     * In a production environment, this is set to FCPATH (e.g., public directory).
-     * In a development environment, this is set to ROOTPATH.
+     * The same folder in every environment, taken from the file manager config. It is never
+     * the project folder or a folder above it, so the repository cannot be listed or changed from here.
      *
      * @var string
      */
@@ -48,21 +48,52 @@ class FileManager extends ApiController
     /**
      * Constructor
      *
-     * Initializes the base directory property according to the current environment.
-     *
-     * Production: Uses FCPATH.
-     * Development: Uses ROOTPATH.
+     * Takes the root from the file manager config, creates it when missing, and falls back to
+     * the public folder when the configured root is the project folder or a folder above it.
      */
     public function __construct()
     {
         /** @var \Config\FileManager */
         $fileManagerConfig = config('FileManager');
 
-        if (ENVIRONMENT === 'production') {
-            $this->baseDir = $fileManagerConfig->productionPath;
-        } else {
-            $this->baseDir = $fileManagerConfig->nonProductionPath;
+        $root = $fileManagerConfig->productionPath;
+        if (!is_dir($root)) {
+            @mkdir($root, 0755, true);
         }
+
+        $realRoot = realpath($root);
+        $project  = realpath(ROOTPATH);
+        $reachesProject = $realRoot === false
+            || $project === false
+            || $realRoot === $project
+            || strpos($project . DIRECTORY_SEPARATOR, rtrim($realRoot, '/\\') . DIRECTORY_SEPARATOR) === 0;
+
+        $this->baseDir = $reachesProject ? rtrim(FCPATH, '/\\') : $realRoot;
+    }
+
+    /**
+     * Resolve a path relative to the base directory, or return false when it does not exist or leaves the base.
+     */
+    private function resolveInside($relative)
+    {
+        $base = realpath($this->baseDir);
+        if ($base === false || !is_string($relative) || strpos($relative, "\0") !== false) {
+            return false;
+        }
+
+        $full = realpath($base . '/' . $relative);
+
+        return ($full !== false && validate_directory($full, $base)) ? $full : false;
+    }
+
+    /**
+     * Like resolveInside, but a file or folder to act on, so the base directory itself is refused.
+     */
+    private function resolveItem($relative)
+    {
+        $full = $this->resolveInside($relative);
+
+        return ($full !== false && $full !== realpath($this->baseDir)) ? $full : false;
     }
 
     /**
@@ -202,7 +233,7 @@ class FileManager extends ApiController
             // Replace spaces with underscores for safety.
             $safeFilename = str_replace(' ', '_', $filename);
             // Ensure the filename only contains allowed characters (letters, digits, underscores, dots, hyphens).
-            if (preg_match('/[^\w\.\-]/', $safeFilename)) {
+            if (preg_match('/[^\w\.\-]/', $safeFilename) || !is_safe_file_name($safeFilename)) {
                 return $this->response
                     ->setStatusCode(400)
                     ->setJSON(['error' => lang('Admin.invalidFilename')]);
@@ -260,8 +291,12 @@ class FileManager extends ApiController
     {
         // Retrieve posted JSON data.
         $data = $this->request->getJSON(true);
-        $selectedFiles = $data['files'];
-        $currentPath = realpath($this->baseDir . '/' . $data['path']);
+        $selectedFiles = $data['files'] ?? [];
+        $currentPath = $this->resolveInside($data['path'] ?? '');
+
+        if (!is_array($selectedFiles) || $selectedFiles === [] || $currentPath === false || !is_dir($currentPath)) {
+            return $this->response->setJSON(['error' => lang('Admin.invalidDirectory')]);
+        }
 
         // Determine archive name based on selection.
         if (count($selectedFiles) === 1) {
@@ -279,9 +314,9 @@ class FileManager extends ApiController
 
         // Add each selected file/folder into the ZIP if its location is valid.
         foreach ($selectedFiles as $file) {
-            $filePath = realpath($this->baseDir . '/' . $file);
+            $filePath = $this->resolveItem($file);
 
-            if (validate_directory_within_base($filePath, $this->baseDir)) {
+            if ($filePath !== false) {
                 $this->addToZipWithoutTopLevel($zip, $filePath, $file);
             }
         }
@@ -367,15 +402,24 @@ class FileManager extends ApiController
     public function extract()
     {
         $data = $this->request->getJSON(true);
-        $archive = realpath($this->baseDir . '/' . $data['path']);
+        $archive = $this->resolveInside($data['path'] ?? '');
 
         // Validate that the provided file exists and has a .zip extension.
-        if (!$archive || !file_exists($archive) || pathinfo($archive, PATHINFO_EXTENSION) !== 'zip') {
+        if (!$archive || !is_file($archive) || strtolower(pathinfo($archive, PATHINFO_EXTENSION)) !== 'zip') {
             return $this->response->setJSON(['error' => lang('Admin.invalidZipFilePath')]);
         }
 
         $zip = new ZipArchive();
         if ($zip->open($archive) === true) {
+            // Refuse the whole archive when one entry has an unsafe name or climbs out of the folder.
+            for ($i = 0; $i < $zip->numFiles; $i++) {
+                if (!is_safe_archive_entry((string) $zip->getNameIndex($i))) {
+                    $zip->close();
+
+                    return $this->response->setStatusCode(400)->setJSON(['error' => lang('Admin.invalidFilename')]);
+                }
+            }
+
             $zip->extractTo(dirname($archive));
             $zip->close();
 
@@ -401,23 +445,39 @@ class FileManager extends ApiController
         $files       = $this->request->getPost('files');
         $destination = $this->request->getPost('destination');
 
+        if (!is_array($files) || !in_array($action, ['copy', 'move', 'delete'], true)) {
+            return $this->response->setJSON(['error' => lang('Admin.invalidAction')]);
+        }
+
+        $destinationDir = false;
+        if ($action !== 'delete') {
+            $destinationDir = $this->resolveInside((string) $destination);
+            if ($destinationDir === false || !is_dir($destinationDir)) {
+                return $this->response->setJSON(['error' => lang('Admin.invalidDestinationPath')]);
+            }
+        }
+
         foreach ($files as $file) {
-            $filePath = realpath($this->baseDir . '/' . $file);
+            $filePath = $this->resolveItem($file);
 
             // Validate the file path is within the base directory.
-            if (!validate_directory($filePath, $this->baseDir)) {
+            if ($filePath === false) {
                 return $this->response->setJSON(['error' => lang('Admin.invalidFilePath')]);
             }
 
             switch ($action) {
                 case 'copy':
-                    $destPath = $this->baseDir . '/' . $destination . '/' . basename($filePath);
-                    copy($filePath, $destPath);
+                    if (!is_file($filePath) || !is_safe_file_name(basename($filePath))) {
+                        return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
+                    }
+                    copy($filePath, $destinationDir . '/' . basename($filePath));
                     break;
 
                 case 'move':
-                    $destPath = $this->baseDir . '/' . $destination . '/' . basename($filePath);
-                    rename($filePath, $destPath);
+                    if (!is_safe_file_name(basename($filePath))) {
+                        return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
+                    }
+                    rename($filePath, $destinationDir . '/' . basename($filePath));
                     break;
 
                 case 'delete':
@@ -624,7 +684,7 @@ class FileManager extends ApiController
         }
 
         // Resolve destination directory and validate it.
-        $destinationPath = realpath($this->baseDir . '/' . $destination);
+        $destinationPath = $this->resolveInside((string) $destination);
         if (!$destinationPath || !is_dir($destinationPath)) {
             return $this->response->setJSON([
                 'error' => lang('Admin.invalidDestinationPath')
@@ -633,15 +693,20 @@ class FileManager extends ApiController
 
         // Process each file or directory from the clipboard.
         foreach ($clipboard['files'] as $file) {
-            $sourcePath = realpath($this->baseDir . '/' . $file);
+            $sourcePath = $this->resolveItem($file);
             if (!$sourcePath || !file_exists($sourcePath)) {
                 return $this->response->setJSON([
-                    'error' => lang('Admin.sourcexFileNotFound', ['x' => $file])
+                    'error' => lang('Admin.sourcexFileNotFound', ['x' => is_string($file) ? $file : ''])
                 ]);
             }
 
+            // A pasted copy keeps its name, so the name must pass the same check as an upload.
+            if (!is_safe_file_name(basename($sourcePath))) {
+                return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
+            }
+
             // Build the target path (destination + basename of source).
-            $targetPath = $destinationPath . '/' . basename($file);
+            $targetPath = $destinationPath . '/' . basename($sourcePath);
 
             // Generate a unique filename if conflict exists.
             if (file_exists($targetPath)) {
@@ -703,13 +768,16 @@ class FileManager extends ApiController
     public function createFile()
     {
         $data     = $this->request->getJSON(true);
-        $path     = realpath($this->baseDir . '/' . $data['path']);
-        $fileName = basename($data['fileName']); // Sanitize file name by stripping path information.
+        $path     = $this->resolveInside($data['path'] ?? '');
+        $fileName = (string) ($data['fileName'] ?? '');
         $newFilePath = $path . '/' . $fileName;
 
         // Validate directory existence.
         if (!$path || !is_dir($path)) {
             return $this->response->setJSON(['error' => lang('Admin.invalidDirectory')]);
+        }
+        if (!is_safe_file_name($fileName)) {
+            return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
         }
         // Prevent creating file if one already exists with the same name.
         if (file_exists($newFilePath)) {
@@ -746,8 +814,8 @@ class FileManager extends ApiController
     public function createFolder()
     {
         $data       = $this->request->getJSON(true);
-        $path       = realpath($this->baseDir . '/' . $data['path']);
-        $folderName = basename($data['folderName']); // Sanitize folder name.
+        $path       = $this->resolveInside($data['path'] ?? '');
+        $folderName = basename((string) ($data['folderName'] ?? '')); // Sanitize folder name.
         $newFolderPath = $path . '/' . $folderName;
 
         // Validate that the target directory exists.
@@ -791,14 +859,17 @@ class FileManager extends ApiController
     public function rename()
     {
         $data    = $this->request->getJSON(true);
-        $oldPath = realpath($this->baseDir . '/' . $data['oldPath']);
-        $newName = $data['newName'];
-        $newPath = dirname($oldPath) . '/' . $newName;
+        $oldPath = $this->resolveItem($data['oldPath'] ?? '');
+        $newName = (string) ($data['newName'] ?? '');
 
         // Validate that the original file or folder exists.
         if (!$oldPath || !file_exists($oldPath)) {
             return $this->response->setJSON(['error' => lang('Admin.originalFileNotFound')]);
         }
+        if (!is_safe_file_name($newName)) {
+            return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
+        }
+        $newPath = dirname($oldPath) . '/' . $newName;
         // Check for file/folder name conflicts.
         if (file_exists($newPath)) {
             return $this->response->setJSON(['error' => lang('Admin.fileWithNewNameAlreadyExists')]);
@@ -835,11 +906,14 @@ class FileManager extends ApiController
         $content = $data['content'] ?? '';
 
         // Decode the path (if provided) and resolve it relative to baseDir.
-        $filePath = realpath($this->baseDir . '/' . ($relativePath ? urldecode(hex_decode($relativePath)) : ''));
+        $filePath = $this->resolveInside($relativePath ? urldecode(hex_decode($relativePath)) : '');
 
-        // Validate that filePath is allowed.
-        if (!validate_directory($filePath, $this->baseDir)) {
+        // Validate that filePath is allowed, is a file, and keeps a name that may be written.
+        if ($filePath === false || !is_file($filePath)) {
             return $this->response->setJSON(['error' => lang('Admin.invalidFilePath')]);
+        }
+        if (!is_safe_file_name(basename($filePath))) {
+            return $this->response->setJSON(['error' => lang('Admin.invalidFilename')]);
         }
 
         // Write content to the file.
@@ -891,10 +965,10 @@ class FileManager extends ApiController
         }
 
         foreach ($files as $file) {
-            $filePath = realpath($this->baseDir . '/' . $file);
-            // Ensure the file or folder exists.
-            if (!$filePath || !file_exists($filePath)) {
-                return $this->response->setJSON(['error' => lang('Admin.filexNotFound', ['x' => $file])]);
+            $filePath = $this->resolveItem($file);
+            // Ensure the file or folder exists inside the base directory, and is not the base directory itself.
+            if (!$filePath || !file_exists($filePath) || $filePath === realpath($this->baseDir)) {
+                return $this->response->setJSON(['error' => lang('Admin.filexNotFound', ['x' => is_string($file) ? $file : ''])]);
             }
             // Delete file or recursively delete directory.
             if (is_file($filePath)) {

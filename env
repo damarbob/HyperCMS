@@ -33,7 +33,6 @@
 
 # File Manager
 # fileManager.productionPath = '{FCPATH}uploads'
-# fileManager.nonProductionPath = '{ROOTPATH}'
 
 # StarDust
 # StarDust.usersTable = 'users'
