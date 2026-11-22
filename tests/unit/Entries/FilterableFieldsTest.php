@@ -13,47 +13,54 @@ final class FilterableFieldsTest extends CIUnitTestCase
 {
     public function testTypesMapToStarDustTypes(): void
     {
-        foreach (['text', 'email', 'url', 'password', 'color', 'radio', 'select', 'checkbox'] as $type) {
+        foreach (['text', 'color', 'hook'] as $type) {
             $this->assertSame('string', FilterableFields::kind(['id' => 'x', 'type' => $type]), $type);
         }
+        $this->assertSame('string', FilterableFields::kind(['id' => 'x', 'type' => 'choice', 'multiple' => false]));
         $this->assertSame('numeric', FilterableFields::kind(['id' => 'x', 'type' => 'number']));
-        $this->assertSame('numeric', FilterableFields::kind(['id' => 'x', 'type' => 'range']));
-        $this->assertSame('datetime', FilterableFields::kind(['id' => 'x', 'type' => 'datetime-local']));
+        $this->assertSame('datetime', FilterableFields::kind(['id' => 'x', 'type' => 'datetime']));
+        $this->assertSame('int', FilterableFields::kind(['id' => 'x', 'type' => 'model']));
+        $this->assertSame('int', FilterableFields::kind(['id' => 'x', 'type' => 'relation', 'model' => 1]));
     }
 
-    public function testNumberIsAnIntegerOnlyWhenItForcesStepOne(): void
+    public function testNumberIsAnIntegerOnlyWhenItSaysSo(): void
     {
-        $this->assertSame('int', FilterableFields::kind(['type' => 'number', 'options' => ['step' => 1]]));
-        $this->assertSame('int', FilterableFields::kind(['type' => 'number', 'options' => ['step' => '1']]));
-        $this->assertSame('numeric', FilterableFields::kind(['type' => 'number', 'options' => ['step' => '0.01']]));
+        $this->assertSame('int', FilterableFields::kind(['type' => 'number', 'integer' => true]));
+        $this->assertSame('numeric', FilterableFields::kind(['type' => 'number', 'integer' => false, 'step' => 0.01]));
         $this->assertSame('numeric', FilterableFields::kind(['type' => 'number']));
-        $this->assertSame('numeric', FilterableFields::kind(['type' => 'range', 'options' => [['min' => 0, 'max' => 10]]]));
     }
 
     public function testTypesThatCannotBeFilterableHaveNoKind(): void
     {
-        foreach (['textarea', 'checkboxes', 'file', 'code', 'hidden', 'nonsense'] as $type) {
+        foreach (['longtext', 'richtext', 'code', 'boolean', 'file', 'hidden', 'nonsense'] as $type) {
             $this->assertNull(FilterableFields::kind(['id' => 'x', 'type' => $type]), $type);
         }
+        $this->assertNull(FilterableFields::kind(['id' => 'x', 'type' => 'choice', 'multiple' => true]));
+        $this->assertNull(FilterableFields::kind(['id' => 'x', 'type' => 'relation', 'multiple' => true]));
         $this->assertNull(FilterableFields::kind(['id' => 'x']));
+    }
+
+    public function testTheTypesThatCanBeFilterableAreListedForTheMessage(): void
+    {
+        $this->assertSame(['text', 'number', 'choice', 'datetime', 'color', 'relation', 'model', 'hook'], FilterableFields::types());
     }
 
     public function testTheFlagIsReadFromTheDefinitionAndIsOffByDefault(): void
     {
         $definition = json_encode([
             ['id' => 'title', 'type' => 'text', 'filterable' => true],
-            ['id' => 'views', 'type' => 'number', 'filterable' => 'true', 'options' => ['step' => 1]],
-            ['id' => 'when', 'type' => 'datetime-local', 'filterable' => true],
+            ['id' => 'views', 'type' => 'number', 'filterable' => 'true', 'integer' => true],
+            ['id' => 'when', 'type' => 'datetime', 'filterable' => true],
             ['id' => 'plain', 'type' => 'text'],
             ['id' => 'off', 'type' => 'text', 'filterable' => false],
-            ['id' => 'body', 'type' => 'textarea', 'filterable' => true],
+            ['id' => 'body', 'type' => 'longtext', 'filterable' => true],
             ['id' => 'title', 'type' => 'number', 'filterable' => true],
         ]);
 
         $read = FilterableFields::read($definition);
 
         $this->assertSame(['title' => 'string', 'views' => 'int', 'when' => 'datetime'], $read['fields'], 'The first entry of a repeated id counts.');
-        $this->assertSame(['body' => 'textarea'], $read['refused']);
+        $this->assertSame(['body' => 'longtext'], $read['refused']);
         $this->assertSame(['fields' => [], 'refused' => []], FilterableFields::read(null));
         $this->assertSame(['fields' => [], 'refused' => []], FilterableFields::read('not json'));
     }
@@ -63,12 +70,12 @@ final class FilterableFieldsTest extends CIUnitTestCase
         $this->expectException(InvalidArgumentException::class);
         $this->expectExceptionMessage('body');
 
-        FilterableFields::assertValid('[{"id":"body","type":"textarea","filterable":true}]');
+        FilterableFields::assertValid('[{"id":"body","type":"longtext","filterable":true}]');
     }
 
     public function testADefinitionThatIsAllowedPasses(): void
     {
-        FilterableFields::assertValid('[{"id":"title","type":"text","filterable":true},{"id":"body","type":"textarea"}]');
+        FilterableFields::assertValid('[{"id":"title","type":"text","filterable":true},{"id":"body","type":"longtext"}]');
         FilterableFields::assertValid(null);
 
         $this->addToAssertionCount(1);

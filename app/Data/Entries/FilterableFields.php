@@ -2,6 +2,7 @@
 
 namespace App\Data\Entries;
 
+use App\Fields\FieldTypes;
 use App\Libraries\Upgrade\Preflight;
 use InvalidArgumentException;
 
@@ -14,16 +15,17 @@ use InvalidArgumentException;
  * read exactly as before. StarDust coerces the value of an indexed field and refuses what it cannot read, so a value
  * is cleaned here before anything is written, and one that cannot be cleaned is refused with a message for the admin.
  *
- * The field types that map to an index:
+ * The StarDust type of a field comes from its field type (`App\Fields\FieldType::kind()`):
  *
- * | Field type                                                             | StarDust type |
- * | :--                                                                    | :--           |
- * | `text`, `email`, `url`, `password`, `color`, `radio`, `select`, `checkbox` | `string`  |
- * | `number`, `range`                                                      | `numeric`, or `int` when the field sets `step` to 1 |
- * | `datetime-local`                                                       | `datetime`    |
+ * | Field type                                   | StarDust type |
+ * | :--                                          | :--           |
+ * | `text`, `color`, `hook`, a `choice` of one   | `string`      |
+ * | `number`                                     | `numeric`, or `int` when the field is whole numbers only |
+ * | `relation` of one, `model`                   | `int`         |
+ * | `datetime`                                   | `datetime`    |
  *
- * `textarea`, `checkboxes`, `file`, `code` and `hidden` cannot be filterable. Their values are long, lists or not
- * values at all.
+ * `longtext`, `richtext`, `code`, `boolean`, `file`, `hidden`, and a `choice` or `relation` of several cannot be
+ * filterable. Their values are long, lists or not values at all.
  */
 final class FilterableFields
 {
@@ -33,26 +35,16 @@ final class FilterableFields
     public const MAX_STRING = 4096;
 
     /**
-     * @var array<string, string> Field type to StarDust type.
-     */
-    private const KINDS = [
-        'text'           => 'string',
-        'email'          => 'string',
-        'url'            => 'string',
-        'password'       => 'string',
-        'color'          => 'string',
-        'radio'          => 'string',
-        'select'         => 'string',
-        'checkbox'       => 'string',
-        'number'         => 'numeric',
-        'range'          => 'numeric',
-        'datetime-local' => 'datetime',
-    ];
-
-    /**
      * The number text StarDust's retype backfill reads, which is the JSON number grammar.
      */
     private const NUMBER = '/^-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?$/';
+
+    private static ?FieldTypes $registry = null;
+
+    private static function registry(): FieldTypes
+    {
+        return self::$registry ??= FieldTypes::core();
+    }
 
     /**
      * The types a field can be filterable as, for a message.
@@ -61,7 +53,14 @@ final class FilterableFields
      */
     public static function types(): array
     {
-        return array_keys(self::KINDS);
+        $names = [];
+        foreach (self::registry()->names() as $name) {
+            if (self::kind(['type' => $name, 'multiple' => false]) !== null) {
+                $names[] = $name;
+            }
+        }
+
+        return $names;
     }
 
     /**
@@ -74,13 +73,8 @@ final class FilterableFields
     public static function kind(array $field): ?string
     {
         $type = $field['type'] ?? null;
-        $kind = is_string($type) ? (self::KINDS[$type] ?? null) : null;
 
-        if ($kind === 'numeric' && $type === 'number' && self::stepIsOne($field['options']['step'] ?? null)) {
-            return 'int';
-        }
-
-        return $kind;
+        return is_string($type) ? self::registry()->get($type)?->kind($field) : null;
     }
 
     /**
@@ -267,14 +261,6 @@ final class FilterableFields
         }
 
         throw new InvalidArgumentException(lang('Filterable.notDate', ['field' => $field, 'value' => self::shown($value)]));
-    }
-
-    /**
-     * Whether a `step` setting is exactly 1.
-     */
-    private static function stepIsOne(mixed $step): bool
-    {
-        return (is_int($step) || is_float($step) || (is_string($step) && is_numeric($step))) && (float) $step === 1.0;
     }
 
     private static function canonical(float $number): string

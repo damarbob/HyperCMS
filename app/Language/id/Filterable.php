@@ -12,7 +12,7 @@ return [
     'indexing'         => 'Sedang diindeks',
     'indexingHelp'     => 'Pengindeksan berjalan di latar belakang dan memerlukan tugas terjadwal `hyper:tick`. Pengurutan dan penyaringan pada bidang ini baru bisa dipakai setelah selesai.',
     'filterableTitle'  => 'Bidang filterable',
-    'filterableHint'   => 'Tambahkan "filterable": true pada bidang bertipe text, email, url, password, color, radio, select, checkbox, number, range, atau datetime-local agar bidang itu diindeks. Daftar entri jadi cepat diurutkan menurut bidang tersebut, dan API token bisa menyaringnya. Tanpa tanda itu, bidang bekerja seperti biasa.',
+    'filterableHint'   => 'Tambahkan "filterable": true pada bidang bertipe teks, angka, pilihan satu nilai, tanggal dan jam, warna, relasi, model, atau hook agar bidang itu diindeks. Daftar entri jadi cepat diurutkan menurut bidang tersebut, dan API token bisa menyaringnya. Tanpa tanda itu, bidang bekerja seperti biasa.',
     'modelsBusy'       => '{count} model tetap berada di tempat sampah karena ada bidang yang masih diindeks atau diganti namanya. Coba lagi setelah `hyper:tick` selesai.',
     'needsModel' => 'Mengurutkan atau menyaring menurut bidang memerlukan model_id.',
     'noSearchWithField' => 'Pencarian q tidak bisa digabung dengan pengurutan atau penyaringan menurut bidang.',

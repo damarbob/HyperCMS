@@ -12,7 +12,7 @@ return [
     'indexing'         => 'Indexing',
     'indexingHelp'     => 'Indexing runs in the background and needs the scheduled task `hyper:tick`. Sorting and filtering on the field start working when it is done.',
     'filterableTitle'  => 'Filterable fields',
-    'filterableHint'   => 'Add "filterable": true to a field of the type text, email, url, password, color, radio, select, checkbox, number, range or datetime-local to index it, so lists can sort on it quickly and the token API can filter on it. Leave it out and the field works as before.',
+    'filterableHint'   => 'Add "filterable": true to a field of the type text, number, choice of one value, date and time, colour, relation, model or hook to index it, so lists can sort on it quickly and the token API can filter on it. Leave it out and the field works as before.',
     'modelsBusy'       => '{count} model(s) stayed in the trash because a field is still being indexed or renamed. Try again after `hyper:tick` has finished.',
     'needsModel' => 'Sorting or filtering on a field needs model_id.',
     'noSearchWithField' => 'The search q cannot be combined with sorting or filtering on a field.',
