@@ -52,6 +52,11 @@ RUN composer install --no-dev --optimize-autoloader
 # Install JS dependencies and build assets
 RUN npm install
 
+# Publish the front end packages to public/assets/vendor, which the image does not copy from the host
+RUN for package in $(node -p "Object.keys(require('./package.json').dependencies).join(' ')"); do \
+        php spark hyper:vendor-publish "$package" --nodejs --force --with-dependencies || exit 1; \
+    done
+
 # Set proper permissions
 RUN chown -R www-data:www-data /var/www/html \
     && chmod -R 755 /var/www/html \
