@@ -81,6 +81,12 @@ if ($Admin) {
 }
 if ($Probes) {
     "--- probes"
+    # The admin write flows change the data, and the probes expect the seeded rows, so start again from the seed.
+    Restore-Seed | Out-Null
+    if ($LASTEXITCODE -ne 0) { "The database could not be restored"; exit 1 }
+    Push-Location $repo
+    try { php spark hyper:upgrade --yes | Out-Null; $upgraded = $LASTEXITCODE } finally { Pop-Location }
+    if ($upgraded -ne 0) { "The seed could not be upgraded. Run php spark hyper:upgrade --yes to see why."; exit 1 }
     php "$here\probe.php" $base
     if ($LASTEXITCODE -ne 0) { $script:failed = $true }
 }
