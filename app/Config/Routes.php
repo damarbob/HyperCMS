@@ -106,6 +106,14 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'only' => ['index', 'update'],
         ]);
 
+        // Colour scheme of the signed-in user
+        $routes->post('theme', 'Theme::save');
+
+        // Every part of the design system, for the people who build screens
+        if (ENVIRONMENT !== 'production') {
+            $routes->get('design', 'Design::index');
+        }
+
         // Settings
         $routes->resource('settings', [
             'websafe' => 1,

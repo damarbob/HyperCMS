@@ -40,6 +40,24 @@ if (! function_exists('attrs')) {
     }
 }
 
+if (! function_exists('admin_theme')) {
+    /**
+     * The colour scheme to draw the page in, `light`, `dark` or `system`. The signed-in user's own choice comes first,
+     * then the cookie the sign in page uses, and without either the page follows the system.
+     */
+    function admin_theme(): string
+    {
+        $choice = null;
+        $user   = auth()->user();
+        if ($user !== null) {
+            $choice = setting()->get('Hyper.theme', 'user:' . $user->id);
+        }
+        $choice ??= service('request')->getCookie('hyper_theme');
+
+        return in_array($choice, ['light', 'dark'], true) ? $choice : 'system';
+    }
+}
+
 if (! function_exists('ui')) {
     /**
      * Draw one part of the design system, for example `ui('button', ['label' => 'Save', 'variant' => 'primary'])`.

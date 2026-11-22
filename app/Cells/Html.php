@@ -25,7 +25,7 @@ final class Html
     {
         $out = '';
         foreach ($attributes as $name => $value) {
-            if (! is_string($name) || preg_match('/^[a-zA-Z_:][-a-zA-Z0-9_:.]*$/', $name) !== 1 || $value === false || $value === null) {
+            if (! is_string($name) || preg_match('/^[a-zA-Z_:@][-a-zA-Z0-9_:.@]*$/', $name) !== 1 || $value === false || $value === null) {
                 continue;
             }
             $out .= $value === true ? " $name" : " $name=\"" . Html::attr((string) $value) . '"';
