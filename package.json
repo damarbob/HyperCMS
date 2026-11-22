@@ -1,5 +1,7 @@
 {
   "dependencies": {
+    "@fontsource-variable/geist": "5.3.0",
+    "@fontsource-variable/geist-mono": "5.3.0",
     "alpinejs": "3.17.5",
     "datatables.net-bm": "^2.3.2",
     "datatables.net-buttons-bm": "^3.2.4",
