@@ -23,38 +23,28 @@ class FileServer
     /**
      * Serves a file based on an encoded path.
      *
-     * It decodes the provided path, finds a valid file in your development and production
-     * directories (or within a public_html structure), and returns the file content
-     * along with its MIME type.
+     * The path is read only from the public folder (`FCPATH`), never from the project root,
+     * so nothing outside it can be requested. Dot files and files with an executable or server
+     * config extension are refused, whatever the folder.
+     *
+     * A path that begins with `public/` is also tried without that part, for links made when the
+     * file manager root was the project root.
      *
      * @param string $encodedPath The hex-encoded and URL-encoded path.
      * @return array An associative array with keys 'content_type' and 'body'.
-     * @throws PageNotFoundException if the file cannot be found.
+     * @throws PageNotFoundException if the file cannot be found or may not be served.
      */
     public function serve(string $encodedPath): array
     {
         // Decode the encoded path.
         $path = urldecode(hex_decode($encodedPath));
 
-        // Determine possible full paths in different environments.
-        $developmentFullPath = realpath(ROOTPATH . '/' . $path);
-        $productionFullPath  = realpath(FCPATH . '/' . $path);
-        $productionPublicHtmlFullPath = realpath(FCPATH . '/' . self::replacePublicFolder($path, ""));
-
-        // Validate that at least one of these paths exists and is within the allowed directories.
-        if (
-            (!validate_directory($developmentFullPath, ROOTPATH) || !file_exists($developmentFullPath))
-            && (!validate_directory($productionFullPath, FCPATH) || !file_exists($productionFullPath))
-            && (!validate_directory_within_base($productionPublicHtmlFullPath, FCPATH) || !file_exists($productionPublicHtmlFullPath))
-        ) {
+        $fullPath = $this->resolve($path);
+        if ($fullPath === null) {
             // Extract the base file name (including extension) from the decoded path.
             $fileName = pathinfo($path, PATHINFO_BASENAME);
-            // Show error message
             throw PageNotFoundException::forPageNotFound(lang('Admin.filexNotFound', ['x' => $fileName]));
         }
-
-        // Choose a valid path—development takes precedence.
-        $fullPath = $developmentFullPath ?: ($productionFullPath ?: $productionPublicHtmlFullPath);
 
         // Use CodeIgniter's File class to get file details.
         $file     = new File($fullPath);
@@ -65,6 +55,35 @@ class FileServer
             'content_type' => $mimeType,
             'body'         => file_get_contents($fullPath)
         ];
+    }
+
+    /**
+     * Find the file a decoded path names inside the public folder, or null when it is missing or may not be served.
+     */
+    private function resolve(string $path): ?string
+    {
+        if ($path === '' || strpos($path, "\0") !== false) {
+            return null;
+        }
+
+        $root = realpath(FCPATH);
+        if ($root === false) {
+            return null;
+        }
+
+        foreach ([$path, self::replacePublicFolder($path, '')] as $candidate) {
+            $full = realpath($root . DIRECTORY_SEPARATOR . ltrim($candidate, '/\\'));
+            if ($full === false || !is_file($full) || !validate_directory($full, $root)) {
+                continue;
+            }
+
+            $relative = str_replace('\\', '/', substr($full, strlen($root)));
+            if (is_safe_archive_entry(ltrim($relative, '/'))) {
+                return $full;
+            }
+        }
+
+        return null;
     }
 
     /**
