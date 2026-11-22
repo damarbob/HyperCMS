@@ -18,6 +18,13 @@ if (count($argv) < 3) {
     exit(2);
 }
 [, $envFile, $repo] = $argv;
+
+// The conversion steps rewrite definitions and values after the copy, so what the database must hold is the generated data
+// run through the same conversions, which are tested on arrays. This run proves they reach every model and every version.
+require $repo . '/vendor/autoload.php';
+$fieldTypes    = App\Fields\FieldTypes::core();
+$convertFields = new App\Libraries\Upgrade\Convert\ModelFields($fieldTypes);
+$convertValues = new App\Libraries\Upgrade\Convert\EntryValues($fieldTypes);
 $entryCount = 12000;
 $memory     = '128M';
 foreach (array_slice($argv, 3) as $arg) {
@@ -222,10 +229,12 @@ foreach ($modelDefs as $n => [$name, $group, $userGroups]) {
         $when     = $date($t0, $t1);
         $title    = $name . ($v > 1 ? " v$v" : '');
         $json     = json_encode($definition, FLAGS);
+        $jsonV2     = json_encode($convertFields->convert($definition, [])['fields'], FLAGS);
+        $stressDefs = $convertFields->convert($definition, [])['fields'];
         $insModelData->execute([$modelId, $title, $json, $group, $userGroups, 'file-text', $when, $when, $gone, $trashed ? 1 : null]);
         $id       = (int) $pdo->lastInsertId();
         $allIds[] = $id;
-        $modelRevision[$id] = ['model' => $modelId, 'name' => $title, 'group' => $group, 'groups' => $userGroups, 'hash' => md5($json), 'when' => $when];
+        $modelRevision[$id] = ['model' => $modelId, 'name' => $title, 'group' => $group, 'groups' => $userGroups, 'hash' => md5($jsonV2), 'when' => $when];
         if (! $trashed) {
             $liveIds[] = $id;
         }
@@ -331,6 +340,7 @@ for ($e = 1; $e <= $entryCount; $e++) {
 
         // The text the upgrade must leave in hyper_entry_revisions, and the fields StarDust must hold for it.
         if ($mode === 'convert') {
+            $want      = $convertValues->convert((array) $want, $stressDefs)['fields'];
             $converted = $escapeEmoji(json_encode((object) $want, FLAGS));
             $fieldHash = md5($canon((object) $want));
         } else {
