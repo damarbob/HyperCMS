@@ -2,6 +2,9 @@
 
 namespace App\Commands;
 
+use App\Libraries\Upgrade\ConversionStep;
+use App\Libraries\Upgrade\Converters;
+use App\Libraries\Upgrade\CounterSchemaStore;
 use App\Libraries\Upgrade\EntryCopier;
 use App\Libraries\Upgrade\ModelCopier;
 use App\Libraries\Upgrade\PayloadWriter;
@@ -187,6 +190,21 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
+        try {
+            foreach ((new Converters($this->steps()))->run(new CounterSchemaStore($db)) as $step) {
+                CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
+                foreach ($step['problems'] as $problem) {
+                    CLI::write("  $problem", 'yellow');
+                }
+            }
+        } catch (Throwable $e) {
+            CLI::newLine();
+            CLI::error('A conversion step stopped. ' . $e->getMessage());
+            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
+
+            return EXIT_ERROR;
+        }
+
         // The docker entrypoint starts the app and the tick only when this mark exists on an old database.
         $db->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
 
@@ -194,6 +212,16 @@ class Upgrade extends BaseCommand
         CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');
 
         return EXIT_SUCCESS;
+    }
+
+    /**
+     * The conversion steps that run after the copy, in order. There are none yet.
+     *
+     * @return list<ConversionStep>
+     */
+    private function steps(): array
+    {
+        return [];
     }
 
     /**
