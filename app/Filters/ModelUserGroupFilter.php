@@ -27,7 +27,8 @@ use CodeIgniter\HTTP\ResponseInterface;
  *  - Redirect helpers (redirect(), route_to()) and language keys (lang('Auth.notEnoughPrivilege')) are used.
  *
  * How to configure via filter arguments:
- *  - $arguments[0] (string|null): Route or model identifier (the code only checks presence; adjust as needed).
+ *  - $arguments[0] (string|null): What the id names. `entry` means an entry id, so the model is the entry's model.
+ *    Any other value means the id is a model id.
  *  - $arguments[1] (int|null): Zero-based URI segment index that contains the resource ID. Defaults to 2
  *    (i.e., the third segment). The implementation calls $request->getUri()->getSegment($index + 1).
  *
@@ -85,6 +86,15 @@ class ModelUserGroupFilter implements FilterInterface
 
         if (empty($route)) {
             return redirect()->route('dashboard')->with('error', lang('Filter.invalidResource'));
+        }
+
+        // The id names an entry when the route says so, and the model is then the one that entry belongs to.
+        if ($route === 'entry') {
+            $entry = service('entryStore')->findAliased((int) $id);
+            if (! $entry) {
+                return;
+            }
+            $id = $entry['model_id'];
         }
 
         // Retrieve the model record, or null when there is none.
