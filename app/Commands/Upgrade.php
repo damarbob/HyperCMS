@@ -164,6 +164,36 @@ class Upgrade extends BaseCommand
             return EXIT_ERROR;
         }
 
+        // The conversions run on what was copied even when some entries could not be written, so the rows that are there are
+        // in the new shape. The entries that were left out are converted when a rerun copies them.
+        // Rows that were just copied, or written to StarDust again, are in the old shape, so the conversions go again
+        // from the start. They change nothing that is already converted.
+        $store = new CounterSchemaStore($db);
+        if ($copied['models'] > 0 || $copied['revisions'] > 0 || $added > 0 || $revisions['count'] > 0 || $payloads['written'] > 0) {
+            $store->setVersion(0);
+            for ($step = 1; $step <= Steps::LATEST; $step++) {
+                $store->clearCursor($step);
+            }
+        }
+
+        try {
+            foreach ((new Converters(Steps::make($db)))->run($store) as $step) {
+                CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
+                foreach (array_slice($step['problems'], 0, 50) as $problem) {
+                    CLI::write("  $problem", 'yellow');
+                }
+                if (count($step['problems']) > 50) {
+                    CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
+                }
+            }
+        } catch (Throwable $e) {
+            CLI::newLine();
+            CLI::error('A conversion step stopped. ' . $e->getMessage());
+            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
+
+            return EXIT_ERROR;
+        }
+
         CLI::newLine();
         CLI::write('Entries per model, in the hyper tables and read back from StarDust:');
         foreach ($result['models'] as $model) {
@@ -190,34 +220,6 @@ class Upgrade extends BaseCommand
         if ($failed) {
             CLI::newLine();
             CLI::error('The upgrade finished with the problems above. The old tables are untouched, and running the command again moves what it can.');
-
-            return EXIT_ERROR;
-        }
-
-        // Rows that were just copied, or written to StarDust again, are in the old shape, so the conversions go again
-        // from the start. They change nothing that is already converted.
-        $store = new CounterSchemaStore($db);
-        if ($copied['models'] > 0 || $copied['revisions'] > 0 || $added > 0 || $revisions['count'] > 0 || $payloads['written'] > 0) {
-            $store->setVersion(0);
-            for ($step = 1; $step <= Steps::LATEST; $step++) {
-                $store->clearCursor($step);
-            }
-        }
-
-        try {
-            foreach ((new Converters(Steps::make($db)))->run($store) as $step) {
-                CLI::write("Step {$step['number']}, {$step['name']}, changed {$step['changed']}.");
-                foreach (array_slice($step['problems'], 0, 50) as $problem) {
-                    CLI::write("  $problem", 'yellow');
-                }
-                if (count($step['problems']) > 50) {
-                    CLI::write('  and ' . (count($step['problems']) - 50) . ' more.', 'yellow');
-                }
-            }
-        } catch (Throwable $e) {
-            CLI::newLine();
-            CLI::error('A conversion step stopped. ' . $e->getMessage());
-            CLI::error('Fix the cause and run the command again. Steps that finished are skipped.');
 
             return EXIT_ERROR;
         }
