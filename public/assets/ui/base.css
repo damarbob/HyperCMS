@@ -73,7 +73,7 @@
   .skip:focus { transform: none; text-decoration: none; }
 
   /* The rail sits on the canvas and the work sits on a rounded sheet that scrolls by itself. */
-  .shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); height: 100vh; height: 100dvh; }
+  .shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; height: 100dvh; overflow: hidden; }
 
   .rail { display: flex; flex-direction: column; padding: var(--s3) var(--s2) var(--s3) var(--s3); overflow-y: auto; }
 
