@@ -115,6 +115,26 @@ $columnExists = fn(string $table, string $column): bool => $rows("SHOW COLUMNS F
 $indexExists  = fn(string $table, string $index): bool => $rows("SHOW INDEX FROM `$table` WHERE Key_name = '$index'") !== [];
 
 // ---------------------------------------------------------------------------------------------
+// Models and entries in every shape the old form could store, added to the seed before it is recorded. They are kept
+// out of seed.sql so the captures of the API and the admin keep describing the same data.
+
+$stamp = '2026-11-15 10:00:00';
+foreach (require __DIR__ . '/old_shapes.php' as $shape) {
+    $pdo->prepare('INSERT INTO models (creator_id, created_at, updated_at) VALUES (1, ?, ?)')->execute([$stamp, $stamp]);
+    $modelId = (int) $pdo->lastInsertId();
+    $pdo->prepare('INSERT INTO model_data (model_id, name, fields, `group`, user_groups, icon, creator_id, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, 1, ?, ?)')
+        ->execute([$modelId, $shape['name'], json_encode($shape['fields'], FLAGS), 'Content', json_encode($shape['user_groups'] ?? [], FLAGS), 'file-text', $stamp, $stamp]);
+    $pdo->prepare('UPDATE models SET current_model_data_id = ? WHERE id = ?')->execute([(int) $pdo->lastInsertId(), $modelId]);
+
+    foreach ($shape['entries'] as $values) {
+        $pdo->prepare('INSERT INTO entries (model_id, creator_id, created_at, updated_at) VALUES (?, 1, ?, ?)')->execute([$modelId, $stamp, $stamp]);
+        $entryId = (int) $pdo->lastInsertId();
+        $pdo->prepare('INSERT INTO entry_data (entry_id, fields, creator_id, created_at, updated_at) VALUES (?, ?, 1, ?, ?)')->execute([$entryId, json_encode($values, FLAGS), $stamp, $stamp]);
+        $pdo->prepare('UPDATE entries SET current_entry_data_id = ? WHERE id = ?')->execute([(int) $pdo->lastInsertId(), $entryId]);
+    }
+}
+
+// ---------------------------------------------------------------------------------------------
 // What the seed holds, before anything is changed. This is what the upgrade has to arrive at.
 
 $wantModels = $byId(
