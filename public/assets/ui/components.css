@@ -234,3 +234,10 @@
   .alert .icon { margin-top: 2px; }
   .alert ul { list-style: none; display: flex; flex-direction: column; gap: 2px; }
 }
+
+@layer components {
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 50%; border: 1px solid var(--line-strong); vertical-align: -2px; margin-right: 8px; }
+  .input.color { height: 34px; padding: 2px 4px; width: 80px; cursor: pointer; }
+  .slider { accent-color: var(--action); }
+  output { min-width: 3ch; text-align: right; }
+}

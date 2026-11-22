@@ -36,6 +36,27 @@ final class ColorField extends AbstractField
         return is_string($value) && self::valid($value) ? null : lang('Fields.notColor', ['field' => self::labelOf($definition)]);
     }
 
+    protected function show(mixed $value, array $definition): string
+    {
+        $text = esc((string) $value);
+
+        return is_string($value) && self::valid($value)
+            ? '<span class="swatch" style="background:' . attr($value) . '"></span><span class="mono">' . $text . '</span>'
+            : $text;
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $color   = is_string($value) && self::valid($value) ? $value : (is_string($definition['default'] ?? null) ? $definition['default'] : '#000000');
+        $control = '<input class="input color" type="color" value="' . attr($color) . '"' . attrs(self::inputAttributes($definition, $error)) . '>';
+
+        return $this->field($definition, $control, $error);
+    }
+
+    public function filters(array $definition): array
+    {
+        return [['op' => 'eq', 'label' => lang('Fields.filterIs'), 'control' => 'text']];
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $default = is_string($old['value'] ?? null) && self::valid($old['value']) ? strtolower($old['value']) : null;

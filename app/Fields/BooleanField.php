@@ -40,6 +40,25 @@ final class BooleanField extends AbstractField
             : null;
     }
 
+    public function cell(mixed $value, array $definition): string
+    {
+        $on = self::read($value) === true;
+
+        return '<span class="dot' . ($on ? ' on' : '') . '"></span>' . esc(lang($on ? 'Fields.yes' : 'Fields.no'));
+    }
+
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $on         = self::read($value) === true;
+        $attributes = self::inputAttributes($definition, $error);
+        $name       = $attributes['name'];
+
+        // An unticked box posts nothing, so a hidden 0 comes first and a ticked box overrides it with 1.
+        $control = '<label class="check"><input type="hidden" name="' . attr((string) $name) . '" value="0">'
+            . '<input type="checkbox" value="1"' . attrs($attributes + ['checked' => $on]) . '>' . esc(lang('Fields.yes')) . '</label>';
+
+        return $this->field($definition, $control, $error, true);
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $on = self::read($old['checked'] ?? null) === true || self::read($old['value'] ?? null) === true;

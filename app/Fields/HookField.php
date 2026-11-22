@@ -36,6 +36,40 @@ final class HookField extends AbstractField
         return is_string($value) ? null : lang('Fields.notText', ['field' => self::labelOf($definition)]);
     }
 
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $group = is_string($definition['group'] ?? null) ? $definition['group'] : null;
+        $html  = self::flag($definition['required'] ?? false) ? '' : '<option value="">' . esc(lang('Fields.chooseOne')) . '</option>';
+        foreach (self::options($group) as $name => $label) {
+            $html .= '<option value="' . attr($name) . '"' . ($value === $name ? ' selected' : '') . '>' . esc($label) . '</option>';
+        }
+
+        return $this->field($definition, '<select class="select"' . attrs(self::inputAttributes($definition, $error)) . '>' . $html . '</select>', $error);
+    }
+
+    public function filters(array $definition): array
+    {
+        return [['op' => 'eq', 'label' => lang('Fields.filterIs'), 'control' => 'text']];
+    }
+
+    /**
+     * The hooks of the system as label by name, optionally of one group.
+     *
+     * @return array<string, string>
+     */
+    private static function options(?string $group): array
+    {
+        $options = [];
+        foreach (dump_hooks($group) as $hooks) {
+            foreach ($hooks as $hook) {
+                if ($hook instanceof StarCore\Star\HyperHook) {
+                    $options[$hook->getName()] = $hook->getLabel();
+                }
+            }
+        }
+
+        return $options;
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         $query = LegacyQuery::classify($old['options'] ?? null);

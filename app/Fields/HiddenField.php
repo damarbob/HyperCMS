@@ -23,6 +23,12 @@ final class HiddenField extends AbstractField
         return is_string($value) ? null : lang('Fields.notText', ['field' => self::labelOf($definition)]);
     }
 
+    public function input(mixed $value, array $definition, ?string $error = null): string
+    {
+        $value = $value ?? ($definition['default'] ?? '');
+
+        return '<input type="hidden" value="' . attr(is_scalar($value) ? (string) $value : '') . '"' . attrs(['name' => 'fields[' . (string) ($definition['id'] ?? '') . ']']) . '>';
+    }
     public function fromLegacy(array $old, array $context = []): array
     {
         return $this->build($old, [], is_scalar($old['value'] ?? null) ? (string) $old['value'] : null);

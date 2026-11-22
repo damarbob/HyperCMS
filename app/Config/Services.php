@@ -2,6 +2,8 @@
 
 namespace Config;
 
+use App\Data\Entries\StarDustEntries;
+use App\Data\EntryLabels;
 use App\Data\EntryStore;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
@@ -92,6 +94,20 @@ class Services extends BaseService
             return static::getSharedInstance('modelAccess');
         }
         return new ModelAccess(static::modelStore(), service('settings'));
+    }
+
+    /**
+     * The names of entries, which lists and pickers show instead of the entry number.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return EntryLabels
+     */
+    public static function entryLabels(bool $getShared = true): EntryLabels
+    {
+        if ($getShared) {
+            return static::getSharedInstance('entryLabels');
+        }
+        return new EntryLabels(db_connect(), new StarDustEntries(static::stardust(), (int) config('HyperEngine')->tenantId));
     }
 
     /**
