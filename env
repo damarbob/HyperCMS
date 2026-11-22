@@ -33,7 +33,6 @@
 
 # File Manager
 # fileManager.productionPath = '{FCPATH}uploads'
-# fileManager.nonProductionPath = '{ROOTPATH}'
 
 # Data engine (StarDust 0.3). The tables of the engine carry the prefix sd_ and need no setting here.
 # HyperEngine.usersTable = 'users'

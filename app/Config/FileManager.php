@@ -10,19 +10,21 @@ class FileManager extends BaseConfig
      * We can use placeholders like "{FCPATH}/foo/bar"
      * or "{ROOTPATH}/baz" – they'll be normalized.
      * 
+     * One root is used in every environment, so development never exposes more than production.
+     * The name `productionPath` is kept so an existing `fileManager.productionPath` setting still applies.
+     * A root that is the project folder, or a folder above it, is replaced by the public folder.
+     *
      * @IMPORTANT:
-     * Make sure the directory exists!
+     * The directory is created when it is missing.
      */
-    public string $productionPath      = '{FCPATH}'; // For production use, FCPATH is typically the public folder.
-    public string $nonProductionPath   = '{ROOTPATH}'; // For development use, ROOTPATH could reference the application root.
+    public string $productionPath = '{FCPATH}'; // The public folder, or a folder inside it such as '{FCPATH}uploads'.
 
     public function __construct()
     {
         parent::__construct();
 
-        // Normalize both paths on instantiation
-        $this->productionPath    = $this->normalizePath($this->productionPath);
-        $this->nonProductionPath = $this->normalizePath($this->nonProductionPath);
+        // Normalize the path on instantiation
+        $this->productionPath = $this->normalizePath($this->productionPath);
     }
 
     /**
