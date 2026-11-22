@@ -4,6 +4,30 @@ All notable changes to HyperCMS are listed here. The format follows [Keep a Chan
 
 ## [Unreleased]
 
+## [0.1.0-alpha.9] - 2026-11-22
+
+This release closes three security holes that have been open since 0.1.0-alpha.5. It needs no database changes and no upgrade steps.
+
+If a site ran an earlier release on the public internet, search its web server access log for `2e656e76`, which is the hex of `.env`, and rotate the database password, `encryption.key` and any API key in that `.env`. Do this whatever the log shows, because the hole was open for a long time.
+
+### Added
+
+- **File access probes**: Added probes to `tests/regression/probe.php` for the public file route, uploads, renames, `create-file`, `bulk-action`, `delete-files`, `extract` and the history pages (c54b0eb).
+
+### Changed
+
+- **File manager root**: Used `fileManager.productionPath` as the root in every environment, created it when missing, and fell back to `public/` when it points at the project folder or above it. `fileManager.nonProductionPath` is no longer read (d43be11).
+- **Refused file names**: Refused dot files, names that end in a dot or space, and the extensions `php`, `phtml`, `phar`, `pht`, `php3` to `php8`, `phps`, `shtml`, `cgi`, `htaccess` and `htpasswd` anywhere after the first part of a name. Files already uploaded under such names are no longer served (aa24229, cf4c7be).
+- **Archives**: Checked every entry of a ZIP file before extracting it, and refused the whole archive when one entry has an unsafe name or leaves the folder (d43be11).
+
+### Security
+
+- **Public file route**: Served files for `/public/file-server/serve/{path}` only from the public folder. The route needs no login and used to read from the project folder too, so the hex of `.env` returned the file with the database password (cf4c7be).
+- **Uploads that run as code**: Checked the file name on upload, rename, create file, save file, paste, bulk copy and move, and extract, so a `.php` file can no longer be put into the web root (d43be11).
+- **File manager paths**: Resolved every path against the root, which refuses `../` in the source and destination of rename, paste, bulk actions, compress, extract and delete. These could copy, move or delete files outside the root (d43be11).
+- **History pages**: Applied the per-model group check to `admin/model-data/{id}`, `admin/entry-data/{id}` and both `clear-history` actions. An account in the `user` group could open the history of a model open to developers only (500e845).
+- **Folder prefix check**: Stopped `validate_directory` from accepting a sibling folder such as `public_old` as a child of `public` (aa24229).
+
 ## [0.1.0-alpha.8] - 2026-11-19
 
 This release hardens `hyper:upgrade` and fixes two issues in the API. The upgrade steps are the same as for 0.1.0-alpha.7. The upgrade test and the stress test both pass on MariaDB 10.4.32.
