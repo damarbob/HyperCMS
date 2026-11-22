@@ -4,6 +4,7 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
 use App\Fields\FieldTypes;
+use App\Libraries\AllEntriesPage;
 use App\Libraries\ModelListPage;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
@@ -21,23 +22,23 @@ class Entries extends AdminController
     private const JSON_FLAGS = JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_PRESERVE_ZERO_FRACTION;
 
     /**
-     * The list of every entry. It keeps its old page until the list of all entries is built.
+     * The list of every entry of the models the person may open.
      */
-    public function index(): string
+    public function index()
     {
-        $this->data['pageLength'] = service('settings')
-            ->get('App.datatableEntriesPerPage', ('user:' . user_id())) ?: 10;
-        $this->data['title'] = lang('Admin.entries');
-        $this->data['links'] = [
-            'new'     => base_url('admin/entries') . '/{id}/new',
-            'edit'    => base_url('admin/model') . '/{modelId}/{id}/edit',
-            'delete'  => '',
-            'restore' => '',
-            'purge'   => '',
-        ];
-        $this->data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $this->data);
+        $per  = (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25);
+        $data = (new AllEntriesPage(FieldTypes::core()))->build($this->request->getGet(), $per);
 
-        return render('admin/entries', $this->data);
+        // A module may change where the New entry links go, as the paging system does for its page models.
+        $data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $data);
+
+        if (Model::wantsTheList($this->request)) {
+            return view('admin/partials/all_results', $data);
+        }
+
+        $this->data = array_merge($this->data, $data, ['title' => lang('Entries.allTitle'), 'crumbs' => [[lang('Entries.allTitle'), null]]]);
+
+        return view('admin/entries', $this->data);
     }
 
     /* The form ---------------------------------------------------------------------------------------------- */
