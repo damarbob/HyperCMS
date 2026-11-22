@@ -32,6 +32,11 @@ use StarDust\Read\SortSpec;
  */
 class EntryLists
 {
+    /**
+     * Whether the rows of the list in progress spread their fields over the columns.
+     */
+    private bool $pivot = true;
+
     public function __construct(
         private ?BaseConnection $db = null,
         private ?EntryRows $rows = null,
@@ -83,7 +88,7 @@ class EntryLists
                 'draw'      => $draw,
                 'start'     => $start,
                 'length'    => $length,
-                'term'      => empty($search) ? '' : esc($search),
+                'term'      => empty($search) ? '' : (string) $search,
                 'modelId'   => $modelId,
                 'column'    => $safe ? $orderColumn : null,
                 'direction' => $direction,
@@ -94,9 +99,9 @@ class EntryLists
         // The three matches sit in one group. Without it their OR would let a row past the filters above.
         if (! empty($search)) {
             $builder->groupStart();
-            $builder->like('m.name', esc($search));
-            $builder->orLike($this->rows()->column('fields', true), esc($search));
-            $builder->orLike($this->rows()->column('created_by'), esc($search));
+            $builder->like('m.name', (string) $search);
+            $builder->orLike($this->rows()->column('fields', true), (string) $search);
+            $builder->orLike($this->rows()->column('created_by'), (string) $search);
             $builder->groupEnd();
         }
 
@@ -204,6 +209,9 @@ class EntryLists
         $find = $params['find'] ?? null;
         $trash = $params['trash'] ?? false;
 
+        // A caller that wants each row's fields as one text, with no field spread over the columns, asks for `pivot` off.
+        $this->pivot = (bool) ($params['pivot'] ?? true);
+
         if (! $modelId) {
             throw new InvalidArgumentException('No model id provided.');
         }
@@ -216,8 +224,7 @@ class EntryLists
         $live = ! $trash || $trash == 'false';
 
         $find = is_array($find) && ! empty($find['field']) && ! empty($find['value']) ? ['field' => (string) $find['field'], 'value' => (string) $find['value']] : null;
-        $term = esc($search);
-        $term = empty($term) ? '' : $term;
+        $term = (string) $search;
 
         // The order. A fixed column is sorted in SQL, a model field from its fields, and with no order the newest edit comes first.
         $orderColumn = null;
@@ -416,7 +423,7 @@ class EntryLists
 
         foreach (json_decode((string) $definition) ?? [] as $field) {
             if (! empty($field->type)) {
-                if ($field->type === 'datetime-local') {
+                if ($field->type === 'datetime') {
                     $dateFields[] = $field->id;
                 } elseif ($field->type === 'number') {
                     $numericFields[] = $field->id;
@@ -434,6 +441,10 @@ class EntryLists
      */
     protected function pivotRows(array $data, array $codeFields): array
     {
+        if (! $this->pivot) {
+            return $data;
+        }
+
         foreach ($data as &$row) {
             if (isset($row['fields'])) {
                 $fieldsArray = json_decode($row['fields'], true);
@@ -457,14 +468,6 @@ class EntryLists
             }
         }
         unset($row);
-
-        foreach ($data as $i => $item) {
-            foreach ($codeFields as $x) {
-                if (isset($item[$x])) {
-                    $data[$i][$x] = htmlspecialchars($item[$x]);
-                }
-            }
-        }
 
         return $data;
     }
@@ -526,7 +529,7 @@ class EntryLists
         $totalRecords = count($indexes);
 
         if (! empty($search)) {
-            $term    = esc($search);
+            $term    = (string) $search;
             $indexes = array_values(array_filter($indexes, static fn (int $i): bool => FieldRules::contains((string) ($versions[$i]['fields'] ?? ''), $term)));
         }
 

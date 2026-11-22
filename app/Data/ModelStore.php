@@ -429,6 +429,7 @@ class ModelStore
                 'm.deleted_at AS date_deleted',
                 'm.name',
                 'm.fields',
+                'm.label_field',
                 'm.group',
                 'm.user_groups',
                 'm.icon',
