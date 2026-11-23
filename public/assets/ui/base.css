@@ -75,7 +75,23 @@
   /* The rail sits on the canvas and the work sits on a rounded sheet that scrolls by itself. */
   .shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); grid-template-rows: minmax(0, 1fr); height: 100vh; height: 100dvh; overflow: hidden; }
 
-  .rail { display: flex; flex-direction: column; padding: var(--s3) var(--s2) var(--s3) var(--s3); overflow-y: auto; }
+  /* The rail scrolls when the menu is longer than the window, but draws no scrollbar. A soft shade at the top or the bottom
+     edge shows that more is there. The first two gradients are canvas coloured covers that scroll with the content and hide
+     the shade at the end of the list, and the last two are the shade, which stays put. */
+  .rail {
+    display: flex;
+    flex-direction: column;
+    padding: var(--s3) var(--s2) var(--s3) var(--s3);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-width: none;
+    background:
+      linear-gradient(var(--canvas) 30%, transparent) top local / 100% 32px no-repeat,
+      linear-gradient(transparent, var(--canvas) 70%) bottom local / 100% 32px no-repeat,
+      linear-gradient(color-mix(in srgb, var(--ink) 14%, transparent), transparent) top scroll / 100% 12px no-repeat,
+      linear-gradient(transparent, color-mix(in srgb, var(--ink) 14%, transparent)) bottom scroll / 100% 12px no-repeat;
+  }
+  .rail::-webkit-scrollbar { display: none; }
 
   .brand { display: flex; align-items: center; gap: 10px; padding: 6px var(--s2) var(--s3); font-weight: 600; letter-spacing: -0.01em; font-size: var(--t-lg); color: var(--ink); }
   .brand:hover { text-decoration: none; }
@@ -182,7 +198,7 @@
       z-index: var(--z-rail);
       transform: translateX(-100%);
       transition: transform var(--slow) var(--ease);
-      background: var(--canvas);
+      background-color: var(--canvas);
       border-right: 1px solid var(--line);
       padding: var(--s3);
       visibility: hidden;
