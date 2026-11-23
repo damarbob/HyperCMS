@@ -11,6 +11,7 @@ return [
     'hasPeople'            => '{name} masih dimiliki {count} orang. Pindahkan mereka ke peran lain dulu.',
     'abilityNameInvalid'   => 'Nama kemampuan terdiri dari dua kata huruf kecil atau lebih yang dihubungkan titik, misalnya shop.refund.',
     'abilityNameTaken'     => 'Sudah ada kemampuan bernama {name}.',
+    'abilityHeldAbove'     => 'Ada peran yang bisa berbuat lebih banyak daripada peran Anda memiliki kemampuan ini, jadi Anda tidak bisa menghapusnya.',
     'abilityNotCustom'     => 'Hanya kemampuan yang ditambahkan manual yang bisa dihapus.',
 
     'notYours'             => 'Anda sendiri tidak memilikinya, jadi tidak bisa memberikannya.',

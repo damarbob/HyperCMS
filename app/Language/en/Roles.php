@@ -11,6 +11,7 @@ return [
     'hasPeople'            => '{name} still has {count} people in it. Give them another role first.',
     'abilityNameInvalid'   => 'An ability name is two or more lowercase words joined by dots, such as shop.refund.',
     'abilityNameTaken'     => 'There is already an ability named {name}.',
+    'abilityHeldAbove'     => 'A role that can do more than your own roles has this ability, so you cannot delete it.',
     'abilityNotCustom'     => 'Only an ability that was added by hand can be deleted.',
 
     'notYours'             => 'You do not have this yourself, so you cannot hand it out.',

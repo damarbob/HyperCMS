@@ -349,6 +349,12 @@ if ($envFile !== '') {
     $act($ej, $etoken, 'admin/roles', ['name' => 'probe_copy', 'label' => 'Copy', 'copy' => 'developer']);
     $say('roles, an editor copies a role with more power', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_copy'")->fetchColumn() > 0 && (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE role = 'probe_copy'")->fetchColumn() > 0, 'a role with abilities the editor lacks was copied');
 
+    // An ability that a higher role has cannot be deleted by someone who may not change that role.
+    $pdo->exec("INSERT INTO hyper_abilities (name, label, created_at) VALUES ('probe.held', 'Held', NOW())");
+    $pdo->exec("INSERT INTO hyper_role_abilities (role, ability) VALUES ('developer', 'probe.held')");
+    $act($ej, $etoken, 'admin/abilities/probe.held/delete', []);
+    $say('abilities, an editor deletes one that a higher role has', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_abilities WHERE name = 'probe.held'")->fetchColumn() === 0, 'an ability held by a higher role was deleted');
+
     // Clean up, in the order that the guards allow.
     $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
     $pdo->exec("DELETE FROM auth_identities WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");

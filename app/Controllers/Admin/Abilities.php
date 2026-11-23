@@ -33,7 +33,15 @@ class Abilities extends AdminController
     public function delete($name)
     {
         try {
+            // Deleting an ability takes it from every role that has it, so it is allowed only when the person may change
+            // each of those roles. Otherwise a role manager could strip power from a role above their own.
+            foreach (service('abilities')->holders()[(string) $name] ?? [] as $role) {
+                if (! service('permissions')->mayAssignRole(auth()->user(), $role)) {
+                    throw new InvalidArgumentException(lang('Roles.abilityHeldAbove'));
+                }
+            }
             service('abilities')->deleteCustom((string) $name);
+            service('grants')->forget();
         } catch (InvalidArgumentException $e) {
             return redirect()->to(base_url('admin/abilities'))->with('error', $e->getMessage());
         }
