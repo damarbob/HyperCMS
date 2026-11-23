@@ -79,6 +79,19 @@
 
 .editor-search { padding: var(--s2); }
 
+/* ---- The attributes of an element, a list of fields that the script draws in the settings panel ------------------- */
+
+/* The panel is narrow, so the name is above the value and the remove button is at the side of both. GrapesJS clears the border
+   of every field inside its own wrapper, so the fields here say what they look like. */
+.editor-attrs { display: grid; gap: var(--s3); width: 100%; padding: var(--s1) 0; }
+.editor-attrs-title { font-size: var(--t-sm); color: var(--ink-2); }
+.editor-attrs-list { display: grid; gap: var(--s3); }
+.editor-attr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s1); align-items: center; }
+.editor-attr > .btn { grid-column: 2; grid-row: 1 / span 2; }
+.editor-attr .input { grid-column: 1; width: 100%; min-width: 0; height: 30px; min-height: 0; padding: 0 var(--s2); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sheet); color: var(--ink); font: inherit; }
+.editor-attr[data-bad="true"] .input[data-attr="name"] { border-color: var(--bad); }
+.editor-attrs > .btn { justify-self: start; }
+
 /* ---- The import dialog, which GrapesJS draws and the script fills ---------------------------------------------- */
 
 .editor-import { display: block; width: 100%; min-height: 260px; margin-bottom: var(--s3); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: var(--t-sm); resize: vertical; }

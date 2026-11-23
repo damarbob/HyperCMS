@@ -51,13 +51,116 @@
     });
   }
 
+  /* ---- Any attribute of the selected element, in the settings panel --------------------------------------------- */
+
+  // The id, the classes and the style have their own places in the editor, and the `data-gjs-` ones are the editor's own.
+  function hiddenAttribute(name) { return name === 'id' || name === 'class' || name === 'style' || name.indexOf('data-gjs-') === 0; }
+  var ATTRIBUTE_NAME = /^[A-Za-z_:][-A-Za-z0-9_:.]*$/;
+
+  function make(tag, className, text) {
+    var el = document.createElement(tag);
+    if (className) el.className = className;
+    if (text) el.textContent = text;
+    return el;
+  }
+
+  function attributesPlugin(editor) {
+    editor.Traits.addType('hyper-attributes', {
+      eventCapture: [],
+      noLabel: true,
+      onEvent: function () {},
+      createInput: function (opts) {
+        var component = opts.component;
+        var box = make('div', 'editor-attrs');
+        box.appendChild(make('div', 'editor-attrs-title', L.attributes));
+        var list = make('div', 'editor-attrs-list');
+        var add = make('button', 'btn', L.addAttribute);
+        add.type = 'button';
+        box.appendChild(list);
+        box.appendChild(add);
+        var writing = false;
+
+        // The rows are written to the element each time one changes. A value that was not touched keeps its type, so a
+        // flag such as `controls` is not turned into the text "true".
+        function write() {
+          var raw = component.get('attributes') || {};
+          var next = {};
+          Object.keys(raw).forEach(function (name) { if (hiddenAttribute(name)) next[name] = raw[name]; });
+          var taken = {};
+          list.querySelectorAll('.editor-attr').forEach(function (row) {
+            var name = row.querySelector('[data-attr="name"]').value.trim();
+            var value = row.querySelector('[data-attr="value"]').value;
+            var bad = name !== '' && (!ATTRIBUTE_NAME.test(name) || hiddenAttribute(name) || taken[name]);
+            row.setAttribute('data-bad', bad ? 'true' : 'false');
+            if (name === '' || bad) return;
+            taken[name] = true;
+            next[name] = raw[name] !== undefined && String(raw[name]) === value ? raw[name] : value;
+          });
+          writing = true;
+          component.setAttributes(next);
+          writing = false;
+        }
+
+        function row(name, value) {
+          var item = make('div', 'editor-attr');
+          var key = make('input', 'input');
+          key.setAttribute('data-attr', 'name');
+          key.placeholder = L.attributeName;
+          key.setAttribute('aria-label', L.attributeName);
+          key.value = name;
+          var val = make('input', 'input');
+          val.setAttribute('data-attr', 'value');
+          val.placeholder = L.attributeValue;
+          val.setAttribute('aria-label', L.attributeValue);
+          val.value = value;
+          var drop = make('button', 'btn quiet icon-only', '×');
+          drop.type = 'button';
+          drop.setAttribute('aria-label', L.removeAttribute);
+          drop.title = L.removeAttribute;
+          drop.addEventListener('click', function () { list.removeChild(item); write(); });
+          key.addEventListener('change', write);
+          val.addEventListener('change', write);
+          item.appendChild(key);
+          item.appendChild(val);
+          item.appendChild(drop);
+          list.appendChild(item);
+          return key;
+        }
+
+        function fill() {
+          list.textContent = '';
+          var raw = component.get('attributes') || {};
+          Object.keys(raw).forEach(function (name) {
+            if (!hiddenAttribute(name)) row(name, String(raw[name]));
+          });
+        }
+        fill();
+        add.addEventListener('click', function () { row('', '').focus(); });
+
+        // An undo or a change from another part of the editor shows here too, unless this panel is the one writing.
+        function refresh() {
+          if (!box.isConnected) { component.off('change:attributes', refresh); return; }
+          if (!writing) fill();
+        }
+        component.on('change:attributes', refresh);
+        return box;
+      },
+    });
+
+    editor.on('component:selected', function (component) {
+      if (component && !component.getTrait('hyper-attributes')) {
+        component.addTrait({ type: 'hyper-attributes', name: 'hyper-attributes', label: L.attributes });
+      }
+    });
+  }
+
   /* ---- The editor --------------------------------------------------------------------------------------------- */
 
   var plugins = [
     'grapesjs-parser-postcss', 'grapesjs-custom-code', 'grapesjs-tui-image-editor', 'grapesjs-style-gradient', 'grapesjs-style-bg', 'grapesjs-style-filter',
     'grapesjs-blocks-bootstrap-5', 'grapesjs-bootstrap-grid-system', 'grapesjs-bootstrap-typography', 'grapesjs-bootstrap-button', 'grapesjs-bootstrap-navbar',
     'grapesjs-bootstrap-card', 'grapesjs-bootstrap-accordion', 'grapesjs-bootstrap-carousel', 'grapesjs-bootstrap-forms', 'grapesjs-bootstrap-badge',
-    'grapesjs-bootstrap-breadcrumb', 'grapesjs-bootstrap-alert', 'grapesjs-bootstrap-dropdown', metaTagPlugin,
+    'grapesjs-bootstrap-breadcrumb', 'grapesjs-bootstrap-alert', 'grapesjs-bootstrap-dropdown', metaTagPlugin, attributesPlugin,
   ];
 
   var csrfParams = {};

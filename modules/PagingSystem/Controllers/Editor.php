@@ -48,7 +48,7 @@ class Editor extends ModuleController
 
         $label  = static fn (string $key): string => lang('PagingSystem.editor_' . $key);
         $labels = [];
-        foreach (['back', 'devices', 'desktop', 'tablet', 'mobileLandscape', 'mobilePortrait', 'undo', 'redo', 'save', 'unsaved', 'import', 'importHelp', 'chooseImage', 'files', 'searchBlocks', 'classMode', 'libraryMissing', 'hello', 'saveFailed', 'query_model_id', 'query_find_field', 'query_find_value', 'query_return_field'] as $key) {
+        foreach (['back', 'devices', 'desktop', 'tablet', 'mobileLandscape', 'mobilePortrait', 'undo', 'redo', 'save', 'unsaved', 'import', 'importHelp', 'chooseImage', 'files', 'searchBlocks', 'classMode', 'attributes', 'addAttribute', 'attributeName', 'attributeValue', 'removeAttribute', 'libraryMissing', 'hello', 'saveFailed', 'query_model_id', 'query_find_field', 'query_find_value', 'query_return_field'] as $key) {
             $labels[$key] = $label($key);
         }
 
