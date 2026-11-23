@@ -3,6 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Fields\DefinitionCheck;
+use App\Fields\FieldCatalog;
+use App\Fields\FieldTypes;
 use App\Libraries\ModelsPage;
 use InvalidArgumentException;
 use RuntimeException;
@@ -29,159 +32,268 @@ class Models extends AdminController
         return view('admin/models', $this->data);
     }
 
-    public function new(): string
+    public function new()
     {
-        /** @var \Config\AuthGroups */
-        $authGroups = config('AuthGroups');
+        // A new model starts with one field that names its entries, so it is usable as soon as it is saved.
+        $starter = [['id' => 'title', 'label' => lang('Models.starterTitle'), 'type' => 'text', 'required' => true]];
 
-        // Editable data
-        $this->data = array_merge($this->data, [
-            'title' => lang('Admin.newModel'),
-        ]);
-
-        $this->hooks->register(hook('Backend.view:models:new'), function () {
-            return render('admin/partials/models_form', [
-                'action' => 'new',
-                'formAction' => base_url('admin/models'),
-            ]);
-        });
-
-        return render(
-            'admin/models_action',
-            array_merge($this->data, [
-                // Noneditable data
-                'action' => 'new',
-                'groups' => $authGroups->groups,
-            ])
-        );
+        return $this->builder([], $starter, 'title', [], []);
     }
 
     public function edit($id)
     {
-        /** @var \Config\AuthGroups */
-        $authGroups = config('AuthGroups');
+        $model = is_numeric($id) ? service('modelStore')->findArray((int) $id) : false;
+        if (! $model) {
+            return redirect()->to(base_url('admin/models'))->with('error', lang('Models.notFound'));
+        }
 
-        // Editable data
-        $this->data = array_merge($this->data, [
-            'title' => lang('Admin.editModel'),
-        ]);
+        $fields = json_decode((string) $model['fields'], true);
 
-        $model = service('modelStore')->findArray($id);
-
-        if (empty($model))
-            return redirect('admin/models')
-                ->with('error', lang('Admin.modelNotFound'));
-
-        $this->hooks->register(hook('Backend.view:models:edit'), function () use ($model) {
-            return render('admin/partials/models_form', [
-                'action' => 'edit',
-                'formAction' => base_url('admin/models/' . $model['id']),
-                'model' => $model,
-                'isPublic' => service('modelAccess')->isPublic($model['id']),
-                'filterableState' => service('modelStore')->filterableState((int) $model['id']),
-            ]);
-        });
-
-        return render('admin/models_action', array_merge($this->data, [
-            // Noneditable data
-            'action' => 'edit',
-            'model' => $model,
-            'groups' => $authGroups->groups,
-        ]));
+        return $this->builder($model, is_array($fields) ? $fields : [], (string) ($model['label_field'] ?? ''), [], []);
     }
 
     /**
-     * Create a new model.
-     *
-     * Validates input and delegates creation to the ModelManager.
-     * 
-     * @return \CodeIgniter\HTTP\Response JSON redirect or error response.
+     * Create a model from the builder.
      */
     public function create()
     {
-        // Define validation rules.
-        $rules = [
-            'name' => 'required|min_length[3]|max_length[255]',
-            'fields' => 'required',
-            'group' => 'permit_empty|min_length[3]|alpha_space',
-            'user_groups' => 'required',
-            'icon' => ['permit_empty'],
-        ];
-
-        // Get only the keys that are in the rules array.
-        $data = $this->request->getPost(array_keys($rules));
-
-        // Validate data – using CodeIgniter’s built-in validation.
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
-        }
-
-        // Get the validated data.
-        $validData = $this->validator->getValidated();
-        $userId = auth()->user()->id; // Current authenticated user's ID
-
-        // Dynamic conversion of array inputs
-        // Loop through all validated fields. If any field is an array, convert it to JSON.
-        foreach ($validData as $key => $value) {
-            if (is_array($value)) {
-                $validData[$key] = json_encode($value);
-            }
+        [$data, $fields, $errors] = $this->submitted();
+        if ($errors !== []) {
+            return $this->builder([], $fields, (string) ($data['label_field'] ?? ''), $errors, $this->typed($data), 422);
         }
 
         try {
-            // Delegate the creation process to the service.
-            $modelId = service('modelStore')->create($validData, $userId);
+            $id = service('modelStore')->create($data, (int) auth()->user()->id);
         } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond(
-                message: $e->getMessage(),
-                success: false
-            );
+            return $this->builder([], $fields, (string) ($data['label_field'] ?? ''), ['general' => [$e->getMessage()]], $this->typed($data), 422);
         }
 
-        service('modelAccess')->setPublic((int) $modelId, (bool) $this->request->getPost('public'));
-
-        return redirect('admin/models')
-            ->with('success', lang('Admin.modelxSuccessfullyCreated', ['x' => $data['name']]));
+        return redirect()->to(base_url('admin/models/' . (int) $id . '/edit'))->with('success', lang('Models.created', ['name' => $data['name']]));
     }
 
     public function update($id)
     {
-        $rules = [
-            'name' => 'required|min_length[3]|max_length[255]',
-            'fields' => 'required',
-            'group' => 'permit_empty|min_length[3]|alpha_space',
-            'user_groups' => 'required',
-            'icon' => 'permit_empty',
-        ];
-
-        $data = $this->request->getPost(array_keys($rules));
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
+        $model = is_numeric($id) ? service('modelStore')->findArray((int) $id) : false;
+        if (! $model) {
+            return redirect()->to(base_url('admin/models'))->with('error', lang('Models.notFound'));
         }
 
-        $validData = $this->validator->getValidated();
-        $userId = auth()->user()->id;
+        [$data, $fields, $errors] = $this->submitted();
+        if ($errors !== []) {
+            return $this->builder($model, $fields, (string) ($data['label_field'] ?? ''), $errors, $this->typed($data), 422);
+        }
 
-        // Dynamic conversion of array inputs
-        // Loop through all validated fields. If any field is an array, convert it to JSON.
-        foreach ($validData as $key => $value) {
-            if (is_array($value)) {
-                $validData[$key] = json_encode($value);
+        try {
+            service('modelStore')->update((int) $id, $data, (int) auth()->user()->id);
+        } catch (RuntimeException | InvalidArgumentException $e) {
+            return $this->builder($model, $fields, (string) ($data['label_field'] ?? ''), ['general' => [$e->getMessage()]], $this->typed($data), 422);
+        }
+
+        return redirect()->to(base_url('admin/models/' . (int) $id . '/edit'))->with('success', lang('Models.saved', ['name' => $data['name']]));
+    }
+
+    /**
+     * Check a definition without saving it, for the JSON editor. The answer lists each problem with the id of its field.
+     */
+    public function check()
+    {
+        $decoded = json_decode((string) $this->request->getPost('fields'), true);
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            return $this->response->setJSON(['ok' => false, 'errors' => [['field' => null, 'message' => lang('Models.jsonInvalid', ['message' => json_last_error_msg()])]]]);
+        }
+
+        $check  = new DefinitionCheck(FieldTypes::core(), $this->modelNames());
+        $result = $check->check($decoded);
+        $label  = $check->checkLabelField((string) $this->request->getPost('label_field'), $result['fields']);
+        if ($label !== null) {
+            $result['errors'][] = ['field' => null, 'message' => $label];
+        }
+
+        return $this->response->setJSON(['ok' => $result['errors'] === [], 'errors' => $result['errors'], 'fields' => $result['fields']]);
+    }
+
+    /**
+     * What the builder posted, read and checked.
+     *
+     * @return array{0: array<string, mixed>, 1: list<array<string, mixed>>, 2: array<string, mixed>} The data for the store,
+     *         the fields as far as they could be read, and the errors by place (`general`, `name`, `group`, `fields` by id).
+     */
+    private function submitted(): array
+    {
+        $post   = $this->request->getPost();
+        $errors = [];
+
+        $rules = [
+            'name'        => 'required|min_length[3]|max_length[255]',
+            'group'       => 'permit_empty|min_length[3]|alpha_space',
+            'icon'        => 'permit_empty|max_length[255]',
+            'user_groups' => 'required',
+        ];
+        $input = [
+            'name'        => trim((string) ($post['name'] ?? '')),
+            'group'       => trim((string) ($post['group'] ?? '')),
+            'icon'        => trim((string) ($post['icon'] ?? '')),
+            'user_groups' => is_array($post['user_groups'] ?? null) ? array_values($post['user_groups']) : [],
+        ];
+        if (! $this->validateData($input, $rules)) {
+            foreach ($this->validator->getErrors() as $key => $message) {
+                $errors[$key] = [$message];
             }
         }
 
-        // dd($validData);
+        $decoded = json_decode((string) ($post['fields'] ?? ''), true);
+        $fields  = [];
+        if (json_last_error() !== JSON_ERROR_NONE) {
+            $errors['general'][] = lang('Models.jsonInvalid', ['message' => json_last_error_msg()]);
+        } else {
+            $check  = new DefinitionCheck(FieldTypes::core(), $this->modelNames());
+            $result = $check->check($decoded);
+            $fields = $result['fields'];
+            foreach ($result['errors'] as $error) {
+                if ($error['field'] === null) {
+                    $errors['general'][] = $error['message'];
+                } else {
+                    $errors['fields'][$error['field']][] = $error['message'];
+                }
+            }
 
-        try {
-            service('modelStore')->update($id, $validData, $userId);
-        } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), withInput: true, success: false);
+            $note = $check->checkLabelField((string) ($post['label_field'] ?? ''), $fields);
+            if ($note !== null) {
+                $errors['general'][] = $note;
+            }
         }
 
-        service('modelAccess')->setPublic((int) $id, (bool) $this->request->getPost('public'));
+        $data = [
+            'name'        => $input['name'],
+            'group'       => $input['group'] === '' ? null : $input['group'],
+            'icon'        => $input['icon'] === '' ? null : $input['icon'],
+            'user_groups' => json_encode($input['user_groups']),
+            'fields'      => json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
+            'label_field' => ($post['label_field'] ?? '') === '' ? null : (string) $post['label_field'],
+        ];
 
-        return $this->respond(lang('Admin.modelxSuccessfullySaved', ['x' => $validData['name']]), withInput: false);
+        return [$data, $fields, $errors];
+    }
+
+    /**
+     * What the person typed, as the page needs it to draw the form again after an error.
+     *
+     * @param array<string, mixed> $data
+     *
+     * @return array<string, mixed>
+     */
+    private function typed(array $data): array
+    {
+        return [
+            'name'        => (string) ($data['name'] ?? ''),
+            'group'       => (string) ($data['group'] ?? ''),
+            'icon'        => (string) ($data['icon'] ?? ''),
+            'user_groups' => is_string($data['user_groups'] ?? null) ? (json_decode($data['user_groups'], true) ?: []) : [],
+        ];
+    }
+
+    /**
+     * @return array<int, string> The live models by id, which a relation can point at.
+     */
+    private function modelNames(): array
+    {
+        $names = [];
+        foreach (service('modelStore')->allArray() as $row) {
+            $names[(int) $row['id']] = (string) $row['name'];
+        }
+
+        return $names;
+    }
+
+    /**
+     * The icons of the sprite that suit a model, in the order the picker shows them.
+     */
+    public const ICONS = ['models', 'doc', 'entries', 'pages', 'media', 'folder', 'table', 'inbox', 'mail', 'users', 'user', 'key', 'bolt', 'search', 'eye', 'settings'];
+
+    /**
+     * The builder page.
+     *
+     * @param array<string, mixed>       $model  The saved model, or empty for a new one.
+     * @param list<array<string, mixed>> $fields The fields to show.
+     * @param array<string, mixed>       $errors By place.
+     * @param array<string, mixed>       $typed  Values typed in a form that came back with errors.
+     */
+    private function builder(array $model, array $fields, string $labelField, array $errors, array $typed, int $status = 200)
+    {
+        /** @var \Config\AuthGroups $authGroups */
+        $authGroups = config('AuthGroups');
+
+        $id     = (int) ($model['id'] ?? 0);
+        $groups = array_keys($authGroups->groups);
+
+        $names  = $this->modelNames();
+        $saved  = $model !== [] && ! empty($model['user_groups']) ? (json_decode((string) $model['user_groups'], true) ?: []) : $groups;
+        $values = [
+            'name'        => $typed['name'] ?? (string) ($model['name'] ?? ''),
+            'group'       => $typed['group'] ?? (string) ($model['group'] ?? ''),
+            'icon'        => $typed['icon'] ?? (string) ($model['icon'] ?? ''),
+            'user_groups' => $typed['user_groups'] ?? $saved,
+        ];
+
+        $models = [];
+        foreach ($names as $modelId => $name) {
+            $models[] = ['id' => $modelId, 'name' => $name];
+        }
+
+        $storedFields = $id > 0 ? json_decode((string) ($model['fields'] ?? '[]'), true) : [];
+        $savedIds     = [];
+        foreach (is_array($storedFields) ? $storedFields : [] as $field) {
+            if (is_array($field) && is_string($field['id'] ?? null)) {
+                $savedIds[] = $field['id'];
+            }
+        }
+
+        $payload = [
+            'catalog'    => (new FieldCatalog(FieldTypes::core()))->forBuilder($models),
+            'fields'     => $fields,
+            'labelField' => $labelField,
+            'isNew'      => $id === 0,
+            'saved'      => $savedIds,
+            'indexing'   => $id > 0 ? service('modelStore')->filterableState($id) : [],
+            'errors'     => $errors['fields'] ?? [],
+            'urls'       => ['check' => base_url('admin/models/check')],
+            'text'       => $this->builderText(),
+            'icons'      => self::ICONS,
+        ];
+
+        $title = $id > 0 ? (string) $model['name'] : lang('Models.newModel');
+
+        $this->data = array_merge($this->data, [
+            'title'   => $title,
+            'crumbs'  => [[lang('Models.models'), base_url('admin/models')], [$title, null]],
+            'model'   => $model,
+            'id'      => $id,
+            'values'  => $values,
+            'groups'  => $groups,
+            'payload' => $payload,
+            'errors'  => $errors,
+            'entries' => $id > 0 ? (service('entryStore')->countsByModel()[$id] ?? 0) : 0,
+            'formUrl' => $id > 0 ? base_url('admin/models/' . $id) : base_url('admin/models'),
+            'urls'    => ['history' => $id > 0 ? base_url('admin/model-data/' . $id) : '', 'entries' => $id > 0 ? base_url('admin/model/' . $id) : '', 'trash' => $id > 0 ? base_url('admin/models/' . $id . '/delete') : ''],
+        ]);
+
+        return $this->response->setStatusCode($status)->setBody(view('admin/model_builder', $this->data));
+    }
+
+    /**
+     * The words the builder's script writes into the page. It cannot ask for a translation, so they travel with the page.
+     *
+     * @return array<string, string>
+     */
+    private function builderText(): array
+    {
+        $keys = ['addField', 'chooseType', 'removeField', 'moveUp', 'moveDown', 'dragHandle', 'fieldId', 'fieldIdLocked', 'fieldLabel', 'fieldType', 'fieldHelp', 'fieldDefault', 'required', 'showInList', 'filterable', 'filterableNever', 'filterableSingle', 'stateIndexed', 'stateIndexing', 'stateOnSave', 'nameEntriesBy', 'nameEntriesHelp', 'nameNone', 'nameChip', 'addChoice', 'choiceValue', 'choiceLabel', 'removeChoice', 'noFields', 'noFieldsText', 'selectField', 'unsaved', 'tabFields', 'tabJson', 'tabDetails', 'jsonLoading', 'jsonFailed', 'jsonCheck', 'jsonOk', 'jsonInvalid', 'storedDefinition', 'pickModel', 'noModels', 'optional', 'untitled', 'movedTo', 'removed', 'added', 'typeChanged', 'defaultChecked', 'optionMany', 'filterableHelp', 'indexNote', 'jsonNotList', 'jsonFailedCheck'];
+        $text = [];
+        foreach ($keys as $key) {
+            $text[$key] = lang('Models.b' . ucfirst($key));
+        }
+
+        return $text;
     }
 
     public function delete($id = null)

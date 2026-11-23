@@ -63,6 +63,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         ]);
         $routes->group('models', ['filter' => 'group:superadmin'], static function ($routes) {
             $routes->post('delete', 'Models::delete');
+            $routes->post('check', 'Models::check');
             $routes->post('purge-deleted', 'Models::purgeDeleted');
             $routes->post('restore', 'Models::restore');
         });

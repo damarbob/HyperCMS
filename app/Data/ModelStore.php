@@ -67,6 +67,7 @@ class ModelStore
                 'group'         => $data['group'] ?? null,
                 'icon'          => $data['icon'] ?? null,
                 'user_groups'   => $data['user_groups'] ?? null,
+                'label_field'   => $data['label_field'] ?? null,
                 'creator_id'    => $userId,
                 'editor_id'     => $userId,
                 'created_at'    => $now,
@@ -112,7 +113,7 @@ class ModelStore
                     'current_revision_id' => (int) $db->insertID(),
                     'editor_id'           => $userId,
                     'updated_at'          => $now,
-                ]);
+                ] + (array_key_exists('label_field', $data) ? ['label_field' => $data['label_field']] : []));
             });
 
             // A field removed in the editor stays registered, so the values old entries hold for it survive.

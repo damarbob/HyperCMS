@@ -22,7 +22,8 @@ interface FieldType
      *
      * Each one is its `key` in the definition, the `control` to draw (`select`, `toggle`, `number`, `text`, `choices` or
      * `model`), a `label`, and the `default` the builder writes when a field of this type is made. A `select` also has
-     * its `choices` as value to label.
+     * its `choices` as value to label. An option with `omitDefault` is left out of the definition while it holds its
+     * default, as `format` is for a plain text.
      *
      * @return list<array<string, mixed>>
      */

@@ -19,7 +19,7 @@ final class TextField extends AbstractField
     public function settings(): array
     {
         return [
-            ['key' => 'format', 'control' => 'select', 'label' => lang('Fields.setFormat'), 'default' => 'plain', 'choices' => ['plain' => lang('Fields.formatPlain'), 'email' => lang('Fields.formatEmail'), 'url' => lang('Fields.formatUrl'), 'password' => lang('Fields.formatPassword')]],
+            ['key' => 'format', 'control' => 'select', 'label' => lang('Fields.setFormat'), 'default' => 'plain', 'omitDefault' => true, 'choices' => ['plain' => lang('Fields.formatPlain'), 'email' => lang('Fields.formatEmail'), 'url' => lang('Fields.formatUrl'), 'password' => lang('Fields.formatPassword')]],
             ['key' => 'max', 'control' => 'number', 'label' => lang('Fields.setMaxLength'), 'default' => null, 'integer' => true, 'min' => 1],
         ];
     }
