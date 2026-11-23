@@ -58,6 +58,50 @@ class Pages
     }
 
     /**
+     * The pages of the site that were edited last, newest first. A part that sits on every page is not one of them.
+     *
+     * @return list<array{id: int, title: string, path: string, edited: string}>
+     */
+    public function latest(int $limit): array
+    {
+        $model = $this->modelId('page');
+        if ($model === null) {
+            return [];
+        }
+
+        // Parts and pages share a model, so a few more than asked for are read to find enough pages among them.
+        $rows = $this->entries->dataTable([
+            'draw'     => 1,
+            'start'    => 0,
+            'length'   => max(20, $limit * 4),
+            'model_id' => $model,
+            'order'    => [['column' => 0, 'dir' => 'desc']],
+            'columns'  => [['data' => 'date_modified']],
+        ])['data'];
+
+        $pages = [];
+        foreach ($rows as $row) {
+            $page = $this->present($row);
+            if (($page['fields'][self::HOOK] ?? null) !== self::MAIN) {
+                continue;
+            }
+
+            $title   = trim((string) ($page['fields'][self::TITLE] ?? ''));
+            $pages[] = [
+                'id'     => $page['id'],
+                'title'  => $title !== '' ? $title : '#' . $page['id'],
+                'path'   => trim((string) ($page['fields'][self::URL] ?? '')),
+                'edited' => (string) ($row['date_modified'] ?? ''),
+            ];
+            if (count($pages) >= $limit) {
+                break;
+            }
+        }
+
+        return $pages;
+    }
+
+    /**
      * The page whose address is the path, or null.
      *
      * @return array{id: int, fields: array<string, mixed>}|null

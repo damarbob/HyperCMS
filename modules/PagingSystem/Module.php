@@ -7,8 +7,11 @@ use App\Modules\Module as BaseModule;
 use App\Modules\ModuleRoutes;
 use App\Modules\SettingsScreen;
 use App\Modules\Slots;
+use App\Data\WriteVersions;
+use App\Modules\Slots\DashboardPanels;
 use App\Modules\Slots\EntryFormToolbar;
 use PagingSystem\Config\PagingSystem as PagingConfig;
+use PagingSystem\Libraries\Pages;
 
 /**
  * Pages of the site, made in a visual editor. It uses the ability `pages.manage` of core and three models that the
@@ -56,6 +59,16 @@ final class Module extends BaseModule
             if ($page !== null && $toolbar->modelId === $page && ! $toolbar->isNew() && can('pages.manage')) {
                 $toolbar->link(lang('PagingSystem.openWithEditor'), base_url('admin/editor?entry_id=' . $toolbar->entryId), 'edit');
             }
+        });
+
+        $slots->on(Slots::DASHBOARD_PANELS, static function (DashboardPanels $panels): void {
+            $page = service('modules')->modelOf('PagingSystem', 'page');
+            if ($page === null || ! can('entries.read', $page)) {
+                return;
+            }
+
+            $latest = (new Pages(service('modules'), service('entryStore'), new WriteVersions()))->latest(5);
+            $panels->panel(lang('PagingSystem.dashboardPages'), 'PagingSystem\Views\dashboard_pages', ['pages' => $latest], 'pages.manage', DashboardPanels::SIDE, base_url('admin/model/' . $page), lang('PagingSystem.dashboardAllPages'));
         });
     }
 

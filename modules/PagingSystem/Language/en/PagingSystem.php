@@ -8,6 +8,9 @@ return [
     'editor' => 'Editor',
     'editor-x' => 'Editor {x}',
 
+    'dashboardPages' => 'Pages',
+    'dashboardAllPages' => 'All pages',
+    'dashboardNoPages' => 'No page has been made yet.',
     'openWithEditor' => 'Open with Editor',
 
     'blocks' => 'Blocks',
