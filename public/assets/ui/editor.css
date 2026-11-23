@@ -47,6 +47,13 @@
   font-family: var(--font);
 }
 
+/*
+ * The reset of the admin makes every image and svg a block, which GrapesJS does not expect, so its icons (the block icons
+ * above all) sit at the left of a centred label. Inside the editor they go back to what the browser gives them.
+ */
+#gjs img,
+#gjs svg { display: revert; max-width: revert; }
+
 /* ---- The bar ---------------------------------------------------------------------------------------------------- */
 
 .editor-bar {
