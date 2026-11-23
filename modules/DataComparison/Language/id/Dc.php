@@ -94,4 +94,23 @@ return [
     // Settings
     'enterDataSourcesInJsonFormat' => 'Masukkan sumber data dalam format JSON.',
     'invalidJsonFormatForStates' => 'Format JSON tidak valid untuk "states".',
+
+    // The rebuilt screen
+    'unsavedChanges' => 'Perubahan belum disimpan',
+    'saveStateAs' => 'Simpan sebagai',
+    'undo' => 'Urungkan',
+    'redo' => 'Ulangi',
+    'emptyTitle' => 'Belum ada yang dibandingkan',
+    'emptyText' => 'Tambahkan entri untuk membuat kolom, dan field untuk membuat baris.',
+    'removeEntry' => 'Hapus entri ini dari tabel',
+    'removeField' => 'Hapus field ini dari tabel',
+    'entryNumber' => 'Nomor entri',
+    'entryLabel' => 'Judul kolom',
+    'fieldsToAdd' => 'Field yang ditambahkan sebagai baris',
+    'formulaHelp' => 'Rujuk sebuah sel dengan kurung siku. [price] adalah field price pada kolom yang sama, [e12:price] adalah field yang sama pada entri 12, dan [m3:price] pada model 3. Sel yang bukan angka dihitung 0.',
+    'formulaError' => 'Galat',
+    'cellCannotBeWritten' => 'Field ini tidak bisa diubah dari tabel.',
+    'dataSourcesText' => 'Dari mana tabel mengambil entri. Situs ini sudah ada. Tambahkan situs lain dengan alamatnya.',
+    'dataSourcesMustBeAList' => 'Sumber data harus berupa daftar dalam format JSON.',
+    'dataSourceNeedsFields' => 'Setiap sumber data membutuhkan id sendiri, label, dan alamat di options.url.',
 ];

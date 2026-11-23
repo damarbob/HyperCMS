@@ -1,68 +1,31 @@
 <?php
-helper('form');
-
-$dataSourcesError = validation_show_error('dataSources');
+/**
+ * The data sources of the person, as JSON.
+ *
+ * @var string $dataSources The JSON in the box.
+ * @var string $error       What is wrong with the JSON that was sent, or an empty text.
+ */
 ?>
-<?= $this->extend('admin/layout/page') ?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<div class="block">
-    <h1 class="title">
-        <?= lang('Dc.moduleName') ?>
-    </h1>
-    <p class="subtitle">
-        <?= lang('Dc.moduleDescription') ?>
-    </p>
-
-    <form id="formDcSettings" action="<?= base_url('admin/settings/data-comparison/update') ?>" method="POST">
-        <?= csrf_field() ?>
-
-        <!-- Data sources -->
-        <div class="field">
-            <label class="label"><?= lang('Dc.dataSource') ?></label>
-            <div class="control">
-                <div id="monaco" class="mb-4" style="height: 512px;">
-                </div>
-                <textarea id="dataSources" name="dataSources" class="textarea is-hidden" placeholder="<?= lang('Dc.dataSources') ?>"><?= old('dataSources') ?: (!empty($dataSources) ? $dataSources : '') ?></textarea>
-            </div>
-            <p class="help"><?= lang('Dc.enterDataSourcesInJsonFormat') ?></p>
-            <p class="help"><?= lang('Admin.xToFormatAndValidateJson', ['x' => '<b>Ctrl + B</b>']) ?></p>
-            <p class="help"><?= lang('Admin.xToToggleFullscreenMode', ['x' => '<b>Ctrl + Alt + Z</b>']) ?></p>
-            <?php if ($dataSourcesError): ?>
-                <p class="help is-danger"><?= $dataSourcesError ?></p>
-            <?php endif; ?>
-        </div>
-
-        <!-- Submit -->
-        <div class="control">
-            <button type="submit" class="button is-primary">
-                <span class="icon">
-                    <i class="fas fa-check"></i>
-                </span>
-                <span>
-                    <?= lang('Admin.save') ?>
-                </span>
-            </button>
-        </div>
-    </form>
+<div class="page-head">
+    <div>
+        <h1><?= esc(lang('Dc.moduleName')) ?></h1>
+        <p><?= esc(lang('Dc.dataSourcesText')) ?></p>
+    </div>
 </div>
 
-<script type="text/javascript">
-    document.addEventListener("DOMContentLoaded", function() {
-        // Initialize the Monaco editor with specific options.
-        const dataSourcesEditor = window.hyper.factory.monaco({
-            editorContainerSelector: "#monaco",
-            textareaSelector: "#dataSources",
-            language: "json",
-            onSave: function(editor) {
-                const form = document.getElementById("formDcSettings");
-                if (form) {
-                    form.submit();
-                } else {
-                    console.warn("Form id is not assigned to the editor");
-                }
-            },
-        });
-    });
-</script>
+<form class="stack" style="gap: var(--s4); max-width: 860px" action="<?= attr(base_url('admin/settings/data-comparison')) ?>" method="post">
+    <?= csrf_field() ?>
+    <?php if ($error !== '') : ?>
+        <div class="alert bad" role="alert"><?= icon('alert') ?><span><?= esc($error) ?></span></div>
+    <?php endif ?>
+    <div class="field">
+        <label for="dc-sources"><?= esc(lang('Dc.dataSources')) ?></label>
+        <textarea id="dc-sources" class="textarea mono" name="dataSources" rows="18" spellcheck="false" data-island="code"><?= esc($dataSources) ?></textarea>
+        <p class="help"><?= esc(lang('Dc.enterDataSourcesInJsonFormat')) ?></p>
+    </div>
+    <div><?= ui('button', ['label' => lang('Admin.save'), 'type' => 'submit', 'variant' => 'primary']) ?></div>
+</form>
 <?= $this->endSection() ?>

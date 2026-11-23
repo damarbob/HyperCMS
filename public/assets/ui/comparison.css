@@ -1,0 +1,54 @@
+/*
+ * The comparison table. It is made of the parts of the design system and a table of its own, because a column is an entry
+ * and a row is a field, and the table must scroll with its first column and its header kept in sight.
+ */
+
+@layer components {
+  [x-cloak] { display: none !important; }
+
+  .comparison { display: grid; gap: var(--s4); min-width: 0; }
+
+  .comparison-bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--s3); }
+  .comparison-bar .group { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+  .comparison-bar .select { width: 240px; flex: none; }
+
+  .comparison-scroll { overflow: auto; max-height: calc(100dvh - 260px); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--sheet); }
+
+  .comparison-table { border-collapse: separate; border-spacing: 0; min-width: 100%; font-size: var(--t-sm); }
+  .comparison-table th,
+  .comparison-table td { padding: var(--s2) var(--s3); border-bottom: 1px solid var(--line); border-right: 1px solid var(--line); text-align: left; vertical-align: top; background: var(--sheet); }
+  .comparison-table th:last-child,
+  .comparison-table td:last-child { border-right: 0; }
+  .comparison-table tbody tr:last-child th,
+  .comparison-table tbody tr:last-child td { border-bottom: 0; }
+
+  .comparison-table thead th { position: sticky; top: 0; z-index: 2; background: var(--sunken); min-width: 180px; font-weight: 550; }
+  .comparison-table thead th.corner { left: 0; z-index: 3; min-width: 200px; }
+  .comparison-table tbody th { position: sticky; left: 0; z-index: 1; background: var(--sunken); min-width: 200px; font-weight: 500; }
+  .comparison-table th.busy { opacity: 0.6; }
+
+  .comparison-table .head { display: flex; align-items: center; gap: var(--s2); }
+  .comparison-table .head .title { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .comparison-table .grip { color: var(--ink-3); cursor: grab; display: inline-flex; }
+  .comparison-table .actions { display: inline-flex; gap: 2px; opacity: 0; }
+  .comparison-table th:hover .actions,
+  .comparison-table th:focus-within .actions { opacity: 1; }
+  .comparison-table .sub { margin-top: 2px; font-weight: 400; min-height: 0; }
+  .comparison-table .sub:empty { display: none; }
+
+  .comparison-table td { font-family: var(--mono); min-width: 180px; cursor: cell; }
+  .comparison-table td .value { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .comparison-table td.formula { background: color-mix(in srgb, var(--action-tint) 40%, var(--sheet)); }
+  .comparison-table td:focus-visible { outline: 2px solid var(--focus); outline-offset: -2px; }
+  .comparison-table td.editing { padding: 0; }
+  .comparison-table .cell-input { width: 100%; min-height: 36px; padding: var(--s2) var(--s3); border: 0; outline: 2px solid var(--focus); outline-offset: -2px; background: var(--sheet); color: var(--ink); font: inherit; }
+
+  .comparison-dialog { width: min(94vw, 560px); }
+  .comparison-dialog .checks { display: grid; gap: var(--s2); max-height: 200px; overflow: auto; padding: var(--s2) 0; }
+  .comparison-dialog fieldset { border: 0; padding: 0; margin: 0; min-width: 0; }
+  .comparison-dialog legend { padding: 0; font-weight: 500; margin-bottom: var(--s1); }
+  .comparison-dialog .preview { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+  .comparison-dialog .preview th,
+  .comparison-dialog .preview td { padding: 4px var(--s2); border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  .comparison-dialog .preview th { color: var(--ink-3); font-weight: 500; width: 35%; }
+}
