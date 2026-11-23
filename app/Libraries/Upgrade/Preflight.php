@@ -2,6 +2,7 @@
 
 namespace App\Libraries\Upgrade;
 
+use App\Fields\FieldTypes;
 use CodeIgniter\Database\BaseConnection;
 use StarDust\Exception\UnsupportedServerException;
 use StarDust\StarDust;
@@ -36,7 +37,7 @@ final class Preflight
      *     repeatedVersions: list<int>,
      *     entriesWithoutVersion: int,
      *     fieldProblems: list<array{model: string, problem: string}>,
-     *     entryQueries: list<array{model: string, field: string}>
+     *     unconvertible: list<array{model: string, field: string, problem: string}>
      * }
      */
     public function run(): array
@@ -57,7 +58,7 @@ final class Preflight
             }
         });
 
-        [$problems, $queries] = $this->inspectModels();
+        [$problems, $unconvertible] = $this->inspectModels();
 
         return [
             'layout'                => $this->source->layout(),
@@ -69,7 +70,7 @@ final class Preflight
             'repeatedVersions'      => $repeated,
             'entriesWithoutVersion' => $this->entriesWithoutVersion(),
             'fieldProblems'         => $problems,
-            'entryQueries'          => $queries,
+            'unconvertible'         => $unconvertible,
         ];
     }
 
@@ -139,13 +140,20 @@ final class Preflight
      */
     private function inspectModels(): array
     {
-        $problems = $queries = [];
+        $problems = $unconvertible = [];
+        $types    = FieldTypes::core();
 
         $rows = $this->db->query(
             'SELECT m.id, d.name, d.fields FROM models m
             JOIN (' . $this->source->currentVersions('models') . ') c ON c.owner_id = m.id
             JOIN model_data d ON d.id = c.version_id ORDER BY m.id'
         )->getResultArray();
+
+        // A data query that names a model by its name needs the ids, so the names are read first.
+        $modelIds = [];
+        foreach ($rows as $row) {
+            $modelIds[(string) $row['name']] ??= (int) $row['id'];
+        }
 
         foreach ($rows as $row) {
             $name = (string) $row['name'];
@@ -166,13 +174,15 @@ final class Preflight
                 }
                 $seen[$id] = true;
 
-                if (self::readsEntries($field['options'] ?? null)) {
-                    $queries[] = ['model' => $name, 'field' => $id];
+                // What cannot be converted becomes a text field, and the person is told which field and why.
+                $converted = $types->fromLegacy($field, ['modelIds' => $modelIds]);
+                if ($converted['problem'] !== null) {
+                    $unconvertible[] = ['model' => $name, 'field' => $id, 'problem' => $converted['problem']];
                 }
             }
         }
 
-        return [$problems, $queries];
+        return [$problems, $unconvertible];
     }
 
     /**
@@ -188,12 +198,5 @@ final class Preflight
         }
 
         return array_values(array_filter($data, 'is_array'));
-    }
-
-    private static function readsEntries(mixed $options): bool
-    {
-        return is_array($options)
-            && ($options['type'] ?? null) === 'data'
-            && strtolower((string) ($options['content']['table'] ?? '')) === 'entries';
     }
 }

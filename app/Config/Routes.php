@@ -63,6 +63,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         ]);
         $routes->group('models', ['filter' => 'group:superadmin'], static function ($routes) {
             $routes->post('delete', 'Models::delete');
+            $routes->post('check', 'Models::check');
             $routes->post('purge-deleted', 'Models::purgeDeleted');
             $routes->post('restore', 'Models::restore');
         });
@@ -73,9 +74,15 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['show'],
-            'filter' => 'model-user-group:model',
+            'filter' => ['group:superadmin', 'model-user-group:model'],
         ]);
-        $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
+        // The id is the third segment (`admin/model-data/{id}/...`), which is index 2 of the filter. A restore rewrites the
+        // definition of the model, so these are for the group that manages models.
+        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
+        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
+
+        // The lookup of the entry pickers. The controller checks the right to read the entries of that model.
+        $routes->get('picker/(:num)', 'Picker::entries/$1');
 
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
@@ -192,10 +199,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
 
         // Every route below needs a signed-in admin session or an access token.
 
-        // Model definitions and their saved versions
+        // Model definitions
         $routes->group('', ['filter' => 'api-auth:models.read'], static function ($routes) {
             $routes->post('models', 'Models');
-            $routes->post('model-data', 'ModelData');
         });
 
         // Entries, for the token API

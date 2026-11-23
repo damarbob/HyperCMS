@@ -4,20 +4,19 @@
         "path": "admin/models/1",
         "form": {
             "name": "Article",
-            "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
+            "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
             "group": "Content",
             "user_groups": [
                 "superadmin",
                 "admin"
             ],
-            "icon": "file-text"
+            "icon": "doc",
+            "label_field": "title"
         }
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Model Article berhasil disimpan!"
-    },
+    "status": 303,
+    "location": "/admin/models/1/edit",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [
@@ -53,10 +52,10 @@
                     "id": 7,
                     "model_id": 1,
                     "name": "Article",
-                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"textarea\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
+                    "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
                     "group": "Content",
                     "user_groups": "[\"superadmin\",\"admin\"]",
-                    "icon": "file-text",
+                    "icon": "doc",
                     "creator_id": 1
                 }
             ]

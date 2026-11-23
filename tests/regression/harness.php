@@ -77,13 +77,6 @@ $post = [
     'models_search_art'     => ['api/v1/models', $dt(['search' => ['value' => 'Art'], 'start' => 0, 'length' => 10])],
     'models_trash'          => ['api/v1/models', $dt(['trash' => 'true'])],
     'models_order_name_asc' => ['api/v1/models', $dt($ord('name', 'asc'))],
-    // model versions
-    'modeldata_id1'         => ['api/v1/model-data', $dt(['id' => 1])],
-    'modeldata_all'         => ['api/v1/model-data', $dt()],
-    'modeldata_search'      => ['api/v1/model-data', $dt(['search' => ['value' => 'Art']])],
-    'modeldata_id1_order_created_desc' => ['api/v1/model-data', $dt(array_merge(['id' => 1], $ord('date_created', 'desc')))],
-    'modeldata_all_order_name_asc'     => ['api/v1/model-data', $dt($ord('name', 'asc'))],
-    'modeldata_search_order_name'      => ['api/v1/model-data', $dt(array_merge(['search' => ['value' => 'Art']], $ord('name', 'asc')))],
 ];
 
 $summary = [];
@@ -125,7 +118,6 @@ foreach ($post as $name => [$path, $form]) {
 // What a caller without a login gets.
 $anon = [
     'anon_models'              => ['api/v1/models', $dt()],
-    'anon_model_data'          => ['api/v1/model-data', $dt(['id' => 1])],
 ];
 foreach ($anon as $name => [$path, $form]) {
     [$status, $body] = call('POST', $base . $path, $form);
@@ -190,7 +182,6 @@ $devToken = json_decode($body, true)['access_token'] ?? '';
 $save('dev_tokens_after_login', ['check' => 'access tokens of capture_dev by name, before and after the login'], 0, (string) json_encode(['before' => $before, 'after' => $tokensOf()]));
 $dev = [
     'dev_models'     => ['api/v1/models', $dt()],
-    'dev_model_data' => ['api/v1/model-data', $dt(['id' => 1])],
 ];
 foreach ($dev as $name => [$path, $form]) {
     [$s, $body] = call('POST', $base . $path, $form, null, ['Authorization: Bearer ' . $devToken]);

@@ -119,10 +119,10 @@ class Model extends AdminController
     /**
      * Whether the request asks for the list alone: htmx sent it for `#entries` and is not restoring a page of the history.
      */
-    public static function wantsTheList($request): bool
+    public static function wantsTheList($request, string $target = 'entries'): bool
     {
         return $request->hasHeader('HX-Request')
             && ! $request->hasHeader('HX-History-Restore-Request')
-            && $request->getHeaderLine('HX-Target') === 'entries';
+            && $request->getHeaderLine('HX-Target') === $target;
     }
 }

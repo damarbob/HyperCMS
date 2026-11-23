@@ -1,14 +1,12 @@
 {
     "request": {
         "method": "POST",
-        "path": "admin/model-data/clear-history/1",
+        "path": "admin/model-data/1/clear",
         "form": []
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Riwayat berhasil dibersihkan"
-    },
+    "status": 303,
+    "location": "/admin/model-data/1",
+    "body": "",
     "changes": {
         "hyper_model_revisions": {
             "removed": [

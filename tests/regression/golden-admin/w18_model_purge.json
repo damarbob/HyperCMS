@@ -4,11 +4,9 @@
         "path": "admin/models/purge-deleted",
         "form": []
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Model berhasil dihapus!"
-    },
+    "status": 303,
+    "location": "/admin/models",
+    "body": "",
     "changes": {
         "hyper_models": {
             "removed": [

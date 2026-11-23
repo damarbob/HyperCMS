@@ -205,20 +205,24 @@ if (is_dir("$root/$dir")) {
     @rmdir("$root/$dir");
 }
 
-// History pages and their clear actions, as an account in the `user` group. Model 5 is restricted to developers and entry 43 belongs to it.
-[$ujar] = signIn($base, 'capture_user@example.test', 'Capture-User-2026');
-foreach (['admin/model-data/5' => 'model history page', 'admin/entry-data/43' => 'entry history page'] as $path => $label) {
-    [$status] = web($base, $ujar, 'GET', $path);
-    $say("history, $label, user account", $status, $status === 200, 'a restricted model was opened');
-}
-[$status] = web($base, $ujar, 'GET', 'admin/model-data/1');
-$say('history, model 1 page (legit)', $status, $status !== 200, 'an open model was refused');
+// The history of a model is for superadmins, and a restore rewrites the model. Entry histories follow the model of the entry.
+// An account in the `user` group may open none of them, and a superadmin may open the history of any live model.
 [$ujar, $utoken] = signIn($base, 'capture_user@example.test', 'Capture-User-2026');
-foreach (['admin/model-data/clear-history/5' => 'clear model history', 'admin/entry-data/clear-history/43' => 'clear entry history'] as $path => $label) {
-    [$status, , $loc] = web($base, $ujar, 'POST', $path, http_build_query(['hyper_csrf_token' => $utoken]), ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN: ' . $utoken]);
-    // Allowed means the action ran, which answers 200, or redirects to the entries list with a success flash.
-    $say("history, $label, user account", $status, $status === 200 || ($status >= 300 && $status < 400 && str_contains((string) $loc, 'admin/entries')), 'a restricted model was changed');
+$form = ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $utoken];
+foreach (['admin/model-data/5' => 'model history page, model 5', 'admin/model-data/1' => 'model history page, model 1'] as $path => $label) {
+    [$status] = web($base, $ujar, 'GET', $path);
+    $say("history, $label, user account", $status, $status === 200, 'a model history was opened without the group');
 }
+[$status] = web($base, $ujar, 'GET', 'admin/model/5/43/history');
+$say('history, entry history page, user account', $status, $status === 200, 'a restricted entry history was opened');
+foreach (['admin/model-data/1/clear' => 'clear model history', 'admin/model-data/1/versions/1/restore' => 'restore a model version', 'admin/model/5/43/history/clear' => 'clear entry history'] as $path => $label) {
+    [$status, , $loc] = web($base, $ujar, 'POST', $path, http_build_query(['hyper_csrf_token' => $utoken]), $form);
+    // Allowed means the action ran, which answers 200 or 204, or redirects back with a success flash.
+    $say("history, $label, user account", $status, $status === 200 || $status === 204 || ($status >= 300 && $status < 400 && str_contains((string) $loc, 'history')), 'a history was changed without the right');
+}
+[$ajar] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');
+[$status] = web($base, $ajar, 'GET', 'admin/model-data/1');
+$say('history, model 1 page, superadmin (legit)', $status, $status !== 200, 'an open model history was refused');
 
 echo "$exposed probes were exposed in all\n";
 exit($exposed === 0 && $blocked === 0 ? 0 : 1);

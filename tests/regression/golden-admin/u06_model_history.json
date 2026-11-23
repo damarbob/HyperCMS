@@ -1,0 +1,10 @@
+{
+    "request": {
+        "method": "GET",
+        "path": "admin/model-data/1",
+        "form": null,
+        "account": "capture_user"
+    },
+    "status": 302,
+    "body": null
+}

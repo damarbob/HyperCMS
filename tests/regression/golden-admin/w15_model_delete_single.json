@@ -4,11 +4,9 @@
         "path": "admin/models/3/delete",
         "form": []
     },
-    "status": 200,
-    "location": null,
-    "body": {
-        "success": "Model Linked berhasil dihapus!"
-    },
+    "status": 303,
+    "location": "/admin/models",
+    "body": "",
     "changes": {
         "hyper_models": {
             "changed": [

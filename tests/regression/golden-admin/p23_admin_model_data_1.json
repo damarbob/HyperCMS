@@ -2,7 +2,7 @@
     "request": "GET admin/model-data/1",
     "status": 200,
     "location": null,
-    "title": "Riwayat model Article",
-    "bytes": 152106,
-    "sha1": "bea2be5cd46e5962bb83e0b71c2dbbd0cdc6a74b"
+    "title": "Riwayat Article",
+    "bytes": 41927,
+    "sha1": "7d53e8f4f4747d20b5cbea8ce65699c33081bcc2"
 }

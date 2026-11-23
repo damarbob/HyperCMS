@@ -12,6 +12,17 @@ final class NumberField extends AbstractField
         return 'number';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'integer', 'control' => 'toggle', 'label' => lang('Fields.setInteger'), 'default' => false],
+            ['key' => 'widget', 'control' => 'select', 'label' => lang('Fields.setInput'), 'default' => 'input', 'choices' => ['input' => lang('Fields.widgetBox'), 'slider' => lang('Fields.widgetSlider')]],
+            ['key' => 'min', 'control' => 'number', 'label' => lang('Fields.setMin'), 'default' => null],
+            ['key' => 'max', 'control' => 'number', 'label' => lang('Fields.setMax'), 'default' => null],
+            ['key' => 'step', 'control' => 'number', 'label' => lang('Fields.setStep'), 'default' => null, 'min' => 0],
+        ];
+    }
+
     public function normalise(mixed $value, array $definition): mixed
     {
         if ($value === null || (is_string($value) && trim($value) === '')) {

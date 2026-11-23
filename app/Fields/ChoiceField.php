@@ -15,6 +15,15 @@ final class ChoiceField extends AbstractField
         return 'choice';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'multiple', 'control' => 'toggle', 'label' => lang('Fields.setMultiple'), 'default' => false],
+            ['key' => 'widget', 'control' => 'select', 'label' => lang('Fields.setInput'), 'default' => 'select', 'choices' => ['select' => lang('Fields.widgetSelect'), 'radio' => lang('Fields.widgetRadio'), 'checkboxes' => lang('Fields.widgetCheckboxes')]],
+            ['key' => 'choices', 'control' => 'choices', 'label' => lang('Fields.setChoices'), 'default' => [], 'required' => true],
+        ];
+    }
+
     public function normalise(mixed $value, array $definition): mixed
     {
         if (self::flag($definition['multiple'] ?? false)) {

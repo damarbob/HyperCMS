@@ -1,8 +1,8 @@
 {
     "request": "GET admin/model-data/999",
-    "status": 500,
-    "location": null,
+    "status": 302,
+    "location": "/admin/models",
     "title": null,
-    "bytes": null,
-    "sha1": null
+    "bytes": 28722,
+    "sha1": "6cc830078df77019edc0f48c376ca42459320e70"
 }

@@ -9,11 +9,12 @@
             "user_groups": [
                 "superadmin"
             ],
-            "icon": "image"
+            "icon": "media",
+            "label_field": "caption"
         }
     },
     "status": 303,
-    "location": "/index.php/admin/models",
+    "location": "/admin/models/6/edit",
     "body": "",
     "changes": {
         "hyper_models": {
@@ -40,7 +41,7 @@
                     "fields": "[{\"id\":\"caption\",\"label\":\"Caption\",\"type\":\"text\"}]",
                     "group": "Media",
                     "user_groups": "[\"superadmin\"]",
-                    "icon": "image",
+                    "icon": "media",
                     "creator_id": 1
                 }
             ]

@@ -18,6 +18,14 @@ final class FileField extends IdField
         return 'file';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'multiple', 'control' => 'toggle', 'label' => lang('Fields.setMultipleFiles'), 'default' => false],
+            ['key' => 'accept', 'control' => 'select', 'label' => lang('Fields.setAccept'), 'default' => 'any', 'choices' => ['any' => lang('Fields.acceptAny'), 'image' => lang('Fields.acceptImage'), 'video' => lang('Fields.acceptVideo'), 'audio' => lang('Fields.acceptAudio'), 'document' => lang('Fields.acceptDocument')]],
+        ];
+    }
+
     public function kind(array $definition): ?string
     {
         return null;
