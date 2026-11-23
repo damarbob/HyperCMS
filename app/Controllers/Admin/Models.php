@@ -208,14 +208,18 @@ class Models extends AdminController
             }
 
             $before = array_values(array_intersect(Abilities::MODEL_ACTIONS, $existing[$role] ?? []));
+
+            // A role the person may not handle keeps exactly what it has.
             if (! $permissions->mayAssignRole($actor, $role)) {
-                $actions = $before;
-            } else {
-                $asked   = is_array($posted[$role] ?? null) ? array_map('strval', $posted[$role]) : [];
-                $actions = array_merge(array_diff($before, $mine), array_intersect($asked, $mine));
+                if ($before !== []) {
+                    $access[$role] = $before;
+                }
+
+                continue;
             }
 
-            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_unique($actions)));
+            $asked   = is_array($posted[$role] ?? null) ? array_map('strval', $posted[$role]) : [];
+            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_unique(array_merge(array_diff($before, $mine), array_intersect($asked, $mine)))));
             if ($actions !== [] && ! in_array('read', $actions, true) && (in_array('read', $mine, true) || in_array('read', $before, true))) {
                 array_unshift($actions, 'read');
             }
@@ -228,23 +232,21 @@ class Models extends AdminController
     }
 
     /**
-     * Whether the signed-in person holds an action on a model. For a model that does not exist yet, whether they hold it
-     * on any model.
+     * Whether the signed-in person holds an action on a model. A model that does not exist yet has no rights to hold, and
+     * what a person holds on other models says nothing about it, so only a superadmin, who has everything, may set the
+     * access of a new model. Anyone else makes it with no access for others, and a superadmin gives it later.
      */
     private function holds(string $action, ?int $modelId): bool
     {
-        $ids = $modelId !== null ? [$modelId] : service('modelStore')->allIds();
-        foreach ($ids as $id) {
-            try {
-                if (can('entries.' . $action, $id)) {
-                    return true;
-                }
-            } catch (InvalidArgumentException) {
-                return false;
-            }
+        if ($modelId === null) {
+            return service('permissions')->mayAssignRole(auth()->user(), Permissions::SUPERADMIN);
         }
 
-        return false;
+        try {
+            return can('entries.' . $action, $modelId);
+        } catch (InvalidArgumentException) {
+            return false;
+        }
     }
 
     /**

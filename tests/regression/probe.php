@@ -401,6 +401,12 @@ if ($envFile !== '') {
     $before = (int) $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = 3 AND role = 'developer'")->fetchColumn();
     $say('models, a manager removes the actions of a higher role', 200, $before < 5, 'the developer role kept ' . $before . ' of 5 actions');
 
+    // A new model has no rights yet, and what the person holds on other models must not stand in for them.
+    $pdo->exec("INSERT INTO hyper_model_permissions (model_id, role, action) VALUES (1, 'probe_models', 'read')");
+    $act($kj, $ktoken, 'admin/models', ['name' => 'Probe new model', 'fields' => '[{"id":"title","label":"Title","type":"text"}]', 'access' => ['probe_models' => ['read'], 'developer' => ['read']]]);
+    $newId = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Probe new model'")->fetchColumn();
+    $say('models, a manager makes a model and sets its access', 200, $newId === 0 || (int) $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = $newId AND role IN ('probe_models', 'developer')")->fetchColumn() > 0, $newId === 0 ? 'the model was not made, so nothing was tried' : 'a new model got access from rights held on another model');
+
     // An ability that a higher role has cannot be deleted by someone who may not change that role.
     $pdo->exec("INSERT INTO hyper_abilities (name, label, created_at) VALUES ('probe.held', 'Held', NOW())");
     $pdo->exec("INSERT INTO hyper_role_abilities (role, ability) VALUES ('developer', 'probe.held')");
