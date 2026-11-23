@@ -21,7 +21,7 @@ class User extends BaseCommand
     protected $description = 'Make a user, reset a password, ban a user, or change the roles of a user.';
     protected $usage       = 'hyper:user <action> [arguments] [options]';
     protected $arguments   = [
-        'action' => 'list | create <username> <email> | password <user> | role add <user> <role> | role remove <user> <role> | ban <user> | unban <user>',
+        'action' => 'list | create <username> <email> | password <user> | role add <user> <role> | role remove <user> <role> | ban <user> | unban <user> | two-factor on | two-factor off | two-factor status',
         'user'   => 'A username or an email address.',
     ];
     protected $options = [
@@ -43,6 +43,7 @@ class User extends BaseCommand
                 'role'     => $this->role($params[1] ?? '', $params[2] ?? '', $params[3] ?? ''),
                 'ban'      => $this->ban($params[1] ?? '', true),
                 'unban'    => $this->ban($params[1] ?? '', false),
+                'two-factor' => $this->twoFactor($params[1] ?? ''),
                 default    => $this->help(),
             };
         } catch (Throwable $e) {
@@ -175,6 +176,25 @@ class User extends BaseCommand
         auth()->getProvider()->save($user);
 
         CLI::write("'{$user->username}' " . ($on ? 'is banned.' : 'can sign in again.'), 'green');
+
+        return EXIT_SUCCESS;
+    }
+
+    /**
+     * The way back in when the code by email cannot be sent: turn the code off for the whole site.
+     */
+    private function twoFactor(string $state): int
+    {
+        if (! in_array($state, ['on', 'off', 'status'], true)) {
+            CLI::error('Usage: php spark hyper:user two-factor on|off|status');
+
+            return EXIT_ERROR;
+        }
+
+        if ($state !== 'status') {
+            service('settings')->set('Hyper.twoFactor', $state === 'on');
+        }
+        CLI::write('Two-factor sign in by email is ' . (service('settings')->get('Hyper.twoFactor') ? 'on.' : 'off.'), 'green');
 
         return EXIT_SUCCESS;
     }
