@@ -6,6 +6,7 @@ use App\Data\Abilities;
 use App\Data\Entries\StarDustEntries;
 use App\Data\EntryLabels;
 use App\Data\EntryStore;
+use App\Data\Files;
 use App\Data\Grants;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
@@ -44,6 +45,20 @@ class Services extends BaseService
      *     return new \CodeIgniter\Example();
      * }
      */
+
+    /**
+     * The media library.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     */
+    public static function files(bool $getShared = true): Files
+    {
+        if ($getShared) {
+            return static::getSharedInstance('files');
+        }
+
+        return new Files();
+    }
 
     /**
      * FileServer service.
