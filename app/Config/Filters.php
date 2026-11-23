@@ -75,7 +75,8 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
-            'csrf' => ['except' => ['api/*', 'admin/access-token/*']],
+            // A file of the library is only read. Leaving it out keeps the session from starting, so a cache may keep the file.
+            'csrf' => ['except' => ['api/*', 'admin/access-token/*', 'media/*']],
             // 'honeypot',
             // 'invalidchars',
         ],
