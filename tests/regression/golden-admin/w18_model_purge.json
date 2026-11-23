@@ -334,6 +334,82 @@
                     }
                 }
             ]
+        },
+        "hyper_model_permissions": {
+            "removed": [
+                {
+                    "id": "3|admin|create",
+                    "model_id": 3,
+                    "role": "admin",
+                    "action": "create"
+                },
+                {
+                    "id": "3|admin|delete",
+                    "model_id": 3,
+                    "role": "admin",
+                    "action": "delete"
+                },
+                {
+                    "id": "3|admin|history",
+                    "model_id": 3,
+                    "role": "admin",
+                    "action": "history"
+                },
+                {
+                    "id": "3|admin|read",
+                    "model_id": 3,
+                    "role": "admin",
+                    "action": "read"
+                },
+                {
+                    "id": "3|admin|update",
+                    "model_id": 3,
+                    "role": "admin",
+                    "action": "update"
+                },
+                {
+                    "id": "3|beta|history",
+                    "model_id": 3,
+                    "role": "beta",
+                    "action": "history"
+                },
+                {
+                    "id": "3|beta|read",
+                    "model_id": 3,
+                    "role": "beta",
+                    "action": "read"
+                },
+                {
+                    "id": "3|developer|create",
+                    "model_id": 3,
+                    "role": "developer",
+                    "action": "create"
+                },
+                {
+                    "id": "3|developer|delete",
+                    "model_id": 3,
+                    "role": "developer",
+                    "action": "delete"
+                },
+                {
+                    "id": "3|developer|history",
+                    "model_id": 3,
+                    "role": "developer",
+                    "action": "history"
+                },
+                {
+                    "id": "3|developer|read",
+                    "model_id": 3,
+                    "role": "developer",
+                    "action": "read"
+                },
+                {
+                    "id": "3|developer|update",
+                    "model_id": 3,
+                    "role": "developer",
+                    "action": "update"
+                }
+            ]
         }
     }
 }

@@ -1,0 +1,63 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/roles/editor/delete",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/roles",
+    "body": "",
+    "changes": {
+        "hyper_roles": {
+            "removed": [
+                {
+                    "id": "editor",
+                    "label": "Chief editor",
+                    "locked": 0
+                }
+            ]
+        },
+        "hyper_role_abilities": {
+            "removed": [
+                {
+                    "id": "editor|entries.browse",
+                    "role": "editor",
+                    "ability": "entries.browse"
+                },
+                {
+                    "id": "editor|media.manage",
+                    "role": "editor",
+                    "ability": "media.manage"
+                }
+            ]
+        },
+        "hyper_model_permissions": {
+            "removed": [
+                {
+                    "id": "1|editor|create",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "create"
+                },
+                {
+                    "id": "1|editor|read",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "read"
+                },
+                {
+                    "id": "1|editor|update",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "update"
+                },
+                {
+                    "id": "2|editor|read",
+                    "model_id": 2,
+                    "role": "editor",
+                    "action": "read"
+                }
+            ]
+        }
+    }
+}

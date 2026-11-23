@@ -61,6 +61,16 @@
                     }
                 }
             ]
+        },
+        "hyper_model_permissions": {
+            "added": [
+                {
+                    "id": "6|admin|read",
+                    "model_id": 6,
+                    "role": "admin",
+                    "action": "read"
+                }
+            ]
         }
     }
 }

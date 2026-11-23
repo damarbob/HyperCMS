@@ -1,0 +1,39 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/users",
+        "form": {
+            "username": "new_person",
+            "email": "new_person@example.test",
+            "password": "Capture-Fresh-Secret-2026",
+            "roles": [
+                "editor"
+            ]
+        }
+    },
+    "status": 303,
+    "location": "/admin/users/4/edit",
+    "body": "",
+    "changes": {
+        "users": {
+            "added": [
+                {
+                    "id": 4,
+                    "username": "new_person",
+                    "status": null,
+                    "status_message": null,
+                    "active": 0
+                }
+            ]
+        },
+        "auth_groups_users": {
+            "added": [
+                {
+                    "id": "4|editor",
+                    "user_id": 4,
+                    "group": "editor"
+                }
+            ]
+        }
+    }
+}

@@ -78,6 +78,64 @@
                     }
                 }
             ]
+        },
+        "hyper_model_permissions": {
+            "removed": [
+                {
+                    "id": "1|admin|create",
+                    "model_id": 1,
+                    "role": "admin",
+                    "action": "create"
+                },
+                {
+                    "id": "1|admin|delete",
+                    "model_id": 1,
+                    "role": "admin",
+                    "action": "delete"
+                },
+                {
+                    "id": "1|admin|history",
+                    "model_id": 1,
+                    "role": "admin",
+                    "action": "history"
+                },
+                {
+                    "id": "1|beta|history",
+                    "model_id": 1,
+                    "role": "beta",
+                    "action": "history"
+                },
+                {
+                    "id": "1|beta|read",
+                    "model_id": 1,
+                    "role": "beta",
+                    "action": "read"
+                },
+                {
+                    "id": "1|developer|create",
+                    "model_id": 1,
+                    "role": "developer",
+                    "action": "create"
+                },
+                {
+                    "id": "1|developer|delete",
+                    "model_id": 1,
+                    "role": "developer",
+                    "action": "delete"
+                },
+                {
+                    "id": "1|developer|history",
+                    "model_id": 1,
+                    "role": "developer",
+                    "action": "history"
+                },
+                {
+                    "id": "1|developer|update",
+                    "model_id": 1,
+                    "role": "developer",
+                    "action": "update"
+                }
+            ]
         }
     }
 }

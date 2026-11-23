@@ -1,0 +1,70 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/roles/editor",
+        "form": {
+            "label": "Chief editor",
+            "description": "",
+            "abilities": [
+                "media.manage",
+                "entries.browse"
+            ],
+            "models": {
+                "1": [
+                    "read",
+                    "create",
+                    "update"
+                ],
+                "2": [
+                    "read"
+                ]
+            }
+        }
+    },
+    "status": 303,
+    "location": "/admin/roles/editor/edit",
+    "body": "",
+    "changes": {
+        "hyper_roles": {
+            "changed": [
+                {
+                    "from": {
+                        "id": "editor",
+                        "label": "Editor",
+                        "locked": 0
+                    },
+                    "to": {
+                        "id": "editor",
+                        "label": "Chief editor",
+                        "locked": 0
+                    }
+                }
+            ]
+        },
+        "hyper_role_abilities": {
+            "added": [
+                {
+                    "id": "editor|entries.browse",
+                    "role": "editor",
+                    "ability": "entries.browse"
+                }
+            ]
+        },
+        "hyper_model_permissions": {
+            "added": [
+                {
+                    "id": "1|editor|create",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "create"
+                },
+                {
+                    "id": "2|editor|read",
+                    "model_id": 2,
+                    "role": "editor",
+                    "action": "read"
+                }
+            ]
+        }
+    }
+}

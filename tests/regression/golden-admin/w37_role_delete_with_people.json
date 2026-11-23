@@ -1,0 +1,11 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/roles/developer/delete",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/roles",
+    "body": "",
+    "changes": []
+}

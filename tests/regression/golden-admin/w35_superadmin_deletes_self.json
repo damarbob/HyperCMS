@@ -1,0 +1,11 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/users/1/delete",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/users/1/edit",
+    "body": "",
+    "changes": []
+}

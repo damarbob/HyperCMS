@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/users/new",
+    "status": 200,
+    "location": null,
+    "title": "Pengguna baru",
+    "bytes": 44014,
+    "sha1": "c5e64509ff2a72ac8c98ea6b92fae89c005421b3"
+}

@@ -172,10 +172,16 @@ $pages = [
     'admin/model-data/1', 'admin/model-data/999',
     'admin/settings', 'admin/settings/models',
     'admin/models/2/edit',
+    'admin/roles', 'admin/roles/new', 'admin/roles/developer/edit', 'admin/roles/superadmin/edit', 'admin/abilities',
+    'admin/users', 'admin/users?q=capture', 'admin/users?role=developer', 'admin/users/new', 'admin/users/3/edit', 'admin/users/999/edit',
 ];
 foreach ($pages as $i => $p) {
     $name = 'p' . str_pad((string) ($i + 2), 2, '0', STR_PAD_LEFT) . '_' . preg_replace('/[^a-z0-9]+/i', '_', $p);
     $r = $c->request('GET', $p);
+    if (str_starts_with($p, 'admin/users') && ! str_contains($p, '/new') && ! str_contains($p, '/edit')) {
+        // the list shows when each person last signed in, which is the time of this run
+        $r[1] = (string) preg_replace('~(<td[^>]*>)\s*<time[^>]*>.*?</time>~s', '$1<time>', $r[1]);
+    }
     if ($p === 'admin/dashboard') {
         // the dashboard shows a random quote fetched from an external site
         $r[1] = (string) preg_replace('~(<p class="subtitle">).*?(</p>)~s', '$1<quote>$2', $r[1]);
@@ -235,6 +241,22 @@ $flows = [
     'w11_entry_purge_empty'   => ['admin/model/1/purge', []],
     'w22_entry_trash_other_model' => ['admin/model/1/trash', ['ids' => [43]]],
     'w23_entry_history_clear' => ['admin/model/1/1/history/clear', []],
+    'w24_role_create'         => ['admin/roles', ['name' => 'editor', 'label' => 'Editor', 'description' => 'Writes entries', 'copy' => 'developer', 'abilities' => ['media.manage'], 'models' => [1 => ['read', 'update']]]],
+    'w25_role_create_bad'     => ['admin/roles', ['name' => 'Bad Name', 'label' => 'Bad']],
+    'w26_role_update'         => ['admin/roles/editor', ['label' => 'Chief editor', 'description' => '', 'abilities' => ['media.manage', 'entries.browse'], 'models' => [1 => ['read', 'create', 'update'], 2 => ['read']]]],
+    'w27_ability_create'      => ['admin/abilities', ['name' => 'shop.refund', 'label' => 'Refund orders', 'description' => 'Give money back']],
+    'w28_ability_create_bad'  => ['admin/abilities', ['name' => 'refund', 'label' => 'One word']],
+    'w29_user_create'         => ['admin/users', ['username' => 'new_person', 'email' => 'new_person@example.test', 'password' => 'Capture-Fresh-Secret-2026', 'roles' => ['editor']]],
+    'w30_user_create_bad'     => ['admin/users', ['username' => 'x', 'email' => 'not an email', 'password' => 'short']],
+    'w31_user_update'         => ['admin/users/2', ['username' => 'capture_user', 'email' => 'capture_user@example.test', 'roles' => ['user', 'beta']]],
+    'w32_user_ban'            => ['admin/users/2/ban', ['message' => 'Testing the ban']],
+    'w33_user_unban'          => ['admin/users/2/unban', []],
+    'w34_superadmin_loses_role' => ['admin/users/1', ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'roles' => ['admin']]],
+    'w35_superadmin_deletes_self' => ['admin/users/1/delete', []],
+    'w36_user_delete'         => ['admin/users/4/delete', []],
+    'w37_role_delete_with_people' => ['admin/roles/developer/delete', []],
+    'w38_role_delete'         => ['admin/roles/editor/delete', []],
+    'w39_ability_delete'      => ['admin/abilities/shop.refund/delete', []],
     'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'access' => ['admin' => ['read']], 'icon' => 'media', 'label_field' => 'caption']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
     'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'access' => ['admin' => ['read', 'update'], 'developer' => ['read']], 'icon' => 'doc', 'label_field' => 'title']],

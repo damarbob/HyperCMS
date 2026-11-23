@@ -323,16 +323,16 @@ if ($envFile !== '') {
 
     // Two accounts that each have part of the power.
     foreach (['probe_manager' => 'probe_users', 'probe_editor' => 'probe_roles'] as $user => $role) {
-        $act($sa, $satoken, 'admin/users/save', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Probe-Passw0rd-2026!', 'groups' => [$role]]);
+        $act($sa, $satoken, 'admin/users', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Probe-Passw0rd-2026!', 'roles' => [$role]]);
     }
 
     // A person who may manage users must not reach the superadmin role, or an account that has it.
     [$mj, $mtoken] = signIn($base, 'probe_manager@example.test', 'Probe-Passw0rd-2026!');
-    $act($mj, $mtoken, 'admin/users/save', ['username' => 'probe_manager', 'email' => 'probe_manager@example.test', 'id' => (string) $pdo->query("SELECT id FROM users WHERE username = 'probe_manager'")->fetchColumn(), 'groups' => ['probe_users', 'superadmin']]);
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'probe_manager'")->fetchColumn(), ['username' => 'probe_manager', 'email' => 'probe_manager@example.test', 'roles' => ['probe_users', 'superadmin']]);
     $say('users, a manager makes themselves superadmin', 200, in_array('superadmin', $rolesOf('probe_manager'), true), 'the person reached the superadmin role');
-    $act($mj, $mtoken, 'admin/users/save', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Probe-Passw0rd-2026!', 'groups' => ['superadmin']]);
+    $act($mj, $mtoken, 'admin/users', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Probe-Passw0rd-2026!', 'roles' => ['superadmin']]);
     $say('users, a manager makes a superadmin account', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_friend'")->fetchColumn() > 0 && in_array('superadmin', $rolesOf('probe_friend'), true), 'a superadmin account was made');
-    $act($mj, $mtoken, 'admin/users/save', ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'password' => 'Hijacked-Passw0rd-2026!', 'id' => (string) $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn(), 'groups' => ['superadmin']]);
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn(), ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'password' => 'Hijacked-Passw0rd-2026!', 'roles' => ['superadmin']]);
     [$cj] = signIn($base, 'capture_admin@example.test', 'Hijacked-Passw0rd-2026!');
     [$status] = web($base, $cj, 'GET', 'admin/models');
     $say('users, a manager resets a superadmin password', $status, $status === 200, 'the password of a superadmin was changed');

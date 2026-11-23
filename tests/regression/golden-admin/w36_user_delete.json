@@ -1,0 +1,32 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/users/4/delete",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/users",
+    "body": "",
+    "changes": {
+        "users": {
+            "removed": [
+                {
+                    "id": 4,
+                    "username": "new_person",
+                    "status": null,
+                    "status_message": null,
+                    "active": 0
+                }
+            ]
+        },
+        "auth_groups_users": {
+            "removed": [
+                {
+                    "id": "4|editor",
+                    "user_id": 4,
+                    "group": "editor"
+                }
+            ]
+        }
+    }
+}

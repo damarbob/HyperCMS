@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/users?q=capture",
+    "status": 200,
+    "location": null,
+    "title": "Pengguna",
+    "bytes": 45329,
+    "sha1": "b8b966fa38dedb69a996baef58a9abdacc3dbb03"
+}

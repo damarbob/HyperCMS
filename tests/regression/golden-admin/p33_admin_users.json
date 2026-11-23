@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/users",
+    "status": 200,
+    "location": null,
+    "title": "Pengguna",
+    "bytes": 45238,
+    "sha1": "841215bdfd5d5bbe00c86ce46dce57c7157f0a2d"
+}

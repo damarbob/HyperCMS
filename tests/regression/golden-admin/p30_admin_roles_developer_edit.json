@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/roles/developer/edit",
+    "status": 200,
+    "location": null,
+    "title": "Developer",
+    "bytes": 61830,
+    "sha1": "4539dfad3afb371cfeeb2307834916b6ba11d965"
+}

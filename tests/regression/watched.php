@@ -16,5 +16,10 @@ return [
     'hyper_entry_revisions' => 'SELECT id, entry_id, `fields`, creator_id FROM hyper_entry_revisions ORDER BY id',
     'hyper_counters'        => 'SELECT name AS id, value FROM hyper_counters ORDER BY name',
     'sd_entry_data'         => 'SELECT id, model_id, `fields`, deleted_at IS NOT NULL AS deleted FROM sd_entry_data ORDER BY id',
+    'users'                 => 'SELECT id, username, status, status_message, active FROM users ORDER BY id',
+    'auth_groups_users'     => 'SELECT CONCAT(user_id, "|", `group`) AS id, user_id, `group` FROM auth_groups_users ORDER BY user_id, `group`',
+    'hyper_roles'           => 'SELECT name AS id, label, locked FROM hyper_roles ORDER BY name',
+    'hyper_role_abilities'  => 'SELECT CONCAT(role, "|", ability) AS id, role, ability FROM hyper_role_abilities ORDER BY role, ability',
+    'hyper_model_permissions' => 'SELECT CONCAT(model_id, "|", role, "|", action) AS id, model_id, role, action FROM hyper_model_permissions ORDER BY model_id, role, action',
     'settings'              => 'SELECT id, class, `key`, value, type, context FROM settings ORDER BY id',
 ];
