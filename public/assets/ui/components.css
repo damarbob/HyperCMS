@@ -148,6 +148,8 @@
   .table td.label-cell { font-weight: 550; max-width: 360px; overflow: hidden; text-overflow: ellipsis; }
   .table td.label-cell a { color: var(--ink); }
   .table td.label-cell a:hover { color: var(--action); text-decoration: none; }
+  .model-name { display: inline-flex; align-items: center; gap: var(--s2); }
+  .model-name .icon { color: var(--ink-3); flex: none; }
   .table td.row-actions { text-align: right; width: 1%; }
   .table td.row-actions .btn { opacity: 0; }
   .table tbody tr:hover td.row-actions .btn, .table tbody tr:focus-within td.row-actions .btn { opacity: 1; }

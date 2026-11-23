@@ -3,29 +3,30 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Libraries\ModelsPage;
 use InvalidArgumentException;
 use RuntimeException;
 
 class Models extends AdminController
 {
-    public function index(): string
+    public function index()
     {
-        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
-        $this->data['title'] = lang('Admin.models');
-        $this->data['links'] = [
-            'new' => base_url('admin/models/new'),
-            'edit' => base_url('admin/models') . '/{id}/edit', // The ID must be separated from the base URL to prevent it from being URL-encoded.
-            'delete' => base_url('admin/models/delete'),
-            'restore' => base_url('admin/models/restore'),
-        ];
+        $data = (new ModelsPage())->build($this->request->getGet(), $this->perPage());
 
-        /* Filters */
+        // A model's list can be changed by a module through this filter, as the lists of entries are.
+        $data = $this->hooks->filter(hook('Backend.controller:models:index:data'), $data);
 
-        $this->data = $this->hooks->filter(hook('Backend.controller:models:index:data'), $this->data);
+        // A swap of the list gets the list alone. The browser's own restore of a page after Back needs the whole page.
+        if (Model::wantsTheList($this->request, 'models')) {
+            return view('admin/partials/model_results', $data);
+        }
 
-        /* End of filters */
+        $this->data = array_merge($this->data, $data, [
+            'title'  => lang('Models.models'),
+            'crumbs' => [[lang('Models.models'), null]],
+        ]);
 
-        return render('admin/models', $this->data);
+        return view('admin/models', $this->data);
     }
 
     public function new(): string
@@ -185,34 +186,24 @@ class Models extends AdminController
 
     public function delete($id = null)
     {
-        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
-
-        if (empty($ids)) {
-            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400, success: false);
+        $ids = $this->postedIds($id);
+        if ($ids === []) {
+            return $this->list('bad', lang('Models.noneSelected'));
         }
 
         try {
-            service('modelStore')->trash($ids, auth()->user()->id);
+            service('modelStore')->trash($ids, (int) auth()->user()->id);
         } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), 'admin/models', 500, false, false);
+            return $this->list('bad', $e->getMessage());
         }
 
-        $deletedModels = service('modelStore')->trashed($ids);
-
-        if (count($deletedModels) > 1) {
-            return $this->respond(lang('Admin.modelsSuccessfullyDeleted'), 'admin/models');
-        }
-
-        return $this->respond(
-            lang('Admin.modelxSuccessfullyDeleted', ['x' => $deletedModels[0]['name']]),
-            'admin/models'
-        );
+        return $this->list('ok', lang('Models.trashed'));
     }
 
     public function purgeDeleted()
     {
-        if (service('modelStore')->countTrashed() == 0) {
-            return $this->respond(lang('Admin.trashIsEmpty'), statusCode: 400, success: false);
+        if ((int) service('modelStore')->countTrashed() === 0) {
+            return $this->list('bad', lang('Models.trashIsEmpty'));
         }
 
         try {
@@ -221,28 +212,61 @@ class Models extends AdminController
             // Models purged before the failure are gone, and their access settings go with them.
             service('modelAccess')->forgetMissing();
 
-            return $this->respond($e->getMessage(), statusCode: 500, success: false);
+            return $this->list('bad', $e->getMessage());
         }
 
         service('modelAccess')->forgetMissing();
 
-        return $this->respond(lang('Admin.modelsSuccessfullyDeleted'));
+        return $this->list('ok', lang('Models.emptied'));
     }
 
     public function restore($id = null)
     {
-        $ids = $this->request->getPost('ids') ?: ($id ? [$id] : []);
-
-        if (empty($ids)) {
-            return $this->respond(lang('Admin.noEntrySelected'), statusCode: 400);
+        $ids = $this->postedIds($id);
+        if ($ids === []) {
+            return $this->list('bad', lang('Models.noneSelected'));
         }
 
         try {
             service('modelStore')->restore($ids);
         } catch (RuntimeException | InvalidArgumentException $e) {
-            return $this->respond($e->getMessage(), statusCode: 500);
+            return $this->list('bad', $e->getMessage());
         }
 
-        return $this->respond(lang('Admin.modelsSuccessfullyRestored'), 200);
+        return $this->list('ok', lang('Models.restored'));
+    }
+
+    /**
+     * The ids that were posted, or the one in the address, as whole numbers.
+     *
+     * @return list<int>
+     */
+    private function postedIds(mixed $id): array
+    {
+        $posted = $this->request->getPost('ids');
+        $ids    = is_array($posted) ? $posted : ($id !== null && $id !== '' ? [$id] : []);
+
+        return array_values(array_unique(array_filter(array_map('intval', $ids), static fn (int $n): bool => $n > 0)));
+    }
+
+    /**
+     * The list as it looks after an action, with a message, under the request the person had.
+     */
+    private function list(string $type, string $message)
+    {
+        $data = (new ModelsPage())->build($this->request->getPost() ?: [], $this->perPage());
+
+        if ($this->request->hasHeader('HX-Request')) {
+            return $this->response
+                ->setHeader('HX-Trigger', json_encode(['hyper:toast' => ['type' => $type, 'message' => $message]], JSON_UNESCAPED_UNICODE))
+                ->setBody(view('admin/partials/model_results', $data));
+        }
+
+        return redirect()->to($data['urls']['list'])->with($type === 'ok' ? 'success' : 'error', $message);
+    }
+
+    private function perPage(): int
+    {
+        return (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25);
     }
 }
