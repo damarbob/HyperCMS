@@ -2,6 +2,8 @@
 
 namespace App\Libraries;
 
+use App\Data\Files;
+
 /**
  * Turns the values of an entry into the text of a CSV cell.
  *
@@ -19,6 +21,7 @@ final class EntryCsv
         $text = match (true) {
             $value === null                       => '',
             is_bool($value)                       => lang($value ? 'Fields.yes' : 'Fields.no'),
+            ($definition['type'] ?? '') === 'file'   => implode(', ', array_map(static fn ($item): string => self::fileLink($item), (array) $value)),
             ($definition['type'] ?? '') === 'choice' => implode(', ', array_map(static fn ($item): string => self::choiceLabel($item, $definition), (array) $value)),
             is_array($value)                      => implode(', ', array_map(static fn ($item): string => is_scalar($item) ? (string) $item : (string) json_encode($item, JSON_UNESCAPED_UNICODE), $value)),
             is_scalar($value)                     => (string) $value,
@@ -59,6 +62,16 @@ final class EntryCsv
         fclose($handle);
 
         return "\xEF\xBB\xBF" . $text;
+    }
+
+    /**
+     * The address of a library file, so the sheet holds a link that opens, and the id of a file that is not there.
+     */
+    private static function fileLink(mixed $item): string
+    {
+        $file = is_int($item) ? service('files')->find($item) : null;
+
+        return $file !== null ? Files::url($file) : (is_scalar($item) ? (string) $item : '');
     }
 
     /**

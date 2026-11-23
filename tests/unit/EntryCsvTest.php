@@ -1,7 +1,9 @@
 <?php
 
 use App\Libraries\EntryCsv;
+use CodeIgniter\Config\Services;
 use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\StubFiles;
 
 /**
  * The text of a CSV export.
@@ -23,6 +25,19 @@ final class EntryCsvTest extends CIUnitTestCase
         $this->assertSame('Yes', EntryCsv::value(true, ['type' => 'boolean']));
         $this->assertSame('No', EntryCsv::value(false, ['type' => 'boolean']));
         $this->assertSame('Hello world', EntryCsv::value('<p>Hello <b>world</b></p>', ['type' => 'richtext']));
+    }
+
+    public function testFilesShowTheirLinks(): void
+    {
+        Services::injectMock('files', new StubFiles([12 => ['id' => 12, 'name' => 'photo.png']]));
+
+        try {
+            $text = EntryCsv::value([12, 99], ['type' => 'file', 'multiple' => true]);
+        } finally {
+            Services::resetSingle('files');
+        }
+
+        $this->assertStringContainsString('media/12/photo.png, 99', $text, 'A file that is gone keeps its id.');
     }
 
     public function testChoicesShowTheirLabels(): void
