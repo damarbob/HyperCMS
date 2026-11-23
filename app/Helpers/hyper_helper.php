@@ -1,7 +1,6 @@
 <?php
 // hyper_helper.php
 
-use Masterminds\HTML5;
 
 if (!function_exists('map_entry_fields')) {
     /**
@@ -51,81 +50,6 @@ if (!function_exists('unmap_entry_fields')) {
     {
         // Simply encode the associative array as-is (new format)
         return json_encode($fields);
-    }
-}
-
-if (!function_exists('render')) {
-    /**
-     * Renders a view and injects hyper data as a JavaScript variable.
-     *
-     * This function performs the following tasks:
-     *   1. Adds a "hyper" key to the view data.
-     *   2. Converts the hyper data to a JSON string with hex-encoding for problematic characters.
-     *   3. Renders the view using CodeIgniter's view() helper.
-     *   4. Loads the rendered HTML into an HTML5 DOM parser.
-     *   5. Injects a <script> element into the <head> of the document containing the JSON data.
-     *   6. Optionally calls a user-provided callback to modify the DOM.
-     *   7. Returns the final modified HTML.
-     *
-     * @param string        $name       The view name.
-     * @param array         $data       The data array passed to the view.
-     * @param array         $options    Options to pass to the view() helper.
-     * @param callable|null $modifyDom  Optional callback that receives the DOMDocument for further modifications.
-     *
-     * @return string The final rendered HTML.
-     */
-    function render(string $name, array $data = [], array $options = [], ?callable $modifyDom = null): string
-    {
-        // Prepare the hyper data: make it accessible as window.hyper in JavaScript.
-        if (!empty($data['hyper']) && !empty($data['hyper']['config'])) {
-            $data['hyper']['data'] = $data;
-
-            // Convert the hyper data to JSON, making sure to hex-encode characters that might break the script.
-            $jsonExport = json_encode($data['hyper'], JSON_HEX_TAG | JSON_HEX_AMP | JSON_HEX_APOS | JSON_HEX_QUOT);
-
-            // Build the JavaScript snippet that assigns the JSON data to window.hyper.
-            $jsonExportScript = <<<JS
-                window.hyper = ($jsonExport);
-                document.addEventListener('DOMContentLoaded', function() {
-                    if (window.hyper.config.environment !== 'production') {
-                        console.log('Hyper data:', window.hyper);
-                    }
-                });
-            JS;
-        }
-
-        // Render the view using CI4's view() helper.
-        $view = view($name, $data, $options);
-
-        // Initialize the HTML5 parser with options.
-        $html5 = new HTML5([
-            'disable_html_ns' => true,
-            'preserve_whitespace' => true,
-        ]);
-
-        // Load the rendered HTML into a DOMDocument.
-        $dom = $html5->loadHTML($view);
-
-        // Retrieve the <head> element.
-        $head = $dom->getElementsByTagName('head')->item(0);
-
-        // If the <head> element exists (it might not if this is a view partial),
-        // create and insert our <script> element as the first child.
-        if ($head && !empty($jsonExportScript)) {
-            $script = $dom->createElement('script');
-            $script->nodeValue = $jsonExportScript;
-            $head->insertBefore($script, $head->firstChild);
-        }
-
-        // Allow a custom callback to modify the entire DOM before output.
-        if (is_callable($modifyDom)) {
-            $modifyDom($dom);
-        }
-
-        // Save the updated DOM back to HTML and return it.
-        $view = $dom->saveHTML();
-
-        return $view;
     }
 }
 
