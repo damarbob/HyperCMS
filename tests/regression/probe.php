@@ -122,7 +122,8 @@ function signIn(string $base, string $email, string $password, bool $mustSucceed
             // Any admin page carries the token of the signed-in session in its script config.
             [$status, $page] = web($base, $jar, 'GET', 'admin/dashboard');
             if ($status === 200) {
-                return [$jar, preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token];
+                // The token the page now holds, in the meta tag of the layout. The old layout wrote it into a script.
+                return [$jar, preg_match('/name="csrf-token"\s+content="([a-f0-9]+)"/', $page, $m) || preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token];
             }
         }
         if ($mustSucceed) {
