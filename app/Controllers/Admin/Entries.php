@@ -31,9 +31,6 @@ class Entries extends AdminController
         $per  = (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25);
         $data = (new AllEntriesPage(FieldTypes::core()))->build($this->request->getGet(), $per);
 
-        // A module may change where the New entry links go, as the paging system does for its page models.
-        $data = $this->hooks->filter(hook('Backend.controller:entries:index:data'), $data);
-
         if (Model::wantsTheList($this->request)) {
             return view('admin/partials/all_results', $data);
         }
@@ -511,8 +508,7 @@ class Entries extends AdminController
         ];
 
         // A module puts its own button beside the save button, as the paging system puts the editor button.
-        $data['toolbar'] = (string) $this->hooks->trigger(hook($mode === 'new' ? 'Backend.view:entries:new' : 'Backend.view:entries:edit'), $mode === 'new' ? [$model] : [$model, $entry]);
-        $data['toolbar'] .= service('slots')->fill(Slots::ENTRY_FORM_TOOLBAR, new EntryFormToolbar((int) $model['id'], (int) ($entry['id'] ?? 0)))->html();
+        $data['toolbar'] = service('slots')->fill(Slots::ENTRY_FORM_TOOLBAR, new EntryFormToolbar((int) $model['id'], (int) ($entry['id'] ?? 0)))->html();
 
         if ($this->isHtmx() && ! $this->request->hasHeader('HX-History-Restore-Request')) {
             $response = $this->response->setStatusCode($status)->setBody(view('admin/partials/entry_form', $data));

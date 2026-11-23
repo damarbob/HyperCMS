@@ -12,7 +12,6 @@
 <?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<?= service('hooks')->trigger(hook('Backend.view:settings')) ?>
 <div class="page-head">
     <div>
         <h1><?= esc(lang('Admin.settings')) ?></h1>

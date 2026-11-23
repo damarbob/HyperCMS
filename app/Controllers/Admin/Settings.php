@@ -46,8 +46,6 @@ class Settings extends AdminController
 
     private function form(string $error, int $status)
     {
-        $hooks = service('hooks');
-
         $this->data = array_merge($this->data, [
             'title'     => lang('Admin.settings'),
             'crumbs'    => [[lang('Admin.settings'), null]],
@@ -57,10 +55,6 @@ class Settings extends AdminController
             'twoFactor' => (bool) service('settings')->get('Hyper.twoFactor'),
             'error'     => $error,
         ]);
-
-        // Modules that still use the old hooks add their part before the form.
-        $this->data = $hooks->filter(hook('Backend.controller:settings:data'), $this->data);
-        $hooks->trigger(hook('Backend.controller:settings'), [$this->data]);
 
         return $this->response->setStatusCode($status)->setBody(view('admin/settings', $this->data));
     }

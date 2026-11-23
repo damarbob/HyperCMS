@@ -20,9 +20,6 @@ class Models extends AdminController
     {
         $data = (new ModelsPage())->build($this->request->getGet(), $this->perPage());
 
-        // A model's list can be changed by a module through this filter, as the lists of entries are.
-        $data = $this->hooks->filter(hook('Backend.controller:models:index:data'), $data);
-
         // A swap of the list gets the list alone. The browser's own restore of a page after Back needs the whole page.
         if (Model::wantsTheList($this->request, 'models')) {
             return view('admin/partials/model_results', $data);
