@@ -1,7 +1,9 @@
 <?php
 
 use App\Fields\FieldTypes;
+use CodeIgniter\Config\Services;
 use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\StubFiles;
 
 /**
  * What each type draws in a list and in the entry form, and what it offers to filter by.
@@ -18,6 +20,13 @@ final class FieldRenderingTest extends CIUnitTestCase
         helper('hyper_ui');
         service('language')->setLocale('en');
         $this->types = FieldTypes::core();
+        Services::injectMock('files', new StubFiles([12 => ['id' => 12, 'name' => 'photo one.png']]));
+    }
+
+    protected function tearDown(): void
+    {
+        Services::resetSingle('files');
+        parent::tearDown();
     }
 
     /**
@@ -87,14 +96,14 @@ final class FieldRenderingTest extends CIUnitTestCase
         $this->assertStringContainsString('2026', $date);
     }
 
-    public function testFilesShowAsLinksUntilTheMediaLibraryExists(): void
+    public function testFilesShowAsLinksToTheLibrary(): void
     {
-        $cell = $this->cell(['id' => 'a', 'type' => 'file', 'multiple' => true], ['uploads/photo-one.png', 'http://h.test/public/file-server/serve/aa', 12]);
+        $cell = $this->cell(['id' => 'a', 'type' => 'file', 'multiple' => true], [12, 99, 'uploads/old.png']);
 
-        $this->assertStringContainsString('uploads/photo-one.png"', $cell);
-        $this->assertStringContainsString('>photo-one.png<', $cell);
-        $this->assertStringContainsString('href="http://h.test/public/file-server/serve/aa"', $cell);
-        $this->assertStringContainsString('File 12', $cell);
+        $this->assertStringContainsString('media/12/photo%20one.png"', $cell);
+        $this->assertStringContainsString('>photo one.png<', $cell);
+        $this->assertStringContainsString('File 99 is missing', $cell, 'A file that was deleted is marked, not dropped.');
+        $this->assertStringContainsString('uploads/old.png', $cell, 'A value the upgrade left as text is shown as it is.');
         $this->assertStringNotContainsString('<script', $this->cell(['id' => 'a', 'type' => 'file'], '"><script>'));
     }
 
@@ -202,10 +211,16 @@ final class FieldRenderingTest extends CIUnitTestCase
         $this->assertStringContainsString('type="color" value="#aabbcc"', $this->input(['id' => 'c', 'type' => 'color'], '#aabbcc'));
         $this->assertStringContainsString('value="#000000"', $this->input(['id' => 'c', 'type' => 'color'], null));
 
-        $file = $this->input(['id' => 'f', 'type' => 'file'], ['uploads/a.png']);
-        $this->assertStringContainsString('a.png', $file);
-        $this->assertStringContainsString('media library', $file);
-        $this->assertStringNotContainsString('<input', $file, 'A save keeps the stored files, so the form posts none.');
+        $file = $this->input(['id' => 'f', 'type' => 'file'], 12);
+        $this->assertStringContainsString('name="fields[f]"', $file);
+        $this->assertStringContainsString('<option value="12" selected', $file);
+        $this->assertStringContainsString('>photo one.png</option>', $file);
+        $this->assertStringContainsString('<option value="">', $file, 'A single optional file can be cleared.');
+        $this->assertStringNotContainsString('<input', $file, 'The ids are held by a select, which the form posts.');
+
+        $many = $this->input(['id' => 'f', 'type' => 'file', 'multiple' => true], [12, 99]);
+        $this->assertStringContainsString('name="fields[f][]"', $many);
+        $this->assertStringContainsString('File 99 is missing', $many);
     }
 
     public function testAHiddenFieldPostsItsValueAndShowsNoLabel(): void
