@@ -1,0 +1,46 @@
+/* The Voltic chat. A column of messages that scrolls, and the box to write in below it. */
+
+@layer components {
+  [x-cloak] { display: none !important; }
+
+  .voltic { display: grid; grid-template-rows: minmax(0, 1fr) auto; gap: var(--s3); height: calc(100dvh - 230px); min-height: 360px; max-width: 880px; }
+
+  .voltic .log { overflow: auto; display: flex; flex-direction: column; gap: var(--s3); padding: var(--s1) var(--s1) var(--s3); }
+
+  .voltic .msg { display: grid; gap: var(--s2); max-width: min(100%, 720px); padding: var(--s3) var(--s4); border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--sheet); }
+  .voltic .msg.user { align-self: flex-end; background: var(--action-tint); border-color: transparent; }
+  .voltic .msg.system { background: var(--sunken); }
+  .voltic .msg.error { border-color: var(--bad); color: var(--bad); background: var(--bad-tint); }
+  .voltic .msg.thinking { align-self: flex-start; }
+
+  .voltic .msg header { display: flex; gap: var(--s2); align-items: baseline; font-size: var(--t-sm); }
+  .voltic .msg header:has(.who:empty) { display: none; }
+  .voltic .who { font-weight: 550; }
+  .voltic .text { white-space: pre-wrap; overflow-wrap: anywhere; }
+
+  .voltic .body { overflow-wrap: anywhere; }
+  .voltic .body > * + * { margin-top: var(--s2); }
+  .voltic .body ul,
+  .voltic .body ol { padding-left: var(--s5); }
+  .voltic .body code { font-family: var(--mono); font-size: 0.92em; padding: 0 4px; border-radius: 4px; background: var(--sunken); }
+  .voltic .body a { color: var(--action); text-decoration: underline; }
+
+  .voltic .rows { width: 100%; border-collapse: collapse; font-size: var(--t-sm); }
+  .voltic .rows th,
+  .voltic .rows td { padding: 4px var(--s2); border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; overflow-wrap: anywhere; }
+  .voltic .rows th { color: var(--ink-3); font-weight: 500; width: 30%; }
+
+  .voltic .reasoning { font-size: var(--t-sm); color: var(--ink-2); }
+  .voltic .reasoning summary { cursor: pointer; }
+  .voltic .reasoning p { white-space: pre-wrap; margin-top: var(--s2); }
+
+  .voltic .proposals { display: grid; gap: var(--s2); }
+  .voltic .proposal { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); padding: var(--s2) var(--s3); border: 1px dashed var(--line-strong); border-radius: var(--r-md); }
+  .voltic .proposal .what { flex: 1; min-width: 160px; }
+  .voltic .proposal .note { width: 100%; color: var(--bad); font-size: var(--t-sm); }
+  .voltic .links { display: flex; flex-wrap: wrap; gap: var(--s2); }
+
+  .voltic .compose { display: grid; gap: var(--s2); }
+  .voltic .compose .actions { display: flex; align-items: center; justify-content: space-between; gap: var(--s3); }
+  .voltic .compose .hint { font-size: var(--t-sm); }
+}

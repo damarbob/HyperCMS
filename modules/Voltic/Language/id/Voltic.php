@@ -27,4 +27,16 @@ return [
     'xUnableToParseVolticResponse' => "{x} tidak dapat memproses respons Voltic",
 
     'userDoesNotHaveSufficientPermission' => 'Pengguna tidak memiliki izin yang cukup.',
+
+    // The rebuilt chat
+    'thinking' => 'Voltic sedang berpikir...',
+    'run' => 'Jalankan',
+    'ran' => 'Selesai',
+    'refused' => 'Tidak diizinkan',
+    'actionCreateModel' => 'Buat model {name} dengan {count} field',
+    'actionCreateEntry' => 'Buat entri di {model}',
+    'actionShowEntry' => 'Tampilkan entri {id}',
+    'fieldTypeNotAllowed' => 'Model yang dibuat di sini hanya boleh memakai tipe field berikut: {types}.',
+    'actionNotUnderstood' => 'Aksi itu tidak bisa dipahami, jadi tidak ada yang dilakukan.',
+    'actionFailed' => 'Aksi gagal. Tidak ada yang diubah. Periksa log.',
 ];

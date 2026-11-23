@@ -2,249 +2,108 @@
 
 namespace Voltic\Controllers;
 
-use Exception;
-use App\Controllers\AdminController;
-use CodeIgniter\Shield\Exceptions\PermissionException;
+use App\Modules\ModuleController;
+use RuntimeException;
+use Voltic\Libraries\Actions;
 use Voltic\Libraries\VolticService;
 
 /**
- * Controller to handle the Voltic chat module in the admin area.
+ * The chat. A question goes to the AI service and comes back as a message and proposed actions, which are only shown. An
+ * action runs on a second request, when the person confirms it, and runs under their own abilities.
  */
-class Voltic extends AdminController
+class Voltic extends ModuleController
 {
-    // Load Hyper URL, URL, and Form helpers for view utilities.
-    protected $helpers = ['hyper_url', 'url', 'form'];
+    /** The longest message a person may send, in characters, and the most messages of the conversation that are sent along. */
+    private const MAX_LENGTH   = 4000;
+    private const MAX_MESSAGES = 10;
 
-    // VolticService instance for handling AI requests.
-    protected VolticService $voltic;
+    protected $helpers = ['hyper_url'];
 
-    // Instantiate the VolticService library.
-    public function __construct()
-    {
-        $this->voltic = new VolticService();
-    }
-
-    // Show the main Voltic chat interface.
     public function index()
     {
-        $this->data['title']    = lang('Voltic.moduleName'); // Set the page title from language file.
-        $this->data['username'] = auth()->user()->username; // Fetch the authenticated user's username.
+        $labels = [];
+        foreach (['helloVoltic', 'introduction', 'reasoning', 'volticExperiencingIssuesx', 'failedToGetResponseFromVoltic', 'run', 'ran', 'refused', 'moduleName'] as $key) {
+            $labels[$key] = lang('Voltic.' . $key);
+        }
 
-        return render('\Voltic\Views\voltic', $this->data); // Render the view template with data.
+        return $this->page('Voltic\Views\voltic', [
+            'title' => lang('Voltic.moduleName'),
+            'chat'  => [
+                'username' => (string) auth()->user()->username,
+                'urls'     => ['ask' => base_url('admin/voltic/ask'), 'run' => base_url('admin/voltic/run')],
+                'csrf'     => ['name' => csrf_token(), 'hash' => csrf_hash()],
+                'labels'   => $labels,
+            ],
+        ]);
     }
 
+    /**
+     * Send the conversation to the AI service and answer with its message and the actions it proposes.
+     */
     public function ask()
     {
-        /** @var \Voltic\Config\Voltic */
-        $config = config('Voltic');
-
-        $modelStore = service('modelStore');
-        $entryStore = service('entryStore');
-
-        // Get the current user
-        $user = auth()->user();
-
-        $prompt = $this->request->getJSON();
-
-        if (empty($prompt)) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => lang('Voltic.messageCannotBeEmpty')
-            ]);
+        $posted   = $this->request->getJSON(true);
+        $messages = [];
+        foreach (is_array($posted['messages'] ?? null) ? array_slice($posted['messages'], -self::MAX_MESSAGES) : [] as $message) {
+            $role    = is_array($message) ? ($message['role'] ?? '') : '';
+            $content = is_array($message) ? ($message['content'] ?? '') : '';
+            if (in_array($role, ['user', 'assistant'], true) && is_string($content) && trim($content) !== '') {
+                $messages[] = ['role' => $role, 'content' => mb_substr($content, 0, self::MAX_LENGTH)];
+            }
+        }
+        if ($messages === [] || end($messages)['role'] !== 'user') {
+            return $this->json(['status' => 'error', 'message' => lang('Voltic.messageCannotBeEmpty')], 422);
         }
 
-        $response = $this->voltic->ask($prompt);
+        $user    = auth()->user();
+        $answer  = (new VolticService($user))->ask($messages);
+        $actions = new Actions($user);
+
+        // The proposals the person sees: each one read into its plain shape, with a line that says what it does and why it
+        // cannot run, if it cannot.
+        $proposals = [];
+        foreach ($answer['actions'] ?? [] as $raw) {
+            $action = $actions->normalise($raw);
+            if ($action === null) {
+                continue;
+            }
+            $proposals[] = ['action' => $action, 'text' => $actions->describe($action), 'refusal' => $actions->refusal($action)];
+        }
+
+        if (isset($answer['error']) && ! isset($answer['message'])) {
+            return $this->json(['status' => 'error', 'message' => $answer['error']], 502);
+        }
+
+        return $this->json([
+            'status'    => 'success',
+            'message'   => (string) ($answer['message'] ?? ''),
+            'reasoning' => (string) ($answer['reasoning'] ?? ''),
+            'model'     => (string) ($answer['model'] ?? ''),
+            'proposals' => $proposals,
+        ]);
+    }
+
+    /**
+     * Run one action the person confirmed.
+     */
+    public function run()
+    {
+        $user    = auth()->user();
+        $actions = new Actions($user);
+        $text    = $this->request->getPost('action');
+        $action  = $actions->normalise(is_string($text) ? json_decode($text, true) : null);
+        if ($action === null) {
+            return $this->json(['status' => 'error', 'message' => lang('Voltic.actionNotUnderstood')], 422);
+        }
 
         try {
-            // Action processing
-            if (!empty($response['actions'])) {
-                // if (!is_array($response['actions'])) $response['actions'] = [$response['actions']];
-                foreach ($response['actions'] as $x) {
+            return $this->json(['status' => 'success'] + $actions->run($action));
+        } catch (RuntimeException $e) {
+            return $this->json(['status' => 'error', 'message' => $e->getMessage()], 422);
+        } catch (\Throwable $e) {
+            log_message('error', 'A Voltic action failed. {message}', ['message' => $e->getMessage()]);
 
-                    try {
-
-                        $transformParams = function ($action) {
-                            // Extract the 'params' array from the first element.
-                            $params = $action['params'];
-
-                            // If the params is already reduced (associative), simply return it.
-                            if (!isset($params[0])) {
-                                log_message('debug', $action['type'] . " params already reduced: " . json_encode($params));
-                                return $params;
-                            }
-
-                            // Transform the params array into the desired associative array
-                            $output = array_reduce($params, function ($carry, $item) {
-                                // If the id is 'field', use 'fields' as key; otherwise, use the original id.
-                                if ($item['id'] === 'field') {
-                                    $carry['fields'] = $item['value'];
-                                } else {
-                                    $value = $item['value'];
-                                    $carry[$item['id']] = $value;
-                                }
-                                return $carry;
-                            }, []);
-
-                            log_message('debug', $action['type'] . " params: " . json_encode($output));
-
-                            return $output;
-                        };
-
-                        switch ($x['type']) {
-                            case "create_model":
-
-                                // Only superadmin allowed to create models
-                                if (!$user->inGroup('superadmin')) {
-                                    throw new PermissionException(lang('Voltic.userDoesNotHaveSufficientPermission'));
-                                }
-
-                                // Convert fields to string to insert into the database
-                                $insertData = $transformParams($x);
-                                $insertData['fields'] = json_encode($insertData['fields']);
-
-                                // Delegate the creation process to the service.
-                                $modelId = $modelStore->create($insertData, auth()->user()->id);
-                                $response['system'][] =
-                                    [
-                                        "message" => lang('Voltic.modelxCreatedSuccessfully', ['x' => $insertData['name']]),
-                                        "actions" => [
-                                            [
-                                                "type" => "button",
-                                                "text" => lang('Admin.editx', ['x' => lang('Admin.model')]),
-                                                "icon" => "fa-solid fa-pen-to-square",
-                                                "href" => base_url("admin/models/$modelId/edit")
-                                            ],
-                                            [
-                                                "type" => "button",
-                                                "text" => lang('Admin.newx', ['x' => lang('Admin.entry')]),
-                                                "icon" => "fas fa-plus",
-                                                "href" => base_url("admin/entries/$modelId/new")
-                                            ],
-                                        ],
-                                    ];
-                                break;
-                            case "create_entry":
-
-                                // User and beta are not allowed to create entry
-                                if ($user->inGroup('user', 'beta')) {
-                                    throw new PermissionException(lang('Voltic.userDoesNotHaveSufficientPermission'));
-                                }
-
-                                // Convert fields to string to insert into the database
-                                $insertData = $transformParams($x);
-                                $insertData['fields'] = json_encode($insertData['fields']);
-
-                                // Delegate the creation process to the service.
-                                $entryId = $entryStore->create($insertData, auth()->user()->id);
-                                $modelId = $entryStore->findArray($entryId)['model_id'];
-                                $model = $modelStore->findArray($modelId);
-
-                                $response['system'][] =
-                                    [
-                                        "message" => lang('Voltic.entryxCreatedSuccessfully', ['x' => $model['name']]),
-                                        "actions" => [
-                                            [
-                                                "type" => "button",
-                                                "text" => lang('Admin.editx', ['x' => lang('Admin.entry')]),
-                                                "icon" => "fa-solid fa-pen-to-square",
-                                                "href" => base_url("admin/entries/$modelId/$entryId/edit")
-                                            ],
-                                        ],
-                                    ];
-                                break;
-                            case "show_entry":
-
-                                $params = $x['params'];
-                                $params = $params;
-
-                                $entryId = $params['id'];
-
-                                // Delegate the creation process to the service.
-                                $entry = $entryStore->findArray($entryId);
-                                $modelId = $entry['model_id'];
-                                $model   = $modelStore->findArray($modelId);
-
-                                $fields = map_entry_fields($entry['fields']);
-
-                                // Convert the entry into a Markdown table.
-                                // Create header: two columns 'Field' and 'Value'
-                                $table  = "| Field | Value |\n";
-                                $table .= "|-------|-------|\n";
-
-                                // Iterate through each key/value in the $entry array.
-                                foreach ($fields as $key => $value) {
-                                    // If the value is an array or object, encode it as JSON.
-                                    if (is_array($value) || is_object($value)) {
-                                        $value = json_encode($value, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                                    }
-                                    // Display nulls as a string.
-                                    if (is_null($value)) {
-                                        $value = 'null';
-                                    }
-                                    // Trim any extra whitespace.
-                                    $value = trim($value);
-                                    // Replace newline characters with HTML <br> tags so the table cell remains on one line.
-                                    $value = str_replace("\n", "<br>", $value);
-
-                                    // Append a row to the table. You can adjust the formatting as needed.
-                                    $table .= "| **{$key}** | {$value} |\n";
-                                }
-
-                                $entryMarkdown = $table;
-
-                                $msg = lang('Voltic.showingEntryx', ['x' => $model['name']]);
-
-                                $response['system'][] = [
-                                    "message" => <<<EOL
-                                    #{$msg}
-
-                                    {$entryMarkdown}
-                                    EOL,
-                                    "actions" => [
-                                        [
-                                            "type" => "button",
-                                            "text" => lang('Admin.editx', ['x' => lang('Admin.entry')]),
-                                            "icon" => "fa-solid fa-pen-to-square",
-                                            "href" => base_url("admin/entries/$modelId/$entryId/edit")
-                                        ],
-                                    ],
-                                ];
-
-                                break;
-                        }
-                    } catch (\Throwable $e) {
-
-                        // Append error object to the response
-                        $response['error'] = [
-                            'message' => $e->getMessage(),
-                        ];
-
-                        // Append error trace on environment other than production
-                        if (ENVIRONMENT !== 'production') {
-                            $response['error']['trace'] = $e->getTraceAsString();
-                        }
-                    }
-                }
-            }
-        } catch (Exception $e) {
-
-            // Append error object to the response
-            $response['error'] = [
-                'message' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ];
+            return $this->json(['status' => 'error', 'message' => lang('Voltic.actionFailed')], 500);
         }
-
-        if (!$response) {
-            return $this->response->setJSON([
-                'status' => 'error',
-                'message' => lang('Voltic.failedToGetResponseFromVoltic'),
-            ]);
-        }
-
-        return $this->response->setJSON([
-            'status' => 'success',
-            'message' => $response
-        ]);
     }
 }
