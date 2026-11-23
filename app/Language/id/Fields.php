@@ -77,4 +77,8 @@ return [
     'setModel'          => 'Entri milik',
     'setMultipleEntries' => 'Boleh lebih dari satu entri',
     'setHookGroup'      => 'Grup hook',
+    'pickerSearch'      => 'Cari berdasarkan nama',
+    'pickerNone'        => 'Tidak ada entri yang cocok.',
+    'pickerMore'        => 'Masih ada entri lain yang cocok. Ketik lebih banyak untuk mempersempit.',
+    'pickerRemove'      => 'Hapus {name}',
 ];

@@ -81,6 +81,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
         $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
 
+        // The lookup of the entry pickers. The controller checks the right to read the entries of that model.
+        $routes->get('picker/(:num)', 'Picker::entries/$1');
+
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
 

@@ -77,4 +77,8 @@ return [
     'setModel'          => 'Entries of',
     'setMultipleEntries' => 'Allow several entries',
     'setHookGroup'      => 'Hook group',
+    'pickerSearch'      => 'Search by name',
+    'pickerNone'        => 'No entry matches.',
+    'pickerMore'        => 'More entries match. Type more to narrow them down.',
+    'pickerRemove'      => 'Remove {name}',
 ];
