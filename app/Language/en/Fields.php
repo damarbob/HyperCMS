@@ -29,8 +29,11 @@ return [
     'filterTo'         => 'Until',
     'chooseOne'        => 'Choose one',
     'noFiles'          => 'No files',
-    'filesManaged'     => 'Files are added in the media library, which arrives in a later version. The files stored here are kept when you save.',
-    'fileNumber'       => 'File {id}',
+    'fileMissing'      => 'File {id} is missing',
+    'chooseFile'       => 'Choose a file',
+    'changeFile'       => 'Change file',
+    'fileGone'         => 'The file {id} of {field} is not in the library any more. Remove it or choose another.',
+    'chooseFileTitle'  => 'Choose a file',
 
     // The model builder: the types and their options
     'typeText'          => 'Text',

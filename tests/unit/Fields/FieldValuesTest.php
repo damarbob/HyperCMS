@@ -2,7 +2,9 @@
 
 use App\Fields\ConversionProblem;
 use App\Fields\FieldTypes;
+use CodeIgniter\Config\Services;
 use CodeIgniter\Test\CIUnitTestCase;
+use Tests\Support\StubFiles;
 
 /**
  * How each type reads posted input, checks it, orders it, and reads a value stored in the old format.
@@ -17,6 +19,13 @@ final class FieldValuesTest extends CIUnitTestCase
     {
         parent::setUp();
         $this->types = FieldTypes::core();
+        Services::injectMock('files', new StubFiles([1 => ['id' => 1, 'name' => 'a.png'], 2 => ['id' => 2, 'name' => 'b.png']]));
+    }
+
+    protected function tearDown(): void
+    {
+        Services::resetSingle('files');
+        parent::tearDown();
     }
 
     /**
@@ -225,6 +234,8 @@ final class FieldValuesTest extends CIUnitTestCase
         $this->assertNotNull($this->checked('relation', 'abc'));
         $this->assertNotNull($this->checked('relation', '0'));
         $this->assertNull($this->checked('file', ['1', '2'], ['multiple' => true]));
+        $this->assertNotNull($this->checked('file', ['1', '9'], ['multiple' => true]), 'A file that is not in the library is refused.');
+        $this->assertNotNull($this->checked('file', 9));
     }
 
     public function testEachTypeNamesTheStarDustKindItIsIndexedAs(): void

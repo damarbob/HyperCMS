@@ -51,8 +51,16 @@
         height: 380,
         relative_urls: false,
         document_base_url: meta('site-base'),
-        plugins: 'advlist autolink lists link image charmap searchreplace code fullscreen table wordcount',
-        toolbar: 'blocks | bold italic underline | bullist numlist | link image table | code fullscreen',
+        plugins: 'advlist autolink lists link image media charmap searchreplace code fullscreen table wordcount',
+        toolbar: 'blocks | bold italic underline | bullist numlist | link image media table | code fullscreen',
+        // The Browse button of the link, image and media dialogs opens the media library, when its script is on the page.
+        file_picker_types: 'file image media',
+        file_picker_callback: window.HyperMedia ? function (callback, value, info) {
+          var accept = info.filetype === 'image' ? 'image' : (info.filetype === 'media' ? 'video' : 'any');
+          window.HyperMedia.pick({ accept: accept, multiple: false }).then(function (files) {
+            if (files.length) callback(files[0].path, { text: files[0].name, alt: files[0].name, title: files[0].name });
+          });
+        } : undefined,
         setup: function (editor) {
           // The form must learn that the box changed, and the textarea must hold the text when the form is sent.
           editor.on('input change keyup undo redo', function () {

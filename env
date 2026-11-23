@@ -31,8 +31,8 @@
 # hyper.activeModules = 'Voltic'
 # hyper.safeMode = false
 
-# File Manager
-# fileManager.productionPath = '{FCPATH}uploads'
+# Media library. The folder of the uploaded files, which must be outside the public folder. The default is writable/uploads.
+# media.uploadPath = '{WRITEPATH}uploads'
 
 # Data engine (StarDust 0.3). The tables of the engine carry the prefix sd_ and need no setting here.
 # HyperEngine.usersTable = 'users'

@@ -174,7 +174,7 @@ $pages = [
     'admin/models/2/edit',
     'admin/roles', 'admin/roles/new', 'admin/roles/developer/edit', 'admin/roles/superadmin/edit', 'admin/abilities',
     'admin/users', 'admin/users?q=capture', 'admin/users?role=developer', 'admin/users/new', 'admin/users/3/edit', 'admin/users/999/edit',
-    'admin/tokens', 'admin/profile',
+    'admin/tokens', 'admin/profile', 'admin/media', 'admin/media?q=none', 'admin/media/picker?accept=image', 'admin/media/frame?requester_id=6162',
 ];
 foreach ($pages as $i => $p) {
     $name = 'p' . str_pad((string) ($i + 2), 2, '0', STR_PAD_LEFT) . '_' . preg_replace('/[^a-z0-9]+/i', '_', $p);
@@ -266,6 +266,11 @@ $flows = [
     'w45_settings_two_factor_on'  => ['admin/settings/update', ['general_datatable_entries_per_page' => '25', 'two_factor' => '1']],
     'w46_settings_two_factor_off' => ['admin/settings/update', ['general_datatable_entries_per_page' => '25']],
     'w47_settings_bad_rows'   => ['admin/settings/update', ['general_datatable_entries_per_page' => '7']],
+    'w48_media_folder_create' => ['admin/media/folders', ['mode' => 'library', 'folder' => '', 'new_folder' => 'Capture folder']],
+    'w49_media_folder_bad'    => ['admin/media/folders', ['mode' => 'library', 'folder' => '', 'new_folder' => '.hidden']],
+    'w50_media_folder_rename' => ['admin/media/folders/rename', ['mode' => 'library', 'folder' => 'Capture folder', 'folder_name' => 'Renamed folder']],
+    'w51_media_rename_no_file' => ['admin/media/rename', ['mode' => 'library', 'folder' => '', 'ids' => [999999], 'file_name' => 'x.txt']],
+    'w52_media_folder_delete' => ['admin/media/folders/delete', ['mode' => 'library', 'folder' => 'Renamed folder']],
     'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'access' => ['admin' => ['read']], 'icon' => 'media', 'label_field' => 'caption']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
     'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'access' => ['admin' => ['read', 'update'], 'developer' => ['read']], 'icon' => 'doc', 'label_field' => 'title']],

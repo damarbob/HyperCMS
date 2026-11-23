@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/media/folders/delete",
+        "form": {
+            "mode": "library",
+            "folder": "Renamed folder"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": "Media Semua berkas Gambar Video Audio Dokumen Terbaru dulu Menurut nama Cari Unggah Folder baru 0 berkas Belum ada berkas di sini Unggah berkas dengan tombol di atas, atau jatuhkan ke halaman ini. Gan",
+    "changes": []
+}

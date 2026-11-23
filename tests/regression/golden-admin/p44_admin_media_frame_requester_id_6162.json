@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/media/frame?requester_id=6162",
+    "status": 200,
+    "location": null,
+    "title": "Media",
+    "bytes": 37611,
+    "sha1": "79c5322a5a66cc3df5a62dd4cc5dedd64eed0af3"
+}

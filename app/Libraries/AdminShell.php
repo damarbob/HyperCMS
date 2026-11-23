@@ -79,14 +79,6 @@ final class AdminShell
                     'tooltip_placement' => 'right',
                     'ability' => 'tokens.manage'
                 ],
-                'file-manager' => [
-                    'url' => base_url('admin/file-manager'),
-                    'icon' => 'fa-solid fa-folder-closed',
-                    'text' => lang("Admin.fileManager"),
-                    'tooltip_content' => lang("Admin.fileManager"),
-                    'tooltip_placement' => 'right',
-                    'ability' => 'media.manage'
-                ],
                 'settings' => [
                     // The parent link acting as a container (URL may be "#" or a clickable parent)
                     'url' => base_url('admin/settings'),

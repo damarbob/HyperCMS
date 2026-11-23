@@ -54,39 +54,6 @@ if (!function_exists('unmap_entry_fields')) {
     }
 }
 
-if (!function_exists('serve_file')) {
-    /**
-     * Serves a file from a specified file path.
-     *
-     * This function performs the following:
-     *   1. Loads the necessary hyper_hex helper to ensure the hex_encode() function is available.
-     *   2. Retrieves the FileServer service via CodeIgniter's service locator.
-     *   3. Encodes the provided file path using hex_encode().
-     *   4. Delegates the file-serving logic to the FileServer service.
-     *
-     * The FileServer service's serve() method is expected to return an associative array
-     * containing file information (such as content type and body).
-     *
-     * @param string $path The file path to be served.
-     *
-     * @return array An associative array as returned by the FileServer service's serve() method.
-     */
-    function serve_file(string $path): array
-    {
-        // Load the required helper to ensure hex_encode() is available.
-        helper('hyper_hex');
-
-        /** @var \App\Services\FileServer $fileServer */
-        $fileServer = service('fileServer');
-
-        // Encode the file path using the hex_encode helper function.
-        $encodedPath = hex_encode($path);
-
-        // Delegate to the FileServer service and return the result.
-        return $fileServer->serve($encodedPath);
-    }
-}
-
 if (!function_exists('render')) {
     /**
      * Renders a view and injects hyper data as a JavaScript variable.

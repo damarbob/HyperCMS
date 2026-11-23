@@ -6,6 +6,7 @@ use App\Data\Abilities;
 use App\Data\Entries\StarDustEntries;
 use App\Data\EntryLabels;
 use App\Data\EntryStore;
+use App\Data\Files;
 use App\Data\Grants;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
@@ -13,7 +14,6 @@ use App\Data\Roles;
 use App\Modules\Modules;
 use App\Modules\Slots;
 use App\Data\Permissions;
-use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
 use PDO;
 use StarDust\Config\Config as StarDustConfig;
@@ -46,17 +46,17 @@ class Services extends BaseService
      */
 
     /**
-     * FileServer service.
+     * The media library.
      *
      * @param bool $getShared Whether to return a shared instance.
-     * @return FileServer
      */
-    public static function fileServer(bool $getShared = true): FileServer
+    public static function files(bool $getShared = true): Files
     {
         if ($getShared) {
-            return static::getSharedInstance('fileServer');
+            return static::getSharedInstance('files');
         }
-        return new FileServer();
+
+        return new Files();
     }
 
     /**

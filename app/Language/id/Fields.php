@@ -29,8 +29,11 @@ return [
     'filterTo'         => 'Sampai',
     'chooseOne'        => 'Pilih salah satu',
     'noFiles'          => 'Belum ada berkas',
-    'filesManaged'     => 'Berkas ditambahkan lewat pustaka media, yang hadir di versi berikutnya. Berkas yang tersimpan di sini tetap ada saat Anda menyimpan.',
-    'fileNumber'       => 'Berkas {id}',
+    'fileMissing'      => 'Berkas {id} hilang',
+    'chooseFile'       => 'Pilih berkas',
+    'changeFile'       => 'Ganti berkas',
+    'fileGone'         => 'Berkas {id} di {field} sudah tidak ada di pustaka. Hapus atau pilih berkas lain.',
+    'chooseFileTitle'  => 'Pilih berkas',
 
     // Pembuat model: jenis isian dan pengaturannya
     'typeText'          => 'Teks',

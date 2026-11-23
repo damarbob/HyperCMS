@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/media/picker?accept=image",
+    "status": 200,
+    "location": null,
+    "title": null,
+    "bytes": 34076,
+    "sha1": "e111e8baae3cd0e742662325dc681f471b7634b8"
+}

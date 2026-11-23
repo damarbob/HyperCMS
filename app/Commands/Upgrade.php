@@ -4,6 +4,7 @@ namespace App\Commands;
 
 use App\Fields\FieldTypes;
 use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\FileLinks;
 use App\Libraries\Upgrade\Convert\ModelFields;
 use App\Libraries\Upgrade\Converters;
 use App\Libraries\Upgrade\CounterSchemaStore;
@@ -156,7 +157,7 @@ class Upgrade extends BaseCommand
             CLI::write("Wrote {$payloads['written']} entries to StarDust.");
 
             $types  = FieldTypes::core();
-            $result = (new Verifier($db, $engine, $tenant, new EntryValues($types), new ModelFields($types)))->verify();
+            $result = (new Verifier($db, $engine, $tenant, new EntryValues($types), new ModelFields($types), new FileLinks()))->verify();
         } catch (Throwable $e) {
             CLI::newLine();
             CLI::error('The upgrade stopped. ' . $e->getMessage());

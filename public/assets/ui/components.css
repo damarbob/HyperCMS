@@ -398,3 +398,47 @@
   .ability input:disabled + span { opacity: 0.6; }
   .role-form .panel > header { align-items: flex-start; }
 }
+
+@layer components {
+  /* ---- The media library ------------------------------------------------------------------------------- */
+
+  .media { display: flex; flex-direction: column; gap: var(--s4); position: relative; }
+  .media.dragging::after { content: ""; position: absolute; inset: -8px; border: 2px dashed var(--action); border-radius: var(--r-lg); background: var(--action-tint); opacity: 0.55; pointer-events: none; }
+  .media-crumbs ol { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s1); list-style: none; margin: 0; padding: 0; color: var(--ink-3); font-size: var(--t-sm); }
+  .media-crumbs li + li::before { content: "/"; margin-right: var(--s1); color: var(--line-strong); }
+  .media-crumbs a { color: var(--ink-2); text-decoration: none; }
+  .media-crumbs a:hover { color: var(--ink); text-decoration: underline; text-underline-offset: 3px; }
+  .media-crumbs [aria-current] { color: var(--ink); font-weight: 550; }
+  .media-actions { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+  .media-count { margin-left: auto; color: var(--ink-3); font-size: var(--t-sm); }
+  .media-status { margin: 0; color: var(--ink-2); font-size: var(--t-sm); }
+
+  .media-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(168px, 1fr)); gap: var(--s3); }
+  .media-tile { position: relative; border: 1px solid var(--line); border-radius: var(--r-lg); background: var(--sheet); overflow: hidden; }
+  .media-tile:hover { border-color: var(--line-strong); }
+  .media-tile:has(input:checked) { border-color: var(--action); box-shadow: 0 0 0 1px var(--action); }
+  .media-tile:has(input:focus-visible) { outline: 2px solid var(--action); outline-offset: 2px; }
+  .media-tile > label, .media-tile > a { display: flex; flex-direction: column; cursor: pointer; color: inherit; text-decoration: none; }
+  .media-tile .thumb { position: relative; display: grid; place-items: center; aspect-ratio: 4 / 3; background: var(--sunken); color: var(--ink-3); overflow: hidden; }
+  .media-tile .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .media-tile .thumb .icon { width: 28px; height: 28px; }
+  .media-tile .thumb .ext { position: absolute; left: var(--s2); bottom: var(--s2); padding: 1px 6px; border-radius: 999px; background: var(--chip); color: var(--ink-2); font-size: var(--t-xs); font-weight: 550; letter-spacing: 0.02em; }
+  .media-tile .meta { display: flex; flex-direction: column; gap: 1px; min-width: 0; padding: var(--s2) var(--s3) var(--s3); }
+  .media-tile .name { font-size: var(--t-sm); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .media-tile .sub { font-size: var(--t-xs); color: var(--ink-3); }
+  .media-tile.is-folder .thumb { aspect-ratio: auto; height: 84px; background: var(--action-tint); color: var(--action); }
+  .media-tile input[type="checkbox"] { position: absolute; top: var(--s2); left: var(--s2); width: 18px; height: 18px; margin: 0; accent-color: var(--action); z-index: 1; cursor: pointer; }
+  .media-tile .open { position: absolute; top: var(--s2); right: var(--s2); display: grid; place-items: center; width: 26px; height: 26px; border-radius: 999px; background: var(--sheet); color: var(--ink-2); box-shadow: var(--shadow-raise); opacity: 0; }
+  .media-tile:hover .open, .media-tile .open:focus-visible { opacity: 1; }
+  @media (hover: none) { .media-tile .open { opacity: 1; } }
+
+  .media-picker-foot { position: sticky; bottom: 0; display: flex; align-items: center; justify-content: flex-end; gap: var(--s2); padding: var(--s3) 0 0; background: var(--sheet); border-top: 1px solid var(--line); }
+  .media-picker-foot .muted { margin-right: auto; }
+  dialog.media-dialog { width: min(96vw, 980px); }
+  dialog.media-dialog .media-dialog-body { padding-bottom: var(--s4); }
+
+  .media-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
+  .media-field .chips:empty { display: none; }
+  .chip a { color: inherit; text-decoration: none; }
+  .chip a:hover { text-decoration: underline; text-underline-offset: 3px; }
+}
