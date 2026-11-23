@@ -30,6 +30,7 @@ class Pages
     public const TITLE = 'hyper_title';
     public const HTML  = 'hyper_html';
     public const CSS   = 'hyper_css';
+    public const PROJECT = 'hyper_page_project_data';
 
     /**
      * The most entries one indexed read of parts or meta tags brings.

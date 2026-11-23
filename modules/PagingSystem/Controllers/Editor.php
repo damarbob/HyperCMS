@@ -41,24 +41,34 @@ class Editor extends ModuleController
         $values = is_array($values) && ! array_is_list($values) ? $values : [];
 
         // The scripts and styles of the site are loaded into the canvas, by the placement they ask for.
-        $scripts = [];
-        $styles  = [];
+        $canvas = ['styles' => ['head' => [], 'body' => []], 'scripts' => ['head' => [], 'body' => []]];
         foreach ($this->pages()->assets() as $asset) {
-            if ($asset['type'] === 'script') {
-                $scripts[$asset['placement']][] = $asset['url'];
-            } else {
-                $styles[$asset['placement']][] = $asset['url'];
-            }
+            $canvas[$asset['type'] === 'script' ? 'scripts' : 'styles'][$asset['placement'] === 'body' ? 'body' : 'head'][] = $asset['url'];
         }
 
-        $this->data['entry']                = $entry;
-        $this->data['mapped_entry_fields']  = $values;
-        $this->data['scripts']              = $scripts;
-        $this->data['styles']               = $styles;
-        $this->data['saveUrl']              = base_url('admin/editor/' . (int) $entry['id'] . '/save');
-        $this->data['title']                = lang('PagingSystem.editor-x', ['x' => (string) ($values[Pages::TITLE] ?? '') !== '' ? (string) $values[Pages::TITLE] : 'Untitled']);
+        $label  = static fn (string $key): string => lang('PagingSystem.editor_' . $key);
+        $labels = [];
+        foreach (['back', 'devices', 'desktop', 'tablet', 'mobile', 'undo', 'redo', 'save', 'unsaved', 'import', 'importHelp', 'chooseImage', 'libraryMissing', 'hello', 'saveFailed', 'query_model_id', 'query_find_field', 'query_find_value', 'query_return_field'] as $key) {
+            $labels[$key] = $label($key);
+        }
 
-        return render('PagingSystem\Views\editor', $this->data);
+        $model = (int) service('entryStore')->modelIdOf((int) $entry['id']);
+        $name  = (string) ($values[Pages::TITLE] ?? '') !== '' ? (string) $values[Pages::TITLE] : lang('PagingSystem.editor_untitled');
+
+        return view('PagingSystem\Views\editor', [
+            'title'  => lang('PagingSystem.editor-x', ['x' => $name]),
+            'editor' => [
+                'entryId'   => (int) $entry['id'],
+                'pageTitle' => $name,
+                'back'      => base_url('admin/model/' . $model . '/' . (int) $entry['id'] . '/edit'),
+                'save'      => base_url('admin/editor/' . (int) $entry['id'] . '/save'),
+                'upload'    => base_url('admin/ps/api/assets/upload'),
+                'csrf'      => ['name' => csrf_token(), 'hash' => csrf_hash()],
+                'project'   => (string) ($values[Pages::PROJECT] ?? ''),
+                'canvas'    => $canvas,
+                'labels'    => $labels,
+            ],
+        ]);
     }
 
     public function save($id = 0)

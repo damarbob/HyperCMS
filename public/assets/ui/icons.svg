@@ -44,4 +44,6 @@
   <symbol id="table" viewBox="0 0 16 16"><rect x="2" y="3" width="12" height="10" rx="1.4"/><path d="M2 6.5h12M2 9.8h12M6.7 6.5V13"/></symbol>
   <symbol id="bolt" viewBox="0 0 16 16"><path d="M9 2L3.5 9h4L7 14l5.5-7h-4z"/></symbol>
   <symbol id="inbox" viewBox="0 0 16 16"><path d="M2.5 9l1.8-5a1 1 0 01.9-.6h5.6a1 1 0 01.9.6l1.8 5v3a1 1 0 01-1 1h-9a1 1 0 01-1-1z"/><path d="M2.5 9h3.2a1 1 0 011 .8 1.4 1.4 0 002.6 0 1 1 0 011-.8h3.2"/></symbol>
+  <symbol id="undo" viewBox="0 0 16 16"><path d="M3 6.5h6.2a3.3 3.3 0 010 6.6H5"/><path d="M5.5 3.5L2.8 6.5l2.7 3"/></symbol>
+  <symbol id="redo" viewBox="0 0 16 16"><path d="M13 6.5H6.8a3.3 3.3 0 000 6.6H11"/><path d="M10.5 3.5l2.7 3-2.7 3"/></symbol>
 </svg>
