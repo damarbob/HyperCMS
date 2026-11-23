@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/media",
+    "status": 200,
+    "location": null,
+    "title": "Media",
+    "bytes": 49207,
+    "sha1": "289055751f31772a07b09bf53661c89a82632286"
+}

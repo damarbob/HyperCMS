@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/media/folders/rename",
+        "form": {
+            "mode": "library",
+            "folder": "Capture folder",
+            "folder_name": "Renamed folder"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": "Media Renamed folder Semua berkas Gambar Video Audio Dokumen Terbaru dulu Menurut nama Cari Unggah Folder baru Ganti nama folder Hapus folder 0 berkas Belum ada berkas di sini Unggah berkas dengan tom",
+    "changes": []
+}

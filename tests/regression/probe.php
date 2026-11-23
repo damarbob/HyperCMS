@@ -144,88 +144,111 @@ $say = function (string $label, int $status, bool $bad, string $note = '') use (
     echo str_pad($label, 44) . str_pad((string) $status, 5) . ($bad ? 'EXPOSED  ' . $note : 'safe') . PHP_EOL;
 };
 
-// The public file route, with no sign-in. It must answer 404 for anything outside the public folder or not servable.
+// The old public file route is gone, so every path, a real file or the project's secrets, answers 404 with no sign-in.
 $anon = [];
-foreach (['.env' => '.env', 'app/Config/App.php' => 'app/Config/App.php', 'public/index.php' => 'public/index.php', 'public/../.env' => 'public/../.env'] as $label => $path) {
+foreach (['.env' => '.env', 'app/Config/App.php' => 'app/Config/App.php', 'public/index.php' => 'public/index.php', 'public/../.env' => 'public/../.env', 'robots.txt' => 'robots.txt'] as $label => $path) {
     [$status, $body] = web($base, $anon, 'GET', 'public/file-server/serve/' . bin2hex($path));
     $say("file-server, $label", $status, $status === 200, strlen($body) . ' bytes');
 }
-[$status] = web($base, $anon, 'GET', 'public/file-server/serve/' . bin2hex('robots.txt'));
-$say('file-server, robots.txt (legit)', $status, $status !== 200, 'a public file was refused');
 
-// File manager writes, as the superadmin. Everything happens in one folder that is removed at the end.
+// The media library, as the superadmin. A file is kept outside the public folder, and a name that a server could run, or a
+// folder that leaves the library, must be refused. Everything happens in one folder that is removed at the end.
 [$jar, $token] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');
-$json = ['Content-Type: application/json', 'Accept: application/json', 'X-Requested-With: XMLHttpRequest', 'X-HYPER-CSRF-TOKEN: ' . $token];
-$fm = fn(string $path, array $data) => web($base, $jar, 'POST', 'admin/api/file-manager/' . $path, json_encode($data), $json);
-$upload = function (string $dir, string $name, string $content) use ($base, &$jar, $token): array {
-    $b = 'probe' . bin2hex(random_bytes(4));
+$libraryRoot = realpath(__DIR__ . '/../../writable') . DIRECTORY_SEPARATOR . 'uploads';
+$post = fn(string $path, array $fields) => web($base, $jar, 'POST', $path, http_build_query($fields + ['hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded', 'Accept: text/html', 'X-Requested-With: XMLHttpRequest', 'X-HYPER-CSRF-TOKEN: ' . $token]);
+$stored = [];
+$upload = function (string $folder, string $name, string $content) use ($base, &$jar, $token, &$stored): array {
+    $b    = 'probe' . bin2hex(random_bytes(4));
     $body = "--$b\r\nContent-Disposition: form-data; name=\"hyper_csrf_token\"\r\n\r\n$token\r\n"
-        . "--$b\r\nContent-Disposition: form-data; name=\"path\"\r\n\r\n$dir\r\n"
-        . "--$b\r\nContent-Disposition: form-data; name=\"file\"; filename=\"$name\"\r\nContent-Type: application/octet-stream\r\n\r\n$content\r\n--$b--\r\n";
-    return web($base, $jar, 'POST', 'admin/api/file-manager/upload', $body, ["Content-Type: multipart/form-data; boundary=$b", 'Accept: application/json', 'X-HYPER-CSRF-TOKEN: ' . $token]);
+        . "--$b\r\nContent-Disposition: form-data; name=\"folder\"\r\n\r\n$folder\r\n"
+        . "--$b\r\nContent-Disposition: form-data; name=\"files[]\"; filename=\"$name\"\r\nContent-Type: application/octet-stream\r\n\r\n$content\r\n--$b--\r\n";
+    [$status, $answer] = web($base, $jar, 'POST', 'admin/media/upload', $body, ["Content-Type: multipart/form-data; boundary=$b", 'Accept: application/json', 'X-HYPER-CSRF-TOKEN: ' . $token]);
+    $json = json_decode($answer, true);
+    foreach (is_array($json) ? ($json['files'] ?? []) : [] as $file) {
+        $stored[] = (int) $file['id'];
+    }
+
+    return is_array($json) ? $json : ['files' => [], 'problems' => ['no answer, status ' . $status]];
+};
+$headersOf = function (string $path) use ($base): array {
+    @file_get_contents($base . $path, false, stream_context_create(['http' => ['method' => 'GET', 'ignore_errors' => true, 'follow_location' => 0]]));
+    $found = [];
+    foreach ($http_response_header ?? [] as $line) {
+        if (preg_match('#^HTTP/\S+\s+(\d+)#', $line, $m)) {
+            $found['status'] = $m[1];
+        } elseif (str_contains($line, ':')) {
+            [$k, $v] = explode(':', $line, 2);
+            $found[strtolower(trim($k))] = trim($v);
+        }
+    }
+
+    return $found;
 };
 
 $dir = 'probe_tmp_' . bin2hex(random_bytes(3));
-$fm('create-folder', ['path' => '', 'folderName' => $dir]);
-// The file manager root is public/, or a folder inside it when .env sets one, so find where the folder landed.
-$root = is_dir("$public/$dir") ? $public : (is_dir("$public/uploads/$dir") ? "$public/uploads" : null);
-if ($root === null) {
-    echo "The file manager made no folder, so its probes could not run
+$post('admin/media/folders', ['mode' => 'library', 'folder' => '', 'new_folder' => $dir]);
+if (! is_dir("$libraryRoot/$dir")) {
+    echo "The media library made no folder, so its probes could not run
 ";
     exit(1);
 }
-$mk = fn(string $name) => is_file("$root/$dir/$name");
+$mk = fn(string $name) => is_file("$libraryRoot/$dir/$name");
 
-foreach (['x.php', 'x.php.jpg', 'x.phtml', '.htaccess'] as $name) {
+foreach (['x.php', 'x.php.jpg', 'x.phtml', '.htaccess', 'x.PHP', 'x.phar'] as $name) {
     $upload($dir, $name, '<?php echo 1;');
     $say("upload, $name", 0, $mk($name), 'the file is on disk');
 }
-$upload($dir, 'ok.txt', 'plain');
-$say('upload, ok.txt (legit)', 0, !$mk('ok.txt'), 'a plain file was refused');
+$ok = $upload($dir, 'ok.txt', 'plain');
+$id = (int) ($ok['files'][0]['id'] ?? 0);
+$say('upload, ok.txt (legit)', 0, ! $mk('ok.txt') || $id < 1, 'a plain file was refused');
 
-$fm('rename', ['oldPath' => "$dir/ok.txt", 'newName' => '../escaped.txt']);
-$say('rename, ok.txt to ../escaped.txt', 0, is_file("$root/escaped.txt"), 'the file left its folder');
-$fm('rename', ['oldPath' => "$dir/ok.txt", 'newName' => 'moved.php']);
-$say('rename, ok.txt to moved.php', 0, $mk('moved.php'), 'the file is on disk');
-@unlink("$root/escaped.txt");
-$fm('create-file', ['path' => $dir, 'fileName' => 'y.php']);
-$say('create-file, y.php', 0, $mk('y.php'), 'the file is on disk');
-$fm('save-file', ['path' => bin2hex("$dir/ok.txt"), 'content' => 'edited']);
-$say('save-file, ok.txt (legit)', 0, !is_file("$root/$dir/ok.txt") || file_get_contents("$root/$dir/ok.txt") !== 'edited', 'a plain file could not be saved');
-foreach (['../.env', '../../.env'] as $up) {
-    $fm('bulk-action', ['action' => 'copy', 'files' => [$up], 'destination' => $dir]);
-}
-$say('bulk-action, copy ../.env', 0, $mk('.env'), 'the project .env was copied into public');
-// A decoy outside public stands in for the project files, so a delete that escapes costs nothing.
-$decoy = realpath(__DIR__ . '/../../writable') . '/probe_decoy.txt';
-file_put_contents($decoy, 'decoy');
-foreach (['../writable/probe_decoy.txt', '../../writable/probe_decoy.txt'] as $up) {
-    $fm('delete-files', ['files' => [$up]]);
-}
-$say('delete-files, ../writable/probe_decoy.txt', 0, !is_file($decoy), 'a file outside public was deleted');
-@unlink($decoy);
+$upload("$dir/../..", 'probe_escape.txt', 'escaped');
+$upload('../..', 'probe_escape.txt', 'escaped');
+$say('upload, into a folder above the library', 0, is_file(dirname($libraryRoot) . '/probe_escape.txt') || is_file(dirname($libraryRoot, 2) . '/probe_escape.txt') || is_file("$libraryRoot/probe_escape.txt"), 'the file left the library');
+@unlink(dirname($libraryRoot) . '/probe_escape.txt');
+@unlink(dirname($libraryRoot, 2) . '/probe_escape.txt');
+@unlink("$libraryRoot/probe_escape.txt");
 
-$zipPath = "$root/$dir/z.zip";
-if (class_exists('ZipArchive')) {
-    $zip = new ZipArchive();
-    if ($zip->open($zipPath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === true) {
-        $zip->addFromString('inside.php', '<?php echo 1;');
-        $zip->addFromString('fine.txt', 'fine');
-        $zip->close();
-        $fm('extract', ['path' => "$dir/z.zip"]);
-        $say('extract, an archive holding inside.php', 0, $mk('inside.php') || $mk('fine.txt'), 'the archive was unpacked');
-    } else {
-        echo "extract probe skipped, the test archive could not be written
-";
-    }
-}
+$post('admin/media/rename', ['mode' => 'library', 'folder' => $dir, 'ids' => [$id], 'file_name' => '../escaped.txt']);
+$say('rename, ok.txt to ../escaped.txt', 0, is_file("$libraryRoot/escaped.txt") || is_file(dirname($libraryRoot) . '/escaped.txt'), 'the file left its folder');
+@unlink("$libraryRoot/escaped.txt");
+$post('admin/media/rename', ['mode' => 'library', 'folder' => $dir, 'ids' => [$id], 'file_name' => 'moved.php']);
+$say('rename, to moved.php', 0, $mk('moved.php'), 'the file is on disk');
+$post('admin/media/move', ['mode' => 'library', 'folder' => $dir, 'ids' => [$id], 'to' => '../..']);
+$say('move, to a folder above the library', 0, is_file(dirname($libraryRoot) . '/escaped.txt') || is_file("$libraryRoot/escaped.txt"), 'the file left the library');
+@unlink(dirname($libraryRoot) . '/escaped.txt');
+$post('admin/media/folders', ['mode' => 'library', 'folder' => $dir, 'new_folder' => '.hidden']);
+$say('folder, named .hidden', 0, is_dir("$libraryRoot/$dir/.hidden"), 'the folder was made');
+$post('admin/media/folders', ['mode' => 'library', 'folder' => $dir, 'new_folder' => 'a.php']);
+$say('folder, named a.php', 0, is_dir("$libraryRoot/$dir/a.php"), 'the folder was made');
 
-$fm('delete-files', ['files' => [$dir]]);
-if (is_dir("$root/$dir")) {
-    foreach (glob("$root/$dir/{,.}*", GLOB_BRACE) ?: [] as $f) {
+// A file is handed out by its id, never by a path, and what a browser could run is neither shown in the page nor allowed to act.
+$svg  = $upload($dir, 'evil.svg', '<svg xmlns="http://www.w3.org/2000/svg"><script>alert(1)</script></svg>');
+$html = $upload($dir, 'evil.html', '<script>alert(1)</script>');
+$txt  = $upload($dir, 'seen.txt', 'plain text');
+$link = fn(array $answer): string => 'media/' . (int) ($answer['files'][0]['id'] ?? 0) . '/x';
+$h    = $headersOf($link($txt));
+$say('media link, a text file (legit)', (int) ($h['status'] ?? 0), ($h['status'] ?? '') !== '200' || ! str_starts_with($h['content-disposition'] ?? '', 'inline'), 'a plain file could not be read by its link');
+$h = $headersOf($link($svg));
+$say('media link, svg is sandboxed', (int) ($h['status'] ?? 0), ! str_contains($h['content-security-policy'] ?? '', 'sandbox') || ($h['x-content-type-options'] ?? '') !== 'nosniff', 'a script in the file could run in the site');
+$h = $headersOf($link($html));
+$say('media link, html is a download', (int) ($h['status'] ?? 0), ! str_starts_with($h['content-disposition'] ?? '', 'attachment'), 'a page of the user would be shown in the site');
+// The site answers an unknown path with a page, so what counts is whether the file itself comes back.
+[$status, $body] = web($base, $anon, 'GET', 'writable/uploads/' . $dir . '/seen.txt');
+$say('media file, by its path on disk', $status, str_contains($body, 'plain text'), 'the folder is reachable from the web');
+[$status, $body] = web($base, $anon, 'GET', 'uploads/' . $dir . '/seen.txt');
+$say('media file, by its path in the public folder', $status, str_contains($body, 'plain text'), 'the file is in the public folder');
+[$status] = web($base, $anon, 'GET', 'media/999999/none.txt');
+$say('media link, a file that does not exist', $status, $status !== 404, 'it did not answer 404');
+
+if ($stored !== []) {
+    $post('admin/media/delete', ['mode' => 'library', 'folder' => $dir, 'ids' => $stored]);
+}
+if (is_dir("$libraryRoot/$dir")) {
+    foreach (glob("$libraryRoot/$dir/{,.}*", GLOB_BRACE) ?: [] as $f) {
         is_file($f) && @unlink($f);
     }
-    @rmdir("$root/$dir");
+    @rmdir("$libraryRoot/$dir");
 }
 
 // The history of a model is for superadmins, and a restore rewrites the model. Entry histories follow the model of the entry.
@@ -270,7 +293,9 @@ $matrix = [
     'admin/tokens'                    => [true, true, false],
     'admin/profile'                   => [true, true, true],
     'admin/entries'                   => [true, true, false],
-    'admin/file-manager'              => [true, true, false],
+    'admin/media'                     => [true, true, false],
+    'admin/media/picker'              => [true, true, false],
+    'admin/media/frame'               => [true, true, false],
     'admin/model/1'                   => [true, true, false],
     'admin/model/1/new'               => [true, true, false],
     'admin/model/1/1/edit'            => [true, true, false],
@@ -284,6 +309,11 @@ $posts = [
     'admin/models/check'                             => [true, false, false],
     'admin/model/1/trash'                            => [true, true, false],
     'admin/models/delete'                            => [true, false, false],
+    'admin/media/upload'                             => [true, true, false],
+    'admin/media/delete'                             => [true, true, false],
+    'admin/media/move'                               => [true, true, false],
+    'admin/media/rename'                             => [true, true, false],
+    'admin/media/folders'                            => [true, true, false],
 ];
 $form = fn(string $token): array => ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $token];
 $names = array_keys($roles);

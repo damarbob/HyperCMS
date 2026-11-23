@@ -1,0 +1,18 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/media/rename",
+        "form": {
+            "mode": "library",
+            "folder": "",
+            "ids": [
+                999999
+            ],
+            "file_name": "x.txt"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": "Media Semua berkas Gambar Video Audio Dokumen Terbaru dulu Menurut nama Cari Unggah Folder baru 0 berkas Renamed folderFolder Belum ada yang bisa ditampilkan Ganti nama Salin tautan Pindahkan Hapus Fo",
+    "changes": []
+}

@@ -21,5 +21,6 @@ return [
     'hyper_roles'           => 'SELECT name AS id, label, locked FROM hyper_roles ORDER BY name',
     'hyper_role_abilities'  => 'SELECT CONCAT(role, "|", ability) AS id, role, ability FROM hyper_role_abilities ORDER BY role, ability',
     'hyper_model_permissions' => 'SELECT CONCAT(model_id, "|", role, "|", action) AS id, model_id, role, action FROM hyper_model_permissions ORDER BY model_id, role, action',
+    'hyper_files'           => 'SELECT id, path, name, mime, size FROM hyper_files ORDER BY id',
     'settings'              => 'SELECT id, class, `key`, value, type, context FROM settings ORDER BY id',
 ];
