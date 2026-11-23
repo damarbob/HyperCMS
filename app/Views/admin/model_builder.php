@@ -25,6 +25,11 @@ $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
 ?>
 <?= $this->extend('admin/layout/app') ?>
 
+<?= $this->section('head') ?>
+<?php // Alpine starts when its own script has run, and a component must be registered before that, so this goes in the head with `defer`. ?>
+<script src="<?= attr(base_url('assets/ui/builder.js') . '?v=' . $version) ?>" defer></script>
+<?= $this->endSection() ?>
+
 <?= $this->section('content') ?>
 <div class="page-head">
     <div>
@@ -320,8 +325,4 @@ $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
         <button class="btn primary" type="submit"><?= esc($id > 0 ? lang('Models.builderSave') : lang('Models.builderCreate')) ?></button>
     </div>
 </form>
-<?= $this->endSection() ?>
-
-<?= $this->section('scripts') ?>
-<script src="<?= attr(base_url('assets/ui/builder.js') . '?v=' . $version) ?>" defer></script>
 <?= $this->endSection() ?>
