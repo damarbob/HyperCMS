@@ -10,7 +10,7 @@ class Hyper extends BaseConfig
     public string $appVersion = '0.1.0-alpha.8';
 
     // Default modules as a comma-separated list.
-    private string $defaultActiveModules = 'UserManagement, PagingSystem';
+    private string $defaultActiveModules = 'UserManagement, PagingSystem, Media';
 
     // Active modules as a comma-separated list.
     public string $activeModules = '';

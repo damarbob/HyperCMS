@@ -2,6 +2,7 @@
 
 namespace Config;
 
+use CodeIgniter\Config\Factories;
 use CodeIgniter\Events\Events;
 use CodeIgniter\Exceptions\FrameworkException;
 use CodeIgniter\HotReloader\HotReloader;
@@ -22,6 +23,10 @@ use CodeIgniter\HotReloader\HotReloader;
  * Example:
  *      Events::on('create', [$myInstance, 'myMethod']);
  */
+
+// StarCore loads the modules from its own configuration class, which has no default list. Pointing it at the class of
+// this app gives it the default modules of `Config\Star` too, so a site needs no setting to run the modules that ship with it.
+Factories::define('config', 'StarCore\Config\Star', Star::class);
 
 Events::on('pre_system', static function (): void {
     // The modules that follow the contract register their abilities and slots before any route or check runs.
