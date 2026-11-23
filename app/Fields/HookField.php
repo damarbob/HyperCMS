@@ -12,6 +12,13 @@ final class HookField extends AbstractField
         return 'hook';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'group', 'control' => 'text', 'label' => lang('Fields.setHookGroup'), 'default' => null],
+        ];
+    }
+
     public function normalise(mixed $value, array $definition): mixed
     {
         if ($value === null || $value === '') {

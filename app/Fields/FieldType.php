@@ -18,6 +18,17 @@ interface FieldType
     public function name(): string;
 
     /**
+     * The options of this type that the model builder lets a person set, besides the keys every type shares.
+     *
+     * Each one is its `key` in the definition, the `control` to draw (`select`, `toggle`, `number`, `text`, `choices` or
+     * `model`), a `label`, and the `default` the builder writes when a field of this type is made. A `select` also has
+     * its `choices` as value to label.
+     *
+     * @return list<array<string, mixed>>
+     */
+    public function settings(): array;
+
+    /**
      * Turn posted input into the stored shape. It never refuses. A value it cannot read is returned as it came, and
      * `validate()` reports it.
      *

@@ -10,6 +10,11 @@ use App\Data\Entries\FieldRules;
  */
 abstract class AbstractField implements FieldType
 {
+    public function settings(): array
+    {
+        return [];
+    }
+
     public function normalise(mixed $value, array $definition): mixed
     {
         return $value;

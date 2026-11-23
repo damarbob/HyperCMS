@@ -12,6 +12,13 @@ final class CodeField extends LongTextField
         return 'code';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'language', 'control' => 'select', 'label' => lang('Fields.setLanguage'), 'default' => 'plaintext', 'choices' => ['plaintext' => lang('Fields.langPlain'), 'html' => 'HTML', 'css' => 'CSS', 'javascript' => 'JavaScript', 'json' => 'JSON', 'php' => 'PHP', 'sql' => 'SQL', 'markdown' => 'Markdown', 'xml' => 'XML', 'yaml' => 'YAML']],
+        ];
+    }
+
     protected function legacyOptions(array $old): array
     {
         $language = $old['data']['language'] ?? null;

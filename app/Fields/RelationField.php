@@ -13,6 +13,14 @@ final class RelationField extends IdField
         return 'relation';
     }
 
+    public function settings(): array
+    {
+        return [
+            ['key' => 'model', 'control' => 'model', 'label' => lang('Fields.setModel'), 'default' => null, 'required' => true],
+            ['key' => 'multiple', 'control' => 'toggle', 'label' => lang('Fields.setMultipleEntries'), 'default' => false],
+        ];
+    }
+
     protected function show(mixed $value, array $definition): string
     {
         $ids = array_filter(is_array($value) ? $value : [$value], 'is_int');
