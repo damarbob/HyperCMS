@@ -321,7 +321,7 @@ $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
     <div class="float-bar" x-show="dirty" x-cloak role="region" aria-label="<?= attr(lang('Models.builderSaveBar')) ?>">
         <span class="state"><span class="dot"></span><span x-text="text.unsaved"></span></span>
         <span class="muted" x-show="newIndexes() > 0" x-text="indexNote()"></span>
-        <a class="btn" href="" @click.prevent="location.reload()"><?= esc(lang('Models.builderDiscard')) ?></a>
+        <a class="btn" href="<?= attr($id > 0 ? base_url('admin/models/' . $id . '/edit') : base_url('admin/models/new')) ?>" @click="sending = true"><?= esc(lang('Models.builderDiscard')) ?></a>
         <button class="btn primary" type="submit"><?= esc($id > 0 ? lang('Models.builderSave') : lang('Models.builderCreate')) ?></button>
     </div>
 </form>

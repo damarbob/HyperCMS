@@ -52,6 +52,7 @@
         icons: [],
         fields: [],
         labelField: '',
+        labelKey: null,
         saved: [],
         indexing: {},
         errors: {},
@@ -86,6 +87,7 @@
           this.errors = data.errors || {};
           this.urls = data.urls || {};
           this.fields = (data.fields || []).map(this.fromDefinition.bind(this));
+          this.syncLabel();
 
           // After a failed save the first field with a problem is the one to look at.
           var bad = this.fields.filter(this.hasError.bind(this))[0];
@@ -96,7 +98,8 @@
           this.dirty = !!data.isNew || Object.keys(this.errors).length > 0 || document.querySelector('.problem-list') !== null;
 
           var self = this;
-          this.$watch('fields', function () { self.dropLabelFieldIfGone(); }, { deep: true });
+          this.$watch('fields', function () { self.syncLabel(); }, { deep: true });
+          this.$watch('labelField', function () { self.syncLabel(); });
           window.addEventListener('beforeunload', function (event) {
             if (self.dirty && !self.sending) {
               event.preventDefault();
@@ -342,11 +345,33 @@
           return this.fields.filter(function (f) { return self.nameableField(f); });
         },
 
-        dropLabelFieldIfGone: function () {
-          if (this.labelField === '') return;
+        // Keeps the label field and the field it names together. A field whose id is edited keeps its place as the name
+        // of the entries, and a choice made in the select points at the field with that id.
+        syncLabel: function () {
           var self = this;
-          var ok = this.fields.some(function (f) { return f.id === self.labelField && self.nameableField(f); });
-          if (!ok) this.labelField = '';
+          if (this.labelField === '') {
+            this.labelKey = null;
+            return;
+          }
+
+          var picked = this.fields.filter(function (f) { return f.id === self.labelField; })[0];
+          if (picked) {
+            this.labelKey = picked._key;
+            if (!this.nameableField(picked)) {
+              this.labelField = '';
+              this.labelKey = null;
+            }
+            return;
+          }
+
+          // No field has that id any more, so the field was renamed or removed.
+          var named = this.fields.filter(function (f) { return f._key === self.labelKey; })[0];
+          if (named && this.nameableField(named)) {
+            this.labelField = named.id;
+          } else {
+            this.labelField = '';
+            this.labelKey = null;
+          }
         },
 
         /* The stored definition --------------------------------------------------------------------------------- */
@@ -376,7 +401,7 @@
           if (!blank(f.help) && String(f.help).trim() !== '') def.help = String(f.help).trim();
           if (f.type === 'boolean') { if (f.default === true) def.default = true; }
           else if (f.type === 'number') { if (!blank(f.default) && !isNaN(Number(f.default))) def.default = Number(f.default); }
-          else if (!blank(f.default) && this.defaultKind(f) !== '') def.default = f.default;
+          else if (!blank(f.default) && !(Array.isArray(f.default) && f.default.length === 0)) def.default = f.default;
           if (f.filterable && this.canFilter(f)) def.filterable = true;
           if (type && f.list !== type.listDefault) def.list = !!f.list;
 
