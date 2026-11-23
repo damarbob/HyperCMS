@@ -104,17 +104,39 @@ function web(string $base, array &$jar, string $method, string $path, ?string $b
     return [$status, $out, $loc];
 }
 
-/** Sign in through the form. Returns the cookie jar and the CSRF token. */
-function signIn(string $base, string $email, string $password): array
+/**
+ * Sign in through the form. Returns the cookie jar and the CSRF token.
+ *
+ * The login pages allow ten requests a minute from one address, and a probe that signs in many times is turned away
+ * without a sign. A sign in that did not reach the admin therefore waits and tries again, and gives up with a message
+ * rather than let an attack run from a session that does not exist.
+ */
+function signIn(string $base, string $email, string $password, bool $mustSucceed = true): array
 {
-    $jar = [];
-    [, $page] = web($base, $jar, 'GET', 'auth/login');
-    $token = preg_match('/name="hyper_csrf_token"\s+value="([a-f0-9]+)"/', $page, $m) ? $m[1] : '';
-    web($base, $jar, 'POST', 'auth/login', http_build_query(['email' => $email, 'password' => $password, 'hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded']);
-    // Any admin page carries the token of the signed-in session in its script config.
-    [, $page] = web($base, $jar, 'GET', 'admin/dashboard');
-    $token = preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token;
-    return [$jar, $token];
+    for ($try = 0; $try < ($mustSucceed ? 6 : 1); $try++) {
+        $jar = [];
+        [$status, $page] = web($base, $jar, 'GET', 'auth/login');
+        $token = preg_match('/name="hyper_csrf_token"\s+value="([a-f0-9]+)"/', $page, $m) ? $m[1] : '';
+        if ($status === 200 && $token !== '') {
+            web($base, $jar, 'POST', 'auth/login', http_build_query(['email' => $email, 'password' => $password, 'hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded']);
+            // Any admin page carries the token of the signed-in session in its script config.
+            [$status, $page] = web($base, $jar, 'GET', 'admin/dashboard');
+            if ($status === 200) {
+                return [$jar, preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token];
+            }
+        }
+        if ($mustSucceed) {
+            sleep(15);
+        }
+    }
+
+    if (! $mustSucceed) {
+        return [$jar ?? [], ''];
+    }
+
+    fwrite(STDERR, "Could not sign in as $email, so nothing can be probed from that account.
+");
+    exit(1);
 }
 
 $say = function (string $label, int $status, bool $bad, string $note = '') use (&$exposed): void {
@@ -327,24 +349,37 @@ if ($envFile !== '') {
 
     // Two accounts that each have part of the power.
     foreach (['probe_manager' => 'probe_users', 'probe_editor' => 'probe_roles'] as $user => $role) {
-        $act($sa, $satoken, 'admin/users', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Probe-Passw0rd-2026!', 'roles' => [$role]]);
+        $act($sa, $satoken, 'admin/users', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => [$role]]);
+    }
+
+    // The attacks below mean nothing if the accounts were not made, so make sure they exist and can sign in.
+    foreach (['probe_manager', 'probe_editor'] as $user) {
+        $made = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE username = ' . $pdo->quote($user))->fetchColumn();
+        [$cj] = signIn($base, $user . '@example.test', 'Walrus-Copper-Lantern-2026');
+        [$status] = web($base, $cj, 'GET', 'admin/profile');
+        $say("probe account $user exists and signs in", $status, $made !== 1 || $status !== 200, 'the account was not made, so the attacks test nothing');
     }
 
     // A person who may manage users must not reach the superadmin role, or an account that has it.
-    [$mj, $mtoken] = signIn($base, 'probe_manager@example.test', 'Probe-Passw0rd-2026!');
+    [$mj, $mtoken] = signIn($base, 'probe_manager@example.test', 'Walrus-Copper-Lantern-2026');
+    // What the manager may do must work, or the refusals below say nothing.
+    [$ost, , $oloc] = $act($mj, $mtoken, 'admin/users', ['username' => 'probe_plain', 'email' => 'probe_plain@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => []]);
+    $say('users, a manager makes an ordinary account (control)', $ost, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_plain'")->fetchColumn() !== 1, 'the manager could not even make an ordinary account, status ' . $ost . ' ' . $oloc);
     $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'probe_manager'")->fetchColumn(), ['username' => 'probe_manager', 'email' => 'probe_manager@example.test', 'roles' => ['probe_users', 'superadmin']]);
     $say('users, a manager makes themselves superadmin', 200, in_array('superadmin', $rolesOf('probe_manager'), true), 'the person reached the superadmin role');
-    $act($mj, $mtoken, 'admin/users', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Probe-Passw0rd-2026!', 'roles' => ['superadmin']]);
+    $act($mj, $mtoken, 'admin/users', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => ['superadmin']]);
     $say('users, a manager makes a superadmin account', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_friend'")->fetchColumn() > 0 && in_array('superadmin', $rolesOf('probe_friend'), true), 'a superadmin account was made');
     $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn(), ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'password' => 'Hijacked-Passw0rd-2026!', 'roles' => ['superadmin']]);
-    [$cj] = signIn($base, 'capture_admin@example.test', 'Hijacked-Passw0rd-2026!');
+    [$cj] = signIn($base, 'capture_admin@example.test', 'Hijacked-Passw0rd-2026!', false);
     [$status] = web($base, $cj, 'GET', 'admin/models');
     $say('users, a manager resets a superadmin password', $status, $status === 200, 'the password of a superadmin was changed');
     $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn() . '/delete', []);
     $say('users, a manager deletes a superadmin', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'capture_admin'")->fetchColumn() === 0, 'a superadmin account was deleted');
 
     // A person who may manage roles can hand out only what they have.
-    [$ej, $etoken] = signIn($base, 'probe_editor@example.test', 'Probe-Passw0rd-2026!');
+    [$ej, $etoken] = signIn($base, 'probe_editor@example.test', 'Walrus-Copper-Lantern-2026');
+    [$est, , $eloc] = $act($ej, $etoken, 'admin/roles', ['name' => 'probe_plainrole', 'label' => 'Plain role']);
+    $say('roles, an editor makes an ordinary role (control)', $est, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_plainrole'")->fetchColumn() !== 1, 'the editor could not make an ordinary role, status ' . $est . ' ' . $eloc);
     $act($ej, $etoken, 'admin/roles/probe_roles', ['label' => 'Probe roles', 'abilities' => ['roles.manage', 'users.manage', 'models.manage']]);
     $held = $pdo->query("SELECT ability FROM hyper_role_abilities WHERE role = 'probe_roles' ORDER BY ability")->fetchAll(PDO::FETCH_COLUMN);
     $say('roles, an editor gives their own role more power', 200, $held !== ['roles.manage'], 'the role now has ' . implode(', ', $held));
@@ -352,6 +387,19 @@ if ($envFile !== '') {
     $say('roles, an editor renames the superadmin role', 200, (string) $pdo->query("SELECT label FROM hyper_roles WHERE name = 'superadmin'")->fetchColumn() === 'Everyone', 'the superadmin role was changed');
     $act($ej, $etoken, 'admin/roles', ['name' => 'probe_copy', 'label' => 'Copy', 'copy' => 'developer']);
     $say('roles, an editor copies a role with more power', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_copy'")->fetchColumn() > 0 && (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE role = 'probe_copy'")->fetchColumn() > 0, 'a role with abilities the editor lacks was copied');
+
+    // Saving a model must not hand out actions the person lacks. A person who may manage models, and holds nothing on a
+    // model, tries to give their own role every action on it, and a higher role the person may not handle too.
+    $act($sa, $satoken, 'admin/roles', ['name' => 'probe_models', 'label' => 'Probe models', 'abilities' => ['models.manage']]);
+    $act($sa, $satoken, 'admin/users', ['username' => 'probe_modeler', 'email' => 'probe_modeler@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => ['probe_models']]);
+    [$kj, $ktoken] = signIn($base, 'probe_modeler@example.test', 'Walrus-Copper-Lantern-2026');
+    [$kst, , $kloc] = $act($kj, $ktoken, 'admin/models/3', ['name' => 'Linked', 'fields' => '[{"id":"title","label":"Title","type":"text"}]', 'access' => ['probe_models' => ['read', 'update', 'delete'], 'developer' => ['read']]]);
+    $saved = (string) $pdo->query('SELECT `fields` FROM hyper_models WHERE id = 3')->fetchColumn();
+    $say('models, the manager saved the model, so the grid was really tried', 200, ! str_contains($saved, '"title"') || str_contains($saved, 'related_model'), 'the save did not go through, status ' . $kst . ' ' . $kloc);
+    $granted = $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = 3 AND role = 'probe_models'")->fetchColumn();
+    $say('models, a manager gives their own role actions they do not hold', 200, (int) $granted > 0, $granted . ' rows were written');
+    $before = (int) $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = 3 AND role = 'developer'")->fetchColumn();
+    $say('models, a manager removes the actions of a higher role', 200, $before < 5, 'the developer role kept ' . $before . ' of 5 actions');
 
     // An ability that a higher role has cannot be deleted by someone who may not change that role.
     $pdo->exec("INSERT INTO hyper_abilities (name, label, created_at) VALUES ('probe.held', 'Held', NOW())");
@@ -369,9 +417,10 @@ if ($envFile !== '') {
     $say('profile, change the email without the current password', 200, (int) $pdo->query("SELECT COUNT(*) FROM auth_identities WHERE secret = 'taken_over@example.test'")->fetchColumn() > 0, 'the email changed without the password');
 
     // Clean up, in the order that the guards allow.
-    $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
-    $pdo->exec("DELETE FROM auth_identities WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
-    $pdo->exec("DELETE FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend')");
+    $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain'))");
+    $pdo->exec("DELETE FROM auth_identities WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain'))");
+    $pdo->exec("DELETE FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain')");
+    $pdo->exec("DELETE FROM hyper_model_permissions WHERE role LIKE 'probe\_%'");
     $pdo->exec("DELETE FROM hyper_role_abilities WHERE role LIKE 'probe\\_%'");
     $pdo->exec("DELETE FROM hyper_roles WHERE name LIKE 'probe\\_%'");
     $pdo->exec("DELETE FROM hyper_abilities WHERE name LIKE 'probe.%'");
