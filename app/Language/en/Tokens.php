@@ -1,0 +1,31 @@
+<?php
+
+// The words of the access tokens screen.
+return [
+    'title'          => 'Access tokens',
+    'text'           => 'A token lets a script or another site use the API as you, with the scopes you give it. It stops working on its date, or when you revoke it.',
+    'name'           => 'Name',
+    'nameHelp'       => 'What the token is for, such as the name of the site that uses it.',
+    'scopes'         => 'Scopes',
+    'scopesHelp'     => 'A token can do only what its scopes allow, and never more than your own roles allow.',
+    'scope_entries_read' => 'Read entries',
+    'scope_models_read'  => 'Read models',
+    'lastUsed'       => 'Last used',
+    'expires'        => 'Valid until',
+    'never'          => 'Never',
+    'newTitle'       => 'Make a token',
+    'create'         => 'Make token',
+    'revoke'         => 'Revoke',
+    'revokeAll'      => 'Revoke all',
+    'confirmRevokeAll' => 'Revoke every token of yours? Anything that uses them stops working.',
+    'created'        => 'The token {name} is made.',
+    'copyNow'        => 'Copy it now. It is not shown again.',
+    'validUntil'     => 'Valid until {date}.',
+    'revoked'        => 'The token is revoked.',
+    'allRevoked'     => 'Every token of yours is revoked.',
+    'notFound'       => 'That token does not exist.',
+    'nameInvalid'    => 'Give the token a name of up to 100 characters.',
+    'scopesRequired' => 'Choose at least one scope.',
+    'noneTitle'      => 'No tokens yet',
+    'noneText'       => 'Make a token when a script or another site needs to read your content.',
+];

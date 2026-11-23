@@ -1,6 +1,5 @@
 <?php
 
-use App\Filters\ApiAuthFilter;
 use CodeIgniter\Router\RouteCollection;
 
 /**
@@ -80,6 +79,14 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => 'can:models.manage']);
         $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => 'can:models.manage']);
 
+        // The access tokens of the signed-in person.
+        $routes->group('tokens', ['filter' => 'can:tokens.manage'], static function ($routes) {
+            $routes->get('/', 'Tokens::index');
+            $routes->post('/', 'Tokens::create');
+            $routes->post('revoke-all', 'Tokens::revokeAll');
+            $routes->post('(:num)/revoke', 'Tokens::revoke/$1');
+        });
+
         // Roles and abilities. Giving a role what the person has themselves is checked in the controller.
         $routes->group('roles', ['filter' => 'can:roles.manage'], static function ($routes) {
             $routes->get('/', 'Roles::index');
@@ -105,10 +112,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->get('file-manager', 'FileManager', ['filter' => 'can:media.manage']);
 
         // Profile
-        $routes->resource('profile', [
-            'websafe' => 1,
-            'only' => ['index', 'update'],
-        ]);
+        $routes->get('profile', 'Profile::index');
+        $routes->post('profile', 'Profile::update');
 
         // Colour scheme of the signed-in user
         $routes->post('theme', 'Theme::save');
@@ -153,54 +158,6 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         });
     });
 
-    // Access token generation (development)
-    /** @todo place in a new controller */
-    if (ENVIRONMENT !== 'production') {
-        $routes->group('access-token', ['filter' => 'tokens'], static function ($routes) {
-            $routes->get('list', static function () {
-                $tokens = auth()->user()->accessTokens();
-
-                return service('response')->setJSON(['tokens' => $tokens]);
-            });
-
-            $routes->post('generate', static function () {
-                $user = auth()->user();
-
-                // A token may only hand on scopes it has itself, so a login token cannot mint a wider one.
-                $asked  = service('request')->getVar('scopes');
-                $scopes = $asked === null ? ($user->currentAccessToken()?->scopes ?? []) : array_values(array_filter((array) $asked, 'is_string'));
-
-                foreach ($scopes as $scope) {
-                    if ($user->tokenCant($scope)) {
-                        return service('response')->setStatusCode(403)->setJSON(['message' => lang('Filter.apiNotAllowed')]);
-                    }
-                }
-
-                // The API refuses a token without an expiry date, so this one gets a date like a login token does.
-                $token = ApiAuthFilter::issueToken($user, (string) service('request')->getVar('name'), $scopes);
-
-                return service('response')->setJSON(['token' => $token->raw_token, 'expires_at' => $token->expires->format(DATE_ATOM)]);
-            });
-
-            $routes->post('revoke', static function () {
-                auth()->user()->revokeAccessToken(service('request')->getVar('name'));
-
-                return service('response')->setJSON(['success' => true]);
-            });
-
-            $routes->post('revoke-token', static function () {
-                auth()->user()->revokeAccessTokenBySecret(service('request')->getVar('token'));
-
-                return service('response')->setJSON(['success' => true]);
-            });
-
-            $routes->post('revoke-all', static function () {
-                auth()->user()->revokeAllAccessTokens();
-
-                return service('response')->setJSON(['success' => true]);
-            });
-        });
-    }
 });
 
 $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function ($routes) {

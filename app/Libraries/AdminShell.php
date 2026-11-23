@@ -71,6 +71,14 @@ final class AdminShell
             ],
             // This group contains a submenu (nested items)
             lang('Admin.others') => [
+                'tokens' => [
+                    'url' => base_url('admin/tokens'),
+                    'icon' => 'key',
+                    'text' => lang("Tokens.title"),
+                    'tooltip_content' => lang("Tokens.title"),
+                    'tooltip_placement' => 'right',
+                    'ability' => 'tokens.manage'
+                ],
                 'file-manager' => [
                     'url' => base_url('admin/file-manager'),
                     'icon' => 'fa-solid fa-folder-closed',
