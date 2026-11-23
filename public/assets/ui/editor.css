@@ -1,0 +1,179 @@
+/*
+ * The page editor. GrapesJS draws its own panels and the editor script builds the rest of the shell, so this file does two
+ * things: it maps the colours of GrapesJS onto the tokens of the admin, which is what makes the editor follow the colour
+ * scheme, and it styles the markup that the editor script builds. It is loaded only by the editor page.
+ */
+
+@layer components {
+  .editor-app {
+    /* GrapesJS colours, from the tokens. The primary colour is the surface of the panels. */
+    --gjs-main-color: var(--sheet);
+    --gjs-primary-color: var(--sheet);
+    --gjs-secondary-color: var(--ink);
+    --gjs-tertiary-color: var(--action-tint);
+    --gjs-quaternary-color: var(--action);
+    --gjs-font-color: var(--ink);
+    --gjs-font-color-active: var(--ink);
+    --gjs-main-dark-color: var(--sunken);
+    --gjs-secondary-dark-color: var(--sunken);
+    --gjs-main-light-color: var(--hover);
+    --gjs-secondary-light-color: var(--ink-2);
+    --gjs-soft-light-color: var(--hover);
+    --gjs-light-border: var(--line);
+    --gjs-dark-text-shadow: transparent;
+    --gjs-arrow-color: var(--ink-3);
+    --gjs-color-highlight: var(--action);
+    --gjs-color-red: var(--bad);
+    --gjs-color-warn: var(--warn);
+    --gjs-color-green: var(--ok);
+    --gjs-main-font: var(--font);
+    --gjs-font-size: 0.75rem;
+    --gjs-left-width: 0%;
+    --gjs-canvas-top: 41.6px;
+    --gjs-placeholder-background-color: var(--ok);
+
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    background: var(--canvas);
+    color: var(--ink);
+    font-family: var(--font);
+  }
+
+  .editor-app #gjs-editor-container { height: 100%; }
+
+  /* ---- The shell that the script builds ------------------------------------------------------------------------- */
+
+  .editor-wrapper { display: flex; flex-direction: column; height: 100%; }
+  .main-section { display: flex; flex: 1; min-height: 0; align-items: stretch; flex-wrap: nowrap; }
+
+  .left-panel, .right-panel { position: relative; z-index: 10; background: var(--sheet); height: 100%; border-color: var(--line); }
+  .left-panel { border-right: 1px solid var(--line); }
+  .right-panel { flex: 0 0 240px; border-left: 1px solid var(--line); }
+  .left-panel.gjs-pn-panel, .right-panel.gjs-pn-panel { padding: 0; }
+  .left-panel-container { display: flex; height: 100%; }
+  .left-panel-buttons { display: flex; flex-direction: column; gap: var(--s2); padding: var(--s2); background: var(--sheet); border-right: 1px solid var(--line); }
+  .left-panel-content { display: flex; flex-direction: column; width: 250px; height: 100%; }
+  .left-panel-content-header { padding: var(--s3) var(--s3) var(--s2); font-size: var(--t-lg); font-weight: 550; color: var(--ink); }
+  .left-panel-content-pane { overflow: auto; flex: 1; background: var(--sheet) !important; }
+  .left-panel-search { margin: 0 var(--s2) var(--s2); }
+
+  .canvas-container { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+  .top-panel { width: 100%; height: 41.6px; background: var(--sheet); border-bottom: 1px solid var(--line); flex: none; }
+  .top-panel-container { display: flex; align-items: center; justify-content: space-between; width: 100%; height: 100%; gap: var(--s3); }
+  .brand-container { display: flex; align-items: center; gap: var(--s2); }
+  .brand-container .title { font-weight: 650; color: var(--ink); text-decoration: none; }
+  #gjs-editor { flex: 1; min-height: 0; }
+  .gjs-cv-canvas { top: 0; width: 100%; height: 100%; }
+
+  .right-panel-container { display: flex; flex-direction: column; height: 100%; overflow: auto; }
+  .right-panel-tabs { position: sticky; top: 0; z-index: 50; background: var(--sheet); border-bottom: 1px solid var(--line); }
+  .right-panel-tabs ul { display: flex; list-style: none; margin: 0; padding: 0; }
+  .right-panel-tabs li { flex: 1; text-align: center; }
+  .right-panel-tabs li a { display: flex; align-items: center; justify-content: center; gap: var(--s2); padding: var(--s2) var(--s2); color: var(--ink-3); border-bottom: 2px solid transparent; cursor: pointer; text-decoration: none; font-size: var(--t-sm); }
+  .right-panel-tabs li.is-active a { color: var(--ink); border-bottom-color: var(--action); }
+  :root[data-theme="dark"] .right-panel-tabs li.is-active a { border-bottom-color: var(--mark); }
+  @media (prefers-color-scheme: dark) { :root:not([data-theme]) .right-panel-tabs li.is-active a { border-bottom-color: var(--mark); } }
+  .right-panel-content { overflow-y: auto; }
+  .right-panel-content-pane:not(.is-active) { display: none; }
+
+  #no-select-state { display: flex; justify-content: center; align-items: center; height: 100%; padding: var(--s5); text-align: center; color: var(--ink-3); }
+
+  /* The attributes panel */
+  .attributes-panel { background: var(--sheet); padding: var(--s4); display: flex; flex-direction: column; }
+  .panel-header { border-bottom: 1px solid var(--line); margin-bottom: var(--s4); display: flex; justify-content: space-between; align-items: center; }
+  .panel-header h2 { font-size: var(--t-lg); display: flex; align-items: center; gap: var(--s2); }
+  .no-component { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; color: var(--ink-3); gap: var(--s2); }
+  .no-component i { font-size: 40px; color: var(--action); }
+  :root[data-theme="dark"] .no-component i { color: var(--mark); }
+  .component-info { background: var(--sunken); border-radius: var(--r-md); padding: var(--s2); margin-bottom: var(--s4); border: 1px solid var(--line); }
+  .component-type { font-size: var(--t-sm); font-weight: 550; text-align: center; }
+  .section-title { font-size: var(--t-sm); font-weight: 550; margin: var(--s4) 0 var(--s3); display: flex; align-items: center; justify-content: space-between; gap: var(--s2); }
+  .attributes-list { display: flex; flex-direction: column; gap: var(--s2); }
+  .attribute-row { display: flex; flex-direction: column; gap: var(--s2); }
+  .add-attribute, .remove-attribute { display: grid; place-items: center; width: 30px; height: 30px; border: 1px solid var(--line); border-radius: var(--r-md); background: var(--sheet); color: var(--ink); cursor: pointer; }
+  .add-attribute:hover { background: var(--action-tint); }
+  .remove-attribute:hover { background: var(--bad-tint); color: var(--bad); }
+  .code-preview { background: var(--sunken); border: 1px solid var(--line); border-radius: var(--r-md); padding: var(--s3); margin-top: var(--s4); color: var(--ink); font-family: var(--mono); font-size: var(--t-xs); line-height: 1.5; overflow: auto; }
+
+  .panel-button { display: grid; place-items: center; width: 34px; height: 34px; border: 0; background: transparent; color: var(--ink-2); border-radius: var(--r-md); cursor: pointer; }
+  .panel-button:hover { background: var(--hover); color: var(--ink); }
+  .panel-button.is-active { background: var(--action); color: var(--action-ink); }
+  .hidden { display: none; }
+
+  /* ---- The helper classes that the script uses ------------------------------------------------------------------ */
+
+  .editor-app .is-flex { display: flex; }
+  .editor-app .is-flex-direction-row { flex-direction: row; }
+  .editor-app .is-flex-direction-column { flex-direction: column; }
+  .editor-app .is-flex-wrap-wrap { flex-wrap: wrap; }
+  .editor-app .is-flex-grow-1 { flex-grow: 1; }
+  .editor-app .is-flex-grow-2 { flex-grow: 2; }
+  .editor-app .is-align-items-center { align-items: center; }
+  .editor-app .is-align-self-flex-end { align-self: flex-end; }
+  .editor-app .is-justify-content-center { justify-content: center; }
+  .editor-app .is-justify-content-space-between { justify-content: space-between; }
+  .editor-app .is-fullwidth { width: 100%; }
+  .editor-app .m-0 { margin: 0; }
+  .editor-app .mb-2 { margin-bottom: var(--s2); }
+  .editor-app .mr-2 { margin-right: var(--s2); }
+  .editor-app .mt-2 { margin-top: var(--s2); }
+  .editor-app .mt-3 { margin-top: var(--s3); }
+  .editor-app .my-5 { margin-block: var(--s5); }
+  .editor-app .px-1 { padding-inline: var(--s1); }
+  .editor-app .px-2 { padding-inline: var(--s2); }
+  .editor-app .has-text-weight-light { font-weight: 350; }
+
+  .editor-app .tags { display: flex; flex-wrap: wrap; gap: var(--s1); }
+  .editor-app .tag { display: inline-flex; align-items: center; padding: 0 var(--s2); height: 22px; border-radius: 999px; background: var(--chip); color: var(--ink-2); font-size: var(--t-xs); font-weight: 550; }
+  .editor-app .tag.is-primary { background: var(--action-tint); color: var(--action); }
+  .editor-app .icon { display: inline-grid; place-items: center; }
+
+  .editor-app .field { display: flex; flex-direction: column; gap: var(--s1); }
+  .editor-app .field.has-addons { flex-direction: row; }
+  .editor-app .control { position: relative; flex: 1; }
+  .editor-app .input, .editor-app .select select, .editor-app select.input, .editor-app textarea {
+    width: 100%; min-height: 32px; padding: 4px var(--s2); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sheet); color: var(--ink); font: inherit; font-size: var(--t-sm);
+  }
+  .editor-app .input:focus, .editor-app .select select:focus, .editor-app textarea:focus { outline: 2px solid var(--action); outline-offset: 1px; }
+  .editor-app .button { display: inline-flex; align-items: center; justify-content: center; gap: var(--s2); min-height: 32px; padding: 0 var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sheet); color: var(--ink); font: inherit; font-size: var(--t-sm); cursor: pointer; }
+  .editor-app .button:hover { background: var(--hover); }
+  .editor-app .button.is-primary { background: var(--action); border-color: var(--action); color: var(--action-ink); }
+  .editor-app .button.is-selected, .editor-app .button.is-active { background: var(--action-tint); border-color: var(--action); }
+  .editor-app .section, .editor-app .container { padding: 0; }
+  .editor-app .title { font-size: var(--t-lg); font-weight: 600; margin: 0; }
+  .editor-app .title.is-6 { font-size: var(--t-sm); }
+
+  /* The library, in a dialog over the editor */
+  .editor-app .modal { position: fixed; inset: 0; z-index: var(--z-modal); display: none; align-items: center; justify-content: center; }
+  .editor-app .modal.is-active { display: flex; }
+  .editor-app .modal-background { position: absolute; inset: 0; background: var(--scrim); }
+  .editor-app .modal-card { position: relative; width: min(96vw, 980px); height: 80%; display: flex; flex-direction: column; background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r-sheet); box-shadow: var(--shadow-pop); overflow: hidden; }
+  .editor-app .modal-card-body { flex: 1; display: flex; min-height: 0; }
+  .editor-app .modal-card-body iframe { width: 100%; height: 100%; border: 0; background: var(--sheet); }
+  .editor-app .modal-close { position: absolute; top: var(--s3); right: var(--s3); z-index: 2; width: 34px; height: 34px; border: 1px solid var(--line); border-radius: 999px; background: var(--sheet); color: var(--ink); cursor: pointer; font-size: 0; }
+  .editor-app .modal-close::before { content: "\00d7"; font-size: 22px; line-height: 1; }
+
+  /* ---- GrapesJS ------------------------------------------------------------------------------------------------- */
+
+  .editor-app .gjs-one-bg, .editor-app .gjs-two-color { }
+  .editor-app .gjs-block { border-radius: var(--r-md); border: 1px solid var(--line); background: var(--sheet); color: var(--ink); box-shadow: none; }
+  .editor-app .gjs-block:hover { border-color: var(--action); }
+  .editor-app .gjs-sm-sector-title { padding: 9px 10px 9px 0; }
+  .editor-app .gjs-field, .editor-app .gjs-sm-field { background: var(--sunken); border: 1px solid var(--line); border-radius: var(--r-sm); }
+  .editor-app .gjs-field input, .editor-app .gjs-field select, .editor-app .gjs-field textarea { color: var(--ink); }
+  .editor-app .gjs-field :not(.gjs-input-unit) input:not([type="range"]):focus,
+  .editor-app .gjs-select select:focus,
+  .editor-app .gjs-field.gjs-field-text input:focus { outline: 2px solid var(--action); outline-offset: 1px; }
+  .editor-app .gjs-pn-btn { color: var(--ink-2); border-radius: var(--r-md); }
+  .editor-app .gjs-pn-btn:hover:not(.gjs-disabled) { background: var(--hover); color: var(--ink); }
+  .editor-app .gjs-pn-btn.gjs-pn-active { background: var(--action-tint); color: var(--ink); }
+  .editor-app .gjs-pn-btn.gjs-disabled { cursor: default; opacity: 0.5; }
+  .editor-app .gjs-cv-canvas { background: var(--sunken); }
+  .editor-app .gjs-layer-title, .editor-app .gjs-layer-name { color: var(--ink); }
+  .editor-app .gjs-clm-tag { background: var(--action-tint); color: var(--ink); border-radius: var(--r-sm); }
+  .editor-app .gjs-mdl-dialog { background: var(--sheet); color: var(--ink); border-radius: var(--r-sheet); }
+  .editor-app .gjs-mdl-header { border-bottom: 1px solid var(--line); }
+
+  .editor-app * { scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+}
