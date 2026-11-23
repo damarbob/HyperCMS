@@ -98,7 +98,7 @@ $empty     = $files === [] && $folders === [];
 
         <?php if ($empty) : ?>
             <div class="panel">
-                <?php if ($searching || $state['kind'] !== 'any') : ?>
+                <?php if ($searching || ($state['kind'] !== 'any' && $state['accept'] === 'any')) : ?>
                     <?= ui('emptyState', ['icon' => 'search', 'title' => lang('Media.noMatchesTitle'), 'text' => lang('Media.noMatchesText')]) ?>
                 <?php else : ?>
                     <?= ui('emptyState', ['icon' => 'media', 'title' => lang('Media.emptyTitle'), 'text' => lang('Media.emptyText')]) ?>
