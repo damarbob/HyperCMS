@@ -7,15 +7,6 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Home');
 
-// Publicly available features
-$routes->group('public', ['namespace' => 'App\Controllers\Public'], static function ($routes) {
-
-    // File Server
-    $routes->group('file-server', static function ($routes) {
-        $routes->get('serve/(:segment)', 'FileServer::serve/$1');
-    });
-});
-
 // Authentication routes
 $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
     service('auth')->routes($routes, ['except' => ['login', 'register']]);
@@ -108,9 +99,6 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'can:entries.browse']);
 
-        // File Manager
-        $routes->get('file-manager', 'FileManager', ['filter' => 'can:media.manage']);
-
         // Profile
         $routes->get('profile', 'Profile::index');
         $routes->post('profile', 'Profile::update');
@@ -131,30 +119,6 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->group('settings', static function ($routes) {
             $routes->get('models', 'ModelsSettings', ['filter' => 'can:models.manage']);
             $routes->post('update', 'Settings::update');
-        });
-
-        // Admin api
-        $routes->group('api', ['namespace' => 'App\Controllers\Admin\API'], static function ($routes) {
-            // $routes->resource('user', ['websafe' => 1]);
-
-            // File manager
-            $routes->group('file-manager', ['filter' => 'can:media.manage'], static function ($routes) {
-                $routes->get('view-file/(:any)', 'FileManager::viewFile/$1');
-                $routes->get('list-files/(:any)', 'FileManager::listFiles/$1');
-                $routes->get('list-files', 'FileManager::listFiles');
-                $routes->post('save-file', 'FileManager::saveFile');
-                $routes->post('set-clipboard', 'FileManager::setClipboard');
-                $routes->post('paste', 'FileManager::paste');
-                $routes->post('rename', 'FileManager::rename');
-                $routes->post('create-file', 'FileManager::createFile');
-                $routes->post('create-folder', 'FileManager::createFolder');
-                $routes->post('delete-files', 'FileManager::deleteFiles');
-                $routes->post('upload', 'FileManager::upload');
-                $routes->post('compress', 'FileManager::compress');
-                $routes->post('extract', 'FileManager::extract');
-                $routes->post('bulk-action', 'FileManager::bulkAction');
-                $routes->get('download/(:any)', 'FileManager::download/$1');
-            });
         });
     });
 

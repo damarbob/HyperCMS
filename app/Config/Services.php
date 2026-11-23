@@ -14,7 +14,6 @@ use App\Data\Roles;
 use App\Modules\Modules;
 use App\Modules\Slots;
 use App\Data\Permissions;
-use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
 use PDO;
 use StarDust\Config\Config as StarDustConfig;
@@ -58,20 +57,6 @@ class Services extends BaseService
         }
 
         return new Files();
-    }
-
-    /**
-     * FileServer service.
-     *
-     * @param bool $getShared Whether to return a shared instance.
-     * @return FileServer
-     */
-    public static function fileServer(bool $getShared = true): FileServer
-    {
-        if ($getShared) {
-            return static::getSharedInstance('fileServer');
-        }
-        return new FileServer();
     }
 
     /**
