@@ -6,9 +6,11 @@
             "name": "Gallery",
             "fields": "[{\"id\":\"caption\",\"label\":\"Caption\",\"type\":\"text\"}]",
             "group": "Media",
-            "user_groups": [
-                "superadmin"
-            ],
+            "access": {
+                "admin": [
+                    "read"
+                ]
+            },
             "icon": "media",
             "label_field": "caption"
         }
@@ -40,7 +42,7 @@
                     "name": "Gallery",
                     "fields": "[{\"id\":\"caption\",\"label\":\"Caption\",\"type\":\"text\"}]",
                     "group": "Media",
-                    "user_groups": "[\"superadmin\"]",
+                    "user_groups": null,
                     "icon": "media",
                     "creator_id": 1
                 }

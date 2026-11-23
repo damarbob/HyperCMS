@@ -60,16 +60,9 @@
                             []
                         ],
                         [
-                            "CodeIgniter\\Shield\\Filters\\GroupFilter",
+                            "App\\Filters\\AbilityFilter",
                             [
-                                "superadmin"
-                            ]
-                        ],
-                        [
-                            "App\\Filters\\ModelUserGroupFilter",
-                            [
-                                "model",
-                                "2"
+                                "models.manage"
                             ]
                         ]
                     ]

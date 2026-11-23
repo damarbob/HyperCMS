@@ -10,8 +10,8 @@
     "status": 200,
     "body": {
         "draw": 1,
-        "recordsTotal": 4,
-        "recordsFiltered": 4,
+        "recordsTotal": 3,
+        "recordsFiltered": 3,
         "data": [
             {
                 "id": "1",
@@ -25,22 +25,6 @@
                 "icon": "file-text",
                 "date_modified": "2026-11-14 11:13:35",
                 "data_id": "1",
-                "created_by": "capture_admin",
-                "edited_by": "capture_admin",
-                "deleted_by": null
-            },
-            {
-                "id": "2",
-                "created_at": "2026-11-14 11:13:35",
-                "date_deleted": null,
-                "name": "Product",
-                "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"choice\",\"multiple\":false,\"widget\":\"select\",\"choices\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime\"}]",
-                "label_field": "sku",
-                "group": "Content",
-                "user_groups": "[\"superadmin\"]",
-                "icon": "file-text",
-                "date_modified": "2026-11-14 11:13:35",
-                "data_id": "2",
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null

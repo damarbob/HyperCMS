@@ -6,10 +6,15 @@
             "name": "Article",
             "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
             "group": "Content",
-            "user_groups": [
-                "superadmin",
-                "admin"
-            ],
+            "access": {
+                "admin": [
+                    "read",
+                    "update"
+                ],
+                "developer": [
+                    "read"
+                ]
+            },
             "icon": "doc",
             "label_field": "title"
         }
@@ -54,7 +59,7 @@
                     "name": "Article",
                     "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
                     "group": "Content",
-                    "user_groups": "[\"superadmin\",\"admin\"]",
+                    "user_groups": null,
                     "icon": "doc",
                     "creator_id": 1
                 }

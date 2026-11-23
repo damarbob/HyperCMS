@@ -235,15 +235,15 @@ $flows = [
     'w11_entry_purge_empty'   => ['admin/model/1/purge', []],
     'w22_entry_trash_other_model' => ['admin/model/1/trash', ['ids' => [43]]],
     'w23_entry_history_clear' => ['admin/model/1/1/history/clear', []],
-    'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'user_groups' => ['superadmin'], 'icon' => 'media', 'label_field' => 'caption']],
+    'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'access' => ['admin' => ['read']], 'icon' => 'media', 'label_field' => 'caption']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
-    'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'doc', 'label_field' => 'title']],
+    'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'access' => ['admin' => ['read', 'update'], 'developer' => ['read']], 'icon' => 'doc', 'label_field' => 'title']],
     'w15_model_delete_single' => ['admin/models/3/delete', []],
     'w16_model_delete_bulk'   => ['admin/models/delete', ['ids' => [2]]],
     'w17_model_restore'       => ['admin/models/restore', ['ids' => [4]]],
     'w18_model_purge'         => ['admin/models/purge-deleted', []],
     'w19_model_data_clear'    => ['admin/model-data/1/clear', []],
-    'w20_model_update_bad'    => ['admin/models/1', ['name' => 'Article', 'fields' => $j([['id' => 'a', 'type' => 'text'], ['id' => 'a', 'type' => 'textarea']]), 'group' => 'Content', 'user_groups' => ['superadmin'], 'icon' => 'doc']],
+    'w20_model_update_bad'    => ['admin/models/1', ['name' => 'Article', 'fields' => $j([['id' => 'a', 'type' => 'text'], ['id' => 'a', 'type' => 'textarea']]), 'group' => 'Content', 'access' => ['admin' => ['read']], 'icon' => 'doc']],
     'w21_model_check'         => ['admin/models/check', ['fields' => $articleModelFields, 'label_field' => 'title']],
 ];
 $prev = snapshot($pdo, $queries);

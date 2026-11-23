@@ -1,8 +1,8 @@
 {
     "request": "GET admin/model/5",
-    "status": 302,
-    "location": "/index.php/admin/dashboard",
-    "title": null,
-    "bytes": 28722,
-    "sha1": "6cc830078df77019edc0f48c376ca42459320e70"
+    "status": 200,
+    "location": null,
+    "title": "Restricted",
+    "bytes": 45311,
+    "sha1": "fe3ed384368eebe00f237bfe39b444f5ce03602b"
 }

@@ -224,5 +224,59 @@ foreach (['admin/model-data/1/clear' => 'clear model history', 'admin/model-data
 [$status] = web($base, $ajar, 'GET', 'admin/model-data/1');
 $say('history, model 1 page, superadmin (legit)', $status, $status !== 200, 'an open model history was refused');
 
+// Every role against the pages and the writes of the admin. The accounts are a superadmin, a developer and a member of
+// `user`. Each row says whether that role may open the page, and anything that does not match is reported: a page opened
+// without the right is exposed, and a page refused to a role that has the right is a block that stops the work.
+$roles = [
+    'superadmin' => ['capture_admin@example.test', 'Capture-Admin-2026'],
+    'developer'  => ['capture_dev@example.test', 'Capture-Dev-2026'],
+    'user'       => ['capture_user@example.test', 'Capture-User-2026'],
+];
+$matrix = [
+    // page                              superadmin developer user
+    'admin/dashboard'                 => [true, true, true],
+    'admin/settings'                  => [true, true, true],
+    'admin/models'                    => [true, false, false],
+    'admin/models/new'                => [true, false, false],
+    'admin/models/1/edit'             => [true, false, false],
+    'admin/model-data/1'              => [true, false, false],
+    'admin/settings/models'           => [true, false, false],
+    'admin/users'                     => [true, false, false],
+    'admin/entries'                   => [true, true, false],
+    'admin/file-manager'              => [true, true, false],
+    'admin/model/1'                   => [true, true, false],
+    'admin/model/1/new'               => [true, true, false],
+    'admin/model/1/1/edit'            => [true, true, false],
+    'admin/model/1/1/history'         => [true, true, false],
+    'admin/model/5'                   => [true, true, false],
+    'admin/model/5/new'               => [true, true, false],
+    'admin/settings/paging-system'    => [true, true, false],
+];
+$posts = [
+    // write                                            superadmin developer user
+    'admin/models/check'                             => [true, false, false],
+    'admin/model/1/trash'                            => [true, true, false],
+    'admin/models/delete'                            => [true, false, false],
+];
+$form = fn(string $token): array => ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $token];
+$names = array_keys($roles);
+foreach ($roles as $role => [$email, $password]) {
+    [$rjar, $rtoken] = signIn($base, $email, $password);
+    $column = array_search($role, $names, true);
+    foreach ($matrix as $path => $allowed) {
+        [$status] = web($base, $rjar, 'GET', $path);
+        $opened = $status === 200;
+        $bad    = $opened !== $allowed[$column];
+        $say("role $role, GET $path", $status, $bad, $opened ? 'opened without the right' : 'refused although the role has the right');
+    }
+    foreach ($posts as $path => $allowed) {
+        [$status, , $loc] = web($base, $rjar, 'POST', $path, http_build_query(['hyper_csrf_token' => $rtoken, 'ids' => [999999]]), $form($rtoken));
+        // A refusal is a 403 or a redirect to the dashboard. Anything else means the request reached the controller.
+        $refused = $status === 403 || ($status >= 300 && $status < 400 && str_contains((string) $loc, 'dashboard'));
+        $bad     = $refused === $allowed[$column];
+        $say("role $role, POST $path", $status, $bad, $refused ? 'refused although the role has the right' : 'reached the controller without the right');
+    }
+}
+
 echo "$exposed probes were exposed in all\n";
 exit($exposed === 0 && $blocked === 0 ? 0 : 1);

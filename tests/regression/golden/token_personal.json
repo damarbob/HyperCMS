@@ -11,8 +11,8 @@
     "status": 200,
     "body": {
         "draw": 1,
-        "recordsTotal": 4,
-        "recordsFiltered": 4,
+        "recordsTotal": 3,
+        "recordsFiltered": 3,
         "data": [
             {
                 "id": "1",

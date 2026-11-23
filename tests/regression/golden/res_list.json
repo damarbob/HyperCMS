@@ -263,6 +263,21 @@
                 "deleted_by": null
             },
             {
+                "id": "43",
+                "created_at": "2026-11-14 11:13:37",
+                "date_deleted": null,
+                "model_id": "5",
+                "model_name": "Restricted",
+                "model_fields": "[{\"id\":\"secret\",\"label\":\"Secret\",\"type\":\"text\"}]",
+                "user_groups": "[\"developer\"]",
+                "fields": "{\"secret\":\"hidden\"}",
+                "date_modified": "2026-11-14 11:13:37",
+                "data_id": "43",
+                "created_by": "capture_admin",
+                "edited_by": "capture_admin",
+                "deleted_by": null
+            },
+            {
                 "id": "3",
                 "created_at": "2026-11-14 11:13:36",
                 "date_deleted": null,
@@ -291,27 +306,12 @@
                 "created_by": "capture_admin",
                 "edited_by": "capture_admin",
                 "deleted_by": null
-            },
-            {
-                "id": "5",
-                "created_at": "2026-11-14 11:13:36",
-                "date_deleted": null,
-                "model_id": "1",
-                "model_name": "Article",
-                "model_fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"choice\",\"multiple\":true,\"widget\":\"checkboxes\",\"choices\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\",\"multiple\":false,\"accept\":\"any\"}]",
-                "user_groups": "[]",
-                "fields": "{\"body\":\"<p>Body of post 5 with <em>markup</em> and a \\\"quote\\\" and a back\\\\slash ?</p>\",\"tags\":[],\"cover\":null,\"title\":\"eclair filling\",\"views\":50,\"published_at\":\"2026-02-06 14:05:00\"}",
-                "date_modified": "2026-11-14 11:13:36",
-                "data_id": "5",
-                "created_by": "capture_admin",
-                "edited_by": "capture_admin",
-                "deleted_by": null
             }
         ],
         "pager": {
             "current_page": 1,
             "total_pages": 2,
-            "total_items": 37,
+            "total_items": 38,
             "per_page": 20
         }
     }
