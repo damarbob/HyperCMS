@@ -1,7 +1,14 @@
 <?php
 
 return [
-    'subtitle' => 'What was edited last, and where to start.',
+    'subtitle' => 'Your latest edits, what others changed, and where to start.',
+    'attention' => 'Needs a look',
+    'attIndexing' => '{n, plural, one{# model is} other{# models are}} still indexing a field in the background. Sorting and filtering on it start working when that finishes.',
+    'attUnnamed' => '{n, plural, one{# model has} other{# models have}} no field that names its entries, so lists and pickers show only a number.',
+    'attModule' => 'The module {name} was not loaded. {why}',
+    'attSettings' => 'Open settings',
+    'mine' => 'Your latest edits',
+    'others' => 'Latest from others',
     'recent' => 'Recently edited',
     'allEntries' => 'All entries',
     'noRecent' => 'Nothing has been edited yet.',

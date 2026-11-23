@@ -1,7 +1,14 @@
 <?php
 
 return [
-    'subtitle' => 'Yang terakhir diubah, dan tempat untuk mulai.',
+    'subtitle' => 'Perubahan terakhir Anda, yang diubah orang lain, dan tempat untuk mulai.',
+    'attention' => 'Perlu dilihat',
+    'attIndexing' => 'Ada {n} model yang masih mengindeks sebuah isian di latar belakang. Pengurutan dan penyaringan pada isian itu baru berfungsi setelah selesai.',
+    'attUnnamed' => 'Ada {n} model tanpa isian yang menamai entrinya, jadi daftar dan pemilih hanya menampilkan nomor.',
+    'attModule' => 'Modul {name} tidak dimuat. {why}',
+    'attSettings' => 'Buka pengaturan',
+    'mine' => 'Perubahan terakhir Anda',
+    'others' => 'Terakhir diubah orang lain',
     'recent' => 'Terakhir diubah',
     'allEntries' => 'Semua entri',
     'noRecent' => 'Belum ada yang diubah.',

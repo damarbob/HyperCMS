@@ -80,6 +80,16 @@ class EntryLists
 
         $builder = $this->scoped($this->rows()->query(! $live), $id, $ids, $modelId, $hiddenModelIds);
 
+        // The dashboard asks for the entries one person last edited, or for those that someone else did.
+        $onlyEditor   = (int) ($post['editor_id'] ?? 0);
+        $exceptEditor = (int) ($post['except_editor_id'] ?? 0);
+        if ($onlyEditor > 0) {
+            $builder->where('e.editor_id', $onlyEditor);
+        }
+        if ($exceptEditor > 0) {
+            $builder->groupStart()->where('e.editor_id <>', $exceptEditor)->orWhere('e.editor_id IS NULL', null, false)->groupEnd();
+        }
+
         $totalRecords = $builder->countAllResults(false);
 
         $sortsFields = $safe && $orderColumn === 'fields';
