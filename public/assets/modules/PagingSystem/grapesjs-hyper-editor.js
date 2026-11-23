@@ -91,40 +91,25 @@ grapesjs.plugins.add(
         // }
         /* --- End of HTML Cleanup --- */
 
-        // Prepare data to be sent: set the override fields with the processed content.
-        const newEntryFields = window.hyper.data.mapped_entry_fields;
-        newEntryFields[htmlField] = htmlOutput;
-        newEntryFields[cssField] = cssOutput;
-        newEntryFields[componentElementsField] = JSON.stringify(components);
-        newEntryFields[projectDataField] = JSON.stringify(project);
-
-        // Format payload: create an array of objects with {id, value} entries.
-        const payload = Object.entries(newEntryFields).map(([key, value]) => ({
-          id: key,
-          value: value,
-        }));
-
-        // Prepare FormData with the payload and CSRF data.
+        // The server writes the four fields that the editor owns and leaves the rest of the entry alone.
         const newFormData = new FormData();
-        newFormData.append("fields", JSON.stringify(payload));
+        newFormData.append("html", htmlOutput);
+        newFormData.append("css", cssOutput);
+        newFormData.append("components", JSON.stringify(components));
+        newFormData.append("project", JSON.stringify(project));
         newFormData.append(
           window.hyper.config.csrfToken,
           window.hyper.config.csrfHash
         );
 
-        // Send the payload via fetch to the endpoint for saving the entry.
-        fetch(
-          window.hyper.config.baseUrl +
-          "admin/entries/" +
-          window.hyper.data.entry.id,
-          {
-            method: "POST",
-            headers: {
-              Accept: "application/json",
-            },
-            body: newFormData,
-          }
-        )
+        fetch(window.hyper.data.saveUrl, {
+          method: "POST",
+          headers: {
+            Accept: "application/json",
+            "X-Requested-With": "XMLHttpRequest",
+          },
+          body: newFormData,
+        })
           .then((response) => response.json())
           .then(function (data) {
             // Close swal loader

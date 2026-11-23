@@ -133,14 +133,8 @@ $selectorManager = [
   'componentFirst' => true,
 ];
 
-// Include override file if available
-$editorScriptsOverrideFile = __DIR__ . '/.hyper-dev/editor_scripts_override.php';
-
-if (file_exists($editorScriptsOverrideFile)) {
-  include $editorScriptsOverrideFile;
-} else {
-  log_message('error', "$editorScriptsOverrideFile does not exist.");
-}
+// The blocks that a person made as entries are an unfinished feature, so none are offered yet.
+$test_components = $test_components ?? [];
 ?>
 
 <script type="text/javascript">

@@ -59,4 +59,25 @@ return [
 
     'saving' => 'Menyimpan',
     'pleaseWait' => 'Harap tunggu...',
+
+    // Settings and saving
+    'pageModelText' => 'Model yang menyimpan halaman situs dan bagian yang ada di setiap halaman, seperti header atau footer.',
+    'assetModelText' => 'Model yang menyimpan skrip dan gaya yang dimuat setiap halaman.',
+    'metaModelText' => 'Model yang menyimpan tag meta di setiap halaman, seperti deskripsi.',
+    'settingsText' => 'Pilih model yang menyimpan halaman, aset, dan tag meta situs, atau buat di sini.',
+    'chosenModel' => 'Model yang dipakai',
+    'noneChosen' => 'Belum dipilih',
+    'noModelFits' => 'Belum ada model yang punya kolom yang dibutuhkan.',
+    'makeModel' => 'Buat model {name}',
+    'makeAnother' => 'Buat model {name} lain',
+    'chosenNoLongerFits' => 'Model yang dipilih sudah hilang atau tidak punya kolom yang dibutuhkan lagi, jadi tidak dipakai.',
+    'modelsSaved' => 'Model sudah disimpan.',
+    'nothingChanged' => 'Tidak ada yang berubah.',
+    'modelDoesNotFit' => 'Model itu tidak punya kolom yang dibutuhkan.',
+    'noSuchModel' => 'Model itu tidak ada untuk dibuat.',
+    'modelMade' => 'Model sudah dibuat dan dipilih.',
+    'modelNotMade' => 'Model tidak bisa dibuat. Periksa log.',
+    'editorNotAllowed' => 'Anda tidak boleh mengedit halaman ini.',
+    'savedPage' => 'Halaman sudah disimpan.',
+    'saveFailed' => 'Halaman tidak bisa disimpan.',
 ];

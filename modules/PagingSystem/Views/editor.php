@@ -529,5 +529,5 @@
 <?= $this->section('footer') ?>
 <script src="<?= base_url('assets/vendor/jquery/dist/jquery.min.js') ?>"></script>
 
-<?= $this->include('\Modules\PagingSystem\Views\Admin\editor_scripts') ?>
+<?= $this->include('PagingSystem\Views\editor_scripts') ?>
 <?= $this->endSection() ?>

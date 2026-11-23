@@ -5,8 +5,6 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->get('/', 'Home');
-
 // Authentication routes
 $routes->group('auth', ['namespace' => 'App\Controllers\Auth'], static function ($routes) {
     service('auth')->routes($routes, ['except' => ['login', 'register']]);
@@ -148,3 +146,6 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
 
 // The routes the modules that follow the contract ask for.
 service('modules')->routes($routes);
+
+// The welcome page, for a site where no module has taken the home address.
+$routes->get('/', 'Home');

@@ -1,16 +1,17 @@
 <?php
 
-namespace PagingSystem\Controllers\Admin\API;
+namespace PagingSystem\Controllers;
 
-use App\Controllers\API\v1\ApiController;
+use App\Data\Files;
 use App\Data\MediaException;
+use App\Modules\ModuleController;
 use CodeIgniter\HTTP\Files\UploadedFile;
 
 /**
  * Takes the images that the page editor uploads into the media library, and answers with their links, which is what the
  * asset manager of the editor expects.
  */
-class Assets extends ApiController
+class Assets extends ModuleController
 {
     public function assetsUpload()
     {
@@ -25,17 +26,17 @@ class Assets extends ApiController
             }
 
             try {
-                $links[] = \App\Data\Files::url(service('files')->store($file->getTempName(), $file->getClientName(), '', (int) auth()->id() ?: null));
+                $links[] = Files::url(service('files')->store($file->getTempName(), $file->getClientName(), '', (int) auth()->id() ?: null));
             } catch (MediaException $e) {
                 $errors[] = $e->getMessage();
             }
         }
 
         if ($errors !== []) {
-            return $this->response->setJSON(['status' => 'error', 'message' => implode(' ', $errors)]);
+            return $this->json(['status' => 'error', 'message' => implode(' ', $errors)]);
         }
 
-        return $this->response->setJSON(['status' => 'success', 'message' => $links, 'data' => $links]);
+        return $this->json(['status' => 'success', 'message' => $links, 'data' => $links]);
     }
 
     /**

@@ -59,4 +59,25 @@ return [
 
     'saving' => 'Saving',
     'pleaseWait' => 'Please wait...',
+
+    // Settings and saving
+    'pageModelText' => 'The model that holds the pages of the site, and the parts that sit on every page, such as a header or a footer.',
+    'assetModelText' => 'The model that holds the scripts and styles that every page loads.',
+    'metaModelText' => 'The model that holds the meta tags that every page carries, such as a description.',
+    'settingsText' => 'Choose the models that hold the pages, the assets and the meta tags of the site, or make them here.',
+    'chosenModel' => 'Model in use',
+    'noneChosen' => 'None chosen',
+    'noModelFits' => 'No model has the fields this needs yet.',
+    'makeModel' => 'Make the {name} model',
+    'makeAnother' => 'Make another {name} model',
+    'chosenNoLongerFits' => 'The model that was chosen is gone or no longer has the fields this needs, so it is not used.',
+    'modelsSaved' => 'The models are saved.',
+    'nothingChanged' => 'Nothing was changed.',
+    'modelDoesNotFit' => 'That model does not have the fields this needs.',
+    'noSuchModel' => 'There is no such model to make.',
+    'modelMade' => 'The model is made and chosen.',
+    'modelNotMade' => 'The model could not be made. Check the log.',
+    'editorNotAllowed' => 'You may not edit this page.',
+    'savedPage' => 'The page is saved.',
+    'saveFailed' => 'The page could not be saved.',
 ];
