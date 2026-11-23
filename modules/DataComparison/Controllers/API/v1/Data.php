@@ -9,8 +9,8 @@ class Data extends AdminController
 {
     public function index()
     {
-        // Only the groups that see this module in the admin menu may read its data.
-        if (! ApiAuthFilter::caller()->inGroup(...ApiAuthFilter::STAFF_GROUPS)) {
+        // Only the roles that see this module in the admin menu may read its data.
+        if (! service('permissions')->can(ApiAuthFilter::caller(), 'entries.browse')) {
             return $this->response->setStatusCode(403)->setJSON(['message' => lang('Auth.notEnoughPrivilege')]);
         }
 

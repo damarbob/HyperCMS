@@ -12,41 +12,8 @@
     "status": 200,
     "body": {
         "draw": 1,
-        "recordsTotal": 3,
-        "recordsFiltered": 3,
-        "data": [
-            {
-                "id": "1",
-                "created_at": "2026-11-14 11:13:35",
-                "date_deleted": null,
-                "name": "Article",
-                "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"published_at\",\"label\":\"Published\",\"type\":\"datetime\"},{\"id\":\"tags\",\"label\":\"Tags\",\"type\":\"choice\",\"multiple\":true,\"widget\":\"checkboxes\",\"choices\":[{\"value\":\"news\",\"label\":\"News\"},{\"value\":\"tech\",\"label\":\"Tech\"}]},{\"id\":\"cover\",\"label\":\"Cover\",\"type\":\"file\",\"multiple\":false,\"accept\":\"any\"}]",
-                "label_field": "title",
-                "group": "Content",
-                "user_groups": "[]",
-                "icon": "file-text",
-                "date_modified": "2026-11-14 11:13:35",
-                "data_id": "1",
-                "created_by": "capture_admin",
-                "edited_by": "capture_admin",
-                "deleted_by": null
-            },
-            {
-                "id": "2",
-                "created_at": "2026-11-14 11:13:35",
-                "date_deleted": null,
-                "name": "Product",
-                "fields": "[{\"id\":\"sku\",\"label\":\"SKU\",\"type\":\"text\"},{\"id\":\"price\",\"label\":\"Price\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"category\",\"label\":\"Category\",\"type\":\"choice\",\"multiple\":false,\"widget\":\"select\",\"choices\":[{\"value\":\"a\",\"label\":\"A\"},{\"value\":\"b\",\"label\":\"B\"}]},{\"id\":\"added\",\"label\":\"Added\",\"type\":\"datetime\"}]",
-                "label_field": "sku",
-                "group": "Content",
-                "user_groups": "[\"superadmin\"]",
-                "icon": "file-text",
-                "date_modified": "2026-11-14 11:13:35",
-                "data_id": "2",
-                "created_by": "capture_admin",
-                "edited_by": "capture_admin",
-                "deleted_by": null
-            }
-        ]
+        "recordsTotal": 0,
+        "recordsFiltered": 0,
+        "data": []
     }
 }

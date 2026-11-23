@@ -6,6 +6,7 @@ declare(strict_types=1);
 // The probes sign in first, so they test the queries and are not stopped at the login check.
 // usage: php probe.php <baseUrl>
 $base = rtrim($argv[1] ?? 'http://localhost:8099', '/') . '/';
+$envFile = $argv[2] ?? '';
 
 function post(string $url, array $form, string $token = ''): array
 {
@@ -103,17 +104,39 @@ function web(string $base, array &$jar, string $method, string $path, ?string $b
     return [$status, $out, $loc];
 }
 
-/** Sign in through the form. Returns the cookie jar and the CSRF token. */
-function signIn(string $base, string $email, string $password): array
+/**
+ * Sign in through the form. Returns the cookie jar and the CSRF token.
+ *
+ * The login pages allow ten requests a minute from one address, and a probe that signs in many times is turned away
+ * without a sign. A sign in that did not reach the admin therefore waits and tries again, and gives up with a message
+ * rather than let an attack run from a session that does not exist.
+ */
+function signIn(string $base, string $email, string $password, bool $mustSucceed = true): array
 {
-    $jar = [];
-    [, $page] = web($base, $jar, 'GET', 'auth/login');
-    $token = preg_match('/name="hyper_csrf_token"\s+value="([a-f0-9]+)"/', $page, $m) ? $m[1] : '';
-    web($base, $jar, 'POST', 'auth/login', http_build_query(['email' => $email, 'password' => $password, 'hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded']);
-    // Any admin page carries the token of the signed-in session in its script config.
-    [, $page] = web($base, $jar, 'GET', 'admin/dashboard');
-    $token = preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token;
-    return [$jar, $token];
+    for ($try = 0; $try < ($mustSucceed ? 6 : 1); $try++) {
+        $jar = [];
+        [$status, $page] = web($base, $jar, 'GET', 'auth/login');
+        $token = preg_match('/name="hyper_csrf_token"\s+value="([a-f0-9]+)"/', $page, $m) ? $m[1] : '';
+        if ($status === 200 && $token !== '') {
+            web($base, $jar, 'POST', 'auth/login', http_build_query(['email' => $email, 'password' => $password, 'hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded']);
+            // Any admin page carries the token of the signed-in session in its script config.
+            [$status, $page] = web($base, $jar, 'GET', 'admin/dashboard');
+            if ($status === 200) {
+                return [$jar, preg_match('/"csrfHash":"([a-f0-9]+)"/', $page, $m) ? $m[1] : $token];
+            }
+        }
+        if ($mustSucceed) {
+            sleep(15);
+        }
+    }
+
+    if (! $mustSucceed) {
+        return [$jar ?? [], ''];
+    }
+
+    fwrite(STDERR, "Could not sign in as $email, so nothing can be probed from that account.
+");
+    exit(1);
 }
 
 $say = function (string $label, int $status, bool $bad, string $note = '') use (&$exposed): void {
@@ -223,6 +246,192 @@ foreach (['admin/model-data/1/clear' => 'clear model history', 'admin/model-data
 [$ajar] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');
 [$status] = web($base, $ajar, 'GET', 'admin/model-data/1');
 $say('history, model 1 page, superadmin (legit)', $status, $status !== 200, 'an open model history was refused');
+
+// Every role against the pages and the writes of the admin. The accounts are a superadmin, a developer and a member of
+// `user`. Each row says whether that role may open the page, and anything that does not match is reported: a page opened
+// without the right is exposed, and a page refused to a role that has the right is a block that stops the work.
+$roles = [
+    'superadmin' => ['capture_admin@example.test', 'Capture-Admin-2026'],
+    'developer'  => ['capture_dev@example.test', 'Capture-Dev-2026'],
+    'user'       => ['capture_user@example.test', 'Capture-User-2026'],
+];
+$matrix = [
+    // page                              superadmin developer user
+    'admin/dashboard'                 => [true, true, true],
+    'admin/settings'                  => [true, true, true],
+    'admin/models'                    => [true, false, false],
+    'admin/models/new'                => [true, false, false],
+    'admin/models/1/edit'             => [true, false, false],
+    'admin/model-data/1'              => [true, false, false],
+    'admin/settings/models'           => [true, false, false],
+    'admin/users'                     => [true, false, false],
+    'admin/roles'                     => [true, false, false],
+    'admin/abilities'                 => [true, false, false],
+    'admin/tokens'                    => [true, true, false],
+    'admin/profile'                   => [true, true, true],
+    'admin/entries'                   => [true, true, false],
+    'admin/file-manager'              => [true, true, false],
+    'admin/model/1'                   => [true, true, false],
+    'admin/model/1/new'               => [true, true, false],
+    'admin/model/1/1/edit'            => [true, true, false],
+    'admin/model/1/1/history'         => [true, true, false],
+    'admin/model/5'                   => [true, true, false],
+    'admin/model/5/new'               => [true, true, false],
+    'admin/settings/paging-system'    => [true, true, false],
+];
+$posts = [
+    // write                                            superadmin developer user
+    'admin/models/check'                             => [true, false, false],
+    'admin/model/1/trash'                            => [true, true, false],
+    'admin/models/delete'                            => [true, false, false],
+];
+$form = fn(string $token): array => ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $token];
+$names = array_keys($roles);
+foreach ($roles as $role => [$email, $password]) {
+    [$rjar, $rtoken] = signIn($base, $email, $password);
+    $column = array_search($role, $names, true);
+    foreach ($matrix as $path => $allowed) {
+        [$status] = web($base, $rjar, 'GET', $path);
+        $opened = $status === 200;
+        $bad    = $opened !== $allowed[$column];
+        $say("role $role, GET $path", $status, $bad, $opened ? 'opened without the right' : 'refused although the role has the right');
+    }
+    foreach ($posts as $path => $allowed) {
+        [$status, , $loc] = web($base, $rjar, 'POST', $path, http_build_query(['hyper_csrf_token' => $rtoken, 'ids' => [999999]]), $form($rtoken));
+        // A refusal is a 403 or a redirect to the dashboard. Anything else means the request reached the controller.
+        $refused = $status === 403 || ($status >= 300 && $status < 400 && str_contains((string) $loc, 'dashboard'));
+        $bad     = $refused === $allowed[$column];
+        $say("role $role, POST $path", $status, $bad, $refused ? 'refused although the role has the right' : 'reached the controller without the right');
+    }
+}
+
+// The roles and abilities screens, and the ways a person with only part of the power could reach more. The probe makes
+// two roles and two accounts, tries to escalate with each, and removes everything again.
+if ($envFile !== '') {
+    require_once __DIR__ . '/lib.php';
+    $pdo = connect(dbSettings($envFile), true);
+    [$sa, $satoken] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');
+    $sform = ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $satoken];
+    $act   = function (array &$jar, string $token, string $path, array $fields) use ($base): array {
+        return web($base, $jar, 'POST', $path, http_build_query($fields + ['hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $token]);
+    };
+    $rolesOf = fn(string $user): array => $pdo->query("SELECT `group` FROM auth_groups_users g JOIN users u ON u.id = g.user_id WHERE u.username = " . $pdo->quote($user))->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach (['admin/roles', 'admin/roles/new', 'admin/roles/admin/edit', 'admin/roles/superadmin/edit', 'admin/abilities'] as $page) {
+        [$status] = web($base, $sa, 'GET', $page);
+        $say("roles, superadmin opens $page", $status, $status !== 200, 'a screen of the superadmin was refused');
+    }
+
+    // Roles: make, refuse a bad or repeated name, refuse to delete a locked role or one with people in it.
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_users', 'label' => 'Probe users', 'copy' => '', 'abilities' => ['users.manage']]);
+    $say('roles, make a role', $status, $status !== 303, 'a valid role was not made');
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_roles', 'label' => 'Probe roles', 'abilities' => ['roles.manage']]);
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_users', 'label' => 'Again']);
+    $say('roles, the same name twice', $status, $status === 303, 'a repeated name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'Bad Name!', 'label' => 'Bad']);
+    $say('roles, a name with spaces and capitals', $status, $status === 303, 'a bad name was accepted');
+    $act($sa, $satoken, 'admin/roles/superadmin/delete', []);
+    $say('roles, delete the locked role', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'superadmin'")->fetchColumn() !== 1, 'the locked role was deleted');
+    $act($sa, $satoken, 'admin/roles/developer/delete', []);
+    $say('roles, delete a role that has people', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'developer'")->fetchColumn() !== 1, 'a role with people was deleted');
+
+    // Abilities: add one by name, refuse a bad or repeated name, refuse to delete an ability of core.
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'probe.thing', 'label' => 'Probe thing']);
+    $say('abilities, add one by name', $status, $status !== 303, 'a valid ability was not added');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'probe.thing', 'label' => 'Again']);
+    $say('abilities, the same name twice', $status, $status === 303, 'a repeated name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'single', 'label' => 'One word']);
+    $say('abilities, a name of one word', $status, $status === 303, 'a bad name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'entries.read', 'label' => 'Clash']);
+    $say('abilities, a name of a model action', $status, $status === 303, 'a name that clashes with a model action was accepted');
+    $act($sa, $satoken, 'admin/abilities/media.manage/delete', []);
+    $say('abilities, delete an ability of core', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE ability = 'media.manage'")->fetchColumn() === 0, 'an ability of core was deleted');
+
+    // Two accounts that each have part of the power.
+    foreach (['probe_manager' => 'probe_users', 'probe_editor' => 'probe_roles'] as $user => $role) {
+        $act($sa, $satoken, 'admin/users', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => [$role]]);
+    }
+
+    // The attacks below mean nothing if the accounts were not made, so make sure they exist and can sign in.
+    foreach (['probe_manager', 'probe_editor'] as $user) {
+        $made = (int) $pdo->query('SELECT COUNT(*) FROM users WHERE username = ' . $pdo->quote($user))->fetchColumn();
+        [$cj] = signIn($base, $user . '@example.test', 'Walrus-Copper-Lantern-2026');
+        [$status] = web($base, $cj, 'GET', 'admin/profile');
+        $say("probe account $user exists and signs in", $status, $made !== 1 || $status !== 200, 'the account was not made, so the attacks test nothing');
+    }
+
+    // A person who may manage users must not reach the superadmin role, or an account that has it.
+    [$mj, $mtoken] = signIn($base, 'probe_manager@example.test', 'Walrus-Copper-Lantern-2026');
+    // What the manager may do must work, or the refusals below say nothing.
+    [$ost, , $oloc] = $act($mj, $mtoken, 'admin/users', ['username' => 'probe_plain', 'email' => 'probe_plain@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => []]);
+    $say('users, a manager makes an ordinary account (control)', $ost, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_plain'")->fetchColumn() !== 1, 'the manager could not even make an ordinary account, status ' . $ost . ' ' . $oloc);
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'probe_manager'")->fetchColumn(), ['username' => 'probe_manager', 'email' => 'probe_manager@example.test', 'roles' => ['probe_users', 'superadmin']]);
+    $say('users, a manager makes themselves superadmin', 200, in_array('superadmin', $rolesOf('probe_manager'), true), 'the person reached the superadmin role');
+    $act($mj, $mtoken, 'admin/users', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => ['superadmin']]);
+    $say('users, a manager makes a superadmin account', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_friend'")->fetchColumn() > 0 && in_array('superadmin', $rolesOf('probe_friend'), true), 'a superadmin account was made');
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn(), ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'password' => 'Hijacked-Passw0rd-2026!', 'roles' => ['superadmin']]);
+    [$cj] = signIn($base, 'capture_admin@example.test', 'Hijacked-Passw0rd-2026!', false);
+    [$status] = web($base, $cj, 'GET', 'admin/models');
+    $say('users, a manager resets a superadmin password', $status, $status === 200, 'the password of a superadmin was changed');
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn() . '/delete', []);
+    $say('users, a manager deletes a superadmin', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'capture_admin'")->fetchColumn() === 0, 'a superadmin account was deleted');
+
+    // A person who may manage roles can hand out only what they have.
+    [$ej, $etoken] = signIn($base, 'probe_editor@example.test', 'Walrus-Copper-Lantern-2026');
+    [$est, , $eloc] = $act($ej, $etoken, 'admin/roles', ['name' => 'probe_plainrole', 'label' => 'Plain role']);
+    $say('roles, an editor makes an ordinary role (control)', $est, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_plainrole'")->fetchColumn() !== 1, 'the editor could not make an ordinary role, status ' . $est . ' ' . $eloc);
+    $act($ej, $etoken, 'admin/roles/probe_roles', ['label' => 'Probe roles', 'abilities' => ['roles.manage', 'users.manage', 'models.manage']]);
+    $held = $pdo->query("SELECT ability FROM hyper_role_abilities WHERE role = 'probe_roles' ORDER BY ability")->fetchAll(PDO::FETCH_COLUMN);
+    $say('roles, an editor gives their own role more power', 200, $held !== ['roles.manage'], 'the role now has ' . implode(', ', $held));
+    $act($ej, $etoken, 'admin/roles/superadmin', ['label' => 'Everyone', 'abilities' => []]);
+    $say('roles, an editor renames the superadmin role', 200, (string) $pdo->query("SELECT label FROM hyper_roles WHERE name = 'superadmin'")->fetchColumn() === 'Everyone', 'the superadmin role was changed');
+    $act($ej, $etoken, 'admin/roles', ['name' => 'probe_copy', 'label' => 'Copy', 'copy' => 'developer']);
+    $say('roles, an editor copies a role with more power', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_copy'")->fetchColumn() > 0 && (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE role = 'probe_copy'")->fetchColumn() > 0, 'a role with abilities the editor lacks was copied');
+
+    // Saving a model must not hand out actions the person lacks. A person who may manage models, and holds nothing on a
+    // model, tries to give their own role every action on it, and a higher role the person may not handle too.
+    $act($sa, $satoken, 'admin/roles', ['name' => 'probe_models', 'label' => 'Probe models', 'abilities' => ['models.manage']]);
+    $act($sa, $satoken, 'admin/users', ['username' => 'probe_modeler', 'email' => 'probe_modeler@example.test', 'password' => 'Walrus-Copper-Lantern-2026', 'roles' => ['probe_models']]);
+    [$kj, $ktoken] = signIn($base, 'probe_modeler@example.test', 'Walrus-Copper-Lantern-2026');
+    [$kst, , $kloc] = $act($kj, $ktoken, 'admin/models/3', ['name' => 'Linked', 'fields' => '[{"id":"title","label":"Title","type":"text"}]', 'access' => ['probe_models' => ['read', 'update', 'delete'], 'developer' => ['read']]]);
+    $saved = (string) $pdo->query('SELECT `fields` FROM hyper_models WHERE id = 3')->fetchColumn();
+    $say('models, the manager saved the model, so the grid was really tried', 200, ! str_contains($saved, '"title"') || str_contains($saved, 'related_model'), 'the save did not go through, status ' . $kst . ' ' . $kloc);
+    $granted = $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = 3 AND role = 'probe_models'")->fetchColumn();
+    $say('models, a manager gives their own role actions they do not hold', 200, (int) $granted > 0, $granted . ' rows were written');
+    $before = (int) $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = 3 AND role = 'developer'")->fetchColumn();
+    $say('models, a manager removes the actions of a higher role', 200, $before < 5, 'the developer role kept ' . $before . ' of 5 actions');
+
+    // A new model has no rights yet, and what the person holds on other models must not stand in for them.
+    $pdo->exec("INSERT INTO hyper_model_permissions (model_id, role, action) VALUES (1, 'probe_models', 'read')");
+    $act($kj, $ktoken, 'admin/models', ['name' => 'Probe new model', 'fields' => '[{"id":"title","label":"Title","type":"text"}]', 'access' => ['probe_models' => ['read'], 'developer' => ['read']]]);
+    $newId = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Probe new model'")->fetchColumn();
+    $say('models, a manager makes a model and sets its access', 200, $newId === 0 || (int) $pdo->query("SELECT COUNT(*) FROM hyper_model_permissions WHERE model_id = $newId AND role IN ('probe_models', 'developer')")->fetchColumn() > 0, $newId === 0 ? 'the model was not made, so nothing was tried' : 'a new model got access from rights held on another model');
+
+    // An ability that a higher role has cannot be deleted by someone who may not change that role.
+    $pdo->exec("INSERT INTO hyper_abilities (name, label, created_at) VALUES ('probe.held', 'Held', NOW())");
+    $pdo->exec("INSERT INTO hyper_role_abilities (role, ability) VALUES ('developer', 'probe.held')");
+    $act($ej, $etoken, 'admin/abilities/probe.held/delete', []);
+    $say('abilities, an editor deletes one that a higher role has', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_abilities WHERE name = 'probe.held'")->fetchColumn() === 0, 'an ability held by a higher role was deleted');
+
+    // Only a person who manages settings can turn on two-factor sign in for the site, whoever posts the form.
+    [$dj, $dtoken] = signIn($base, 'capture_dev@example.test', 'Capture-Dev-2026');
+    $act($dj, $dtoken, 'admin/settings/update', ['general_datatable_entries_per_page' => '25', 'two_factor' => '1']);
+    $say('settings, a developer turns on two-factor for the site', 200, (int) $pdo->query("SELECT COUNT(*) FROM settings WHERE `key` = 'Hyper.twoFactor' AND value IN ('1', 'true')")->fetchColumn() > 0, 'a site setting was changed without the ability');
+
+    // The password is asked for before the email or the password of an account changes.
+    $act($dj, $dtoken, 'admin/profile', ['username' => 'capture_dev', 'email' => 'taken_over@example.test', 'current_password' => 'not the password']);
+    $say('profile, change the email without the current password', 200, (int) $pdo->query("SELECT COUNT(*) FROM auth_identities WHERE secret = 'taken_over@example.test'")->fetchColumn() > 0, 'the email changed without the password');
+
+    // Clean up, in the order that the guards allow.
+    $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain'))");
+    $pdo->exec("DELETE FROM auth_identities WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain'))");
+    $pdo->exec("DELETE FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend', 'probe_modeler', 'probe_plain')");
+    $pdo->exec("DELETE FROM hyper_model_permissions WHERE role LIKE 'probe\_%'");
+    $pdo->exec("DELETE FROM hyper_role_abilities WHERE role LIKE 'probe\\_%'");
+    $pdo->exec("DELETE FROM hyper_roles WHERE name LIKE 'probe\\_%'");
+    $pdo->exec("DELETE FROM hyper_abilities WHERE name LIKE 'probe.%'");
+    $pdo->exec("UPDATE hyper_roles SET label = 'Super Admin' WHERE name = 'superadmin'");
+}
 
 echo "$exposed probes were exposed in all\n";
 exit($exposed === 0 && $blocked === 0 ? 0 : 1);

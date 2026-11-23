@@ -3,8 +3,7 @@
 namespace Config;
 
 use App\Filters\ApiAuthFilter;
-use App\Filters\GroupNotFilter;
-use App\Filters\ModelUserGroupFilter;
+use App\Filters\AbilityFilter;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -39,11 +38,8 @@ class Filters extends BaseFilters
         'performance'   => PerformanceMetrics::class,
 
         // Hyper
-        'model-user-group'   => ModelUserGroupFilter::class,
-        'api-auth'           => ApiAuthFilter::class,
-
-        // Shield extension filter
-        'group-not'     => GroupNotFilter::class,
+        'can'           => AbilityFilter::class,
+        'api-auth'      => ApiAuthFilter::class,
     ];
 
     /**

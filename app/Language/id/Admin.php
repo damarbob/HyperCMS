@@ -250,4 +250,5 @@ return [
     // --- Models Settings ---
     'emptyModelsTrash' => 'Kosongkan tong sampah model',
     'emptyingTheModelsTrashWillPermanentlyDelete' => 'Mengosongkan tong sampah model akan secara permanen <strong>menghapus semua model yang ada</strong>. Harap dicatat bahwa aksi ini tidak dapat diurungkan.',
+    'settingsInvalid' => 'Pilih salah satu jumlah baris.',
 ];

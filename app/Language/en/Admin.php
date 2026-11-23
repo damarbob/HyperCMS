@@ -251,4 +251,5 @@ return [
     'emptyModelsTrash' => 'Empty models trash',
     'emptyingTheModelsTrashWillPermanentlyDelete' => 'Emptying the models trash will permanently <strong>delete all models contained within</strong>. Please note that this action is irreversible.',
 
+    'settingsInvalid' => 'Choose one of the numbers of rows.',
 ];

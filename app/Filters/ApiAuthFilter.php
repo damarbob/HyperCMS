@@ -28,10 +28,6 @@ use CodeIgniter\Shield\Models\UserIdentityModel;
  */
 class ApiAuthFilter implements FilterInterface
 {
-    /**
-     * Groups whose members may use the API with a token. These match the admin entries routes.
-     */
-    public const STAFF_GROUPS = ['superadmin', 'admin', 'developer'];
 
     /**
      * The name of the tokens that `api/v1/auth/login` hands out.
@@ -162,7 +158,7 @@ class ApiAuthFilter implements FilterInterface
             }
         }
 
-        if (! $user->inGroup(...self::STAFF_GROUPS)) {
+        if (! service('permissions')->can($user, 'api.access')) {
             return $this->deny(ResponseInterface::HTTP_FORBIDDEN, lang('Filter.apiNotAllowed'));
         }
 

@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/profile",
+        "form": {
+            "username": "capture_admin",
+            "email": "capture_admin@example.test"
+        }
+    },
+    "status": 303,
+    "location": "/admin/profile",
+    "body": "",
+    "changes": []
+}

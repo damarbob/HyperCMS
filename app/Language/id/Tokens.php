@@ -1,0 +1,31 @@
+<?php
+
+// Kata-kata layar token akses.
+return [
+    'title'          => 'Token akses',
+    'text'           => 'Token memungkinkan skrip atau situs lain memakai API atas nama Anda, sebatas cakupan yang Anda berikan. Token berhenti berlaku pada tanggalnya, atau saat Anda mencabutnya.',
+    'name'           => 'Nama',
+    'nameHelp'       => 'Untuk apa token ini, misalnya nama situs yang memakainya.',
+    'scopes'         => 'Cakupan',
+    'scopesHelp'     => 'Token hanya bisa melakukan yang diizinkan cakupannya, dan tidak pernah lebih dari yang diizinkan peran Anda sendiri.',
+    'scope_entries_read' => 'Membaca entri',
+    'scope_models_read'  => 'Membaca model',
+    'lastUsed'       => 'Terakhir dipakai',
+    'expires'        => 'Berlaku sampai',
+    'never'          => 'Belum pernah',
+    'newTitle'       => 'Buat token',
+    'create'         => 'Buat token',
+    'revoke'         => 'Cabut',
+    'revokeAll'      => 'Cabut semua',
+    'confirmRevokeAll' => 'Cabut semua token Anda? Apa pun yang memakainya akan berhenti bekerja.',
+    'created'        => 'Token {name} sudah dibuat.',
+    'copyNow'        => 'Salin sekarang. Token ini tidak ditampilkan lagi.',
+    'validUntil'     => 'Berlaku sampai {date}.',
+    'revoked'        => 'Token sudah dicabut.',
+    'allRevoked'     => 'Semua token Anda sudah dicabut.',
+    'notFound'       => 'Token itu tidak ada.',
+    'nameInvalid'    => 'Beri token nama sepanjang paling banyak 100 karakter.',
+    'scopesRequired' => 'Pilih minimal satu cakupan.',
+    'noneTitle'      => 'Belum ada token',
+    'noneText'       => 'Buat token saat skrip atau situs lain perlu membaca konten Anda.',
+];

@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/abilities",
+    "status": 200,
+    "location": null,
+    "title": "Kemampuan",
+    "bytes": 50300,
+    "sha1": "243b9e26e9031231c89f0983e2da1c211b12e0d2"
+}

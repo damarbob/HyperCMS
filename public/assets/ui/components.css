@@ -377,3 +377,24 @@
   .picker-list [role="option"]:hover, .picker-list [role="option"].active { background: var(--hover); }
   .picker-list .none { padding: 7px var(--s2); font-size: var(--t-sm); }
 }
+
+@layer components {
+  .access-grid { min-width: 480px; }
+  .access-grid th, .access-grid td { text-align: center; }
+  .access-grid th:first-child, .access-grid td:first-child { text-align: left; }
+  .access-grid th[scope="row"] { font-weight: 550; }
+  .access-grid input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--action); margin: 0; }
+}
+
+@layer components {
+  .ability-groups { display: flex; flex-direction: column; gap: var(--s5); }
+  .ability-group { border: 0; margin: 0; padding: 0; min-width: 0; display: flex; flex-direction: column; gap: var(--s1); }
+  .ability-group legend { padding: 0; margin-bottom: var(--s2); font-weight: 550; font-size: var(--t-sm); color: var(--ink-3); }
+  .ability { display: flex; align-items: flex-start; gap: var(--s3); padding: var(--s2) var(--s3); border-radius: var(--r-md); cursor: pointer; }
+  .ability:hover { background: var(--hover); }
+  .ability input { margin-top: 3px; width: 16px; height: 16px; accent-color: var(--action); flex: none; }
+  .ability > span { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+  .ability code { font-family: var(--mono); font-size: var(--t-xs); color: var(--ink-3); }
+  .ability input:disabled + span { opacity: 0.6; }
+  .role-form .panel > header { align-items: flex-start; }
+}

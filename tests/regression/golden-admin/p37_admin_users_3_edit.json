@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/users/3/edit",
+    "status": 200,
+    "location": null,
+    "title": "capture_dev",
+    "bytes": 46210,
+    "sha1": "72b1ef5de7b7f3b7a263ff7a5e64b9ce0ee893fc"
+}

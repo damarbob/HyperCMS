@@ -1,0 +1,60 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/roles",
+        "form": {
+            "name": "editor",
+            "label": "Editor",
+            "description": "Writes entries",
+            "copy": "developer",
+            "abilities": [
+                "media.manage"
+            ],
+            "models": {
+                "1": [
+                    "read",
+                    "update"
+                ]
+            }
+        }
+    },
+    "status": 303,
+    "location": "/admin/roles/editor/edit",
+    "body": "",
+    "changes": {
+        "hyper_roles": {
+            "added": [
+                {
+                    "id": "editor",
+                    "label": "Editor",
+                    "locked": 0
+                }
+            ]
+        },
+        "hyper_role_abilities": {
+            "added": [
+                {
+                    "id": "editor|media.manage",
+                    "role": "editor",
+                    "ability": "media.manage"
+                }
+            ]
+        },
+        "hyper_model_permissions": {
+            "added": [
+                {
+                    "id": "1|editor|read",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "read"
+                },
+                {
+                    "id": "1|editor|update",
+                    "model_id": 1,
+                    "role": "editor",
+                    "action": "update"
+                }
+            ]
+        }
+    }
+}

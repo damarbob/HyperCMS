@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/roles",
+    "status": 200,
+    "location": null,
+    "title": "Peran",
+    "bytes": 46100,
+    "sha1": "8213182eee7b00164004a8c029e8a4b40cce0574"
+}

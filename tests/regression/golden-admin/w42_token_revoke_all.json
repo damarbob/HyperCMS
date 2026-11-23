@@ -1,0 +1,11 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/tokens/revoke-all",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/tokens",
+    "body": "",
+    "changes": []
+}

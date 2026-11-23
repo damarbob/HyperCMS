@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/profile",
+    "status": 200,
+    "location": null,
+    "title": "Profil",
+    "bytes": 43187,
+    "sha1": "5628dac53a7947939921c85ebb5e15a0d158eaa3"
+}

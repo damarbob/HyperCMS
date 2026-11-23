@@ -1,0 +1,14 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/tokens",
+        "form": {
+            "name": "",
+            "scopes": []
+        }
+    },
+    "status": 422,
+    "location": null,
+    "body": "Token akses Langsung ke konten Hyper CMS Dasbor AI Voltic AI Data Model Entri Perbandingan Data Content Article 21 Product 12 Linked 3 Restricted 1 Lainnya Token akses Manajer Berkas Pengguna Pengatur",
+    "changes": []
+}

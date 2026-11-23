@@ -303,15 +303,37 @@ $json = json_encode($payload, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | 
                 <p class="help" x-show="icon !== '' && ! <?= attr(json_encode($payload['icons'])) ?>.includes(icon)"><?= esc(lang('Models.detailsIconKept')) ?> <code x-text="icon"></code></p>
             </fieldset>
 
-            <fieldset class="field wide">
-                <legend><?= esc(lang('Models.detailsUserGroups')) ?><span class="req" aria-hidden="true">*</span></legend>
-                <div class="options">
-                    <?php foreach ($groups as $group) : ?>
-                        <label class="check"><input type="checkbox" name="user_groups[]" value="<?= attr($group) ?>"<?= in_array($group, $values['user_groups'], true) ? ' checked' : '' ?>> <?= esc(ucfirst($group)) ?></label>
-                    <?php endforeach ?>
+            <fieldset class="field wide access">
+                <legend><?= esc(lang('Models.accessTitle')) ?></legend>
+                <p class="help"><?= esc(lang('Models.accessHelp')) ?></p>
+                <div class="table-wrap">
+                    <table class="table access-grid">
+                        <caption class="sr-only"><?= esc(lang('Models.accessTitle')) ?></caption>
+                        <thead>
+                            <tr>
+                                <th scope="col"><?= esc(lang('Models.accessRole')) ?></th>
+                                <?php foreach (App\Data\Abilities::MODEL_ACTIONS as $action) : ?>
+                                    <th scope="col" class="num"><?= esc(lang('Models.access' . ucfirst($action))) ?></th>
+                                <?php endforeach ?>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach ($roles as $role) : ?>
+                                <tr>
+                                    <th scope="row"><?= esc($role['label']) ?></th>
+                                    <?php foreach (App\Data\Abilities::MODEL_ACTIONS as $action) : ?>
+                                        <td class="num">
+                                            <input type="checkbox" name="access[<?= attr($role['name']) ?>][]" value="<?= attr($action) ?>"
+                                                aria-label="<?= attr($role['label'] . ', ' . lang('Models.access' . ucfirst($action))) ?>"
+                                                <?= in_array($action, $values['access'][$role['name']] ?? [], true) ? ' checked' : '' ?>>
+                                        </td>
+                                    <?php endforeach ?>
+                                </tr>
+                            <?php endforeach ?>
+                        </tbody>
+                    </table>
                 </div>
-                <p class="help"><?= esc(lang('Models.detailsUserGroupsHelp')) ?></p>
-                <?php foreach ($errors['user_groups'] ?? [] as $message) : ?><p class="error"><?= icon('alert') ?><?= esc($message) ?></p><?php endforeach ?>
+                <p class="help"><?= esc(lang('Models.accessSuperadmin')) ?></p>
             </fieldset>
         </div>
     </div>

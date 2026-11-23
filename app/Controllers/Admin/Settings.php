@@ -4,45 +4,64 @@ namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
 
+/**
+ * The settings of the signed-in person, and for people who manage settings, the settings of the site.
+ */
 class Settings extends AdminController
 {
-    public function index(): string
+    private const PER_PAGE = [10, 25, 50, 100];
+
+    public function index()
     {
-        /** @var HyperHooks $hooks */
-        $hooks = service('hooks');
-
-        $this->data['title'] = lang('Admin.settings');
-
-        // Filtered data
-        // Passes controller data to the hook
-        $this->data = $hooks->filter(hook('Backend.controller:settings:data'), $this->data);
-
-        // Hook for update settings
-        // Passes the request to the hook
-        $hooks->trigger(hook('Backend.controller:settings'), [$this->data]);
-
-        return render('admin/settings', $this->data);
+        return $this->form('', 200);
     }
 
     public function update()
     {
-        $context = 'user:' . user_id(); // Settings context
+        $post    = $this->request->getPost();
+        $perPage = (int) ($post['general_datatable_entries_per_page'] ?? 0);
 
-        $data = $this->request->getPost();
-
-        $rules = [
-            'general_datatable_entries_per_page' => [
-                'label' => lang('Admin.datatableEntriesPerPage'),
-                'rules' => 'required',
-            ],
-        ];
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
+        if (! in_array($perPage, self::PER_PAGE, true)) {
+            return $this->form(lang('Admin.settingsInvalid'), 422);
         }
 
-        service('settings')->set('App.datatableEntriesPerPage', $data['general_datatable_entries_per_page'], $context);
+        service('settings')->set('App.datatableEntriesPerPage', $perPage, 'user:' . user_id());
 
-        return $this->respond(lang('Admin.settingsSuccessfullySaved'), 'admin/settings');
+        // The site settings are for the people who manage settings, and a form from anyone else cannot change them.
+        if ($this->manages()) {
+            service('settings')->set('Hyper.twoFactor', ! empty($post['two_factor']));
+        }
+
+        return redirect()->to(base_url('admin/settings'))->with('success', lang('Admin.settingsSuccessfullySaved'));
+    }
+
+    private function manages(): bool
+    {
+        try {
+            return can('settings.manage');
+        } catch (\InvalidArgumentException) {
+            return false;
+        }
+    }
+
+    private function form(string $error, int $status)
+    {
+        $hooks = service('hooks');
+
+        $this->data = array_merge($this->data, [
+            'title'     => lang('Admin.settings'),
+            'crumbs'    => [[lang('Admin.settings'), null]],
+            'perPage'   => (int) (service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 25),
+            'perPages'  => self::PER_PAGE,
+            'manages'   => $this->manages(),
+            'twoFactor' => (bool) service('settings')->get('Hyper.twoFactor'),
+            'error'     => $error,
+        ]);
+
+        // Modules that still use the old hooks add their part before the form.
+        $this->data = $hooks->filter(hook('Backend.controller:settings:data'), $this->data);
+        $hooks->trigger(hook('Backend.controller:settings'), [$this->data]);
+
+        return $this->response->setStatusCode($status)->setBody(view('admin/settings', $this->data));
     }
 }

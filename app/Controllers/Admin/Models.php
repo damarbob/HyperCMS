@@ -3,7 +3,10 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Data\Abilities;
 use App\Data\IndexingFailed;
+use App\Data\ModelGrants;
+use App\Data\Permissions;
 use App\Fields\DefinitionCheck;
 use App\Fields\FieldCatalog;
 use App\Fields\FieldTypes;
@@ -79,7 +82,7 @@ class Models extends AdminController
             return redirect()->to(base_url('admin/models'))->with('error', lang('Models.notFound'));
         }
 
-        [$data, $fields, $errors] = $this->submitted();
+        [$data, $fields, $errors] = $this->submitted((int) $id);
         if ($errors !== []) {
             return $this->builder($model, $fields, (string) ($data['label_field'] ?? ''), $errors, $this->typed($data), 422);
         }
@@ -122,22 +125,20 @@ class Models extends AdminController
      * @return array{0: array<string, mixed>, 1: list<array<string, mixed>>, 2: array<string, mixed>} The data for the store,
      *         the fields as far as they could be read, and the errors by place (`general`, `name`, `group`, `fields` by id).
      */
-    private function submitted(): array
+    private function submitted(?int $modelId = null): array
     {
         $post   = $this->request->getPost();
         $errors = [];
 
         $rules = [
-            'name'        => 'required|min_length[3]|max_length[255]',
-            'group'       => 'permit_empty|min_length[3]|alpha_space',
-            'icon'        => 'permit_empty|max_length[255]',
-            'user_groups' => 'required',
+            'name'  => 'required|min_length[3]|max_length[255]',
+            'group' => 'permit_empty|min_length[3]|alpha_space',
+            'icon'  => 'permit_empty|max_length[255]',
         ];
         $input = [
-            'name'        => trim((string) ($post['name'] ?? '')),
-            'group'       => trim((string) ($post['group'] ?? '')),
-            'icon'        => trim((string) ($post['icon'] ?? '')),
-            'user_groups' => is_array($post['user_groups'] ?? null) ? array_values($post['user_groups']) : [],
+            'name'  => trim((string) ($post['name'] ?? '')),
+            'group' => trim((string) ($post['group'] ?? '')),
+            'icon'  => trim((string) ($post['icon'] ?? '')),
         ];
         if (! $this->validateData($input, $rules)) {
             foreach ($this->validator->getErrors() as $key => $message) {
@@ -171,12 +172,81 @@ class Models extends AdminController
             'name'        => $input['name'],
             'group'       => $input['group'] === '' ? null : $input['group'],
             'icon'        => $input['icon'] === '' ? null : $input['icon'],
-            'user_groups' => json_encode($input['user_groups']),
+            'access'      => $this->accessFrom($post['access'] ?? null, $modelId),
             'fields'      => json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'label_field' => ($post['label_field'] ?? '') === '' ? null : (string) $post['label_field'],
         ];
 
         return [$data, $fields, $errors];
+    }
+
+    /**
+     * The access grid after the form, for every role but the superadmin, which needs no row.
+     *
+     * A person hands out only what they hold themselves, as on the roles screen. A role they may not handle keeps what it
+     * has, and an action they lack on the model stays as it was for a role they may handle, so saving the model can never
+     * give anyone more than the person who saves it has. Anything other than reading also lets the role read, when the
+     * person holds reading or the role already has it.
+     *
+     * @param int|null $modelId The model being saved, or null for a new one.
+     *
+     * @return array<string, list<string>>
+     */
+    private function accessFrom(mixed $posted, ?int $modelId): array
+    {
+        $permissions = service('permissions');
+        $actor       = auth()->user();
+        $existing    = $modelId !== null ? service('grants')->forModel($modelId) : [];
+        $posted      = is_array($posted) ? $posted : [];
+
+        $mine = array_values(array_filter(Abilities::MODEL_ACTIONS, fn (string $action): bool => $this->holds($action, $modelId)));
+
+        $access = [];
+        foreach (service('roles')->names() as $role) {
+            if ($role === Permissions::SUPERADMIN) {
+                continue;
+            }
+
+            $before = array_values(array_intersect(Abilities::MODEL_ACTIONS, $existing[$role] ?? []));
+
+            // A role the person may not handle keeps exactly what it has.
+            if (! $permissions->mayAssignRole($actor, $role)) {
+                if ($before !== []) {
+                    $access[$role] = $before;
+                }
+
+                continue;
+            }
+
+            $asked   = is_array($posted[$role] ?? null) ? array_map('strval', $posted[$role]) : [];
+            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_unique(array_merge(array_diff($before, $mine), array_intersect($asked, $mine)))));
+            if ($actions !== [] && ! in_array('read', $actions, true) && (in_array('read', $mine, true) || in_array('read', $before, true))) {
+                array_unshift($actions, 'read');
+            }
+            if ($actions !== []) {
+                $access[$role] = $actions;
+            }
+        }
+
+        return $access;
+    }
+
+    /**
+     * Whether the signed-in person holds an action on a model. A model that does not exist yet has no rights to hold, and
+     * what a person holds on other models says nothing about it, so only a superadmin, who has everything, may set the
+     * access of a new model. Anyone else makes it with no access for others, and a superadmin gives it later.
+     */
+    private function holds(string $action, ?int $modelId): bool
+    {
+        if ($modelId === null) {
+            return service('permissions')->mayAssignRole(auth()->user(), Permissions::SUPERADMIN);
+        }
+
+        try {
+            return can('entries.' . $action, $modelId);
+        } catch (InvalidArgumentException) {
+            return false;
+        }
     }
 
     /**
@@ -192,7 +262,7 @@ class Models extends AdminController
             'name'        => (string) ($data['name'] ?? ''),
             'group'       => (string) ($data['group'] ?? ''),
             'icon'        => (string) ($data['icon'] ?? ''),
-            'user_groups' => is_string($data['user_groups'] ?? null) ? (json_decode($data['user_groups'], true) ?: []) : [],
+            'access'      => is_array($data['access'] ?? null) ? $data['access'] : [],
         ];
     }
 
@@ -224,19 +294,26 @@ class Models extends AdminController
      */
     private function builder(array $model, array $fields, string $labelField, array $errors, array $typed, int $status = 200)
     {
-        /** @var \Config\AuthGroups $authGroups */
-        $authGroups = config('AuthGroups');
+        $id    = (int) ($model['id'] ?? 0);
+        $roles = array_values(array_filter(service('roles')->all(), static fn (array $role): bool => $role['name'] !== Permissions::SUPERADMIN));
 
-        $id     = (int) ($model['id'] ?? 0);
-        $groups = array_keys($authGroups->groups);
+        // A new model starts with what a model with no groups meant: every role but user may read it, and the staff write.
+        $access = $typed['access'] ?? null;
+        if ($access === null) {
+            $access = $id > 0 ? service('grants')->forModel($id) : [];
+            if ($id === 0) {
+                foreach (ModelGrants::fromGroups([], array_column($roles, 'name')) as $row) {
+                    $access[$row['role']][] = $row['action'];
+                }
+            }
+        }
 
         $names  = $this->modelNames();
-        $saved  = $model !== [] && ! empty($model['user_groups']) ? (json_decode((string) $model['user_groups'], true) ?: []) : $groups;
         $values = [
-            'name'        => $typed['name'] ?? (string) ($model['name'] ?? ''),
-            'group'       => $typed['group'] ?? (string) ($model['group'] ?? ''),
-            'icon'        => $typed['icon'] ?? (string) ($model['icon'] ?? ''),
-            'user_groups' => $typed['user_groups'] ?? $saved,
+            'name'   => $typed['name'] ?? (string) ($model['name'] ?? ''),
+            'group'  => $typed['group'] ?? (string) ($model['group'] ?? ''),
+            'icon'   => $typed['icon'] ?? (string) ($model['icon'] ?? ''),
+            'access' => $access,
         ];
 
         $models = [];
@@ -273,7 +350,7 @@ class Models extends AdminController
             'model'   => $model,
             'id'      => $id,
             'values'  => $values,
-            'groups'  => $groups,
+            'roles'   => $roles,
             'payload' => $payload,
             'errors'  => $errors,
             'entries' => $id > 0 ? (service('entryStore')->countsByModel()[$id] ?? 0) : 0,
@@ -325,13 +402,8 @@ class Models extends AdminController
         try {
             service('modelStore')->emptyTrash();
         } catch (RuntimeException | InvalidArgumentException $e) {
-            // Models purged before the failure are gone, and their access settings go with them.
-            service('modelAccess')->forgetMissing();
-
             return $this->list('bad', $e->getMessage());
         }
-
-        service('modelAccess')->forgetMissing();
 
         return $this->list('ok', lang('Models.emptied'));
     }

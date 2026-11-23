@@ -87,7 +87,7 @@ if ($Probes) {
     Push-Location $repo
     try { php spark hyper:upgrade --yes | Out-Null; $upgraded = $LASTEXITCODE } finally { Pop-Location }
     if ($upgraded -ne 0) { "The seed could not be upgraded. Run php spark hyper:upgrade --yes to see why."; exit 1 }
-    php "$here\probe.php" $base
+    php "$here\probe.php" $base $envFile
     if ($LASTEXITCODE -ne 0) { $script:failed = $true }
 }
 if ($Upgrade) {

@@ -81,6 +81,8 @@ class ModelStore
             return $id;
         });
 
+        $this->grantAccess($id, $data);
+
         $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
             $this->syncAndBump($id);
         });
@@ -97,6 +99,8 @@ class ModelStore
         if ($this->db()->table('hyper_models')->where('id', $id)->countAllResults() === 0) {
             throw new LookupException("Model $id does not exist.");
         }
+
+        $this->grantAccess($id, $data);
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id, $data, $userId): void {
             $db  = $this->db();
@@ -189,6 +193,7 @@ class ModelStore
                     $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
                     $db->table('hyper_entries')->where('model_id', $id)->delete();
                     $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
+                    $db->table('hyper_model_permissions')->where('model_id', $id)->delete();
                     $db->table('hyper_models')->where('id', $id)->delete();
                 });
 
@@ -256,6 +261,16 @@ class ModelStore
     public function exists(int|string $id): bool
     {
         return $this->db()->table('hyper_models')->where('id', $id)->where('deleted_at', null)->countAllResults() > 0;
+    }
+
+    /**
+     * The ids of every model, live and trashed, because the entries of a trashed model can still show up in a trash view.
+     *
+     * @return list<int>
+     */
+    public function allIds(): array
+    {
+        return array_map('intval', array_column($this->db()->table('hyper_models')->select('id')->orderBy('id')->get()->getResultArray(), 'id'));
     }
 
     /**
@@ -608,6 +623,18 @@ class ModelStore
         }
 
         return $state;
+    }
+
+    /**
+     * Give the roles of a model the actions the data names, when it names any.
+     *
+     * @param array<string, mixed> $data `access` holds the actions of each role.
+     */
+    private function grantAccess(int $id, array $data): void
+    {
+        if (isset($data['access']) && is_array($data['access'])) {
+            service('grants')->setForModel($id, $data['access']);
+        }
     }
 
     /**

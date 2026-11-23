@@ -2,11 +2,16 @@
 
 namespace Config;
 
+use App\Data\Abilities;
 use App\Data\Entries\StarDustEntries;
 use App\Data\EntryLabels;
 use App\Data\EntryStore;
+use App\Data\Grants;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
+use App\Data\Roles;
+use App\Modules\Modules;
+use App\Modules\Slots;
 use App\Data\Permissions;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
@@ -93,7 +98,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('modelAccess');
         }
-        return new ModelAccess(static::modelStore(), service('settings'));
+        return new ModelAccess(static::modelStore(), static::permissions());
     }
 
     /**
@@ -121,7 +126,83 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('permissions');
         }
-        return new Permissions(static::modelStore());
+        return new Permissions(static::grants());
+    }
+
+    /**
+     * The abilities of the admin: those of core, those modules register, and the ones an admin made.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Abilities
+     */
+    public static function abilities(bool $getShared = true): Abilities
+    {
+        if ($getShared) {
+            return static::getSharedInstance('abilities');
+        }
+        return new Abilities(db_connect());
+    }
+
+    /**
+     * The places of core pages that a module can put content into.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Slots
+     */
+    public static function slots(bool $getShared = true): Slots
+    {
+        if ($getShared) {
+            return static::getSharedInstance('slots');
+        }
+        return new Slots();
+    }
+
+    /**
+     * The modules that follow the module contract, loaded from the list of active modules the first time they are asked
+     * for.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Modules
+     */
+    public static function modules(bool $getShared = true): Modules
+    {
+        if ($getShared) {
+            return static::getSharedInstance('modules');
+        }
+
+        $modules = new Modules(static::abilities(), static::slots(), service('settings'), (string) config(\Config\Hyper::class)->appVersion);
+        $star    = config(\Config\Star::class);
+        $modules->boot(array_merge($star->getActiveModules(), $star->getActiveDevModules()));
+
+        return $modules;
+    }
+
+    /**
+     * The roles of the admin.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Roles
+     */
+    public static function roles(bool $getShared = true): Roles
+    {
+        if ($getShared) {
+            return static::getSharedInstance('roles');
+        }
+        return new Roles(db_connect(), static::grants());
+    }
+
+    /**
+     * What each role may do, read from and written to the database.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Grants
+     */
+    public static function grants(bool $getShared = true): Grants
+    {
+        if ($getShared) {
+            return static::getSharedInstance('grants');
+        }
+        return new Grants(db_connect(), static::abilities());
     }
 
     /**

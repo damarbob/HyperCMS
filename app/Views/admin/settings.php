@@ -1,58 +1,58 @@
 <?php
-helper('form');
-
-$context = 'user:' . user_id();
-
-$datatableEntriesPerPageValue = service('settings')->get('App.datatableEntriesPerPage', $context);
-$datatableEntriesPerPageOptions = [10, 25, 50, 100];
-$datatableEntriesPerPageError = validation_show_error('general_datatable_entries_per_page');
+/**
+ * The settings of the signed-in person and, for those who manage settings, of the site.
+ *
+ * @var int       $perPage
+ * @var list<int> $perPages
+ * @var bool      $manages
+ * @var bool      $twoFactor
+ * @var string    $error
+ */
 ?>
-<?= $this->extend('admin/layout/page') ?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
 <?= service('hooks')->trigger(hook('Backend.view:settings')) ?>
-<div class="block">
-    <h1 class="title">
-        <?= lang('Admin.settings') ?>
-    </h1>
-    <p class="subtitle">
-        <?= lang('Admin.general') ?>
-    </p>
-    <form action="<?= base_url('admin/settings/update') ?>" method="POST">
-        <?= csrf_field() ?>
-
-        <!-- Primary model selection -->
-        <div class="field">
-            <label class="label"><?= lang('Admin.datatableEntriesPerPage') ?></label>
-            <div class="control">
-                <div class="select">
-                    <select name="general_datatable_entries_per_page" value="<?= $datatableEntriesPerPageValue ?>">
-                        <?php for ($i = 0; $i < count($datatableEntriesPerPageOptions); $i++): ?>
-                            <option value="<?= $datatableEntriesPerPageOptions[$i] ?>" <?= ($datatableEntriesPerPageValue == $datatableEntriesPerPageOptions[$i]) ? 'selected' : '' ?>><?= $datatableEntriesPerPageOptions[$i] ?></option>
-                        <?php endfor; ?>
-                    </select>
-                </div>
-            </div>
-            <p class="help"><?= lang('Admin.howManyEntriesDisplay') ?></p>
-            <?php if ($datatableEntriesPerPageError): ?>
-                <p class="help is-danger"><?= $datatableEntriesPerPageError ?></p>
-            <?php endif; ?>
-        </div>
-
-        <!-- Submit button -->
-        <div class="field is-grouped">
-            <div class="control is-flex-grow-1">
-                <button type="submit" class="button is-primary">
-                    <span class="icon">
-                        <i class="fas fa-check"></i>
-                    </span>
-                    <span>
-                        <?= lang('Admin.save') ?>
-                    </span>
-                </button>
-            </div>
-        </div>
-
-    </form>
+<div class="page-head">
+    <div>
+        <h1><?= esc(lang('Admin.settings')) ?></h1>
+        <p><?= esc(lang('Admin.general')) ?></p>
+    </div>
 </div>
+
+<?php if ($error !== '') : ?><div class="alert" role="alert"><?= icon('alert') ?><span><?= esc($error) ?></span></div><?php endif ?>
+
+<form class="stack" style="gap: var(--s5)" action="<?= attr(base_url('admin/settings/update')) ?>" method="post">
+    <?= csrf_field() ?>
+    <section class="panel" aria-labelledby="s-mine">
+        <header><h2 id="s-mine"><?= esc(lang('Profile.settingsMine')) ?></h2></header>
+        <div class="body">
+            <div class="field" style="max-width: 320px">
+                <label for="s-per-page"><?= esc(lang('Admin.datatableEntriesPerPage')) ?></label>
+                <select id="s-per-page" class="select" name="general_datatable_entries_per_page" aria-describedby="s-per-page-help">
+                    <?php foreach ($perPages as $option) : ?><option value="<?= (int) $option ?>"<?= $perPage === $option ? ' selected' : '' ?>><?= (int) $option ?></option><?php endforeach ?>
+                </select>
+                <p class="help" id="s-per-page-help"><?= esc(lang('Admin.howManyEntriesDisplay')) ?></p>
+            </div>
+        </div>
+    </section>
+
+    <?php if ($manages) : ?>
+        <section class="panel" aria-labelledby="s-site">
+            <header><h2 id="s-site"><?= esc(lang('Profile.settingsSite')) ?></h2></header>
+            <div class="body">
+                <label class="switch">
+                    <input type="checkbox" name="two_factor" value="1"<?= $twoFactor ? ' checked' : '' ?>>
+                    <span>
+                        <strong><?= esc(lang('Profile.twoFactorSetting')) ?></strong>
+                        <span class="muted"><?= esc(lang('Profile.twoFactorSettingText')) ?></span>
+                        <span class="muted"><?= esc(lang('Profile.twoFactorRecovery')) ?></span>
+                    </span>
+                </label>
+            </div>
+        </section>
+    <?php endif ?>
+
+    <div><?= ui('button', ['label' => lang('Admin.save'), 'type' => 'submit', 'variant' => 'primary']) ?></div>
+</form>
 <?= $this->endSection() ?>

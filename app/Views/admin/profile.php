@@ -1,71 +1,86 @@
 <?php
-helper('form');
-
-$usernameError = validation_show_error('username');
-$emailError = validation_show_error('email');
-$passwordError = validation_show_error('password');
+/**
+ * The account of the signed-in person.
+ *
+ * @var \CodeIgniter\Shield\Entities\User $account
+ * @var array{username: string, email: string} $values
+ * @var array<string, string>             $errors
+ * @var list<string>                      $roles
+ * @var bool                              $twoFactor
+ * @var bool                              $tokens
+ */
 ?>
-<?= $this->extend('admin/layout/page') ?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<h1 class="title">
-    <?= auth()->user()->username ?>
-</h1>
-<p class="subtitle">
-    <?= auth()->user()->email ?>
-</p>
-<form action="<?= base_url('admin/profile/' . urlencode(hash('sha256', auth()->user()->username . auth()->user()->email))) ?>" method="post">
-    <?= csrf_field() ?>
-    <div class="field mb-4">
-        <label class="label" for="text_example"><?= lang('Admin.username') ?></label>
-        <div class="control has-icons-right">
-            <input type="username" id="username" name="username" class="input <?= ($usernameError) ? 'is-danger' : '' ?>" value="<?= old('username') ?: auth()->user()->username ?>">
-            <?php if ($usernameError): ?>
-                <span class="icon is-small is-right"><i class="fas fa-exclamation-triangle"></i></span>
-            <?php endif; ?>
-        </div>
-        <?php if ($usernameError): ?>
-            <p class="help is-danger"><?= $usernameError ?></p>
-        <?php endif; ?>
+<div class="page-head">
+    <div>
+        <h1><?= esc((string) $account->username) ?></h1>
+        <p><?= esc((string) $account->email) ?></p>
     </div>
-    <div class="field mb-4">
-        <label class="label" for="text_example"><?= lang('Admin.email') ?></label>
-        <div class="control has-icons-right">
-            <input type="email" id="email" name="email" class="input <?= ($emailError) ? 'is-danger' : '' ?>" value="<?= old('email') ?: auth()->user()->email ?>">
-            <?php if ($emailError): ?>
-                <span class="icon is-small is-right"><i class="fas fa-exclamation-triangle"></i></span>
-            <?php endif; ?>
-        </div>
-        <?php if ($emailError): ?>
-            <p class="help is-danger"><?= $emailError ?></p>
-        <?php endif; ?>
-    </div>
-    <div class="field mb-4">
-        <label class="label" for="text_example"><?= lang('Admin.newPassword') ?></label>
-        <div class="control has-icons-right">
-            <input type="password" id="password" name="password" class="input <?= ($passwordError) ? 'is-danger' : '' ?>" placeholder="New password">
-            <?php if ($passwordError): ?>
-                <span class="icon is-small is-right"><i class="fas fa-exclamation-triangle"></i></span>
-            <?php endif; ?>
-        </div>
-        <?php if ($passwordError): ?>
-            <p class="help is-danger"><?= $passwordError ?></p>
-        <?php endif; ?>
-    </div>
-    <div class="field is-grouped">
-        <div class="control is-flex-grow-1">
-            <button type="submit" class="button is-primary">
-                <span class="icon">
-                    <i class="fas fa-check"></i>
-                </span>
-                <span>
-                    <?= lang('Admin.save') ?>
-                </span>
-            </button>
-        </div>
-    </div>
-</form>
-<?= $this->endSection() ?>
+</div>
 
-<?= $this->section('footer') ?>
+<?php if (isset($errors['general'])) : ?>
+    <div class="alert" role="alert"><?= icon('alert') ?><span><?= esc($errors['general']) ?></span></div>
+<?php endif ?>
+
+<form class="stack" style="gap: var(--s5)" method="post" action="<?= attr(base_url('admin/profile')) ?>" autocomplete="off">
+    <?= csrf_field() ?>
+    <section class="panel" aria-labelledby="p-account">
+        <header><h2 id="p-account"><?= esc(lang('Profile.accountTitle')) ?></h2></header>
+        <div class="body details-grid">
+            <div class="field <?= isset($errors['username']) ? 'invalid' : '' ?>">
+                <label for="p-username"><?= esc(lang('Profile.username')) ?></label>
+                <input id="p-username" class="input" type="text" name="username" value="<?= attr($values['username']) ?>" required autocomplete="username">
+                <?php if (isset($errors['username'])) : ?><p class="error"><?= icon('alert') ?><?= esc($errors['username']) ?></p><?php endif ?>
+            </div>
+            <div class="field <?= isset($errors['email']) ? 'invalid' : '' ?>">
+                <label for="p-email"><?= esc(lang('Profile.email')) ?></label>
+                <input id="p-email" class="input" type="email" name="email" value="<?= attr($values['email']) ?>" required autocomplete="email">
+                <?php if (isset($errors['email'])) : ?><p class="error"><?= icon('alert') ?><?= esc($errors['email']) ?></p><?php endif ?>
+            </div>
+            <div class="field wide">
+                <span class="label" style="font-weight: 550; font-size: var(--t-sm)"><?= esc(lang('Profile.roles')) ?></span>
+                <div class="chips"><?php foreach ($roles as $role) : ?><span class="chip"><?= esc($role) ?></span><?php endforeach ?><?php if ($roles === []) : ?><span class="muted"><?= esc(lang('Profile.noRoles')) ?></span><?php endif ?></div>
+            </div>
+        </div>
+    </section>
+
+    <section class="panel" aria-labelledby="p-password">
+        <header>
+            <div>
+                <h2 id="p-password"><?= esc(lang('Profile.passwordTitle')) ?></h2>
+                <p class="help" style="margin: 2px 0 0"><?= esc(lang('Profile.passwordHelp')) ?></p>
+            </div>
+        </header>
+        <div class="body details-grid">
+            <div class="field <?= isset($errors['password']) ? 'invalid' : '' ?>">
+                <label for="p-password-new"><?= esc(lang('Profile.newPassword')) ?></label>
+                <input id="p-password-new" class="input" type="password" name="password" autocomplete="new-password">
+                <?php if (isset($errors['password'])) : ?><p class="error"><?= icon('alert') ?><?= esc($errors['password']) ?></p><?php endif ?>
+            </div>
+            <div class="field <?= isset($errors['current_password']) ? 'invalid' : '' ?>">
+                <label for="p-password-current"><?= esc(lang('Profile.currentPassword')) ?></label>
+                <input id="p-password-current" class="input" type="password" name="current_password" autocomplete="current-password" aria-describedby="p-current-help">
+                <p class="help" id="p-current-help"><?= esc(lang('Profile.currentPasswordHelp')) ?></p>
+                <?php if (isset($errors['current_password'])) : ?><p class="error"><?= icon('alert') ?><?= esc($errors['current_password']) ?></p><?php endif ?>
+            </div>
+        </div>
+    </section>
+
+    <div><?= ui('button', ['label' => lang('Profile.save'), 'type' => 'submit', 'variant' => 'primary']) ?></div>
+</form>
+
+<section class="panel" aria-labelledby="p-security" style="margin-top: var(--s5)">
+    <header><h2 id="p-security"><?= esc(lang('Profile.securityTitle')) ?></h2></header>
+    <div class="body stack" style="gap: var(--s3)">
+        <p>
+            <span class="chip <?= $twoFactor ? 'ok' : '' ?>"><?= esc($twoFactor ? lang('Profile.twoFactorOn') : lang('Profile.twoFactorOff')) ?></span>
+            <?= esc($twoFactor ? lang('Profile.twoFactorOnText') : lang('Profile.twoFactorOffText')) ?>
+        </p>
+        <?php if ($tokens) : ?>
+            <div><?= ui('button', ['label' => lang('Profile.openTokens'), 'href' => base_url('admin/tokens'), 'icon' => 'key']) ?></div>
+        <?php endif ?>
+    </div>
+</section>
 <?= $this->endSection() ?>

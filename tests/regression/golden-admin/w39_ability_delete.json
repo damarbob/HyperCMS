@@ -1,0 +1,11 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/abilities/shop.refund/delete",
+        "form": []
+    },
+    "status": 303,
+    "location": "/admin/abilities",
+    "body": "",
+    "changes": []
+}

@@ -18,6 +18,24 @@ use CodeIgniter\Shield\Config\AuthGroups as ShieldAuthGroups;
 class AuthGroups extends ShieldAuthGroups
 {
     /**
+     * The roles of the database are groups for Shield too, so a person can be put in one. A role that is not in the
+     * list below, because an admin made it, is added when the config is made. Before the migration there is no table, and
+     * the list below is all there is.
+     */
+    public function __construct()
+    {
+        parent::__construct();
+
+        try {
+            foreach (\Config\Database::connect()->table('hyper_roles')->get()->getResultArray() as $row) {
+                $this->groups[(string) $row['name']] ??= ['title' => (string) $row['label'], 'description' => (string) ($row['description'] ?? '')];
+            }
+        } catch (\Throwable) {
+            // No database or no table yet.
+        }
+    }
+
+    /**
      * --------------------------------------------------------------------
      * Default Group
      * --------------------------------------------------------------------

@@ -6,14 +6,16 @@
             "name": "Article",
             "fields": "[{\"id\":\"a\",\"type\":\"text\"},{\"id\":\"a\",\"type\":\"textarea\"}]",
             "group": "Content",
-            "user_groups": [
-                "superadmin"
-            ],
+            "access": {
+                "admin": [
+                    "read"
+                ]
+            },
             "icon": "doc"
         }
     },
     "status": 422,
     "location": null,
-    "body": "Article Langsung ke konten Hyper CMS Dasbor AI Voltic AI Data Model Entri Perbandingan Data Content Article 21 Scratch 0 Media Gallery 0 Lainnya Manajer Berkas Pengguna Pengaturan Versi 0.1.0-alpha.8 ",
+    "body": "Article Langsung ke konten Hyper CMS Dasbor AI Voltic AI Data Model Entri Perbandingan Data Content Article 21 Scratch 0 Restricted 1 Media Gallery 0 Lainnya Token akses Manajer Berkas Pengguna Pengat",
     "changes": []
 }

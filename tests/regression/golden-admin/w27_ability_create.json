@@ -1,0 +1,15 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/abilities",
+        "form": {
+            "name": "shop.refund",
+            "label": "Refund orders",
+            "description": "Give money back"
+        }
+    },
+    "status": 303,
+    "location": "/admin/abilities",
+    "body": "",
+    "changes": []
+}

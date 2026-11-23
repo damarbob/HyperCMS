@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/roles/superadmin/edit",
+    "status": 200,
+    "location": null,
+    "title": "Super Admin",
+    "bytes": 43993,
+    "sha1": "eac3e7a907272bfef3ecbc954a1b4c8014637ff2"
+}

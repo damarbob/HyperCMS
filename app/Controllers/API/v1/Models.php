@@ -8,9 +8,9 @@ class Models extends ApiController
 {
     public function index()
     {
-        // A superadmin manages every model. Anyone else gets the models their groups may read, as in the admin menu.
+        // Someone who manages models gets every model. Anyone else gets the models their roles may read, as in the admin menu.
         $caller = $this->caller();
-        $hidden = $caller->inGroup('superadmin') ? [] : service('modelAccess')->hiddenIds($caller);
+        $hidden = service('permissions')->can($caller, 'models.manage') ? [] : service('modelAccess')->hiddenIds($caller);
 
         // The DataTables POST parameters go straight to the store.
         return $this->response->setJSON(service('modelStore')->dataTable($this->request->getPost(), $hidden));

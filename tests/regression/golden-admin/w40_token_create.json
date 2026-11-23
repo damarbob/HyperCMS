@@ -1,0 +1,16 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/tokens",
+        "form": {
+            "name": "Capture site",
+            "scopes": [
+                "entries.read"
+            ]
+        }
+    },
+    "status": 303,
+    "location": "/admin/tokens",
+    "body": "",
+    "changes": []
+}
