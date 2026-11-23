@@ -2,9 +2,11 @@
 
 namespace Config;
 
+use App\Data\Abilities;
 use App\Data\Entries\StarDustEntries;
 use App\Data\EntryLabels;
 use App\Data\EntryStore;
+use App\Data\Grants;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
 use App\Data\Permissions;
@@ -121,7 +123,35 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('permissions');
         }
-        return new Permissions(static::modelStore());
+        return new Permissions(static::grants());
+    }
+
+    /**
+     * The abilities of the admin: those of core, those modules register, and the ones an admin made.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Abilities
+     */
+    public static function abilities(bool $getShared = true): Abilities
+    {
+        if ($getShared) {
+            return static::getSharedInstance('abilities');
+        }
+        return new Abilities(db_connect());
+    }
+
+    /**
+     * What each role may do, read from and written to the database.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Grants
+     */
+    public static function grants(bool $getShared = true): Grants
+    {
+        if ($getShared) {
+            return static::getSharedInstance('grants');
+        }
+        return new Grants(db_connect(), static::abilities());
     }
 
     /**
