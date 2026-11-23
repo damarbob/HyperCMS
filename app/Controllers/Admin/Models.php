@@ -82,7 +82,7 @@ class Models extends AdminController
             return redirect()->to(base_url('admin/models'))->with('error', lang('Models.notFound'));
         }
 
-        [$data, $fields, $errors] = $this->submitted();
+        [$data, $fields, $errors] = $this->submitted((int) $id);
         if ($errors !== []) {
             return $this->builder($model, $fields, (string) ($data['label_field'] ?? ''), $errors, $this->typed($data), 422);
         }
@@ -125,7 +125,7 @@ class Models extends AdminController
      * @return array{0: array<string, mixed>, 1: list<array<string, mixed>>, 2: array<string, mixed>} The data for the store,
      *         the fields as far as they could be read, and the errors by place (`general`, `name`, `group`, `fields` by id).
      */
-    private function submitted(): array
+    private function submitted(?int $modelId = null): array
     {
         $post   = $this->request->getPost();
         $errors = [];
@@ -172,7 +172,7 @@ class Models extends AdminController
             'name'        => $input['name'],
             'group'       => $input['group'] === '' ? null : $input['group'],
             'icon'        => $input['icon'] === '' ? null : $input['icon'],
-            'access'      => $this->accessFrom($post['access'] ?? null),
+            'access'      => $this->accessFrom($post['access'] ?? null, $modelId),
             'fields'      => json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'label_field' => ($post['label_field'] ?? '') === '' ? null : (string) $post['label_field'],
         ];
@@ -181,27 +181,70 @@ class Models extends AdminController
     }
 
     /**
-     * The access grid as it was posted, kept to roles that exist and actions that exist. A role that may do anything else
-     * on a model may read it, because it could not reach the model otherwise. A superadmin needs no row.
+     * The access grid after the form, for every role but the superadmin, which needs no row.
+     *
+     * A person hands out only what they hold themselves, as on the roles screen. A role they may not handle keeps what it
+     * has, and an action they lack on the model stays as it was for a role they may handle, so saving the model can never
+     * give anyone more than the person who saves it has. Anything other than reading also lets the role read, when the
+     * person holds reading or the role already has it.
+     *
+     * @param int|null $modelId The model being saved, or null for a new one.
      *
      * @return array<string, list<string>>
      */
-    private function accessFrom(mixed $posted): array
+    private function accessFrom(mixed $posted, ?int $modelId): array
     {
-        $roles  = service('roles')->names();
-        $access = [];
+        $permissions = service('permissions');
+        $actor       = auth()->user();
+        $existing    = $modelId !== null ? service('grants')->forModel($modelId) : [];
+        $posted      = is_array($posted) ? $posted : [];
 
-        foreach (is_array($posted) ? $posted : [] as $role => $actions) {
-            if (! in_array($role, $roles, true) || $role === Permissions::SUPERADMIN || ! is_array($actions)) {
+        $mine = array_values(array_filter(Abilities::MODEL_ACTIONS, fn (string $action): bool => $this->holds($action, $modelId)));
+
+        $access = [];
+        foreach (service('roles')->names() as $role) {
+            if ($role === Permissions::SUPERADMIN) {
                 continue;
             }
-            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_map('strval', $actions)));
+
+            $before = array_values(array_intersect(Abilities::MODEL_ACTIONS, $existing[$role] ?? []));
+            if (! $permissions->mayAssignRole($actor, $role)) {
+                $actions = $before;
+            } else {
+                $asked   = is_array($posted[$role] ?? null) ? array_map('strval', $posted[$role]) : [];
+                $actions = array_merge(array_diff($before, $mine), array_intersect($asked, $mine));
+            }
+
+            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_unique($actions)));
+            if ($actions !== [] && ! in_array('read', $actions, true) && (in_array('read', $mine, true) || in_array('read', $before, true))) {
+                array_unshift($actions, 'read');
+            }
             if ($actions !== []) {
-                $access[(string) $role] = in_array('read', $actions, true) ? $actions : array_merge(['read'], $actions);
+                $access[$role] = $actions;
             }
         }
 
         return $access;
+    }
+
+    /**
+     * Whether the signed-in person holds an action on a model. For a model that does not exist yet, whether they hold it
+     * on any model.
+     */
+    private function holds(string $action, ?int $modelId): bool
+    {
+        $ids = $modelId !== null ? [$modelId] : service('modelStore')->allIds();
+        foreach ($ids as $id) {
+            try {
+                if (can('entries.' . $action, $id)) {
+                    return true;
+                }
+            } catch (InvalidArgumentException) {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     /**
