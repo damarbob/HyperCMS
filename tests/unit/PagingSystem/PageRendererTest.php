@@ -148,6 +148,16 @@ final class PageRendererTest extends CIUnitTestCase
         $this->assertFalse($blueprint->fits([['id' => 'asset_url', 'type' => 'file']]), 'A missing field does not fit.');
     }
 
+    public function testTheAttachmentFieldOffersTheHooksOfTheFrontend(): void
+    {
+        helper(['star', 'hyper_ui']);
+        $input = (new \App\Fields\HookField())->input(null, ['id' => 'hyper_page_hook_id', 'label' => 'Attachment', 'type' => 'hook', 'group' => 'Frontend'], null);
+
+        foreach ([Pages::MAIN, Pages::HEAD, Pages::HEADER, Pages::FOOTER] as $hook) {
+            $this->assertStringContainsString('value="' . $hook . '"', $input, "$hook should be offered");
+        }
+    }
+
     public function testAMainPageWithATitleAndNoAddressGetsTheAddressItsTitleMakes(): void
     {
         $filled = PageUrls::fill([Pages::HOOK => Pages::MAIN, Pages::TITLE => 'About Us & More', Pages::URL => '']);
