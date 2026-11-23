@@ -82,7 +82,8 @@
       devices: [
         { id: 'desktop', name: L.desktop, width: '' },
         { id: 'tablet', name: L.tablet, width: '768px', widthMedia: '992px' },
-        { id: 'mobile', name: L.mobile, width: '375px', widthMedia: '480px' },
+        { id: 'mobileLandscape', name: L.mobileLandscape, width: '568px', widthMedia: '768px' },
+        { id: 'mobilePortrait', name: L.mobilePortrait, width: '375px', widthMedia: '480px' },
       ],
     },
     assetManager: {
@@ -103,6 +104,10 @@
     },
   });
 
+  // Filters are in the style manager, in the section of the extras, besides the ones it has.
+  editor.StyleManager.addProperty('extra', { extend: 'filter' });
+  editor.StyleManager.addProperty('extra', { extend: 'filter', property: 'backdrop-filter' });
+
   /* ---- When the editor has loaded ---------------------------------------------------------------------------- */
 
   editor.on('load', function () {
@@ -116,6 +121,33 @@
       script.src = url;
       script.setAttribute('data-no-export', 'true');
       doc.body.appendChild(script);
+    });
+  });
+
+  /* ---- A search above the blocks -------------------------------------------------------------------------------- */
+
+  // It keeps the blocks that have the words in their name or in the name of their group. The panel of the blocks is drawn the
+  // first time it is opened, so the box is put in then.
+  function plain(text) { return String(text || '').replace(/<[^>]*>/g, '').toLowerCase(); }
+  editor.on('run:open-blocks', function () {
+    var holder = editor.getContainer().querySelector('.gjs-blocks-cs');
+    // Drawing the blocks again replaces what is in the holder, so the box goes beside it, in the panel that holds it.
+    if (!holder || holder.parentNode.querySelector('.editor-search')) return;
+    var search = document.createElement('div');
+    search.className = 'editor-search';
+    var field = document.createElement('input');
+    field.type = 'search';
+    field.className = 'input';
+    field.placeholder = L.searchBlocks;
+    field.setAttribute('aria-label', L.searchBlocks);
+    search.appendChild(field);
+    holder.parentNode.insertBefore(search, holder);
+    field.addEventListener('input', function () {
+      var words = field.value.trim().toLowerCase();
+      if (words === '') { editor.Blocks.render(); return; }
+      editor.Blocks.render(editor.Blocks.getAll().filter(function (block) {
+        return plain(block.getLabel()).indexOf(words) !== -1 || plain(block.getCategoryLabel()).indexOf(words) !== -1;
+      }));
     });
   });
 
@@ -158,12 +190,15 @@
       area.className = 'editor-import';
       area.setAttribute('aria-label', L.import);
       area.placeholder = L.importHelp;
+      // It opens with the page as it is, so a part of it can be changed and put back.
+      area.value = ed.getHtml() + '<style>' + ed.getCss({ avoidProtected: true }) + '</style>';
       var go = document.createElement('button');
       go.type = 'button';
       go.className = 'btn primary';
       go.textContent = L.import;
       go.addEventListener('click', function () {
         if (area.value.trim() === '') return;
+        ed.Css.clear();
         ed.setComponents(area.value);
         ed.Modal.close();
         history();
@@ -174,6 +209,31 @@
     },
   });
   editor.Panels.addButton('options', { id: 'hyper-import', className: 'fa fa-download', command: 'hyper-import', attributes: { title: L.import } });
+
+  /* ---- The files of the site, opened from the editor ------------------------------------------------------------ */
+
+  // The library opens as a dialog to look through, upload to and tidy. What is chosen in it is not used here.
+  editor.Panels.addButton('options', {
+    id: 'hyper-files',
+    className: 'fa fa-folder-open',
+    togglable: false,
+    command: function () {
+      if (!window.HyperMedia) { toast('bad', L.libraryMissing); return; }
+      window.HyperMedia.pick({ accept: 'any', multiple: true, title: L.files });
+    },
+    attributes: { title: L.files },
+  });
+
+  /* ---- Styling by class instead of by element ------------------------------------------------------------------- */
+
+  // The editor styles the element that is selected. With this on, the style goes to the classes of the element, so every
+  // element with the same class changes with it.
+  function byClass(ed, on) {
+    ed.Selectors.setComponentFirst(!on);
+    ed.trigger('component:toggled');
+  }
+  editor.Commands.add('hyper-class-mode', { run: function (ed) { byClass(ed, true); }, stop: function (ed) { byClass(ed, false); } });
+  editor.Panels.addButton('options', { id: 'hyper-class-mode', className: 'fa fa-tags', command: 'hyper-class-mode', attributes: { title: L.classMode } });
 
   /* ---- Save --------------------------------------------------------------------------------------------------- */
 

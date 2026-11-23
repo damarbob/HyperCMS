@@ -51,7 +51,7 @@ $labels      = $editor['labels'];
         <h1 class="editor-title"><?= esc($editor['pageTitle']) ?></h1>
 
         <div class="seg" role="group" aria-label="<?= attr($labels['devices']) ?>" id="editor-devices">
-            <?php foreach (['desktop', 'tablet', 'mobile'] as $device) : ?>
+            <?php foreach (['desktop', 'tablet', 'mobileLandscape', 'mobilePortrait'] as $device) : ?>
                 <button type="button" data-device="<?= attr($device) ?>" aria-pressed="<?= $device === 'desktop' ? 'true' : 'false' ?>"><?= esc($labels[$device]) ?></button>
             <?php endforeach ?>
         </div>

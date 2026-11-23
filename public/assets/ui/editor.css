@@ -75,6 +75,10 @@
   .editor-state { display: none; }
 }
 
+/* ---- The search above the blocks, which is the admin's own field in the panel of GrapesJS ---------------------------- */
+
+.editor-search { padding: var(--s2); }
+
 /* ---- The import dialog, which GrapesJS draws and the script fills ---------------------------------------------- */
 
 .editor-import { display: block; width: 100%; min-height: 260px; margin-bottom: var(--s3); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: var(--t-sm); resize: vertical; }
