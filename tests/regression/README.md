@@ -96,6 +96,8 @@ Commit the rewritten files with the change that caused them, so the diff of the 
 
 The admin page captures compare a hash of the HTML, and the HTML depends on `.env`. The baseline was recorded with `CI_ENVIRONMENT = development` and `app_baseURL = 'http://localhost:8080/'`, on PHP 8.4 and MySQL 8.0. A different base URL, app name, locale or set of active modules changes those hashes before you touch any code. If that is your setup, record a baseline from an unchanged checkout first and compare against that.
 
+The library page lists the folders that exist in the upload folder, `writable/uploads` unless `media.uploadPath` says otherwise, and the files of the database. The captures assume that folder holds no folders of its own, so remove any you made by hand before you record or compare. The probes and the write flows make a folder of their own and remove it again.
+
 Two things are masked on purpose. The dashboard shows a quote fetched from an external site, and a response with status 500 keeps only its error type and message, since a development error page prints file paths and line numbers.
 
 `seed.sql` was dumped after `seed.php` ran on an empty, migrated database. If a migration changes the tables the captures read, the dump has to be rebuilt by hand in the same way.
