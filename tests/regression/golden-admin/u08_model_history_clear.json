@@ -1,0 +1,177 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/model-data/1/clear",
+        "form": [],
+        "account": "capture_user"
+    },
+    "status": 403,
+    "body": {
+        "title": "CodeIgniter\\Security\\Exceptions\\SecurityException",
+        "type": "CodeIgniter\\Security\\Exceptions\\SecurityException",
+        "code": 403,
+        "message": "The action you requested is not allowed.",
+        "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Security\\Security.php",
+        "line": 262,
+        "trace": [
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Security\\Security.php",
+                "line": 262,
+                "function": "forDisallowedAction",
+                "class": "CodeIgniter\\Security\\Exceptions\\SecurityException",
+                "type": "::",
+                "args": []
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Filters\\CSRF.php",
+                "line": 52,
+                "function": "verify",
+                "class": "CodeIgniter\\Security\\Security",
+                "type": "->",
+                "args": [
+                    []
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Filters\\Filters.php",
+                "line": 241,
+                "function": "before",
+                "class": "CodeIgniter\\Filters\\CSRF",
+                "type": "->",
+                "args": [
+                    [],
+                    null
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Filters\\Filters.php",
+                "line": 221,
+                "function": "runBefore",
+                "class": "CodeIgniter\\Filters\\Filters",
+                "type": "->",
+                "args": [
+                    [
+                        [
+                            "CodeIgniter\\Filters\\CSRF",
+                            []
+                        ],
+                        [
+                            "CodeIgniter\\Shield\\Filters\\SessionAuth",
+                            []
+                        ],
+                        [
+                            "CodeIgniter\\Shield\\Filters\\GroupFilter",
+                            [
+                                "superadmin"
+                            ]
+                        ],
+                        [
+                            "App\\Filters\\ModelUserGroupFilter",
+                            [
+                                "model",
+                                "2"
+                            ]
+                        ]
+                    ]
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\CodeIgniter.php",
+                "line": 479,
+                "function": "run",
+                "class": "CodeIgniter\\Filters\\Filters",
+                "type": "->",
+                "args": [
+                    "admin/model-data/1/clear",
+                    "before"
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\CodeIgniter.php",
+                "line": 354,
+                "function": "handleRequest",
+                "class": "CodeIgniter\\CodeIgniter",
+                "type": "->",
+                "args": [
+                    null,
+                    {
+                        "handler": "file",
+                        "backupHandler": "dummy",
+                        "prefix": "",
+                        "ttl": 60,
+                        "reservedCharacters": "{}()/\\@:",
+                        "file": {
+                            "storePath": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\writable\\cache/",
+                            "mode": 416
+                        },
+                        "memcached": {
+                            "host": "127.0.0.1",
+                            "port": 11211,
+                            "weight": 1,
+                            "raw": false
+                        },
+                        "redis": {
+                            "host": "127.0.0.1",
+                            "password": null,
+                            "port": 6379,
+                            "timeout": 0,
+                            "database": 0
+                        },
+                        "validHandlers": {
+                            "dummy": "CodeIgniter\\Cache\\Handlers\\DummyHandler",
+                            "file": "CodeIgniter\\Cache\\Handlers\\FileHandler",
+                            "memcached": "CodeIgniter\\Cache\\Handlers\\MemcachedHandler",
+                            "predis": "CodeIgniter\\Cache\\Handlers\\PredisHandler",
+                            "redis": "CodeIgniter\\Cache\\Handlers\\RedisHandler",
+                            "wincache": "CodeIgniter\\Cache\\Handlers\\WincacheHandler"
+                        },
+                        "cacheQueryString": false
+                    },
+                    false
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Boot.php",
+                "line": 334,
+                "function": "run",
+                "class": "CodeIgniter\\CodeIgniter",
+                "type": "->",
+                "args": []
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\Boot.php",
+                "line": 67,
+                "function": "runCodeIgniter",
+                "class": "CodeIgniter\\Boot",
+                "type": "::",
+                "args": [
+                    []
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\public\\index.php",
+                "line": 56,
+                "function": "bootWeb",
+                "class": "CodeIgniter\\Boot",
+                "type": "::",
+                "args": [
+                    {
+                        "systemDirectory": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\app\\Config/../../vendor/codeigniter4/framework/system",
+                        "appDirectory": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\app\\Config/..",
+                        "writableDirectory": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\app\\Config/../../writable",
+                        "testsDirectory": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\app\\Config/../../tests",
+                        "viewDirectory": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\app\\Config/../Views"
+                    }
+                ]
+            },
+            {
+                "file": "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\vendor\\codeigniter4\\framework\\system\\rewrite.php",
+                "line": 44,
+                "args": [
+                    "C:\\Users\\damar\\Documents\\Projects\\Konstelasi\\ProjectH\\public\\index.php"
+                ],
+                "function": "require_once"
+            }
+        ]
+    }
+}

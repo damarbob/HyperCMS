@@ -198,9 +198,14 @@ foreach ($apiCalls as $name => [$method, $path, $form]) {
 $u = new Client($base);
 $u->request('GET', 'auth/login');
 $u->request('POST', 'auth/login', ['email' => 'capture_user@example.test', 'password' => 'Capture-User-2026']);
+$u->request('GET', 'admin/dashboard'); // a page with a token for the signed-in session
 $userCalls = [
     'u01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
     'u05_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
+    // The history of a model is for the group that manages models, and a restore rewrites the definition.
+    'u06_model_history'        => ['GET', 'admin/model-data/1', null],
+    'u07_model_history_restore' => ['POST', 'admin/model-data/1/versions/1/restore', []],
+    'u08_model_history_clear'  => ['POST', 'admin/model-data/1/clear', []],
 ];
 foreach ($userCalls as $name => [$method, $path, $form]) {
     [$status, $body] = $u->request($method, $path, $form, true);

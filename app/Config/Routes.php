@@ -73,10 +73,12 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['show'],
-            'filter' => 'model-user-group:model',
+            'filter' => ['group:superadmin', 'model-user-group:model'],
         ]);
-        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
-        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => 'model-user-group:model,3']);
+        // The id is the third segment (`admin/model-data/{id}/...`), which is index 2 of the filter. A restore rewrites the
+        // definition of the model, so these are for the group that manages models.
+        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
+        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
 
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
