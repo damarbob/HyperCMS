@@ -6,6 +6,7 @@ use App\Data\Entries\StarDustEntries;
 use App\Data\WriteVersions;
 use App\Fields\FieldTypes;
 use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\FileLinks;
 use App\Libraries\Upgrade\Convert\ModelFields;
 use App\Libraries\Upgrade\ConversionStep;
 use CodeIgniter\Database\BaseConnection;
@@ -20,7 +21,7 @@ final class Steps
     /**
      * The number of the last step. A new step raises it, and a test checks it against the list.
      */
-    public const LATEST = 4;
+    public const LATEST = 5;
 
     /**
      * @return list<ConversionStep>
@@ -35,6 +36,7 @@ final class Steps
             new PickLabelFields($db),
             new ConvertEntryValues($db, new EntryValues($types), $engine, new WriteVersions($db)),
             new ConvertPermissions($db),
+            new ConvertFiles($db, new FileLinks(), $engine, new WriteVersions($db), service('files'), rtrim(FCPATH, '/\\')),
         ];
     }
 }

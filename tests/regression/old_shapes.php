@@ -34,8 +34,8 @@ return [
         ],
         'entries' => [
             [
-                'title' => 'First shape', 'mail' => 'a@example.test', 'body' => '<p>Rich <img src="' . $serve('uploads/rich-1.png') . '"></p>', 'snippet' => '<b>code</b>',
-                'logo' => $serve('uploads/logo.svg'), 'photos' => ['uploads/photo-one.png', 'uploads/photo-two.png'],
+                'title' => 'First shape', 'mail' => 'a@example.test', 'body' => '<p>Rich <img src="' . $serve('uploads/upgrade-test/rich-1.png') . '"> <img src="' . $serve('uploads/upgrade-test/gone.png') . '"></p>', 'snippet' => '<b>code</b>',
+                'logo' => $serve('uploads/upgrade-test/logo.svg'), 'photos' => ['uploads/upgrade-test/photo-one.png', 'uploads/upgrade-test/photo-two.png'],
                 'rating' => '7', 'count' => '3', 'price' => '12.50', 'active' => 'on', 'size' => 'l', 'tags' => 'b', 'kind' => 'y', 'colour' => '#AA00FF', 'starts' => '2026-03-01T08:30',
             ],
             [
@@ -71,10 +71,10 @@ return [
         'entries' => [
             [
                 'path' => '/about',
-                'hyper_html' => '<img src="' . $serve('uploads/hero.jpg') . '"><p>About</p>',
+                'hyper_html' => '<img src="' . $serve('uploads/upgrade-test/hero.jpg') . '"><p>About</p>',
                 'hyper_css' => 'p { margin: 0; }',
                 'hyper_component_elements' => '[]',
-                'hyper_page_project_data' => '{"assets":[{"src":"' . $escaped($serve('uploads/hero.jpg')) . '","type":"image"}],"pages":[]}',
+                'hyper_page_project_data' => '{"assets":[{"src":"' . $escaped($serve('uploads/upgrade-test/hero.jpg')) . '","type":"image"}],"pages":[]}',
             ],
         ],
     ],

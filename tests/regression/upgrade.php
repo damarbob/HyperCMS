@@ -212,6 +212,25 @@ foreach ($wantVersions as $versionId => $want) {
     $wantVersions[$versionId] = $convertVersion($want, $modelId);
 }
 
+/**
+ * What a version holds once the files are in the library. The ids of the library rows are made by the run, so they are read
+ * from `hyper_files` when a run is checked, and the expected text is made then from the text that the other steps give.
+ */
+$fileLinks = new App\Libraries\Upgrade\Convert\FileLinks();
+$withFiles = function (array $want, int $modelId, callable $resolve) use ($fileLinks, $wantDefinitions, $payload): array {
+    $decoded = json_decode($want['text'], true);
+    if (! is_array($decoded) || ($decoded !== [] && array_is_list($decoded))) {
+        return $want;
+    }
+    $converted = $fileLinks->convert($decoded, $wantDefinitions[$modelId] ?? [], $resolve)['fields'];
+    if (json_encode($converted) !== json_encode($decoded)) {
+        $want['text'] = App\Libraries\Upgrade\Payload::encode((object) $converted);
+    }
+    $want['payload'] = $payload($want['text']);
+
+    return $want;
+};
+
 // ---------------------------------------------------------------------------------------------
 // Put the database into the 0.1 shape.
 
@@ -274,7 +293,16 @@ $check('no answer to the backup question changes nothing', $hashes($tables()) ==
 /**
  * @param int $orphans How many StarDust entries nothing points at, left by a run that was cut short.
  */
-$verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pairs, $pdo, $wantModels, $wantModelRevisions, $wantEntries, $wantVersions, $payload, $oldTables, $before): void {
+$verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pairs, $pdo, $wantModels, $wantModelRevisions, $wantEntries, $wantVersions, $payload, $oldTables, $before, $withFiles): void {
+    // The files are in the library by now, so the versions are expected with their links rewritten.
+    $libraryFiles = [];
+    foreach ($pdo->query('SELECT id, path, name FROM hyper_files')->fetchAll(PDO::FETCH_ASSOC) as $f) {
+        $libraryFiles[$f['path']] = ['id' => (int) $f['id'], 'name' => $f['name']];
+    }
+    $resolveFile = static fn (string $path): ?array => $libraryFiles[str_starts_with($path, 'uploads/') ? substr($path, 8) : $path] ?? null;
+    foreach ($wantVersions as $versionId => $want) {
+        $wantVersions[$versionId] = $withFiles($want, (int) ($wantEntries[$want['entry_id']]['model_id'] ?? 0), $resolveFile);
+    }
     $same = function (array $want, array $got): string {
         $bad = [];
         foreach ($want as $id => $row) {
@@ -398,6 +426,31 @@ $verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pai
 };
 
 // ---------------------------------------------------------------------------------------------
+// The files of the old upload folder, which the shapes point at. They are written before the real run and removed at the
+// end, so the move into the media library has real files to copy.
+
+$publicRoot  = dirname(__DIR__, 2) . '/public';
+$libraryRoot = dirname(__DIR__, 2) . '/writable/uploads';
+$removeTree  = static function (string $dir) use (&$removeTree): void {
+    if (! is_dir($dir)) {
+        return;
+    }
+    foreach (scandir($dir) ?: [] as $item) {
+        if ($item !== '.' && $item !== '..') {
+            is_dir("$dir/$item") ? $removeTree("$dir/$item") : unlink("$dir/$item");
+        }
+    }
+    rmdir($dir);
+};
+$removeTree("$publicRoot/uploads/upgrade-test");
+$removeTree("$libraryRoot/upgrade-test");
+$oldFiles = require __DIR__ . '/old_files.php';
+foreach ($oldFiles as $path => $content) {
+    @mkdir(dirname("$publicRoot/$path"), 0777, true);
+    file_put_contents("$publicRoot/$path", $content);
+}
+
+// ---------------------------------------------------------------------------------------------
 // The real run, with the odd version in it.
 
 [$code, $text] = $spark('--yes');
@@ -425,7 +478,29 @@ $queryDef = array_column(json_decode((string) $pdo->query("SELECT fields FROM hy
 $check('data queries became model, relation and hook fields, and the rest became text', $queryDef === ['title' => 'text', 'model' => 'model', 'shape' => 'relation', 'hook' => 'hook', 'whole' => 'text', 'owner' => 'text'], json_encode($queryDef));
 $shapeEntry = $pdo->query("SELECT d.fields FROM hyper_entries e JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE e.model_id = $shapeId ORDER BY e.id LIMIT 1")->fetchColumn();
 $shapeValues = json_decode((string) $shapeEntry, true);
-$check('the values of a Shapes entry took the new shape', is_array($shapeValues) && $shapeValues['rating'] === 7 && $shapeValues['count'] === 3 && $shapeValues['price'] === 12.5 && $shapeValues['active'] === true && $shapeValues['tags'] === ['b'] && $shapeValues['starts'] === '2026-03-01 08:30:00' && $shapeValues['colour'] === '#aa00ff' && $shapeValues['photos'] === ['uploads/photo-one.png', 'uploads/photo-two.png'] && is_string($shapeValues['logo']), (string) $shapeEntry);
+$fileRows = [];
+foreach ($pdo->query('SELECT id, path, name, mime, size FROM hyper_files')->fetchAll(PDO::FETCH_ASSOC) as $f) {
+    $fileRows[$f['path']] = $f;
+}
+$fileId = static fn (string $name): int => (int) ($fileRows['upgrade-test/' . $name]['id'] ?? 0);
+$check('the values of a Shapes entry took the new shape', is_array($shapeValues) && $shapeValues['rating'] === 7 && $shapeValues['count'] === 3 && $shapeValues['price'] === 12.5 && $shapeValues['active'] === true && $shapeValues['tags'] === ['b'] && $shapeValues['starts'] === '2026-03-01 08:30:00' && $shapeValues['colour'] === '#aa00ff', (string) $shapeEntry);
+
+// The files moved into the media library, and every link to them was rewritten.
+$check('every file of the old upload folder is in the library, with its folders below it', count(array_filter(array_keys($fileRows), fn(string $p): bool => str_starts_with($p, 'upgrade-test/'))) === count($oldFiles), json_encode(array_keys($fileRows)));
+$copiesOk = true;
+foreach ($oldFiles as $path => $content) {
+    $copy = $libraryRoot . '/' . substr($path, strlen('uploads/'));
+    $copiesOk = $copiesOk && is_file($copy) && file_get_contents($copy) === $content && file_get_contents("$publicRoot/$path") === $content;
+}
+$check('the copies hold the same bytes, and the originals are left where they were', $copiesOk);
+$check('the library rows carry the size and the type of what is in the file', (int) ($fileRows['upgrade-test/logo.svg']['size'] ?? 0) === strlen($oldFiles['uploads/upgrade-test/logo.svg']) && ($fileRows['upgrade-test/logo.svg']['mime'] ?? '') === 'image/svg+xml' && ($fileRows['upgrade-test/rich-1.png']['mime'] ?? '') === 'image/png', json_encode($fileRows['upgrade-test/logo.svg'] ?? null));
+$check('a file field holds the id of its library file, or a list of ids', is_array($shapeValues) && $shapeValues['logo'] === $fileId('logo.svg') && $shapeValues['photos'] === [$fileId('photo-one.png'), $fileId('photo-two.png')] && $fileId('logo.svg') > 0, json_encode([$shapeValues['logo'] ?? null, $shapeValues['photos'] ?? null]));
+$check('a link in rich text became a media link, and a link to a missing file was kept', is_array($shapeValues) && str_contains($shapeValues['body'], '/media/' . $fileId('rich-1.png') . '/rich-1.png') && str_contains($shapeValues['body'], '/public/file-server/serve/' . bin2hex('uploads/upgrade-test/gone.png')), (string) ($shapeValues['body'] ?? ''));
+$pageValues = json_decode((string) $pdo->query("SELECT d.fields FROM hyper_entries e JOIN hyper_models m ON m.id = e.model_id JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE m.name = 'Pages' ORDER BY e.id LIMIT 1")->fetchColumn(), true);
+$check('page HTML and the project data of the page editor point at the library file', is_array($pageValues) && str_contains($pageValues['hyper_html'], '/media/' . $fileId('hero.jpg') . '/hero.jpg') && ($pageValues['hyper_page_project_data'] ?? '') !== '' && str_contains($pageValues['hyper_page_project_data'], '\/media\/' . $fileId('hero.jpg') . '\/hero.jpg') && ! str_contains($pageValues['hyper_page_project_data'], 'file-server') && is_array(json_decode($pageValues['hyper_page_project_data'], true)), json_encode($pageValues));
+$versionsLeft = (int) $pdo->query("SELECT COUNT(*) FROM hyper_entry_revisions WHERE fields LIKE '%file-server%' AND fields NOT LIKE '%" . bin2hex('uploads/upgrade-test/gone.png') . "%'")->fetchColumn();
+$check('no saved version still holds a link to a file that was moved', $versionsLeft === 0, "$versionsLeft versions");
+$check('the report names the link that could not be moved and the files it copied', str_contains($text, 'gone.png') && str_contains($text, 'Files copied into the media library'), $text);
 $oddValues = json_decode((string) $pdo->query("SELECT d.fields FROM hyper_entries e JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE e.model_id = $shapeId ORDER BY e.id LIMIT 1 OFFSET 2")->fetchColumn(), true);
 $check('a value that fits no rule is kept as it was', is_array($oddValues) && $oddValues['count'] === 'many' && $oddValues['active'] === 'maybe' && $oddValues['starts'] === 'soon', json_encode($oddValues));
 
@@ -466,6 +541,9 @@ echo preg_replace('/^/m', '      | ', $text) . PHP_EOL;
 $check('a run on half filled tables exits 0', $code === 0, "exit $code");
 $check('a run on half filled tables adds the missing entries', str_contains($text, 'Copied ' . count($gone) . ' entries and 0 entry versions.'), $text);
 $verify('repair run', 1);
+
+$removeTree("$publicRoot/uploads/upgrade-test");
+$removeTree("$libraryRoot/upgrade-test");
 
 echo ($failed === 0 ? 'upgrade test passed' : "upgrade test: $failed checks failed") . PHP_EOL;
 exit($failed === 0 ? 0 : 1);

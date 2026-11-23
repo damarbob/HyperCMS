@@ -3,6 +3,7 @@
 namespace App\Libraries\Upgrade;
 
 use App\Libraries\Upgrade\Convert\EntryValues;
+use App\Libraries\Upgrade\Convert\FileLinks;
 use App\Libraries\Upgrade\Convert\ModelFields;
 use App\Libraries\Upgrade\Steps\ConvertModelFields;
 use CodeIgniter\Database\BaseConnection;
@@ -17,7 +18,8 @@ use StarDust\StarDust;
  * because MySQL rewrites the text of a JSON column, so key order and spacing differ and mean nothing.
  *
  * The conversion steps rewrite the values after the copy, so an entry that StarDust returns is accepted when it equals
- * the source as it was copied, or the source after the same conversion.
+ * the source as it was copied, or the source after the same conversion. The move of the files into the library changes
+ * the values again, so the source after that is accepted too, with the files that the library holds by then.
  */
 final class Verifier
 {
@@ -27,7 +29,37 @@ final class Verifier
         private readonly int $tenantId,
         private readonly EntryValues $values,
         private readonly ModelFields $fields,
+        private readonly ?FileLinks $links = null,
     ) {
+    }
+
+    /**
+     * The library files by their path below the upload folder, read once.
+     *
+     * @var array<string, array{id: int, name: string}>|null
+     */
+    private ?array $library = null;
+
+    /**
+     * The library file that a path of the old upload form, or the path of an old link, names. It reads the library and
+     * copies nothing.
+     *
+     * @return array{id: int, name: string}|null
+     */
+    private function libraryFile(string $path): ?array
+    {
+        if ($this->library === null) {
+            $this->library = [];
+            if ($this->db->tableExists('hyper_files')) {
+                foreach ($this->db->query('SELECT id, path, name FROM hyper_files')->getResultArray() as $row) {
+                    $this->library[(string) $row['path']] = ['id' => (int) $row['id'], 'name' => (string) $row['name']];
+                }
+            }
+        }
+
+        $path = (string) preg_replace('#^public/#', '', ltrim(str_replace('\\', '/', $path), '/'));
+
+        return $this->library[str_starts_with($path, 'uploads/') ? substr($path, 8) : $path] ?? null;
     }
 
     /**
@@ -79,8 +111,9 @@ final class Verifier
                         continue;
                     }
 
-                    $got = self::canonical($entry->fields);
-                    if ($got !== self::canonical($want) && $got !== self::canonical($this->values->convert($want, $definition)['fields'])) {
+                    $got       = self::canonical($entry->fields);
+                    $converted = $this->values->convert($want, $definition)['fields'];
+                    if ($got !== self::canonical($want) && $got !== self::canonical($converted) && ! $this->matchesMoved($got, $converted, $definition)) {
                         $mismatched[] = (int) $row['id'];
                     }
                 }
@@ -95,6 +128,22 @@ final class Verifier
             'unwritten'  => (int) $this->db->query('SELECT COUNT(*) AS n FROM hyper_entries WHERE deleted_at IS NULL AND sd_entry_id IS NULL')->getRow()->n,
             'leftBehind' => (int) $this->db->query('SELECT COUNT(*) AS n FROM entries e WHERE e.deleted_at IS NULL AND NOT EXISTS (SELECT 1 FROM hyper_entries h WHERE h.id = e.id)')->getRow()->n,
         ];
+    }
+
+    /**
+     * Whether the values equal the converted source after its files were moved into the library.
+     *
+     * @param array<string, mixed>       $got
+     * @param array<string, mixed>       $converted
+     * @param list<array<string, mixed>> $definition
+     */
+    private function matchesMoved(array $got, array $converted, array $definition): bool
+    {
+        if ($this->links === null) {
+            return false;
+        }
+
+        return $got === self::canonical($this->links->convert($converted, $definition, fn (string $path): ?array => $this->libraryFile($path))['fields']);
     }
 
     /**
