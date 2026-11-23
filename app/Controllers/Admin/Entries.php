@@ -416,7 +416,7 @@ class Entries extends AdminController
     /**
      * Read the posted values of a form into the values to store, and the message of each field that cannot be stored.
      *
-     * A file field keeps what it holds, because files cannot be changed yet. A password left blank keeps the stored one.
+     * A file field keeps what it holds when the person may not use the media library. A password left blank keeps the stored one.
      * A field the definition does not name keeps its value too, so a save never drops what another version of the model
      * had.
      *
@@ -442,7 +442,8 @@ class Entries extends AdminController
             }
 
             $kind = (string) $field['type'];
-            if ($kind === 'file') {
+            // The files of a field are chosen from the library, so a person who may not use the library keeps what the entry holds.
+            if ($kind === 'file' && ! can('media.manage')) {
                 if (array_key_exists($id, $existing)) {
                     $values[$id] = $existing[$id];
                 }
