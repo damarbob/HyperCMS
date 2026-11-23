@@ -174,4 +174,9 @@ return [
     'bAdded'              => '{name} added.',
     'bTypeChanged'        => 'The options of {name} were reset for the new type.',
     'bOptionMany'         => 'several',
+
+    // The settings screen of the models
+    'settingsText'      => 'What happens to models in general.',
+    'settingsTrash'     => 'Models trash',
+    'settingsTrashText' => 'A model that is deleted waits in the trash. Emptying it deletes those models and all of their entries for good.',
 ];
