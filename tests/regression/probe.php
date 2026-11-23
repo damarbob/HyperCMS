@@ -6,6 +6,7 @@ declare(strict_types=1);
 // The probes sign in first, so they test the queries and are not stopped at the login check.
 // usage: php probe.php <baseUrl>
 $base = rtrim($argv[1] ?? 'http://localhost:8099', '/') . '/';
+$envFile = $argv[2] ?? '';
 
 function post(string $url, array $form, string $token = ''): array
 {
@@ -276,6 +277,86 @@ foreach ($roles as $role => [$email, $password]) {
         $bad     = $refused === $allowed[$column];
         $say("role $role, POST $path", $status, $bad, $refused ? 'refused although the role has the right' : 'reached the controller without the right');
     }
+}
+
+// The roles and abilities screens, and the ways a person with only part of the power could reach more. The probe makes
+// two roles and two accounts, tries to escalate with each, and removes everything again.
+if ($envFile !== '') {
+    require_once __DIR__ . '/lib.php';
+    $pdo = connect(dbSettings($envFile), true);
+    [$sa, $satoken] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');
+    $sform = ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $satoken];
+    $act   = function (array &$jar, string $token, string $path, array $fields) use ($base): array {
+        return web($base, $jar, 'POST', $path, http_build_query($fields + ['hyper_csrf_token' => $token]), ['Content-Type: application/x-www-form-urlencoded', 'X-HYPER-CSRF-TOKEN' . ': ' . $token]);
+    };
+    $rolesOf = fn(string $user): array => $pdo->query("SELECT `group` FROM auth_groups_users g JOIN users u ON u.id = g.user_id WHERE u.username = " . $pdo->quote($user))->fetchAll(PDO::FETCH_COLUMN);
+
+    foreach (['admin/roles', 'admin/roles/new', 'admin/roles/admin/edit', 'admin/roles/superadmin/edit', 'admin/abilities'] as $page) {
+        [$status] = web($base, $sa, 'GET', $page);
+        $say("roles, superadmin opens $page", $status, $status !== 200, 'a screen of the superadmin was refused');
+    }
+
+    // Roles: make, refuse a bad or repeated name, refuse to delete a locked role or one with people in it.
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_users', 'label' => 'Probe users', 'copy' => '', 'abilities' => ['users.manage']]);
+    $say('roles, make a role', $status, $status !== 303, 'a valid role was not made');
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_roles', 'label' => 'Probe roles', 'abilities' => ['roles.manage']]);
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'probe_users', 'label' => 'Again']);
+    $say('roles, the same name twice', $status, $status === 303, 'a repeated name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/roles', ['name' => 'Bad Name!', 'label' => 'Bad']);
+    $say('roles, a name with spaces and capitals', $status, $status === 303, 'a bad name was accepted');
+    $act($sa, $satoken, 'admin/roles/superadmin/delete', []);
+    $say('roles, delete the locked role', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'superadmin'")->fetchColumn() !== 1, 'the locked role was deleted');
+    $act($sa, $satoken, 'admin/roles/developer/delete', []);
+    $say('roles, delete a role that has people', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'developer'")->fetchColumn() !== 1, 'a role with people was deleted');
+
+    // Abilities: add one by name, refuse a bad or repeated name, refuse to delete an ability of core.
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'probe.thing', 'label' => 'Probe thing']);
+    $say('abilities, add one by name', $status, $status !== 303, 'a valid ability was not added');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'probe.thing', 'label' => 'Again']);
+    $say('abilities, the same name twice', $status, $status === 303, 'a repeated name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'single', 'label' => 'One word']);
+    $say('abilities, a name of one word', $status, $status === 303, 'a bad name was accepted');
+    [$status] = $act($sa, $satoken, 'admin/abilities', ['name' => 'entries.read', 'label' => 'Clash']);
+    $say('abilities, a name of a model action', $status, $status === 303, 'a name that clashes with a model action was accepted');
+    $act($sa, $satoken, 'admin/abilities/media.manage/delete', []);
+    $say('abilities, delete an ability of core', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE ability = 'media.manage'")->fetchColumn() === 0, 'an ability of core was deleted');
+
+    // Two accounts that each have part of the power.
+    foreach (['probe_manager' => 'probe_users', 'probe_editor' => 'probe_roles'] as $user => $role) {
+        $act($sa, $satoken, 'admin/users/save', ['username' => $user, 'email' => $user . '@example.test', 'password' => 'Probe-Passw0rd-2026!', 'groups' => [$role]]);
+    }
+
+    // A person who may manage users must not reach the superadmin role, or an account that has it.
+    [$mj, $mtoken] = signIn($base, 'probe_manager@example.test', 'Probe-Passw0rd-2026!');
+    $act($mj, $mtoken, 'admin/users/save', ['username' => 'probe_manager', 'email' => 'probe_manager@example.test', 'id' => (string) $pdo->query("SELECT id FROM users WHERE username = 'probe_manager'")->fetchColumn(), 'groups' => ['probe_users', 'superadmin']]);
+    $say('users, a manager makes themselves superadmin', 200, in_array('superadmin', $rolesOf('probe_manager'), true), 'the person reached the superadmin role');
+    $act($mj, $mtoken, 'admin/users/save', ['username' => 'probe_friend', 'email' => 'probe_friend@example.test', 'password' => 'Probe-Passw0rd-2026!', 'groups' => ['superadmin']]);
+    $say('users, a manager makes a superadmin account', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'probe_friend'")->fetchColumn() > 0 && in_array('superadmin', $rolesOf('probe_friend'), true), 'a superadmin account was made');
+    $act($mj, $mtoken, 'admin/users/save', ['username' => 'capture_admin', 'email' => 'capture_admin@example.test', 'password' => 'Hijacked-Passw0rd-2026!', 'id' => (string) $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn(), 'groups' => ['superadmin']]);
+    [$cj] = signIn($base, 'capture_admin@example.test', 'Hijacked-Passw0rd-2026!');
+    [$status] = web($base, $cj, 'GET', 'admin/models');
+    $say('users, a manager resets a superadmin password', $status, $status === 200, 'the password of a superadmin was changed');
+    $act($mj, $mtoken, 'admin/users/' . $pdo->query("SELECT id FROM users WHERE username = 'capture_admin'")->fetchColumn() . '/delete', []);
+    $say('users, a manager deletes a superadmin', 200, (int) $pdo->query("SELECT COUNT(*) FROM users WHERE username = 'capture_admin'")->fetchColumn() === 0, 'a superadmin account was deleted');
+
+    // A person who may manage roles can hand out only what they have.
+    [$ej, $etoken] = signIn($base, 'probe_editor@example.test', 'Probe-Passw0rd-2026!');
+    $act($ej, $etoken, 'admin/roles/probe_roles', ['label' => 'Probe roles', 'abilities' => ['roles.manage', 'users.manage', 'models.manage']]);
+    $held = $pdo->query("SELECT ability FROM hyper_role_abilities WHERE role = 'probe_roles' ORDER BY ability")->fetchAll(PDO::FETCH_COLUMN);
+    $say('roles, an editor gives their own role more power', 200, $held !== ['roles.manage'], 'the role now has ' . implode(', ', $held));
+    $act($ej, $etoken, 'admin/roles/superadmin', ['label' => 'Everyone', 'abilities' => []]);
+    $say('roles, an editor renames the superadmin role', 200, (string) $pdo->query("SELECT label FROM hyper_roles WHERE name = 'superadmin'")->fetchColumn() === 'Everyone', 'the superadmin role was changed');
+    $act($ej, $etoken, 'admin/roles', ['name' => 'probe_copy', 'label' => 'Copy', 'copy' => 'developer']);
+    $say('roles, an editor copies a role with more power', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_roles WHERE name = 'probe_copy'")->fetchColumn() > 0 && (int) $pdo->query("SELECT COUNT(*) FROM hyper_role_abilities WHERE role = 'probe_copy'")->fetchColumn() > 0, 'a role with abilities the editor lacks was copied');
+
+    // Clean up, in the order that the guards allow.
+    $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
+    $pdo->exec("DELETE FROM auth_identities WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
+    $pdo->exec("DELETE FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend')");
+    $pdo->exec("DELETE FROM hyper_role_abilities WHERE role LIKE 'probe\\_%'");
+    $pdo->exec("DELETE FROM hyper_roles WHERE name LIKE 'probe\\_%'");
+    $pdo->exec("DELETE FROM hyper_abilities WHERE name LIKE 'probe.%'");
+    $pdo->exec("UPDATE hyper_roles SET label = 'Super Admin' WHERE name = 'superadmin'");
 }
 
 echo "$exposed probes were exposed in all\n";

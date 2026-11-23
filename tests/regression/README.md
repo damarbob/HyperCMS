@@ -13,7 +13,7 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 | `seed.sql` | The database the captures were taken from |
 | `harness.php` | Sends the API requests, and compares two folders of captures |
 | `admin_harness.php` | Signs in, loads the admin pages and runs the write flows |
-| `probe.php` | Sends hostile sort and find values to the list endpoints |
+| `probe.php` | Sends hostile sort and find values to the list endpoints, and tries every role against the pages and writes, and tries to reach a higher role through the user and role screens |
 | `upgrade.php` | Tests `php spark hyper:upgrade` on the seed put back into the 0.1 layout |
 | `stress.php` | Tests the same command on a large database of awkward data |
 | `measure.php` | Builds models of generated entries and times a search and a sort on a model field, with the PHP peak memory of each |
