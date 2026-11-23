@@ -3,6 +3,7 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Data\IndexingFailed;
 use App\Fields\DefinitionCheck;
 use App\Fields\FieldCatalog;
 use App\Fields\FieldTypes;
@@ -85,6 +86,9 @@ class Models extends AdminController
 
         try {
             service('modelStore')->update((int) $id, $data, (int) auth()->user()->id);
+        } catch (IndexingFailed $e) {
+            // The model is saved. Only the start of the indexing failed, and saving again tries it again.
+            return redirect()->to(base_url('admin/models/' . (int) $id . '/edit'))->with('warning', $e->getMessage());
         } catch (RuntimeException | InvalidArgumentException $e) {
             return $this->builder($model, $fields, (string) ($data['label_field'] ?? ''), ['general' => [$e->getMessage()]], $this->typed($data), 422);
         }

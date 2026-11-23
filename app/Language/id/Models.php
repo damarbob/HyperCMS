@@ -61,6 +61,7 @@ return [
     'changed'             => 'Diubah',
     'filterableTag'       => 'bisa difilter',
     'confirmRestoreVersion' => 'Simpan versi ini lagi sebagai yang terbaru?',
+    'versionInvalid'      => 'Versi ini tidak bisa disimpan lagi, karena tidak sesuai dengan aturan saat ini. {message}',
     'viewDefinition'      => 'Definisi',
 
     // Pemeriksaan definisi sebelum disimpan

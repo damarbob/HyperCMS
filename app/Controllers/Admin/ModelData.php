@@ -3,6 +3,9 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Data\IndexingFailed;
+use App\Fields\DefinitionCheck;
+use App\Fields\FieldTypes;
 use InvalidArgumentException;
 use RuntimeException;
 
@@ -70,6 +73,20 @@ class ModelData extends AdminController
             return $this->leave($back, lang('Models.versionNotFound'));
         }
 
+        // An old version is saved again under today's rules, and the field that names the entries must still be in it.
+        $names = [];
+        foreach (service('modelStore')->allArray() as $row) {
+            $names[(int) $row['id']] = (string) $row['name'];
+        }
+        $check  = new DefinitionCheck(FieldTypes::core(), $names);
+        $result = $check->check(json_decode((string) $found['fields'], true));
+        if ($result['errors'] !== []) {
+            return $this->leave($back, lang('Models.versionInvalid', ['message' => $result['errors'][0]['message']]));
+        }
+
+        $model = service('modelStore')->findArray((int) $modelId);
+        $label = is_array($model) && is_string($model['label_field'] ?? null) ? $model['label_field'] : null;
+
         try {
             service('modelStore')->update((int) $modelId, [
                 'name'        => $found['name'],
@@ -77,7 +94,13 @@ class ModelData extends AdminController
                 'group'       => $found['group'],
                 'icon'        => $found['icon'],
                 'user_groups' => $found['user_groups'],
+                'label_field' => $check->checkLabelField($label, $result['fields']) === null ? $label : null,
             ], (int) auth()->user()->id);
+        } catch (IndexingFailed $e) {
+            // The version is saved again. Only the start of the indexing failed.
+            session()->setFlashdata('warning', $e->getMessage());
+
+            return $this->go($back);
         } catch (InvalidArgumentException | RuntimeException $e) {
             return $this->leave($back, $e->getMessage());
         }

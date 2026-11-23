@@ -61,6 +61,7 @@ return [
     'changed'             => 'Changed',
     'filterableTag'       => 'filterable',
     'confirmRestoreVersion' => 'Save this version again as the newest one?',
+    'versionInvalid'      => 'This version cannot be saved again, because it does not fit the current rules. {message}',
     'viewDefinition'      => 'Definition',
 
     // The check of a definition before it is saved
