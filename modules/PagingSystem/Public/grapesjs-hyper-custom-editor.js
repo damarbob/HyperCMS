@@ -104,7 +104,11 @@ grapesjs.plugins.add(
          * @param {Array} files Array of file URLs
          */
         const handleFilesSelected = (files) => {
-            if (files.length === 0) return;
+            if (files.length === 0) {
+                // The library sends an empty list when the person cancels.
+                closeFileManagerModal();
+                return;
+            }
 
             files.forEach(file => {
                 const extension = getFileExtension(file);
@@ -162,7 +166,7 @@ grapesjs.plugins.add(
 
             if (modal && iframe) {
                 if (!iframe.getAttribute('src')) {
-                    iframe.src = `${config.baseUrl}admin/file-manager?requester_id=${config.requester}`;
+                    iframe.src = `${config.baseUrl}admin/media/frame?requester_id=${config.requester}`;
                 }
                 modal.classList.add('is-active');
             }
