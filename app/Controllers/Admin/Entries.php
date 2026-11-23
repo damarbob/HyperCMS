@@ -6,6 +6,8 @@ use App\Controllers\AdminController;
 use App\Fields\FieldTypes;
 use App\Libraries\AllEntriesPage;
 use App\Libraries\ModelListPage;
+use App\Modules\Slots;
+use App\Modules\Slots\EntryFormToolbar;
 use CodeIgniter\HTTP\RedirectResponse;
 use CodeIgniter\HTTP\ResponseInterface;
 use InvalidArgumentException;
@@ -509,6 +511,7 @@ class Entries extends AdminController
 
         // A module puts its own button beside the save button, as the paging system puts the editor button.
         $data['toolbar'] = (string) $this->hooks->trigger(hook($mode === 'new' ? 'Backend.view:entries:new' : 'Backend.view:entries:edit'), $mode === 'new' ? [$model] : [$model, $entry]);
+        $data['toolbar'] .= service('slots')->fill(Slots::ENTRY_FORM_TOOLBAR, new EntryFormToolbar((int) $model['id'], (int) ($entry['id'] ?? 0)))->html();
 
         if ($this->isHtmx() && ! $this->request->hasHeader('HX-History-Restore-Request')) {
             $response = $this->response->setStatusCode($status)->setBody(view('admin/partials/entry_form', $data));

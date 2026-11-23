@@ -21,11 +21,11 @@ final class FieldTypes
     }
 
     /**
-     * The types of core.
+     * The types of core, and the ones the loaded modules add.
      */
     public static function core(): self
     {
-        return new self(
+        $registry = new self(
             new TextField(),
             new LongTextField(),
             new RichTextField(),
@@ -41,6 +41,12 @@ final class FieldTypes
             new HookField(),
             new HiddenField(),
         );
+
+        foreach (service('modules')->fieldTypes() as $type) {
+            $registry->register($type);
+        }
+
+        return $registry;
     }
 
     public function register(FieldType $type): void

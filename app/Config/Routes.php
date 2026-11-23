@@ -224,3 +224,6 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
         });
     });
 });
+
+// The routes the modules that follow the contract ask for.
+service('modules')->routes($routes);

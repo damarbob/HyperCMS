@@ -7,6 +7,8 @@ use App\Fields\FieldTypes;
 use App\Libraries\EntryCsv;
 use App\Libraries\EntryListQuery;
 use App\Libraries\ModelListPage;
+use App\Modules\Slots;
+use App\Modules\Slots\ModelListNew;
 
 /**
  * The list of the entries of one model, drawn on the server. A request from htmx for `#entries` gets only the list, so a
@@ -25,6 +27,9 @@ class Model extends AdminController
 
         // A module may change the address of the New button, as the paging system does for its page models.
         $data = $this->hooks->filter(hook('Backend.controller:model:index:data'), $data);
+
+        // A module may point the New button at its own screen.
+        $data['links']['new'] = service('slots')->fill(Slots::MODEL_LIST_NEW, new ModelListNew((int) $id, (string) $data['links']['new']))->url();
 
         // A swap of the list gets the list alone. The browser's own restore of a page after Back needs the whole page.
         if (self::wantsTheList($this->request)) {
