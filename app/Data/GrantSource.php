@@ -20,6 +20,20 @@ interface GrantSource
     public function rolesWithAbility(string $ability): array;
 
     /**
+     * The global abilities a role has.
+     *
+     * @return list<string>
+     */
+    public function abilitiesOfRole(string $role): array;
+
+    /**
+     * What a role may do on each model, as the actions by model id.
+     *
+     * @return array<int, list<string>>
+     */
+    public function modelActionsOfRole(string $role): array;
+
+    /**
      * The roles that may do an action on a model. A superadmin is not listed.
      *
      * @return list<string>

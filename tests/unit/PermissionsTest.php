@@ -66,6 +66,25 @@ final class PermissionsTest extends CIUnitTestCase
             {
                 return $this->byModel[$modelId][$action] ?? [];
             }
+
+            public function abilitiesOfRole(string $role): array
+            {
+                return $this->granted[$role] ?? [];
+            }
+
+            public function modelActionsOfRole(string $role): array
+            {
+                $by = [];
+                foreach ($this->byModel as $modelId => $actions) {
+                    foreach ($actions as $action => $roles) {
+                        if (in_array($role, $roles, true)) {
+                            $by[$modelId][] = $action;
+                        }
+                    }
+                }
+
+                return $by;
+            }
         });
     }
 
@@ -237,5 +256,36 @@ final class PermissionsTest extends CIUnitTestCase
 
         $this->expectException(InvalidArgumentException::class);
         $permissions->can($this->user(['superadmin']), 'entries.update');
+    }
+
+    public function testASuperadminMayHandleAnyRoleAndNobodyElseMayHandleTheSuperadminRole(): void
+    {
+        $permissions = $this->permissions([1 => []]);
+
+        foreach (self::ROLES as $role) {
+            $this->assertTrue($permissions->mayAssignRole($this->user(['superadmin']), $role), $role);
+        }
+        $this->assertFalse($permissions->mayAssignRole($this->user(['admin']), 'superadmin'));
+        $this->assertFalse($permissions->mayAssignRole(null, 'user'));
+    }
+
+    public function testSomeoneMayOnlyHandleARoleWhoseAbilitiesAndModelActionsTheyHave(): void
+    {
+        $permissions = $this->permissions([1 => []]);
+
+        $this->assertTrue($permissions->mayAssignRole($this->user(['developer']), 'admin'), 'A developer has everything an admin has.');
+        $this->assertFalse($permissions->mayAssignRole($this->user(['admin']), 'developer'), 'An admin lacks pages.manage.');
+        $this->assertTrue($permissions->mayAssignRole($this->user(['admin']), 'user'), 'A role with nothing is safe to give.');
+        $this->assertFalse($permissions->mayAssignRole($this->user(['beta']), 'admin'));
+    }
+
+    public function testAPersonMayManageAnAccountOnlyWhenTheyMayHandleEveryRoleOfIt(): void
+    {
+        $permissions = $this->permissions([1 => []]);
+
+        $this->assertFalse($permissions->mayManageUser($this->user(['admin']), $this->user(['superadmin'])));
+        $this->assertFalse($permissions->mayManageUser($this->user(['admin']), $this->user(['user', 'developer'])));
+        $this->assertTrue($permissions->mayManageUser($this->user(['admin']), $this->user(['user'])));
+        $this->assertTrue($permissions->mayManageUser($this->user(['superadmin']), $this->user(['superadmin'])));
     }
 }

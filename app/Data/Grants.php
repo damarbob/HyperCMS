@@ -54,6 +54,43 @@ class Grants implements GrantSource
         return $this->modelRoles[$modelId][$action] ?? [];
     }
 
+    public function abilitiesOfRole(string $role): array
+    {
+        $abilities = [];
+        foreach ($this->rolesByAbility() as $ability => $roles) {
+            if (in_array($role, $roles, true)) {
+                $abilities[] = $ability;
+            }
+        }
+
+        return $abilities;
+    }
+
+    public function modelActionsOfRole(string $role): array
+    {
+        $this->rolesWithModelAction(0, 'read');
+        $by = [];
+        foreach ($this->modelRoles ?? [] as $modelId => $actions) {
+            foreach ($actions as $action => $roles) {
+                if (in_array($role, $roles, true)) {
+                    $by[$modelId][] = $action;
+                }
+            }
+        }
+
+        return $by;
+    }
+
+    /**
+     * @return array<string, list<string>>
+     */
+    private function rolesByAbility(): array
+    {
+        $this->rolesWithAbility('');
+
+        return $this->abilityRoles ?? [];
+    }
+
     /**
      * What roles may do on one model, as the actions of each role.
      *

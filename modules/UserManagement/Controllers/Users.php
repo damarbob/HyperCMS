@@ -119,6 +119,35 @@ class Users extends AdminController
         $users = auth()->getProvider();
         $user = $userId ? $users->findById($userId) : new User($data);
 
+        $actor       = auth()->user();
+        $permissions = service('permissions');
+        $groups      = array_values(array_unique(array_map('strval', is_array($groups) ? $groups : [])));
+
+        if ($userId) {
+            if ($user === null) {
+                return $this->refuse(lang('UserManagement.userNotFound'));
+            }
+            // Someone may change an account only when they may handle every role it has.
+            if (! $permissions->mayManageUser($actor, $user)) {
+                return $this->refuse(lang('UserManagement.notAllowedToHandle'));
+            }
+        }
+
+        // Giving a role or taking it away is allowed only for a role the person may handle, so nobody can reach a role
+        // that is above theirs, the superadmin role above all.
+        $before  = $userId ? array_map('strtolower', $user->getGroups() ?? []) : [];
+        $changed = array_merge(array_diff($groups, $before), array_diff($before, $groups));
+        foreach ($changed as $role) {
+            if (! $permissions->mayAssignRole($actor, strtolower((string) $role))) {
+                return $this->refuse(lang('UserManagement.notAllowedToAssign', ['role' => (string) $role]));
+            }
+        }
+
+        // The last superadmin cannot lose the role, whoever asks.
+        if ($userId && in_array('superadmin', $before, true) && ! in_array('superadmin', $groups, true) && $this->superadmins() <= 1) {
+            return $this->refuse(lang('UserManagement.lastSuperadmin'));
+        }
+
         if ($userId) {
             $user->fill($data);
         }
@@ -150,6 +179,19 @@ class Users extends AdminController
     {
         try {
             $user = auth()->getProvider()->findById($id);
+            if ($user === null) {
+                return $this->refuse(lang('UserManagement.userNotFound'));
+            }
+            if (! service('permissions')->mayManageUser(auth()->user(), $user)) {
+                return $this->refuse(lang('UserManagement.notAllowedToHandle'));
+            }
+            if ((int) $user->id === (int) auth()->id()) {
+                return $this->refuse(lang('UserManagement.cannotDeleteYourself'));
+            }
+            if ($user->inGroup('superadmin') && $this->superadmins() <= 1) {
+                return $this->refuse(lang('UserManagement.lastSuperadmin'));
+            }
+
             auth()->getProvider()->delete($user->id, true);
 
             return $this->response->setJSON([
@@ -162,5 +204,18 @@ class Users extends AdminController
                 'message' => $e->getMessage()
             ]);
         }
+    }
+
+    /**
+     * How many people have the superadmin role.
+     */
+    private function superadmins(): int
+    {
+        return (int) (service('roles')->find('superadmin')['people'] ?? 0);
+    }
+
+    private function refuse(string $message)
+    {
+        return $this->response->setStatusCode(403)->setJSON(['success' => false, 'message' => $message]);
     }
 }

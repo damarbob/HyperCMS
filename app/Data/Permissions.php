@@ -60,4 +60,56 @@ class Permissions
 
         return array_intersect($roles, $holders) !== [];
     }
+
+    /**
+     * Whether a person may give a role to someone, or take it away.
+     *
+     * A superadmin may do either with any role. Anyone else may only handle a role whose abilities, and whose actions
+     * on every model, they have themselves, and never the superadmin role. Without this, whoever may manage users, or
+     * edit roles, could make themselves or a friend a superadmin.
+     */
+    public function mayAssignRole(?User $actor, string $role): bool
+    {
+        if ($actor === null) {
+            return false;
+        }
+
+        $mine = array_map('strtolower', $actor->getGroups() ?? []);
+        if (in_array(self::SUPERADMIN, $mine, true)) {
+            return true;
+        }
+        if ($role === self::SUPERADMIN) {
+            return false;
+        }
+
+        foreach ($this->grants->abilitiesOfRole($role) as $ability) {
+            if (array_intersect($mine, $this->grants->rolesWithAbility($ability)) === []) {
+                return false;
+            }
+        }
+        foreach ($this->grants->modelActionsOfRole($role) as $modelId => $actions) {
+            foreach ($actions as $action) {
+                if (array_intersect($mine, $this->grants->rolesWithModelAction($modelId, $action)) === []) {
+                    return false;
+                }
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Whether a person may change or remove the account of another person, which they may when they may handle every
+     * role that person has.
+     */
+    public function mayManageUser(?User $actor, User $target): bool
+    {
+        foreach ($target->getGroups() ?? [] as $role) {
+            if (! $this->mayAssignRole($actor, strtolower($role))) {
+                return false;
+            }
+        }
+
+        return $actor !== null;
+    }
 }
