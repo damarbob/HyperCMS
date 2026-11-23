@@ -1,0 +1,36 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/settings/update",
+        "form": {
+            "general_datatable_entries_per_page": "25"
+        }
+    },
+    "status": 303,
+    "location": "/admin/settings",
+    "body": "",
+    "changes": {
+        "settings": {
+            "changed": [
+                {
+                    "from": {
+                        "id": 3,
+                        "class": "Config\\Hyper",
+                        "key": "twoFactor",
+                        "value": "1",
+                        "type": "boolean",
+                        "context": null
+                    },
+                    "to": {
+                        "id": 3,
+                        "class": "Config\\Hyper",
+                        "key": "twoFactor",
+                        "value": "0",
+                        "type": "boolean",
+                        "context": null
+                    }
+                }
+            ]
+        }
+    }
+}

@@ -1,0 +1,8 @@
+{
+    "request": "GET admin/tokens",
+    "status": 200,
+    "location": null,
+    "title": "Token akses",
+    "bytes": 46879,
+    "sha1": "094d80c074dc98fe374adeb0c75ae951d17d14c0"
+}

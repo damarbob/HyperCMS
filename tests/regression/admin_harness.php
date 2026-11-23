@@ -174,6 +174,7 @@ $pages = [
     'admin/models/2/edit',
     'admin/roles', 'admin/roles/new', 'admin/roles/developer/edit', 'admin/roles/superadmin/edit', 'admin/abilities',
     'admin/users', 'admin/users?q=capture', 'admin/users?role=developer', 'admin/users/new', 'admin/users/3/edit', 'admin/users/999/edit',
+    'admin/tokens', 'admin/profile',
 ];
 foreach ($pages as $i => $p) {
     $name = 'p' . str_pad((string) ($i + 2), 2, '0', STR_PAD_LEFT) . '_' . preg_replace('/[^a-z0-9]+/i', '_', $p);
@@ -257,6 +258,14 @@ $flows = [
     'w37_role_delete_with_people' => ['admin/roles/developer/delete', []],
     'w38_role_delete'         => ['admin/roles/editor/delete', []],
     'w39_ability_delete'      => ['admin/abilities/shop.refund/delete', []],
+    'w40_token_create'        => ['admin/tokens', ['name' => 'Capture site', 'scopes' => ['entries.read']]],
+    'w41_token_create_bad'    => ['admin/tokens', ['name' => '', 'scopes' => []]],
+    'w42_token_revoke_all'    => ['admin/tokens/revoke-all', []],
+    'w43_profile_save'        => ['admin/profile', ['username' => 'capture_admin', 'email' => 'capture_admin@example.test']],
+    'w44_profile_email_wrong_password' => ['admin/profile', ['username' => 'capture_admin', 'email' => 'other@example.test', 'current_password' => 'wrong']],
+    'w45_settings_two_factor_on'  => ['admin/settings/update', ['general_datatable_entries_per_page' => '25', 'two_factor' => '1']],
+    'w46_settings_two_factor_off' => ['admin/settings/update', ['general_datatable_entries_per_page' => '25']],
+    'w47_settings_bad_rows'   => ['admin/settings/update', ['general_datatable_entries_per_page' => '7']],
     'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'access' => ['admin' => ['read']], 'icon' => 'media', 'label_field' => 'caption']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
     'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'access' => ['admin' => ['read', 'update'], 'developer' => ['read']], 'icon' => 'doc', 'label_field' => 'title']],

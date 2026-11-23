@@ -243,6 +243,10 @@ $matrix = [
     'admin/model-data/1'              => [true, false, false],
     'admin/settings/models'           => [true, false, false],
     'admin/users'                     => [true, false, false],
+    'admin/roles'                     => [true, false, false],
+    'admin/abilities'                 => [true, false, false],
+    'admin/tokens'                    => [true, true, false],
+    'admin/profile'                   => [true, true, true],
     'admin/entries'                   => [true, true, false],
     'admin/file-manager'              => [true, true, false],
     'admin/model/1'                   => [true, true, false],
@@ -354,6 +358,15 @@ if ($envFile !== '') {
     $pdo->exec("INSERT INTO hyper_role_abilities (role, ability) VALUES ('developer', 'probe.held')");
     $act($ej, $etoken, 'admin/abilities/probe.held/delete', []);
     $say('abilities, an editor deletes one that a higher role has', 200, (int) $pdo->query("SELECT COUNT(*) FROM hyper_abilities WHERE name = 'probe.held'")->fetchColumn() === 0, 'an ability held by a higher role was deleted');
+
+    // Only a person who manages settings can turn on two-factor sign in for the site, whoever posts the form.
+    [$dj, $dtoken] = signIn($base, 'capture_dev@example.test', 'Capture-Dev-2026');
+    $act($dj, $dtoken, 'admin/settings/update', ['general_datatable_entries_per_page' => '25', 'two_factor' => '1']);
+    $say('settings, a developer turns on two-factor for the site', 200, (int) $pdo->query("SELECT COUNT(*) FROM settings WHERE `key` = 'Hyper.twoFactor' AND value IN ('1', 'true')")->fetchColumn() > 0, 'a site setting was changed without the ability');
+
+    // The password is asked for before the email or the password of an account changes.
+    $act($dj, $dtoken, 'admin/profile', ['username' => 'capture_dev', 'email' => 'taken_over@example.test', 'current_password' => 'not the password']);
+    $say('profile, change the email without the current password', 200, (int) $pdo->query("SELECT COUNT(*) FROM auth_identities WHERE secret = 'taken_over@example.test'")->fetchColumn() > 0, 'the email changed without the password');
 
     // Clean up, in the order that the guards allow.
     $pdo->exec("DELETE FROM auth_groups_users WHERE user_id IN (SELECT id FROM users WHERE username IN ('probe_manager', 'probe_editor', 'probe_friend'))");
