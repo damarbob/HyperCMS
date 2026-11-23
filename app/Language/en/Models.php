@@ -108,8 +108,15 @@ return [
     'detailsGroupHelp'    => 'Optional. Models with the same group are listed together in the menu.',
     'detailsIcon'         => 'Icon',
     'detailsIconKept'     => 'This model keeps its own icon until you pick another one:',
-    'detailsUserGroups'   => 'User groups',
-    'detailsUserGroupsHelp' => 'People in the selected groups can open the model and its entries.',
+    'accessTitle'       => 'Who can use this model',
+    'accessHelp'        => 'Tick what each role may do with the entries of this model. Anything other than reading also lets the role read.',
+    'accessRole'        => 'Role',
+    'accessRead'        => 'Read',
+    'accessCreate'      => 'Create',
+    'accessUpdate'      => 'Change',
+    'accessDelete'      => 'Delete',
+    'accessHistory'     => 'History',
+    'accessSuperadmin'  => 'The Super Admin role can do everything with every model.',
 
     // The words the builder script writes
     'bAddField'           => 'Add field',

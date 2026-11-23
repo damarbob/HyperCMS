@@ -377,3 +377,11 @@
   .picker-list [role="option"]:hover, .picker-list [role="option"].active { background: var(--hover); }
   .picker-list .none { padding: 7px var(--s2); font-size: var(--t-sm); }
 }
+
+@layer components {
+  .access-grid { min-width: 480px; }
+  .access-grid th, .access-grid td { text-align: center; }
+  .access-grid th:first-child, .access-grid td:first-child { text-align: left; }
+  .access-grid th[scope="row"] { font-weight: 550; }
+  .access-grid input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--action); margin: 0; }
+}

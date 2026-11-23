@@ -108,8 +108,15 @@ return [
     'detailsGroupHelp'    => 'Opsional. Model dengan grup yang sama ditampilkan berdekatan di menu.',
     'detailsIcon'         => 'Ikon',
     'detailsIconKept'     => 'Model ini memakai ikonnya sendiri sampai Anda memilih yang lain:',
-    'detailsUserGroups'   => 'Grup pengguna',
-    'detailsUserGroupsHelp' => 'Orang di grup yang dipilih bisa membuka model ini beserta entrinya.',
+    'accessTitle'       => 'Siapa yang boleh memakai model ini',
+    'accessHelp'        => 'Centang apa yang boleh dilakukan setiap peran pada entri model ini. Tindakan selain membaca otomatis membuat peran itu boleh membaca.',
+    'accessRole'        => 'Peran',
+    'accessRead'        => 'Baca',
+    'accessCreate'      => 'Buat',
+    'accessUpdate'      => 'Ubah',
+    'accessDelete'      => 'Hapus',
+    'accessHistory'     => 'Riwayat',
+    'accessSuperadmin'  => 'Peran Super Admin boleh melakukan semuanya pada semua model.',
 
     // Kata-kata yang ditulis skrip pembuat
     'bAddField'           => 'Tambah isian',

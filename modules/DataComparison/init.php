@@ -23,7 +23,7 @@ HyperHooks::getInstance()->register(hook('Backend.controller:menu:data'), functi
         'text' => lang('Dc.moduleName'),
         'tooltip_content' => lang('Dc.moduleName'),
         'tooltip_placement' => 'right',
-        'groups' => 'superadmin,admin,developer',
+        'ability' => 'entries.browse',
     ];
     return $additionalMenu;
 });

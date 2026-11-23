@@ -3,7 +3,10 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use App\Data\Abilities;
 use App\Data\IndexingFailed;
+use App\Data\ModelGrants;
+use App\Data\Permissions;
 use App\Fields\DefinitionCheck;
 use App\Fields\FieldCatalog;
 use App\Fields\FieldTypes;
@@ -128,16 +131,14 @@ class Models extends AdminController
         $errors = [];
 
         $rules = [
-            'name'        => 'required|min_length[3]|max_length[255]',
-            'group'       => 'permit_empty|min_length[3]|alpha_space',
-            'icon'        => 'permit_empty|max_length[255]',
-            'user_groups' => 'required',
+            'name'  => 'required|min_length[3]|max_length[255]',
+            'group' => 'permit_empty|min_length[3]|alpha_space',
+            'icon'  => 'permit_empty|max_length[255]',
         ];
         $input = [
-            'name'        => trim((string) ($post['name'] ?? '')),
-            'group'       => trim((string) ($post['group'] ?? '')),
-            'icon'        => trim((string) ($post['icon'] ?? '')),
-            'user_groups' => is_array($post['user_groups'] ?? null) ? array_values($post['user_groups']) : [],
+            'name'  => trim((string) ($post['name'] ?? '')),
+            'group' => trim((string) ($post['group'] ?? '')),
+            'icon'  => trim((string) ($post['icon'] ?? '')),
         ];
         if (! $this->validateData($input, $rules)) {
             foreach ($this->validator->getErrors() as $key => $message) {
@@ -171,12 +172,36 @@ class Models extends AdminController
             'name'        => $input['name'],
             'group'       => $input['group'] === '' ? null : $input['group'],
             'icon'        => $input['icon'] === '' ? null : $input['icon'],
-            'user_groups' => json_encode($input['user_groups']),
+            'access'      => $this->accessFrom($post['access'] ?? null),
             'fields'      => json_encode($fields, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
             'label_field' => ($post['label_field'] ?? '') === '' ? null : (string) $post['label_field'],
         ];
 
         return [$data, $fields, $errors];
+    }
+
+    /**
+     * The access grid as it was posted, kept to roles that exist and actions that exist. A role that may do anything else
+     * on a model may read it, because it could not reach the model otherwise. A superadmin needs no row.
+     *
+     * @return array<string, list<string>>
+     */
+    private function accessFrom(mixed $posted): array
+    {
+        $roles  = service('roles')->names();
+        $access = [];
+
+        foreach (is_array($posted) ? $posted : [] as $role => $actions) {
+            if (! in_array($role, $roles, true) || $role === Permissions::SUPERADMIN || ! is_array($actions)) {
+                continue;
+            }
+            $actions = array_values(array_intersect(Abilities::MODEL_ACTIONS, array_map('strval', $actions)));
+            if ($actions !== []) {
+                $access[(string) $role] = in_array('read', $actions, true) ? $actions : array_merge(['read'], $actions);
+            }
+        }
+
+        return $access;
     }
 
     /**
@@ -192,7 +217,7 @@ class Models extends AdminController
             'name'        => (string) ($data['name'] ?? ''),
             'group'       => (string) ($data['group'] ?? ''),
             'icon'        => (string) ($data['icon'] ?? ''),
-            'user_groups' => is_string($data['user_groups'] ?? null) ? (json_decode($data['user_groups'], true) ?: []) : [],
+            'access'      => is_array($data['access'] ?? null) ? $data['access'] : [],
         ];
     }
 
@@ -224,19 +249,26 @@ class Models extends AdminController
      */
     private function builder(array $model, array $fields, string $labelField, array $errors, array $typed, int $status = 200)
     {
-        /** @var \Config\AuthGroups $authGroups */
-        $authGroups = config('AuthGroups');
+        $id    = (int) ($model['id'] ?? 0);
+        $roles = array_values(array_filter(service('roles')->all(), static fn (array $role): bool => $role['name'] !== Permissions::SUPERADMIN));
 
-        $id     = (int) ($model['id'] ?? 0);
-        $groups = array_keys($authGroups->groups);
+        // A new model starts with what a model with no groups meant: every role but user may read it, and the staff write.
+        $access = $typed['access'] ?? null;
+        if ($access === null) {
+            $access = $id > 0 ? service('grants')->forModel($id) : [];
+            if ($id === 0) {
+                foreach (ModelGrants::fromGroups([], array_column($roles, 'name')) as $row) {
+                    $access[$row['role']][] = $row['action'];
+                }
+            }
+        }
 
         $names  = $this->modelNames();
-        $saved  = $model !== [] && ! empty($model['user_groups']) ? (json_decode((string) $model['user_groups'], true) ?: []) : $groups;
         $values = [
-            'name'        => $typed['name'] ?? (string) ($model['name'] ?? ''),
-            'group'       => $typed['group'] ?? (string) ($model['group'] ?? ''),
-            'icon'        => $typed['icon'] ?? (string) ($model['icon'] ?? ''),
-            'user_groups' => $typed['user_groups'] ?? $saved,
+            'name'   => $typed['name'] ?? (string) ($model['name'] ?? ''),
+            'group'  => $typed['group'] ?? (string) ($model['group'] ?? ''),
+            'icon'   => $typed['icon'] ?? (string) ($model['icon'] ?? ''),
+            'access' => $access,
         ];
 
         $models = [];
@@ -273,7 +305,7 @@ class Models extends AdminController
             'model'   => $model,
             'id'      => $id,
             'values'  => $values,
-            'groups'  => $groups,
+            'roles'   => $roles,
             'payload' => $payload,
             'errors'  => $errors,
             'entries' => $id > 0 ? (service('entryStore')->countsByModel()[$id] ?? 0) : 0,
@@ -325,13 +357,8 @@ class Models extends AdminController
         try {
             service('modelStore')->emptyTrash();
         } catch (RuntimeException | InvalidArgumentException $e) {
-            // Models purged before the failure are gone, and their access settings go with them.
-            service('modelAccess')->forgetMissing();
-
             return $this->list('bad', $e->getMessage());
         }
-
-        service('modelAccess')->forgetMissing();
 
         return $this->list('ok', lang('Models.emptied'));
     }

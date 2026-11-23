@@ -202,14 +202,14 @@ class EntriesResource extends ResourceController
     }
 
     /**
-     * Return a 403 response unless the caller is in one of the staff groups.
+     * Return a 403 response unless the caller may use the API.
      * The filter has already checked a token's scope.
      */
     private function denyUnlessAllowed(): ?ResponseInterface
     {
         $user = ApiAuthFilter::caller();
 
-        if ($user === null || ! $user->inGroup(...ApiAuthFilter::STAFF_GROUPS)) {
+        if ($user === null || ! service('permissions')->can($user, 'api.access')) {
             return $this->failForbidden('This account or token cannot read entries.');
         }
 

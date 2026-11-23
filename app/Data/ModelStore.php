@@ -81,7 +81,7 @@ class ModelStore
             return $id;
         });
 
-        $this->grantFromGroups($id, $data);
+        $this->grantAccess($id, $data);
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
             $this->syncAndBump($id);
@@ -100,7 +100,7 @@ class ModelStore
             throw new LookupException("Model $id does not exist.");
         }
 
-        $this->grantFromGroups($id, $data);
+        $this->grantAccess($id, $data);
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id, $data, $userId): void {
             $db  = $this->db();
@@ -261,6 +261,16 @@ class ModelStore
     public function exists(int|string $id): bool
     {
         return $this->db()->table('hyper_models')->where('id', $id)->where('deleted_at', null)->countAllResults() > 0;
+    }
+
+    /**
+     * The ids of every model, live and trashed, because the entries of a trashed model can still show up in a trash view.
+     *
+     * @return list<int>
+     */
+    public function allIds(): array
+    {
+        return array_map('intval', array_column($this->db()->table('hyper_models')->select('id')->orderBy('id')->get()->getResultArray(), 'id'));
     }
 
     /**
@@ -616,19 +626,15 @@ class ModelStore
     }
 
     /**
-     * Give the roles of a model what its `user_groups` mean, when the data carries them. This is how a model made in the
-     * builder gets its permissions until the builder has a grid of its own.
+     * Give the roles of a model the actions the data names, when it names any.
      *
-     * @param array<string, mixed> $data
+     * @param array<string, mixed> $data `access` holds the actions of each role.
      */
-    private function grantFromGroups(int $id, array $data): void
+    private function grantAccess(int $id, array $data): void
     {
-        if (! array_key_exists('user_groups', $data)) {
-            return;
+        if (isset($data['access']) && is_array($data['access'])) {
+            service('grants')->setForModel($id, $data['access']);
         }
-
-        $groups = json_decode((string) $data['user_groups'], true);
-        service('grants')->setFromGroups($id, is_array($groups) ? array_values(array_filter($groups, 'is_string')) : []);
     }
 
     /**

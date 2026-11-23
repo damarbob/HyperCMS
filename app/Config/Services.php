@@ -9,6 +9,7 @@ use App\Data\EntryStore;
 use App\Data\Grants;
 use App\Data\ModelAccess;
 use App\Data\ModelStore;
+use App\Data\Roles;
 use App\Data\Permissions;
 use App\Services\FileServer;
 use CodeIgniter\Config\BaseService;
@@ -95,7 +96,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('modelAccess');
         }
-        return new ModelAccess(static::modelStore(), service('settings'));
+        return new ModelAccess(static::modelStore(), static::permissions());
     }
 
     /**
@@ -138,6 +139,20 @@ class Services extends BaseService
             return static::getSharedInstance('abilities');
         }
         return new Abilities(db_connect());
+    }
+
+    /**
+     * The roles of the admin.
+     *
+     * @param bool $getShared Whether to return a shared instance.
+     * @return Roles
+     */
+    public static function roles(bool $getShared = true): Roles
+    {
+        if ($getShared) {
+            return static::getSharedInstance('roles');
+        }
+        return new Roles(db_connect());
     }
 
     /**

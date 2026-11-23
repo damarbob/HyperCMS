@@ -64,7 +64,7 @@ abstract class AdminController extends BaseController
                     'hint' => lang('Admin.managex', ['x' => lang("Admin.models")]),
                     'tooltip_content' => lang("Admin.models"),
                     'tooltip_placement' => 'right',
-                    'groups' => 'superadmin'
+                    'ability' => 'models.manage'
                 ],
                 'entries' => [
                     'url' => base_url('admin/entries'),
@@ -73,7 +73,7 @@ abstract class AdminController extends BaseController
                     'hint' => lang('Admin.managex', ['x' => lang("Admin.entries")]),
                     'tooltip_content' => lang("Admin.entries"),
                     'tooltip_placement' => 'right',
-                    'groups' => 'superadmin,admin,developer'
+                    'ability' => 'entries.browse'
                 ],
             ],
             // This group contains a submenu (nested items)
@@ -84,7 +84,7 @@ abstract class AdminController extends BaseController
                     'text' => lang("Admin.fileManager"),
                     'tooltip_content' => lang("Admin.fileManager"),
                     'tooltip_placement' => 'right',
-                    'groups_not' => 'user'
+                    'ability' => 'media.manage'
                 ],
                 'settings' => [
                     // The parent link acting as a container (URL may be "#" or a clickable parent)
@@ -106,7 +106,7 @@ abstract class AdminController extends BaseController
                             'text' => lang("Admin.models"),
                             'tooltip_content' => lang("Admin.models"),
                             'tooltip_placement' => 'right',
-                            'groups' => 'superadmin'
+                            'ability' => 'models.manage'
                         ],
                         // You can also add additional submenu items or merge hook-driven items.
                     ]
@@ -126,9 +126,8 @@ abstract class AdminController extends BaseController
                     lang('Admin.xEntries', ['x' => "{$entriesCount}"])
                 );
 
-            // Skip if the user does not have access to the model
-            $groupsArray = is_array($model['user_groups']) ? $model['user_groups'] : json_decode($model['user_groups'] ?? '');
-            if (!empty($groupsArray) && !auth()->user()->inGroup(...$groupsArray)) {
+            // Skip the model when the user may not read its entries
+            if (! can('entries.read', (int) $model['id'])) {
                 continue;
             }
 
@@ -159,7 +158,7 @@ abstract class AdminController extends BaseController
         $menu = $this->reorderMenuByKey($menu, lang('Admin.ai'), 1); // Move the 'AI' key to position 1 (second position)
         $menu = $this->reorderMenuItemByIdAndKey($menu, lang('Admin.others'), 'settings', 'end'); // Always place settings menu at the very end
 
-        $menu = $this->filterMenuByUserGroups($menu, auth()->user()->getGroups());
+        $menu = self::filterMenuByAbility($menu);
 
         /* View data */
 
@@ -301,84 +300,66 @@ abstract class AdminController extends BaseController
     }
 
     /**
-     * Recursively filters a nested menu array based on user group conditions.
+     * Recursively filters a nested menu array by what the signed-in user may do.
      *
-     * At any level the function detects whether the array is "grouped" (the keys
-     * are group labels and the values are sub-arrays of menu items) or is simply a list
-     * of menu items. Then, for each menu item:
+     * At any level the function detects whether the array is "grouped" (the keys are group labels and the values are
+     * sub-arrays of menu items) or is simply a list of menu items. Then, for each menu item:
      *
-     *   - If "groups_not" is defined and any of the user's groups match, the item is removed.
-     *   - If "groups" is defined (and groups_not did not trigger removal), then at least one
-     *     user group must be present in that list; otherwise the item is removed.
-     *   - If neither key exists, the item is assumed to be unrestricted and is kept.
+     *   - If "ability" is defined and the user does not have it, the item is removed. An ability nobody registered
+     *     removes the item too.
+     *   - If it is not defined, the item is unrestricted and is kept.
      *
-     * Submenus (with key 'submenu') are processed recursively.
+     * Submenus (with key 'submenu') are processed recursively, and a group that becomes empty is removed.
      *
-     * @param array $menu       The menu array to filter.
-     * @param array $userGroups An array of current user groups.
+     * @param array $menu The menu array to filter.
      *
      * @return array The filtered menu array.
      */
-    protected static function filterMenuByUserGroups(array $menu, array $userGroups): array
+    protected static function filterMenuByAbility(array $menu): array
     {
-        // Determine if this level is grouped or a simple list.
-        // We assume that a grouped level does not have menu items with a 'url' key
-        // directly at the top level, whereas a list of items will have each item with a 'url'.
         $isGrouped = false;
-        if (!empty($menu)) {
+        if (! empty($menu)) {
             $first = reset($menu);
-            if (!is_array($first) || !isset($first['url'])) {
+            if (! is_array($first) || ! isset($first['url'])) {
                 $isGrouped = true;
             }
         }
 
         if ($isGrouped) {
-            // Process each group by filtering its items recursively.
             foreach ($menu as $groupName => $items) {
-                $menu[$groupName] = self::filterMenuByUserGroups($items, $userGroups);
-                // Remove this group if it becomes empty.
+                $menu[$groupName] = self::filterMenuByAbility($items);
                 if (empty($menu[$groupName])) {
                     unset($menu[$groupName]);
                 }
             }
-            return $menu;
-        } else {
-            // The array is a list of menu items.
-            foreach ($menu as $key => $item) {
-                $keep = true;
 
-                // Check "groups_not" condition first.
-                if (isset($item['groups_not'])) {
-                    $groupsNot = array_map('trim', explode(',', $item['groups_not']));
-                    if (count(array_intersect($userGroups, $groupsNot)) > 0) {
-                        $keep = false;
-                    }
-                }
-
-                // Check "groups" condition (only if not removed by groups_not).
-                if ($keep && isset($item['groups'])) {
-                    $requiredGroups = array_map('trim', explode(',', $item['groups']));
-                    if (count(array_intersect($userGroups, $requiredGroups)) === 0) {
-                        $keep = false;
-                    }
-                }
-
-                if (!$keep) {
-                    unset($menu[$key]);
-                    continue;
-                }
-
-                // Process submenu recursively if it exists.
-                if (isset($item['submenu']) && is_array($item['submenu'])) {
-                    $filteredSubmenu = self::filterMenuByUserGroups($item['submenu'], $userGroups);
-                    if (!empty($filteredSubmenu)) {
-                        $menu[$key]['submenu'] = $filteredSubmenu;
-                    } else {
-                        unset($menu[$key]['submenu']);
-                    }
-                }
-            }
             return $menu;
         }
+
+        foreach ($menu as $key => $item) {
+            if (isset($item['ability'])) {
+                try {
+                    $allowed = can((string) $item['ability']);
+                } catch (\InvalidArgumentException) {
+                    $allowed = false;
+                }
+                if (! $allowed) {
+                    unset($menu[$key]);
+
+                    continue;
+                }
+            }
+
+            if (isset($item['submenu']) && is_array($item['submenu'])) {
+                $submenu = self::filterMenuByAbility($item['submenu']);
+                if (! empty($submenu)) {
+                    $menu[$key]['submenu'] = $submenu;
+                } else {
+                    unset($menu[$key]['submenu']);
+                }
+            }
+        }
+
+        return $menu;
     }
 }

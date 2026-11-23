@@ -93,7 +93,6 @@ class ModelData extends AdminController
                 'fields'      => $found['fields'],
                 'group'       => $found['group'],
                 'icon'        => $found['icon'],
-                'user_groups' => is_array($model) ? $model['user_groups'] : $found['user_groups'],
                 'label_field' => $check->checkLabelField($label, $result['fields']) === null ? $label : null,
             ], (int) auth()->user()->id);
         } catch (IndexingFailed $e) {
