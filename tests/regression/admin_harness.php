@@ -187,7 +187,6 @@ foreach ($pages as $i => $p) {
 // The list endpoints as the admin screens call them, with the session cookie and no token.
 $apiCalls = [
     'a01_api_models'           => ['POST', 'api/v1/models', ['draw' => 1, 'start' => 0, 'length' => 2]],
-    'a02_api_model_data'       => ['POST', 'api/v1/model-data', ['draw' => 1, 'id' => 1, 'order' => [['column' => 0, 'dir' => 'asc']], 'columns' => [['data' => 'name']]]],
     'a06_api_entries_resource' => ['GET', 'api/v1/entries-resource?limit=2', null],
 ];
 foreach ($apiCalls as $name => [$method, $path, $form]) {
@@ -238,7 +237,7 @@ $flows = [
     'w16_model_delete_bulk'   => ['admin/models/delete', ['ids' => [2]]],
     'w17_model_restore'       => ['admin/models/restore', ['ids' => [4]]],
     'w18_model_purge'         => ['admin/models/purge-deleted', []],
-    'w19_model_data_clear'    => ['admin/model-data/clear-history/1', []],
+    'w19_model_data_clear'    => ['admin/model-data/1/clear', []],
     'w20_model_public_on'     => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text', 'public' => '1']],
     'w21_model_public_off'    => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],
 ];

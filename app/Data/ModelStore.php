@@ -239,6 +239,17 @@ class ModelStore
     }
 
     /**
+     * Every saved version of one live model with what the version held, newest first.
+     *
+     * @return list<array<string, mixed>> The rows have `data_id` (the version), `name`, `fields`, `group`, `user_groups`,
+     *         `icon`, `date_created` and `created_by`.
+     */
+    public function savedVersions(int $id): array
+    {
+        return $this->versionRows()->select(['r.group', 'r.user_groups'])->where('m.id', $id)->orderBy('r.id', 'DESC')->get()->getResultArray();
+    }
+
+    /**
      * Tell whether a live model with this id exists. A trashed model does not count.
      */
     public function exists(int|string $id): bool
@@ -358,62 +369,6 @@ class ModelStore
     }
 
     /**
-     * Answer one DataTables request for the saved versions of models.
-     *
-     * The versions of a trashed model are left out until it is restored.
-     *
-     * @param array $post The POST values DataTables sent (id, draw, start, length, search, order, columns).
-     * @return array The DataTables response with draw, recordsTotal, recordsFiltered and data.
-     */
-    public function versionsDataTable(array $post): array
-    {
-        $modelId = $post['id'] ?? null;
-        $draw = $post['draw'] ?? 1;
-        $start = $post['start'] ?? null;
-        $length = $post['length'] ?? -1;
-        $search = $post['search']['value'] ?? '';
-        $order = $post['order'] ?? null;
-        $columns = $post['columns'] ?? null;
-
-        $builder = $this->versionRows();
-
-        $totalRecords = $builder->countAllResults(false);
-
-        if (!empty($modelId)) {
-            $builder->where('m.id', $modelId);
-        }
-
-        if (!empty($search)) {
-            $builder->groupStart();
-            $builder->like('r.name', esc($search));
-            $builder->orLike('r.fields', esc($search));
-            $builder->orLike($this->usersColumn('c'), esc($search));
-            $builder->groupEnd();
-        }
-
-        $recordsFiltered = $builder->countAllResults(false);
-
-        $orderColumn = !empty($order) ? ($columns[$order[0]['column'] ?? 0]['data'] ?? null) : null;
-        if (SortColumn::isSafe($orderColumn)) {
-            $builder->orderBy($this->versionColumn($orderColumn), $order[0]['dir'] ?? '');
-        } else {
-            // Newest version first.
-            $builder->orderBy('r.id', 'DESC');
-        }
-
-        if ($length != -1) {
-            $builder->limit(intval($length), intval($start));
-        }
-
-        return [
-            'draw' => intval($draw),
-            'recordsTotal' => $totalRecords,
-            'recordsFiltered' => $recordsFiltered,
-            'data' => $builder->get()->getResultArray(),
-        ];
-    }
-
-    /**
      * Every live or every trashed model with the columns a list shows, under the names a list uses.
      *
      * `date_modified` is when the current version was saved, and `edited_by` is who saved it.
@@ -507,25 +462,6 @@ class ModelStore
             'edited_by'     => $this->usersColumn('e'),
             'deleted_by'    => $this->usersColumn('d'),
             default         => $name,
-        };
-    }
-
-    /**
-     * The same for the list of versions.
-     */
-    private function versionColumn(string $name): string
-    {
-        return match ($name) {
-            'data_id'      => 'r.id',
-            'id'           => 'm.id',
-            'name'         => 'r.name',
-            'fields'       => 'r.fields',
-            'icon'         => 'r.icon',
-            'group'        => 'r.group',
-            'user_groups'  => 'r.user_groups',
-            'created_by'   => $this->usersColumn('c'),
-            'date_created' => 'r.created_at',
-            default        => $name,
         };
     }
 

@@ -1,52 +1,77 @@
-<?= $this->extend('admin/layout/page') ?>
+<?php
+/**
+ * The versions of one model, newest first. Each version shows what it changed against the one before it, and can be
+ * opened to see its fields. An older one can be saved again as a new version.
+ *
+ * @var array<string, mixed>       $model
+ * @var list<array<string, mixed>> $versions
+ * @var array<string, string>      $urls
+ */
+$stamp = static fn (?string $value): string => $value === null || $value === '' ? '' : App\Fields\FieldTypes::core()->get('datetime')->cell($value, ['id' => 'x', 'type' => 'datetime']);
+?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<table id="hyperTable" class="table is-striped" style="width:100%">
-</table>
-
-<!-- Content modal -->
-<div id="contentModal" class="modal">
-    <div class="modal-background"></div>
-    <div class="modal-card is-fullscreen">
-        <section class="modal-card-body">
-            <h1 class="title"><?= lang('Admin.preview') ?></h1>
-            <pre id="contentArea"></pre>
-        </section>
+<div class="page-head">
+    <div>
+        <h1><?= esc(lang('Models.historyTitle', ['name' => (string) $model['name']])) ?></h1>
+        <p><?= esc(lang('Models.historyText')) ?></p>
     </div>
-    <button class="modal-close button is-large" aria-label="close"></button>
+    <div class="actions">
+        <?= ui('button', ['label' => lang('Models.back'), 'href' => $urls['edit'], 'icon' => 'chevron-left']) ?>
+        <?php if (count($versions) > 1) : ?>
+            <form method="post" action="<?= attr($urls['base'] . '/clear') ?>" hx-post="<?= attr($urls['base'] . '/clear') ?>" hx-confirm="<?= attr(lang('Models.confirmClearHistory')) ?>">
+                <?= csrf_field() ?>
+                <?= ui('button', ['label' => lang('Models.clearHistory'), 'type' => 'submit', 'variant' => 'danger', 'icon' => 'trash']) ?>
+            </form>
+        <?php endif ?>
+    </div>
 </div>
-<?= $this->endSection() ?>
 
-<?= $this->section('head') ?>
-<link href="<?= base_url('assets/vendor/datatables.net-bm/css/dataTables.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-buttons-bm/css/buttons.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-colreorder-bm/css/colReorder.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-fixedheader-bm/css/fixedHeader.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-responsive-bm/css/responsive.bulma.css') ?>" rel="stylesheet">
-<link href="<?= base_url('assets/vendor/datatables.net-select-bm/css/select.bulma.css') ?>" rel="stylesheet">
+<?php if ($versions === []) : ?>
+    <div class="panel"><?= ui('emptyState', ['icon' => 'history', 'title' => lang('Models.noHistory'), 'text' => '']) ?></div>
+<?php else : ?>
+    <ol class="versions">
+        <?php foreach ($versions as $version) : ?>
+            <li class="panel">
+                <details<?= $version['current'] ? ' open' : '' ?>>
+                    <summary>
+                        <span class="version-title"><?= esc(lang('Models.version')) ?> <?= (int) $version['number'] ?></span>
+                        <?php if ($version['current']) : ?><span class="chip ok"><?= esc(lang('Models.current')) ?></span><?php endif ?>
+                        <span class="muted"><?= $stamp($version['date']) ?><?= $version['by'] !== null && $version['by'] !== '' ? ' ' . esc(lang('Models.by', ['name' => (string) $version['by']])) : '' ?></span>
+                        <span class="muted" style="margin-left: auto"><?= esc(count($version['fields']) === 1 ? lang('Models.oneField') : lang('Models.fieldCount', ['count' => count($version['fields'])])) ?></span>
+                    </summary>
 
-<script src="<?= base_url('assets/vendor/jquery/dist/jquery.min.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/jszip/dist/jszip.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/pdfmake/build/pdfmake.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/pdfmake/build/vfs_fonts.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net/js/dataTables.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-bm/js/dataTables.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/dataTables.buttons.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons-bm/js/buttons.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.colVis.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.html5.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-buttons/js/buttons.print.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-colreorder/js/dataTables.colReorder.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-fixedheader/js/dataTables.fixedHeader.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-responsive/js/dataTables.responsive.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-responsive-bm/js/responsive.bulma.js') ?>"></script>
-<script src="<?= base_url('assets/vendor/datatables.net-select/js/dataTables.select.js') ?>"></script>
-<?= $this->endSection() ?>
+                    <?php if ($version['changes'] !== []) : ?>
+                        <p class="changes">
+                            <?php foreach ($version['changes'] as $change) : ?>
+                                <span class="chip <?= $change['kind'] === 'added' ? 'ok' : ($change['kind'] === 'removed' ? 'bad' : 'tint') ?>"><?= esc(lang('Models.' . $change['kind'])) ?> <?= esc($change['field']) ?></span>
+                            <?php endforeach ?>
+                        </p>
+                    <?php endif ?>
 
-<?= $this->section('footer') ?>
+                    <dl class="values">
+                        <dt><?= esc(lang('Models.name')) ?></dt>
+                        <dd><?= esc($version['name']) ?></dd>
+                        <?php if ($version['group'] !== '') : ?>
+                            <dt><?= esc(lang('Models.group')) ?></dt>
+                            <dd><?= esc($version['group']) ?></dd>
+                        <?php endif ?>
+                        <?php foreach ($version['fields'] as $field) : ?>
+                            <dt><?= esc((string) ($field['label'] ?? $field['id'])) ?></dt>
+                            <dd><code><?= esc((string) $field['id']) ?></code> <?= esc((string) ($field['type'] ?? '')) ?><?= ! empty($field['filterable']) ? ' ' . esc(lang('Models.filterableTag')) : '' ?></dd>
+                        <?php endforeach ?>
+                    </dl>
 
-<!-- HTML Entity -->
-<script src="https://cdn.jsdelivr.net/npm/he@1.2.0/he.min.js"></script>
-
-<script type="module" src="<?= base_url('assets/App/admin/model_data.js') ?>"></script>
+                    <?php if (! $version['current']) : ?>
+                        <form method="post" action="<?= attr($urls['base'] . '/versions/' . (int) $version['id'] . '/restore') ?>" hx-post="<?= attr($urls['base'] . '/versions/' . (int) $version['id'] . '/restore') ?>" hx-confirm="<?= attr(lang('Models.confirmRestoreVersion')) ?>" class="version-actions">
+                            <?= csrf_field() ?>
+                            <?= ui('button', ['label' => lang('Models.restoreVersion'), 'type' => 'submit', 'icon' => 'refresh', 'size' => 'small']) ?>
+                        </form>
+                    <?php endif ?>
+                </details>
+            </li>
+        <?php endforeach ?>
+    </ol>
+<?php endif ?>
 <?= $this->endSection() ?>

@@ -1,6 +1,6 @@
 # Regression captures
 
-A capture is a saved copy of what one request returned. This folder holds 99 of them, taken from a seeded database, together with the scripts that send the same requests again and name every answer that changed. Run it before and after a change that should leave the API and the admin answering as they did, such as a refactor of the data layer.
+A capture is a saved copy of what one request returned. This folder holds 90 of them, taken from a seeded database, together with the scripts that send the same requests again and name every answer that changed. Run it before and after a change that should leave the API and the admin answering as they did, such as a refactor of the data layer.
 
 Nothing here asserts that an answer is right. The check tells you which answers differ from the baseline, and you decide whether a difference is the change you meant to make.
 
@@ -8,8 +8,8 @@ Nothing here asserts that an answer is right. The check tells you which answers 
 
 | Path | Contents |
 | :-- | :-- |
-| `golden/` | 43 answers from the `api/v1` endpoints, one JSON file per request |
-| `golden-admin/` | 30 admin page requests, 5 API calls made with an admin session, and 21 write flows |
+| `golden/` | 35 answers from the `api/v1` endpoints, one JSON file per request |
+| `golden-admin/` | 30 admin page requests, 4 API calls made with an admin session, and 21 write flows |
 | `seed.sql` | The database the captures were taken from |
 | `harness.php` | Sends the API requests, and compares two folders of captures |
 | `admin_harness.php` | Signs in, loads the admin pages and runs the write flows |
@@ -42,9 +42,9 @@ Without switches only the API captures run. `-Admin` adds the admin pages and wr
 
 ```text
 --- golden
-43 files compared, 0 differ
+35 files compared, 0 differ
 --- golden-admin
-56 files compared, 0 differ
+55 files compared, 0 differ
 ```
 
 A file that differs is named on a line of its own. The answers from the run are in `captures/api` and `captures/admin`, which git ignores, so compare the named file with the one in the baseline folder to see what moved. For an admin page the full HTML of the run is in `captures/admin/bodies`.

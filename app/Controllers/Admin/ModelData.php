@@ -3,53 +3,156 @@
 namespace App\Controllers\Admin;
 
 use App\Controllers\AdminController;
+use InvalidArgumentException;
+use RuntimeException;
 
+/**
+ * The saved versions of one model, drawn on the server. Each save of a model is a version, and an older one can be
+ * saved again as a new version.
+ */
 class ModelData extends AdminController
 {
-
     public function show($modelId)
     {
+        $model = service('modelStore')->findArray((int) $modelId);
+        if (! $model) {
+            return redirect()->to(base_url('admin/models'))->with('error', lang('Models.notFound'));
+        }
 
-        $id = $modelId;
+        $rows     = service('modelStore')->savedVersions((int) $modelId);
+        $versions = [];
+        foreach ($rows as $index => $row) {
+            $fields     = self::fieldsOf((string) $row['fields']);
+            $older      = isset($rows[$index + 1]) ? self::fieldsOf((string) $rows[$index + 1]['fields']) : null;
+            $versions[] = [
+                'id'      => (int) $row['data_id'],
+                'number'  => count($rows) - $index,
+                'current' => (int) $row['data_id'] === (int) $model['data_id'],
+                'date'    => $row['date_created'],
+                'by'      => $row['created_by'],
+                'name'    => (string) $row['name'],
+                'group'   => (string) ($row['group'] ?? ''),
+                'fields'  => $fields,
+                'changes' => $older === null ? [] : self::changes($older, $fields),
+            ];
+        }
 
-        /* Model */
+        $this->data = array_merge($this->data, [
+            'title'    => lang('Models.historyTitle', ['name' => $model['name']]),
+            'crumbs'   => [[lang('Models.models'), base_url('admin/models')], [$model['name'], base_url('admin/models/' . (int) $model['id'] . '/edit')], [lang('Models.history'), null]],
+            'model'    => $model,
+            'versions' => $versions,
+            'urls'     => ['edit' => base_url('admin/models/' . (int) $model['id'] . '/edit'), 'base' => base_url('admin/model-data/' . (int) $model['id'])],
+        ]);
 
-        $found = service('modelStore')->find($id);
-        $modelResult = $found ? [(array) $found] : [];
+        return view('admin/model_data', $this->data);
+    }
 
-        // Check if the model exists
-        if (empty($modelResult))
-            return redirect('admin/entries')->with('error', lang('Admin.noModelFoundWithIdx', ['x' => $modelResult['name']]));
+    /**
+     * Save an older version as a new one, so the model goes back to what it was and the older history stays.
+     */
+    public function restoreVersion($modelId, $versionId)
+    {
+        $back = base_url('admin/model-data/' . (int) $modelId);
 
-        $model = $modelResult[0]; // Assign the model
+        if (! service('modelStore')->exists((int) $modelId)) {
+            return $this->leave(base_url('admin/models'), lang('Models.notFound'));
+        }
 
-        /* End of model */
+        $found = null;
+        foreach (service('modelStore')->savedVersions((int) $modelId) as $row) {
+            if ((int) $row['data_id'] === (int) $versionId) {
+                $found = $row;
+                break;
+            }
+        }
+        if ($found === null) {
+            return $this->leave($back, lang('Models.versionNotFound'));
+        }
 
-        $this->data['model'] = $model;
-        $this->data['pageLength'] = service('settings')->get('App.datatableEntriesPerPage', 'user:' . user_id()) ?: 10;
-        $this->data['title'] = lang('Admin.modelxHistory', ['x' => $model['name']]);
+        try {
+            service('modelStore')->update((int) $modelId, [
+                'name'        => $found['name'],
+                'fields'      => $found['fields'],
+                'group'       => $found['group'],
+                'icon'        => $found['icon'],
+                'user_groups' => $found['user_groups'],
+            ], (int) auth()->user()->id);
+        } catch (InvalidArgumentException | RuntimeException $e) {
+            return $this->leave($back, $e->getMessage());
+        }
 
-        return render('admin/model_data', $this->data);
+        session()->setFlashdata('success', lang('Models.versionRestored'));
+
+        return $this->go($back);
     }
 
     public function clearHistory($modelId = null)
     {
-        // Check if the model ID is provided.
-        if (empty($modelId)) {
-            return $this->respond(lang('Admin.noModelFound'), statusCode: 400, success: false);
-        }
+        $back = base_url('admin/model-data/' . (int) $modelId);
 
-        // Delete all history records for this model but keep the newest one.
-        $affected = service('modelStore')->clearHistory($modelId);
-
+        $affected = $modelId === null || $modelId === '' ? null : service('modelStore')->clearHistory($modelId);
         if ($affected === null) {
-            return $this->respond(lang('Admin.noHistoryFound'), statusCode: 404, success: false);
+            return $this->leave($back, lang('Models.noHistory'));
+        }
+        if ($affected === 0) {
+            return $this->leave($back, lang('Models.noHistoryCleared'));
         }
 
-        $message = ($affected > 0)
-            ? lang('Admin.historySuccessfullyCleared')
-            : lang('Admin.noHistoryCleared');
+        session()->setFlashdata('success', lang('Models.historyCleared'));
 
-        return $this->respond($message, 'admin/entries');
+        return $this->go($back);
+    }
+
+    /**
+     * @return list<array<string, mixed>>
+     */
+    private static function fieldsOf(string $json): array
+    {
+        $fields = json_decode($json, true);
+
+        return is_array($fields) ? array_values(array_filter($fields, static fn ($f): bool => is_array($f) && is_string($f['id'] ?? null))) : [];
+    }
+
+    /**
+     * What a version changed compared with the one before it, by field id.
+     *
+     * @param list<array<string, mixed>> $before
+     * @param list<array<string, mixed>> $after
+     *
+     * @return list<array{kind: string, field: string}> `added`, `removed` or `changed` for each field that differs.
+     */
+    private static function changes(array $before, array $after): array
+    {
+        $old = array_column($before, null, 'id');
+        $new = array_column($after, null, 'id');
+
+        $changes = [];
+        foreach ($new as $id => $field) {
+            if (! isset($old[$id])) {
+                $changes[] = ['kind' => 'added', 'field' => (string) $id];
+            } elseif ($old[$id] != $field) {
+                $changes[] = ['kind' => 'changed', 'field' => (string) $id];
+            }
+        }
+        foreach ($old as $id => $field) {
+            if (! isset($new[$id])) {
+                $changes[] = ['kind' => 'removed', 'field' => (string) $id];
+            }
+        }
+
+        return $changes;
+    }
+
+    private function leave(string $to, string $message)
+    {
+        session()->setFlashdata('error', $message);
+
+        return $this->go($to);
+    }
+
+    private function go(string $to)
+    {
+        return $this->request->hasHeader('HX-Request') ? $this->response->setHeader('HX-Redirect', $to)->setStatusCode(204) : redirect()->to($to);
     }
 }

@@ -75,7 +75,8 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'only' => ['show'],
             'filter' => 'model-user-group:model',
         ]);
-        $routes->post('model-data/clear-history/(:num)', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
+        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => 'model-user-group:model,3']);
+        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => 'model-user-group:model,3']);
 
         // Entries
         $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
@@ -192,10 +193,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
 
         // Every route below needs a signed-in admin session or an access token.
 
-        // Model definitions and their saved versions
+        // Model definitions
         $routes->group('', ['filter' => 'api-auth:models.read'], static function ($routes) {
             $routes->post('models', 'Models');
-            $routes->post('model-data', 'ModelData');
         });
 
         // Entries, for the token API
