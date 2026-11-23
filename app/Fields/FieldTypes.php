@@ -42,8 +42,11 @@ final class FieldTypes
             new HiddenField(),
         );
 
-        foreach (service('modules')->fieldTypes() as $type) {
-            $registry->register($type);
+        // A script that runs without the framework, such as the upgrade test, has no modules to ask.
+        if (function_exists('service')) {
+            foreach (service('modules')->fieldTypes() as $type) {
+                $registry->register($type);
+            }
         }
 
         return $registry;

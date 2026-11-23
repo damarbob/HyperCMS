@@ -375,7 +375,7 @@ $verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pai
     foreach ($rows('SELECT role, ability FROM hyper_role_abilities ORDER BY role, ability') as $r) {
         $abilities[$r['role']][] = $r['ability'];
     }
-    $check("$label: each role has the abilities its group had", $abilities === ['admin' => ['api.access', 'entries.browse', 'media.manage'], 'beta' => ['media.manage'], 'developer' => ['api.access', 'entries.browse', 'media.manage', 'pages.manage']], json_encode($abilities));
+    $check("$label: each role has the abilities its group had", $abilities === ['admin' => ['api.access', 'entries.browse', 'media.manage', 'tokens.manage'], 'beta' => ['media.manage'], 'developer' => ['api.access', 'entries.browse', 'media.manage', 'pages.manage', 'tokens.manage']], json_encode($abilities));
 
     $wantGrants = [];
     foreach ($wantModels as $id => $model) {
