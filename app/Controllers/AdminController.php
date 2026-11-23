@@ -108,6 +108,20 @@ abstract class AdminController extends BaseController
                             'tooltip_placement' => 'right',
                             'ability' => 'models.manage'
                         ],
+                        'settings-roles' => [
+                            'url' => base_url('admin/roles'),
+                            'text' => lang("Roles.title"),
+                            'tooltip_content' => lang("Roles.title"),
+                            'tooltip_placement' => 'right',
+                            'ability' => 'roles.manage'
+                        ],
+                        'settings-abilities' => [
+                            'url' => base_url('admin/abilities'),
+                            'text' => lang("Roles.abTitle"),
+                            'tooltip_content' => lang("Roles.abTitle"),
+                            'tooltip_placement' => 'right',
+                            'ability' => 'roles.manage'
+                        ],
                         // You can also add additional submenu items or merge hook-driven items.
                     ]
                 ]

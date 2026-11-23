@@ -3,6 +3,7 @@
 namespace App\Data;
 
 use CodeIgniter\Database\BaseConnection;
+use InvalidArgumentException;
 use Throwable;
 
 /**
@@ -113,6 +114,60 @@ class Abilities
     public function forget(): void
     {
         $this->custom = null;
+    }
+
+    /**
+     * Add an ability by name. It only matters to code that checks that name, such as a module or a template.
+     *
+     * @throws InvalidArgumentException When the name is not a name or is taken, or the label is empty. The message is for the person.
+     */
+    public function createCustom(string $name, string $label, string $description): void
+    {
+        if (preg_match(self::NAME, $name) !== 1) {
+            throw new InvalidArgumentException(lang('Roles.abilityNameInvalid'));
+        }
+        if ($this->exists($name) || self::isModelAbility($name)) {
+            throw new InvalidArgumentException(lang('Roles.abilityNameTaken', ['name' => $name]));
+        }
+        if (trim($label) === '') {
+            throw new InvalidArgumentException(lang('Roles.labelRequired'));
+        }
+
+        $this->db->table('hyper_abilities')->insert(['name' => $name, 'label' => trim($label), 'description' => trim($description) === '' ? null : trim($description), 'created_at' => date('Y-m-d H:i:s')]);
+        $this->forget();
+    }
+
+    /**
+     * Remove an ability an admin made, and take it from every role. An ability of core or a module cannot be removed.
+     *
+     * @throws InvalidArgumentException When the ability is not a custom one.
+     */
+    public function deleteCustom(string $name): void
+    {
+        if (! isset($this->custom()[$name]) || isset($this->registered[$name]) || in_array($name, self::CORE, true)) {
+            throw new InvalidArgumentException(lang('Roles.abilityNotCustom'));
+        }
+
+        $this->db->transStart();
+        $this->db->table('hyper_role_abilities')->where('ability', $name)->delete();
+        $this->db->table('hyper_abilities')->where('name', $name)->delete();
+        $this->db->transComplete();
+        $this->forget();
+    }
+
+    /**
+     * The roles that have each ability, by ability name.
+     *
+     * @return array<string, list<string>>
+     */
+    public function holders(): array
+    {
+        $by = [];
+        foreach ($this->db->table('hyper_role_abilities')->orderBy('role')->get()->getResultArray() as $row) {
+            $by[(string) $row['ability']][] = (string) $row['role'];
+        }
+
+        return $by;
     }
 
     private static function text(string $name, string $suffix): string

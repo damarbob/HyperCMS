@@ -152,7 +152,7 @@ class Services extends BaseService
         if ($getShared) {
             return static::getSharedInstance('roles');
         }
-        return new Roles(db_connect());
+        return new Roles(db_connect(), static::grants());
     }
 
     /**

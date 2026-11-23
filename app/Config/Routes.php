@@ -80,6 +80,21 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => 'can:models.manage']);
         $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => 'can:models.manage']);
 
+        // Roles and abilities. Giving a role what the person has themselves is checked in the controller.
+        $routes->group('roles', ['filter' => 'can:roles.manage'], static function ($routes) {
+            $routes->get('/', 'Roles::index');
+            $routes->get('new', 'Roles::new');
+            $routes->post('/', 'Roles::create');
+            $routes->get('(:segment)/edit', 'Roles::edit/$1');
+            $routes->post('(:segment)/delete', 'Roles::delete/$1');
+            $routes->post('(:segment)', 'Roles::update/$1');
+        });
+        $routes->group('abilities', ['filter' => 'can:roles.manage'], static function ($routes) {
+            $routes->get('/', 'Abilities::index');
+            $routes->post('/', 'Abilities::create');
+            $routes->post('(:segment)/delete', 'Abilities::delete/$1');
+        });
+
         // The lookup of the entry pickers. The controller checks the right to read the entries of that model.
         $routes->get('picker/(:num)', 'Picker::entries/$1');
 
