@@ -10,5 +10,6 @@ return [
     'uploads/upgrade-test/photo-one.png' => 'photo one',
     'uploads/upgrade-test/photo-two.png' => 'photo two',
     'uploads/upgrade-test/hero.jpg'      => 'hero image',
+    'uploads/upgrade-test/site.css'      => 'body { margin: 0; }',
     'uploads/upgrade-test/loose.txt'     => 'a file that nothing points at',
 ];
