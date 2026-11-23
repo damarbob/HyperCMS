@@ -55,7 +55,7 @@ Core calls the methods of the class and nothing else of the module. A module tha
 | Add a field type | `fieldTypes()` | Classes that implement `App\Fields\FieldType`, which the model builder offers at once because each type lists its own options |
 | Declare models it needs | `blueprints()` | A `Blueprint` states the fields a model must have. The choice of model is kept in the settings, and the module reads it with `service('modules')->modelOf('Shop', 'page')`, so a module never scans the models |
 | Put content into core pages | `slots()` | Named places with a typed payload, below |
-| Read and write data | `service('entryStore')`, `service('modelStore')`, `service('settings')` and `can()` | `service('files')` arrives with the media library |
+| Read and write data | `service('entryStore')`, `service('modelStore')`, `service('files')`, `service('settings')` and `can()` | `files` is the media library, described under Files below |
 | Draw like core | `ui('button', ...)`, `ui('table', ...)` and the other cells of the design system | The cells are documented on the design page, `admin/design`, outside production |
 
 ## Controllers
@@ -67,6 +67,22 @@ A controller of a module extends `App\Modules\ModuleController`, never `AdminCon
 A module that changes who may do what must hold itself to the same rule as core: a person may hand out only what they have
 themselves. `service('permissions')->mayAssignRole($actor, $role)` and `mayManageUser($actor, $user)` answer it, and the
 Users screen uses them.
+
+## Files
+
+The media library keeps the files of the site outside the public folder, in `writable/uploads` unless `media.uploadPath` says
+otherwise, and every file is a row of `hyper_files`. A file is known by its id, so a link survives a rename or a move.
+
+| A module can | Through |
+| :-- | :-- |
+| Find a file | `service('files')->find($id)` and `findMany($ids)`, which return the row or nothing |
+| Link to a file | `App\Data\Files::url($file)` for a page of the admin, and `'/' . Files::path($file)` for text that is stored, which is `/media/{id}/{name}` |
+| Add a file | `service('files')->store($tmpPath, $name, $folder, $userId)`, which refuses a name that a server could run |
+| Ask the person for a file | `window.HyperMedia.pick({accept: 'image', multiple: false})` in a page that loads `assets/ui/media.js`, which resolves with the chosen files |
+| Hold a file in an entry | A field of type `file`, which stores the id, or a list of ids |
+
+A page that must show the library inside a frame can open `admin/media/frame?requester_id={hex}`. It posts the links of the
+chosen files to its parent window as `filesSelected_r{requester_id}`.
 
 ## Slots
 
