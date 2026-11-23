@@ -171,7 +171,7 @@ $pages = [
     'admin/models', 'admin/models/new', 'admin/models/1/edit', 'admin/models/3/edit', 'admin/models/999/edit',
     'admin/model-data/1', 'admin/model-data/999',
     'admin/settings', 'admin/settings/models',
-    'admin/models/2/edit', // the public model, with its box ticked
+    'admin/models/2/edit',
 ];
 foreach ($pages as $i => $p) {
     $name = 'p' . str_pad((string) ($i + 2), 2, '0', STR_PAD_LEFT) . '_' . preg_replace('/[^a-z0-9]+/i', '_', $p);
@@ -217,8 +217,8 @@ $j = fn($v) => json_encode($v, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
 $productFields = fn(string $sku) => ['sku' => $sku, 'price' => '5.00', 'category' => 'a', 'added' => '2026-04-01T08:00'];
 $articleModelFields = $j([
     ['id' => 'title', 'label' => 'Title', 'type' => 'text'],
-    ['id' => 'body', 'label' => 'Body', 'type' => 'textarea'],
-    ['id' => 'views', 'label' => 'Views', 'type' => 'number'],
+    ['id' => 'body', 'label' => 'Body', 'type' => 'longtext'],
+    ['id' => 'views', 'label' => 'Views', 'type' => 'number', 'integer' => false, 'widget' => 'input'],
     ['id' => 'summary', 'label' => 'Summary', 'type' => 'text'],
 ]);
 $flows = [
@@ -235,16 +235,16 @@ $flows = [
     'w11_entry_purge_empty'   => ['admin/model/1/purge', []],
     'w22_entry_trash_other_model' => ['admin/model/1/trash', ['ids' => [43]]],
     'w23_entry_history_clear' => ['admin/model/1/1/history/clear', []],
-    'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'user_groups' => ['superadmin'], 'icon' => 'image']],
+    'w12_model_create'        => ['admin/models', ['name' => 'Gallery', 'fields' => $j([['id' => 'caption', 'label' => 'Caption', 'type' => 'text']]), 'group' => 'Media', 'user_groups' => ['superadmin'], 'icon' => 'media', 'label_field' => 'caption']],
     'w13_model_create_bad'    => ['admin/models', ['name' => 'ab']],
-    'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],
+    'w14_model_update'        => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'doc', 'label_field' => 'title']],
     'w15_model_delete_single' => ['admin/models/3/delete', []],
     'w16_model_delete_bulk'   => ['admin/models/delete', ['ids' => [2]]],
     'w17_model_restore'       => ['admin/models/restore', ['ids' => [4]]],
     'w18_model_purge'         => ['admin/models/purge-deleted', []],
     'w19_model_data_clear'    => ['admin/model-data/1/clear', []],
-    'w20_model_public_on'     => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text', 'public' => '1']],
-    'w21_model_public_off'    => ['admin/models/1', ['name' => 'Article', 'fields' => $articleModelFields, 'group' => 'Content', 'user_groups' => ['superadmin', 'admin'], 'icon' => 'file-text']],
+    'w20_model_update_bad'    => ['admin/models/1', ['name' => 'Article', 'fields' => $j([['id' => 'a', 'type' => 'text'], ['id' => 'a', 'type' => 'textarea']]), 'group' => 'Content', 'user_groups' => ['superadmin'], 'icon' => 'doc']],
+    'w21_model_check'         => ['admin/models/check', ['fields' => $articleModelFields, 'label_field' => 'title']],
 ];
 $prev = snapshot($pdo, $queries);
 foreach ($flows as $name => [$path, $form]) {

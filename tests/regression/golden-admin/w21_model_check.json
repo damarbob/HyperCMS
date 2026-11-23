@@ -1,0 +1,41 @@
+{
+    "request": {
+        "method": "POST",
+        "path": "admin/models/check",
+        "form": {
+            "fields": "[{\"id\":\"title\",\"label\":\"Title\",\"type\":\"text\"},{\"id\":\"body\",\"label\":\"Body\",\"type\":\"longtext\"},{\"id\":\"views\",\"label\":\"Views\",\"type\":\"number\",\"integer\":false,\"widget\":\"input\"},{\"id\":\"summary\",\"label\":\"Summary\",\"type\":\"text\"}]",
+            "label_field": "title"
+        }
+    },
+    "status": 200,
+    "location": null,
+    "body": {
+        "ok": true,
+        "errors": [],
+        "fields": [
+            {
+                "id": "title",
+                "label": "Title",
+                "type": "text"
+            },
+            {
+                "id": "body",
+                "label": "Body",
+                "type": "longtext"
+            },
+            {
+                "id": "views",
+                "label": "Views",
+                "type": "number",
+                "integer": false,
+                "widget": "input"
+            },
+            {
+                "id": "summary",
+                "label": "Summary",
+                "type": "text"
+            }
+        ]
+    },
+    "changes": []
+}

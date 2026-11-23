@@ -2,7 +2,7 @@
     "request": "GET admin/models/1/edit",
     "status": 200,
     "location": null,
-    "title": "Edit model",
-    "bytes": 169914,
-    "sha1": "f5fd0565d7ee3134f99a12d367142fa0e0f8b2ea"
+    "title": "Article",
+    "bytes": 75155,
+    "sha1": "21e75dcb89fe5daf49be720155e2b05147cacaed"
 }
