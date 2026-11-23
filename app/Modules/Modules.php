@@ -179,7 +179,7 @@ final class Modules
      */
     public function modelOf(string $module, string $key): ?int
     {
-        $id = $this->settings->get('Modules.' . $module . '.' . $key);
+        $id = $this->settings->get(self::settingKey($module, $key));
 
         return is_numeric($id) && (int) $id > 0 ? (int) $id : null;
     }
@@ -189,7 +189,16 @@ final class Modules
      */
     public function useModel(string $module, string $key, int $modelId): void
     {
-        $this->settings->set('Modules.' . $module . '.' . $key, $modelId);
+        $this->settings->set(self::settingKey($module, $key), $modelId);
+    }
+
+    /**
+     * The name of the setting that keeps a choice. It has two parts, because the settings service reads a third part as a
+     * place inside the value, and the class in front must not be one of the framework's, which `Modules` is.
+     */
+    public static function settingKey(string $module, string $key): string
+    {
+        return 'HyperModules.' . $module . '_' . $key;
     }
 
     /**
