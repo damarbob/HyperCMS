@@ -79,7 +79,7 @@ $empty     = $files === [] && $folders === [];
         <noscript><button class="btn" type="submit"><?= esc(lang('Ui.search')) ?></button></noscript>
     </form>
 
-    <form method="post" action="<?= attr($base) ?>" class="stack media-form" style="gap: var(--s4)" @submit.prevent <?= attrs($swap) ?> @change="update($event)">
+    <form method="post" action="<?= attr($base) ?>" class="stack media-form" style="gap: var(--s4)" @submit.prevent <?= attrs(['hx-target' => '#' . $id, 'hx-swap' => 'outerHTML', 'hx-push-url' => 'false']) ?> @change="update($event)">
         <?= csrf_field() ?>
         <?php foreach ($carry as $name => $value) : ?><input type="hidden" name="<?= attr($name) ?>" value="<?= attr((string) $value) ?>"><?php endforeach ?>
 
