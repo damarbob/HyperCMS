@@ -92,6 +92,10 @@
 .editor-attr[data-bad="true"] .input[data-attr="name"] { border-color: var(--bad); }
 .editor-attrs > .btn { justify-self: start; }
 
+/* A field that suggests names, which is drawn as the fields of GrapesJS are. */
+.editor-pick { display: block; width: 100%; }
+.editor-pick input { width: 100%; }
+
 /* ---- The import dialog, which GrapesJS draws and the script fills ---------------------------------------------- */
 
 .editor-import { display: block; width: 100%; min-height: 260px; margin-bottom: var(--s3); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: var(--t-sm); resize: vertical; }

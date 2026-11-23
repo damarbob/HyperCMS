@@ -98,6 +98,7 @@ return [
     'editor_files' => 'Files of the site',
     'editor_searchBlocks' => 'Search blocks',
     'editor_classMode' => 'Style by class instead of by element',
+    'editor_entryValue' => 'Entry value',
     'editor_attributes' => 'Attributes',
     'editor_addAttribute' => 'Add attribute',
     'editor_attributeName' => 'Name',

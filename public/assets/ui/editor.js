@@ -32,12 +32,104 @@
   var dark = document.documentElement.getAttribute('data-theme') === 'dark'
     || (document.documentElement.getAttribute('data-theme') === null && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches);
 
+  /* ---- The models and their fields, which the person can pick from ---------------------------------------------- */
+
+  // The list comes from the models API, which answers a signed-in editor with the models that person may read. If it cannot be
+  // had, the lists are empty and the names are typed, as they were before the lists existed.
+  var modelList = null;
+  function models() {
+    if (!modelList) {
+      var body = new FormData();
+      body.append('draw', '1');
+      body.append('length', '-1');
+      var headers = { Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+      headers[meta('csrf-header')] = meta('csrf-token');
+      modelList = fetch(data.models, { method: 'POST', headers: headers, body: body, credentials: 'same-origin' })
+        .then(function (response) { if (!response.ok) throw new Error(String(response.status)); return response.json(); })
+        .then(function (answer) {
+          return (answer.data || []).map(function (model) {
+            var fields = [];
+            try { fields = typeof model.fields === 'string' ? JSON.parse(model.fields) : model.fields; } catch (e) { fields = []; }
+            return {
+              id: String(model.id),
+              name: String(model.name),
+              fields: (Array.isArray(fields) ? fields : []).filter(function (f) { return f && f.id; }).map(function (f) { return { id: String(f.id), label: String(f.label || f.id) }; }),
+            };
+          });
+        })
+        .catch(function (error) { console.error('The models could not be listed, so their names are typed.', error); modelList = null; return []; });
+    }
+    return modelList;
+  }
+
+  var pickCount = 0;
+  var MODEL_ATTRIBUTE = 'data-hyper-query-model-id';
+
+  // A text field that suggests names as the person types. `source` is `models`, or `fields` for the fields of the chosen model.
+  function pickPlugin(editor) {
+    editor.Traits.addType('hyper-pick', {
+      eventCapture: [],
+      onEvent: function () {},
+      createInput: function (opts) {
+        var component = opts.component;
+        var name = opts.trait.get('name');
+        var source = opts.trait.get('source');
+        var wrap = make('span', 'editor-pick');
+        var input = make('input');
+        var suggestions = make('datalist');
+        suggestions.id = 'hyper-pick-' + (++pickCount);
+        input.setAttribute('list', suggestions.id);
+        input.setAttribute('autocomplete', 'off');
+        wrap.appendChild(input);
+        wrap.appendChild(suggestions);
+
+        function current(attribute) { var all = component.get('attributes') || {}; return all[attribute] === undefined ? '' : String(all[attribute]); }
+        function suggest() {
+          models().then(function (all) {
+            var items = source === 'models'
+              ? all.map(function (m) { return { value: m.id, label: m.name }; })
+              : ((all.filter(function (m) { return m.id === current(MODEL_ATTRIBUTE); })[0] || {}).fields || []).map(function (f) { return { value: f.id, label: f.label }; });
+            suggestions.textContent = '';
+            items.forEach(function (item) {
+              var option = document.createElement('option');
+              option.value = item.value;
+              option.label = item.label;
+              suggestions.appendChild(option);
+            });
+          });
+        }
+        input.value = current(name);
+        suggest();
+        input.addEventListener('change', function () {
+          var next = {};
+          next[name] = input.value.trim();
+          component.addAttributes(next);
+        });
+
+        // Another choice, or an undo, changes the attributes, and the fields to suggest follow the model.
+        function refresh() {
+          if (!wrap.isConnected) { component.off('change:attributes', refresh); return; }
+          if (document.activeElement !== input) input.value = current(name);
+          suggest();
+        }
+        component.on('change:attributes', refresh);
+        return wrap;
+      },
+    });
+  }
+
   /* ---- A meta tag, with the traits that make it read a field of an entry ---------------------------------------- */
 
+  var ENTRY_ICON = '<svg height="32px" width="32px" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><path d="M448 80v48c0 44.2-100.3 80-224 80S0 172.2 0 128V80C0 35.8 100.3 0 224 0s224 35.8 224 80zM393.2 214.7c20.8-7.4 39.9-16.9 54.8-28.6V288c0 44.2-100.3 80-224 80S0 332.2 0 288V186.1c14.9 11.8 34 21.2 54.8 28.6C99.7 230.7 159.5 240 224 240s124.3-9.3 169.2-25.3zM0 346.1c14.9 11.8 34 21.2 54.8 28.6C99.7 390.7 159.5 400 224 400s124.3-9.3 169.2-25.3c20.8-7.4 39.9-16.9 54.8-28.6V432c0 44.2-100.3 80-224 80S0 476.2 0 432V346.1z"/></svg>';
+
   function metaTagPlugin(editor) {
-    var query = ['model-id', 'find-field', 'find-value', 'return-field'].map(function (name) {
-      return { type: 'text', name: 'data-hyper-query-' + name, label: L['query_' + name.replace(/-/g, '_')] || name };
-    });
+    var label = function (name) { return L['query_' + name.replace(/-/g, '_')] || name; };
+    var query = [
+      { type: 'hyper-pick', source: 'models', name: MODEL_ATTRIBUTE, label: label('model-id') },
+      { type: 'hyper-pick', source: 'fields', name: 'data-hyper-query-find-field', label: label('find-field') },
+      { type: 'text', name: 'data-hyper-query-find-value', label: label('find-value'), placeholder: '{uri-query-param}' },
+      { type: 'hyper-pick', source: 'fields', name: 'data-hyper-query-return-field', label: label('return-field') },
+    ];
     editor.Components.addType('meta-tag', {
       isComponent: function (el) { return el.tagName === 'META' ? { type: 'meta-tag' } : false; },
       model: {
@@ -49,12 +141,27 @@
         },
       },
     });
+
+    // A meta tag that is ready to ask for a field of an entry. The server fills its content when the page is shown.
+    editor.Blocks.add('hyper-entry-value', {
+      label: L.entryValue,
+      category: 'Hyper',
+      media: ENTRY_ICON,
+      content: {
+        type: 'meta-tag',
+        attributes: { name: 'description', content: '', 'data-hyper-query-model-id': '', 'data-hyper-query-find-field': '', 'data-hyper-query-find-value': '', 'data-hyper-query-return-field': '' },
+      },
+    });
   }
 
   /* ---- Any attribute of the selected element, in the settings panel --------------------------------------------- */
 
-  // The id, the classes and the style have their own places in the editor, and the `data-gjs-` ones are the editor's own.
-  function hiddenAttribute(name) { return name === 'id' || name === 'class' || name === 'style' || name.indexOf('data-gjs-') === 0; }
+  // The id, the classes and the style have their own places in the editor, and the `data-gjs-` ones are the editor's own. The
+  // `data-hyper-query-` ones of a meta tag are chosen with the pickers. A name that starts with two underscores is a note
+  // that GrapesJS keeps for itself.
+  function hiddenAttribute(name) {
+    return name === 'id' || name === 'class' || name === 'style' || name.indexOf('data-gjs-') === 0 || name.indexOf('data-hyper-query-') === 0 || name.indexOf('__') === 0;
+  }
   var ATTRIBUTE_NAME = /^[A-Za-z_:][-A-Za-z0-9_:.]*$/;
 
   function make(tag, className, text) {
@@ -160,7 +267,7 @@
     'grapesjs-parser-postcss', 'grapesjs-custom-code', 'grapesjs-tui-image-editor', 'grapesjs-style-gradient', 'grapesjs-style-bg', 'grapesjs-style-filter',
     'grapesjs-blocks-bootstrap-5', 'grapesjs-bootstrap-grid-system', 'grapesjs-bootstrap-typography', 'grapesjs-bootstrap-button', 'grapesjs-bootstrap-navbar',
     'grapesjs-bootstrap-card', 'grapesjs-bootstrap-accordion', 'grapesjs-bootstrap-carousel', 'grapesjs-bootstrap-forms', 'grapesjs-bootstrap-badge',
-    'grapesjs-bootstrap-breadcrumb', 'grapesjs-bootstrap-alert', 'grapesjs-bootstrap-dropdown', metaTagPlugin, attributesPlugin,
+    'grapesjs-bootstrap-breadcrumb', 'grapesjs-bootstrap-alert', 'grapesjs-bootstrap-dropdown', pickPlugin, metaTagPlugin, attributesPlugin,
   ];
 
   var csrfParams = {};

@@ -48,7 +48,7 @@ class Editor extends ModuleController
 
         $label  = static fn (string $key): string => lang('PagingSystem.editor_' . $key);
         $labels = [];
-        foreach (['back', 'devices', 'desktop', 'tablet', 'mobileLandscape', 'mobilePortrait', 'undo', 'redo', 'save', 'unsaved', 'import', 'importHelp', 'chooseImage', 'files', 'searchBlocks', 'classMode', 'attributes', 'addAttribute', 'attributeName', 'attributeValue', 'removeAttribute', 'libraryMissing', 'hello', 'saveFailed', 'query_model_id', 'query_find_field', 'query_find_value', 'query_return_field'] as $key) {
+        foreach (['back', 'devices', 'desktop', 'tablet', 'mobileLandscape', 'mobilePortrait', 'undo', 'redo', 'save', 'unsaved', 'import', 'importHelp', 'chooseImage', 'files', 'searchBlocks', 'classMode', 'entryValue', 'attributes', 'addAttribute', 'attributeName', 'attributeValue', 'removeAttribute', 'libraryMissing', 'hello', 'saveFailed', 'query_model_id', 'query_find_field', 'query_find_value', 'query_return_field'] as $key) {
             $labels[$key] = $label($key);
         }
 
@@ -63,6 +63,7 @@ class Editor extends ModuleController
                 'back'      => base_url('admin/model/' . $model . '/' . (int) $entry['id'] . '/edit'),
                 'save'      => base_url('admin/editor/' . (int) $entry['id'] . '/save'),
                 'upload'    => base_url('admin/ps/api/assets/upload'),
+                'models'    => base_url('api/v1/models'),
                 'csrf'      => ['name' => csrf_token(), 'hash' => csrf_hash()],
                 'project'   => (string) ($values[Pages::PROJECT] ?? ''),
                 'canvas'    => $canvas,

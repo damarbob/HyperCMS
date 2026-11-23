@@ -98,6 +98,7 @@ return [
     'editor_files' => 'Berkas situs',
     'editor_searchBlocks' => 'Cari blok',
     'editor_classMode' => 'Atur gaya per kelas, bukan per elemen',
+    'editor_entryValue' => 'Nilai entri',
     'editor_attributes' => 'Atribut',
     'editor_addAttribute' => 'Tambah atribut',
     'editor_attributeName' => 'Nama',
