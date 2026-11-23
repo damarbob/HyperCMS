@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Data\WriteVersions;
-use App\Libraries\SyntaxProcessor;
 use CodeIgniter\HTTP\RequestInterface;
 use CodeIgniter\HTTP\ResponseInterface;
 use Config\Hyper;
@@ -187,30 +186,6 @@ abstract class AdminController extends BaseController
         ];
 
         /* End of view data */
-
-        /* Testing */
-
-        $syntaxProcessor = new SyntaxProcessor();
-        if (false):
-            log_message('debug', json_encode($syntaxProcessor->process('
-            [
-                {
-                    "type": "data",
-                    "content": "hooks"
-                    },
-                    {
-                        "type": "data",
-                        "content": {
-                            "table": "entries",
-                            "select": "id as value, fields as label",
-                            "orderby": "id ASC"
-                            }
-                    }
-            ]
-            ')));
-        endif;
-
-        /* End of testing */
     }
 
     /**

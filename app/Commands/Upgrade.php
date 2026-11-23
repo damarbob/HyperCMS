@@ -321,10 +321,10 @@ class Upgrade extends BaseCommand
             CLI::write("  Model {$problem['model']}: {$problem['problem']}", 'yellow');
         }
 
-        if ($r['entryQueries'] !== []) {
-            CLI::write('  Models with a form field whose data query reads the entries table, which keeps working only for a small set of queries:', 'yellow');
-            foreach ($r['entryQueries'] as $query) {
-                CLI::write("    {$query['model']}, field {$query['field']}");
+        if ($r['unconvertible'] !== []) {
+            CLI::write('  Fields that cannot be converted to a version 2 type. They become text fields, and their stored values are kept:', 'yellow');
+            foreach ($r['unconvertible'] as $field) {
+                CLI::write("    {$field['model']}, field {$field['field']}: {$field['problem']}");
             }
         }
 
