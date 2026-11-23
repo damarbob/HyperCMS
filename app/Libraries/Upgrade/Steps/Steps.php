@@ -20,7 +20,7 @@ final class Steps
     /**
      * The number of the last step. A new step raises it, and a test checks it against the list.
      */
-    public const LATEST = 3;
+    public const LATEST = 4;
 
     /**
      * @return list<ConversionStep>
@@ -34,6 +34,7 @@ final class Steps
             new ConvertModelFields($db, new ModelFields($types)),
             new PickLabelFields($db),
             new ConvertEntryValues($db, new EntryValues($types), $engine, new WriteVersions($db)),
+            new ConvertPermissions($db),
         ];
     }
 }

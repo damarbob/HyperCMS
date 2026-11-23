@@ -366,6 +366,35 @@ $verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pai
     $check("$label: sd_stardust_models holds " . implode(', ', array_keys($want)) . ' and hyper_models.sd_model_id points at them', $names === $want, json_encode($names) . ' vs ' . json_encode($want));
 
     $check("$label: the old tables are byte for byte as the upgrade found them", $oldTables() === $before);
+
+    // The roles of the config are rows, with the abilities their groups had, and every model got the permissions its
+    // user groups meant: every listed group reads, only the writer groups write, and no list means every role but user.
+    $roleNames = $pdo->query('SELECT name FROM hyper_roles ORDER BY name')->fetchAll(PDO::FETCH_COLUMN);
+    $check("$label: the five roles of the config are rows, and only superadmin is locked", $roleNames === ['admin', 'beta', 'developer', 'superadmin', 'user'] && $pairs('SELECT name, locked FROM hyper_roles ORDER BY name') === ['admin' => 0, 'beta' => 0, 'developer' => 0, 'superadmin' => 1, 'user' => 0]);
+    $abilities = [];
+    foreach ($rows('SELECT role, ability FROM hyper_role_abilities ORDER BY role, ability') as $r) {
+        $abilities[$r['role']][] = $r['ability'];
+    }
+    $check("$label: each role has the abilities its group had", $abilities === ['admin' => ['api.access', 'entries.browse', 'media.manage'], 'beta' => ['media.manage'], 'developer' => ['api.access', 'entries.browse', 'media.manage', 'pages.manage']], json_encode($abilities));
+
+    $wantGrants = [];
+    foreach ($wantModels as $id => $model) {
+        $groups = json_decode((string) ($model['user_groups'] ?? '[]'), true);
+        $groups = is_array($groups) ? $groups : [];
+        $roles  = $groups === [] ? ['admin', 'developer', 'beta'] : array_values(array_diff(array_unique($groups), ['superadmin']));
+        foreach ($roles as $role) {
+            foreach (['read', 'create', 'update', 'delete', 'history'] as $action) {
+                if (in_array($action, ['create', 'update', 'delete'], true) && ! in_array($role, ['admin', 'developer'], true)) {
+                    continue;
+                }
+                $wantGrants[] = "$id|$role|$action";
+            }
+        }
+    }
+    sort($wantGrants);
+    $gotGrants = array_map(fn(array $r): string => $r['model_id'] . '|' . $r['role'] . '|' . $r['action'], $rows('SELECT model_id, role, action FROM hyper_model_permissions'));
+    sort($gotGrants);
+    $check("$label: every model has the permissions its user groups meant", $gotGrants === $wantGrants && $wantGrants !== [], count($gotGrants) . ' rows, want ' . count($wantGrants));
 };
 
 // ---------------------------------------------------------------------------------------------
