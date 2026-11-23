@@ -63,31 +63,45 @@
     toast('bad', document.documentElement.getAttribute('data-offline-text') || 'The server cannot be reached.');
   });
 
+  // The confirmation dialog of the page, which answers with a promise. `window.HyperUi.confirm('Delete it?')` is for a script
+  // that must ask before it acts, and hx-confirm uses it too. Without the dialog it falls back to the browser's own box.
+  function confirmDialog(question) {
+    var dialog = document.getElementById('confirm-dialog');
+    if (!dialog || typeof dialog.showModal !== 'function') return Promise.resolve(window.confirm(question));
+
+    return new Promise(function (resolve) {
+      dialog.querySelector('[data-confirm-text]').textContent = question;
+      var ok = dialog.querySelector('[data-confirm-ok]');
+      var cancel = dialog.querySelector('[data-confirm-cancel]');
+
+      function done(accepted) {
+        ok.removeEventListener('click', yes);
+        cancel.removeEventListener('click', no);
+        dialog.removeEventListener('cancel', no);
+        dialog.close();
+        resolve(accepted);
+      }
+      function yes() { done(true); }
+      function no() { done(false); }
+
+      ok.addEventListener('click', yes);
+      cancel.addEventListener('click', no);
+      dialog.addEventListener('cancel', no);
+      dialog.showModal();
+      ok.focus();
+    });
+  }
+  window.HyperUi = { confirm: confirmDialog };
+
   // hx-confirm opens the confirmation dialog of the page instead of the browser's own box.
   document.addEventListener('htmx:confirm', function (event) {
     var dialog = document.getElementById('confirm-dialog');
     if (!event.detail.question || !dialog || typeof dialog.showModal !== 'function') return;
 
     event.preventDefault();
-    dialog.querySelector('[data-confirm-text]').textContent = event.detail.question;
-    var ok = dialog.querySelector('[data-confirm-ok]');
-    var cancel = dialog.querySelector('[data-confirm-cancel]');
-
-    function done(accepted) {
-      ok.removeEventListener('click', yes);
-      cancel.removeEventListener('click', no);
-      dialog.removeEventListener('cancel', no);
-      dialog.close();
+    confirmDialog(event.detail.question).then(function (accepted) {
       if (accepted) event.detail.issueRequest(true);
-    }
-    function yes() { done(true); }
-    function no() { done(false); }
-
-    ok.addEventListener('click', yes);
-    cancel.addEventListener('click', no);
-    dialog.addEventListener('cancel', no);
-    dialog.showModal();
-    ok.focus();
+    });
   });
 
   /* ---- Alpine ------------------------------------------------------------------------------------------ */

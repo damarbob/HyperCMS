@@ -94,4 +94,23 @@ return [
     // Settings
     'enterDataSourcesInJsonFormat' => 'Enter the data sources in JSON format.',
     'invalidJsonFormatForStates' => 'Invalid JSON format for states.',
+
+    // The rebuilt screen
+    'unsavedChanges' => 'Unsaved changes',
+    'saveStateAs' => 'Save as',
+    'undo' => 'Undo',
+    'redo' => 'Redo',
+    'emptyTitle' => 'Nothing to compare yet',
+    'emptyText' => 'Add an entry to make a column, and a field to make a row.',
+    'removeEntry' => 'Remove this entry from the table',
+    'removeField' => 'Remove this field from the table',
+    'entryNumber' => 'Entry number',
+    'entryLabel' => 'Column title',
+    'fieldsToAdd' => 'Fields to add as rows',
+    'formulaHelp' => 'Refer to a cell in square brackets. [price] is the field price of the same column, [e12:price] is the same field of entry 12, and [m3:price] is of model 3. A cell that is not a number counts as 0.',
+    'formulaError' => 'Error',
+    'cellCannotBeWritten' => 'This field cannot be changed from the table.',
+    'dataSourcesText' => 'Where the table can fetch entries from. This site is already there. Add another site by giving its address.',
+    'dataSourcesMustBeAList' => 'The data sources must be a list, written as JSON.',
+    'dataSourceNeedsFields' => 'Each data source needs its own id, a label and an address in options.url.',
 ];

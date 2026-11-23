@@ -5,7 +5,7 @@ namespace Voltic\Config;
 use CodeIgniter\Config\BaseConfig;
 
 /**
- * Configuration for Voltic AI integration.
+ * Configuration for Voltic AI integration. Each value can be set in `.env`, for example `Voltic.apiKey = '...'`.
  */
 class Voltic extends BaseConfig
 {
@@ -24,28 +24,20 @@ class Voltic extends BaseConfig
     // Request timeout in seconds
     public int $timeout = 600;
 
-    // Parsed array of individual model identifiers
-    private array $modelsArray = [];
+    // Whether the certificate of the AI service is checked. Turn it off only for a service on your own network.
+    public bool $verifySsl = true;
+
+    // The most entries of one model, and in all, that are sent as context
+    public int $entriesPerModel = 25;
+    public int $entriesInAll = 150;
 
     /**
-     * Constructor.
-     * Parses the comma-separated models string into an array.
-     */
-    public function __construct()
-    {
-        parent::__construct();
-
-        // Split models string into array elements
-        $this->modelsArray = explode(',', $this->models);
-    }
-
-    /**
-     * Retrieve the list of configured AI models.
+     * The configured AI models, one identifier each.
      *
-     * @return array Parsed array of model identifiers
+     * @return list<string>
      */
     public function getModels(): array
     {
-        return $this->modelsArray;
+        return array_values(array_filter(array_map('trim', explode(',', $this->models)), static fn (string $name): bool => $name !== ''));
     }
 }

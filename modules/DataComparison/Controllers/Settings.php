@@ -2,131 +2,60 @@
 
 namespace DataComparison\Controllers;
 
-use App\Controllers\AdminController;
+use App\Modules\ModuleController;
 
-class Settings extends AdminController
+/**
+ * The data sources of the person. A source is a name and the request that fetches the fields of an entry from it, kept as
+ * JSON, so a person can point the table at another site.
+ */
+class Settings extends ModuleController
 {
-    protected $helpers = ['hyper', 'hyper_url'];
+    protected $helpers = ['hyper_url'];
 
     public function index()
     {
-        /** @var \DataComparison\Config\DataComparison $config */
-        $config = config('DataComparison');
+        $json = service('settings')->get('DataComparison.dataSources', 'user:' . user_id());
 
-        // Read raw JSON from config
-        $raw = trim($config->defaultDataSources ?? '');
-
-        // Fallback empty array if no value provided
-        if ($raw === '') {
-            $defaultDataSources = json_encode([], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-        } else {
-            $decoded = json_decode($raw, true);
-
-            if (json_last_error() !== JSON_ERROR_NONE) {
-                // Log invalid JSON and fall back to empty array
-                log_message('warning', 'Invalid JSON in defaultDataSources: ' . json_last_error_msg());
-                $defaultDataSources = json_encode([], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            } else {
-                // Re-encode with pretty print
-                $defaultDataSources = json_encode($decoded, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-            }
-        }
-
-        $this->data['title'] = lang('Dc.moduleName') . ' ' . lang('Admin.settings');
-
-        $this->data['dataSources'] = service('settings')->get('DataComparison.dataSources', 'user:' . user_id()) ?: $defaultDataSources;
-
-        return render('\DataComparison\Views\settings', $this->data);
+        return $this->form(is_string($json) && $json !== '' ? $json : $this->defaults());
     }
 
     public function update()
     {
-        $context = 'user:' . user_id(); // Settings context
-
-        $data = $this->request->getPost();
-
-        $rules = [
-            'dataSources' => [
-                'label' => lang('Dc.dataSources'),
-                'rules' => 'required',
-            ],
-        ];
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), withInput: true, success: false);
+        $text = (string) $this->request->getPost('dataSources');
+        $list = json_decode($text, true);
+        if (! is_array($list) || ($list !== [] && ! array_is_list($list))) {
+            return $this->form($text, lang('Dc.dataSourcesMustBeAList'), 422);
+        }
+        $seen = [];
+        foreach ($list as $source) {
+            $ok = is_array($source) && is_string($source['id'] ?? null) && $source['id'] !== '' && is_string($source['label'] ?? null)
+                && is_string($source['options']['url'] ?? null) && $source['options']['url'] !== '' && ! isset($seen[$source['id']]);
+            if (! $ok) {
+                return $this->form($text, lang('Dc.dataSourceNeedsFields'), 422);
+            }
+            $seen[$source['id']] = true;
         }
 
-        service('settings')->set('DataComparison.dataSources', $data['dataSources'], $context);
+        service('settings')->set('DataComparison.dataSources', json_encode($list, JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT), 'user:' . user_id());
 
-        return $this->respond(lang('Admin.settingsSuccessfullySaved'), 'admin/settings/data-comparison');
+        return $this->leave(base_url('admin/settings/data-comparison'), lang('Admin.settingsSuccessfullySaved'), 'ok');
     }
 
-    // Load the JSON states
-    public function loadState()
+    private function defaults(): string
     {
-        $context = 'user:' . user_id(); // Settings context
-        $states = service('settings')->get('DataComparison.states', $context) ?: json_encode([]);
-        return $this->respond($states);
+        /** @var \DataComparison\Config\DataComparison $config */
+        $config  = config('DataComparison');
+        $decoded = json_decode(trim($config->defaultDataSources ?? ''), true);
+
+        return json_encode(is_array($decoded) ? $decoded : [], JSON_UNESCAPED_SLASHES | JSON_PRETTY_PRINT);
     }
 
-    // Save the JSON states
-    public function saveState()
+    private function form(string $text, string $error = '', int $status = 200)
     {
-        $data = $this->request->getPost();
-
-        $rules = [
-            'states' => [
-                'label' => lang('Dc.states'),
-                'rules' => 'required',
-            ],
-        ];
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), statusCode: 400, withInput: false, success: false);
-        }
-
-        $context = 'user:' . user_id(); // Settings context
-        $states = $data['states'] ?? json_encode([]);
-
-        // Validate JSON and prevent potential security issues
-        $decodedStates = json_decode($states, true);
-        if (json_last_error() !== JSON_ERROR_NONE) {
-            return $this->respond(lang('Dc.invalidJsonFormatForStates'), statusCode: 400, withInput: false, success: false);
-        }
-
-        // Re-encode to ensure clean JSON
-        $states = json_encode($decodedStates);
-
-        service('settings')->set('DataComparison.states', $states, $context);
-        return $this->respond(lang('Admin.settingsSuccessfullySaved'), 'admin/settings/data-comparison');
-    }
-
-    // Get the last used state
-    public function getLastUsedState()
-    {
-        $context = 'user:' . user_id(); // Settings context
-        $state = service('settings')->get('DataComparison.lastUsedState', $context) ?: "";
-        return $this->respond($state);
-    }
-
-    // Save the last used state
-    public function saveLastUsedState()
-    {
-        $data = $this->request->getPost();
-
-        $rules = [
-            'state' => [
-                'label' => lang('Dc.lastUsedState'),
-                'rules' => 'required',
-            ],
-        ];
-
-        if (!$this->validateData($data, $rules)) {
-            return $this->respond(implode(" ", $this->validator->getErrors()), statusCode: 400, withInput: false, success: false);
-        }
-
-        $context = 'user:' . user_id(); // Settings context
-        service('settings')->set('DataComparison.lastUsedState', $data['state'], $context);
-        return $this->respond(lang('Admin.settingsSuccessfullySaved'), 'admin/settings/data-comparison');
+        return $this->response->setStatusCode($status)->setBody($this->page('DataComparison\Views\settings', [
+            'title'       => lang('Dc.moduleName') . ' ' . lang('Admin.settings'),
+            'dataSources' => $text,
+            'error'       => $error,
+        ]));
     }
 }

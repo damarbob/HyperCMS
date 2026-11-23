@@ -27,4 +27,16 @@ return [
     'xUnableToParseVolticResponse' => "{x} is unable to parse Voltic's response",
 
     'userDoesNotHaveSufficientPermission' => 'The user does not have sufficient permissions.',
+
+    // The rebuilt chat
+    'thinking' => 'Voltic is thinking...',
+    'run' => 'Run',
+    'ran' => 'Done',
+    'refused' => 'Not allowed',
+    'actionCreateModel' => 'Make the model {name} with {count} fields',
+    'actionCreateEntry' => 'Make an entry in {model}',
+    'actionShowEntry' => 'Show entry {id}',
+    'fieldTypeNotAllowed' => 'A model made here may only use these types of field: {types}.',
+    'actionNotUnderstood' => 'That action could not be understood, so nothing was done.',
+    'actionFailed' => 'The action failed. Nothing was changed. Check the log.',
 ];
