@@ -53,7 +53,7 @@ Core calls the methods of the class and nothing else of the module. A module tha
 | Add pages for visitors | `$routes->site(...)` | No sign in. The module checks what it needs |
 | Add a settings screen | `settings()` | A `SettingsScreen` appears in the settings menu, for the roles that have its ability |
 | Add a field type | `fieldTypes()` | Classes that implement `App\Fields\FieldType`, which the model builder offers at once because each type lists its own options |
-| Declare models it needs | `blueprints()` | A `Blueprint` states the fields a model must have. The choice of model is kept in the settings, and the module reads it with `service('modules')->modelOf('Shop', 'page')`, so a module never scans the models |
+| Declare models it needs | `blueprints()` | A `Blueprint` states the fields a model must have, and may accept other types for a field. `App\Modules\Blueprints` finds the models that fit and makes one, a module's settings screen offers both, and the choice is kept in the settings. The module reads it with `service('modules')->modelOf('Shop', 'page')`, so a module never scans the models |
 | Put content into core pages | `slots()` | Named places with a typed payload, below |
 | Read and write data | `service('entryStore')`, `service('modelStore')`, `service('files')`, `service('settings')` and `can()` | `files` is the media library, described under Files below |
 | Draw like core | `ui('button', ...)`, `ui('table', ...)` and the other cells of the design system | The cells are documented on the design page, `admin/design`, outside production |

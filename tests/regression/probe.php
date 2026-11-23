@@ -151,6 +151,15 @@ foreach (['.env' => '.env', 'app/Config/App.php' => 'app/Config/App.php', 'publi
     $say("file-server, $label", $status, $status === 200, strlen($body) . ' bytes');
 }
 
+// The pages of the site. Every address that no route takes goes to the page module, which answers an address that has no page
+// with the 404 page, and the addresses of the application are never looked up as pages. The home address is the control.
+foreach (['no-such-page', 'admin-guide/x', 'media/999999/x.png', 'api/v1/nothing'] as $path) {
+    [$status] = web($base, $anon, 'GET', $path);
+    $say("page, unknown address $path", $status, $status !== 404, 'it did not answer 404');
+}
+[$status, $body] = web($base, $anon, 'GET', '');
+$say('page, the home address (legit)', $status, $status !== 200 || $body === '', 'the home address did not answer');
+
 // The media library, as the superadmin. A file is kept outside the public folder, and a name that a server could run, or a
 // folder that leaves the library, must be refused. Everything happens in one folder that is removed at the end.
 [$jar, $token] = signIn($base, 'capture_admin@example.test', 'Capture-Admin-2026');

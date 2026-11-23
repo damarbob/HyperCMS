@@ -21,7 +21,7 @@ final class Steps
     /**
      * The number of the last step. A new step raises it, and a test checks it against the list.
      */
-    public const LATEST = 5;
+    public const LATEST = 6;
 
     /**
      * @return list<ConversionStep>
@@ -37,6 +37,7 @@ final class Steps
             new ConvertEntryValues($db, new EntryValues($types), $engine, new WriteVersions($db)),
             new ConvertPermissions($db),
             new ConvertFiles($db, new FileLinks(), $engine, new WriteVersions($db), service('files'), rtrim(FCPATH, '/\\')),
+            new ConvertPaging($db, service('modelStore'), service('modules'), service('settings'), $engine, new WriteVersions($db)),
         ];
     }
 }

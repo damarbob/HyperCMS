@@ -2,6 +2,8 @@
 
 namespace App\Fields;
 
+use StarCore\Star\HyperHook;
+
 /**
  * A hook of HyperCMS, held as the name of the hook. `group` limits the choice to the hooks of one group.
  */
@@ -69,7 +71,7 @@ final class HookField extends AbstractField
         $options = [];
         foreach (dump_hooks($group) as $hooks) {
             foreach ($hooks as $hook) {
-                if ($hook instanceof StarCore\Star\HyperHook) {
+                if ($hook instanceof HyperHook) {
                     $options[$hook->getName()] = $hook->getLabel();
                 }
             }

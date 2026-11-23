@@ -1,0 +1,101 @@
+/*
+ * The page editor.
+ *
+ * GrapesJS draws its own panels, and it is made to be given colours through the variables below, so this file sets those and
+ * nothing else of GrapesJS. The colours come from the tokens of the admin, which follow the colour scheme, so the editor does
+ * too. Only the bar above the editor, which the admin draws, has rules of its own.
+ *
+ * It is not in a cascade layer, as the stylesheet of GrapesJS is not in one, so the variables are decided by order.
+ */
+
+.editor-app {
+  /* The surface of the panels, the colour of the text on them, and the highlight. */
+  --gjs-primary-color: var(--sheet);
+  --gjs-secondary-color: var(--ink);
+  --gjs-tertiary-color: var(--action-tint);
+  --gjs-quaternary-color: var(--action);
+
+  --gjs-font-color: var(--ink);
+  --gjs-font-color-active: var(--ink);
+
+  /* The shades that GrapesJS lays over a panel: darker for a field or a header, lighter for a hover. */
+  --gjs-main-dark-color: var(--sunken);
+  --gjs-secondary-dark-color: var(--sunken);
+  --gjs-main-light-color: var(--hover);
+  --gjs-secondary-light-color: var(--ink-2);
+  --gjs-soft-light-color: var(--hover);
+  --gjs-light-border: var(--line);
+  --gjs-dark-text-shadow: transparent;
+  --gjs-arrow-color: var(--ink-3);
+
+  --gjs-color-highlight: var(--action);
+  --gjs-color-blue: var(--action);
+  --gjs-color-red: var(--bad);
+  --gjs-color-yellow: var(--warn);
+  --gjs-color-green: var(--ok);
+
+  --gjs-main-font: var(--font);
+  --gjs-font-size: 0.8125rem;
+
+  display: grid;
+  grid-template-rows: var(--bar) minmax(0, 1fr);
+  height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
+  background: var(--canvas);
+  color: var(--ink);
+  font-family: var(--font);
+}
+
+/*
+ * The reset of the admin makes every image and svg a block, which GrapesJS does not expect, so its icons (the block icons
+ * above all) sit at the left of a centred label. Inside the editor they go back to what the browser gives them.
+ */
+#gjs img,
+#gjs svg { display: revert; max-width: revert; }
+
+/* ---- The bar ---------------------------------------------------------------------------------------------------- */
+
+.editor-bar {
+  display: flex;
+  align-items: center;
+  gap: var(--s3);
+  padding: 0 var(--s3);
+  background: var(--sheet);
+  border-bottom: 1px solid var(--line);
+}
+
+.editor-title { flex: 1; min-width: 0; font-size: var(--t-md); font-weight: 550; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.editor-actions { display: flex; align-items: center; gap: var(--s2); }
+.editor-state { font-size: var(--t-sm); }
+.editor-bar .btn { white-space: nowrap; }
+
+@media (max-width: 760px) {
+  .editor-bar .btn > span:not(.spin) { display: none; }
+  .editor-state { display: none; }
+}
+
+/* ---- The search above the blocks, which is the admin's own field in the panel of GrapesJS ---------------------------- */
+
+.editor-search { padding: var(--s2); }
+
+/* ---- The attributes of an element, a list of fields that the script draws in the settings panel ------------------- */
+
+/* The panel is narrow, so the name is above the value and the remove button is at the side of both. GrapesJS clears the border
+   of every field inside its own wrapper, so the fields here say what they look like. */
+.editor-attrs { display: grid; gap: var(--s3); width: 100%; padding: var(--s1) 0; }
+.editor-attrs-title { font-size: var(--t-sm); color: var(--ink-2); }
+.editor-attrs-list { display: grid; gap: var(--s3); }
+.editor-attr { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: var(--s1); align-items: center; }
+.editor-attr > .btn { grid-column: 2; grid-row: 1 / span 2; }
+.editor-attr .input { grid-column: 1; width: 100%; min-width: 0; height: 30px; min-height: 0; padding: 0 var(--s2); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sheet); color: var(--ink); font: inherit; }
+.editor-attr[data-bad="true"] .input[data-attr="name"] { border-color: var(--bad); }
+.editor-attrs > .btn { justify-self: start; }
+
+/* A field that suggests names, which is drawn as the fields of GrapesJS are. */
+.editor-pick { display: block; width: 100%; }
+.editor-pick input { width: 100%; }
+
+/* ---- The import dialog, which GrapesJS draws and the script fills ---------------------------------------------- */
+
+.editor-import { display: block; width: 100%; min-height: 260px; margin-bottom: var(--s3); padding: var(--s3); border: 1px solid var(--line-strong); border-radius: var(--r-md); background: var(--sunken); color: var(--ink); font-family: var(--mono); font-size: var(--t-sm); resize: vertical; }

@@ -62,7 +62,9 @@ return [
     [
         'name'   => 'Pages',
         'fields' => [
-            ['id' => 'path', 'label' => 'Path', 'type' => 'text'],
+            ['id' => 'hyper_title', 'label' => 'Title', 'type' => 'text', 'required' => true],
+            ['id' => 'hyper_page_hook_id', 'label' => 'Part attachment', 'type' => 'select', 'options' => ['type' => 'data', 'content' => 'hooks', 'group' => 'Frontend']],
+            ['id' => 'hyper_page_url', 'label' => 'Url', 'type' => 'text'],
             ['id' => 'hyper_html', 'label' => 'HTML', 'type' => 'textarea', 'className' => 'hyper-code-field', 'data' => ['language' => 'html']],
             ['id' => 'hyper_css', 'label' => 'CSS', 'type' => 'textarea', 'className' => 'hyper-code-field', 'data' => ['language' => 'css']],
             ['id' => 'hyper_component_elements', 'label' => 'Components', 'type' => 'textarea', 'className' => 'hyper-code-field', 'data' => ['language' => 'json']],
@@ -70,12 +72,35 @@ return [
         ],
         'entries' => [
             [
-                'path' => '/about',
+                'hyper_title' => 'About',
+                'hyper_page_hook_id' => 'frontend:main',
+                'hyper_page_url' => 'about',
                 'hyper_html' => '<img src="' . $serve('uploads/upgrade-test/hero.jpg') . '"><p>About</p>',
                 'hyper_css' => 'p { margin: 0; }',
                 'hyper_component_elements' => '[]',
                 'hyper_page_project_data' => '{"assets":[{"src":"' . $escaped($serve('uploads/upgrade-test/hero.jpg')) . '","type":"image"}],"pages":[]}',
             ],
+            [
+                'hyper_title' => 'Footer',
+                'hyper_page_hook_id' => 'frontend:footer',
+                'hyper_page_url' => '',
+                'hyper_html' => '<footer>The end</footer>',
+                'hyper_css' => 'footer { color: grey; }',
+                'hyper_component_elements' => '[]',
+                'hyper_page_project_data' => '[]',
+            ],
+        ],
+    ],
+    [
+        'name'   => 'Assets',
+        'fields' => [
+            ['id' => 'asset_label', 'label' => 'Label', 'type' => 'text'],
+            ['id' => 'asset_url', 'label' => 'URL', 'type' => 'url', 'className' => 'hyper-file-browse-field'],
+            ['id' => 'asset_type', 'label' => 'Type', 'type' => 'select', 'options' => [['value' => 'script', 'label' => 'Script'], ['value' => 'style', 'label' => 'Style']]],
+            ['id' => 'asset_placement', 'label' => 'Placement', 'type' => 'select', 'options' => [['value' => 'head', 'label' => 'Head'], ['value' => 'body', 'label' => 'Body']]],
+        ],
+        'entries' => [
+            ['asset_label' => 'Site style', 'asset_url' => $serve('uploads/upgrade-test/site.css'), 'asset_type' => 'style', 'asset_placement' => 'head'],
         ],
     ],
     [

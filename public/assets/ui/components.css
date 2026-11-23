@@ -437,6 +437,7 @@
   dialog.media-dialog { width: min(96vw, 980px); }
   dialog.media-dialog .media-dialog-body { padding-bottom: var(--s4); }
 
+  .media-frame main { padding: var(--s4) var(--s5); }
   .media-field { display: flex; flex-wrap: wrap; align-items: center; gap: var(--s2); }
   .media-field .chips:empty { display: none; }
   .chip a { color: inherit; text-decoration: none; }

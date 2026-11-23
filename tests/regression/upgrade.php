@@ -315,10 +315,37 @@ $verify = function (string $label, int $orphans) use ($check, $byId, $rows, $pai
     };
 
     $gotModels = $byId('SELECT id, name, fields, `group`, icon, user_groups, current_revision_id, creator_id, editor_id, deleter_id, created_at, updated_at, deleted_at FROM hyper_models ORDER BY id');
+    $gotRevisions = $byId('SELECT id, model_id, name, fields, `group`, icon, user_groups, creator_id, created_at FROM hyper_model_revisions ORDER BY id');
+
+    // The page module's step makes two fields of the page model filterable, which saves the model as a new version. The
+    // model must then be what the seed was plus those two flags, and the extra version must be the one that holds them.
+    foreach ($wantModels as $modelId => $model) {
+        $want  = json_decode($model['fields'], true);
+        $flags = static function (array $fields): array {
+            foreach ($fields as $at => $field) {
+                if (in_array($field['id'] ?? null, ['hyper_page_url', 'hyper_page_hook_id'], true)) {
+                    $fields[$at]['filterable'] = true;
+                }
+            }
+
+            return $fields;
+        };
+        if (! is_array($want) || ! in_array('hyper_page_url', array_column($want, 'id'), true) || ! isset($gotModels[$modelId])) {
+            continue;
+        }
+        $got = json_decode((string) $gotModels[$modelId]['fields'], true);
+        if (is_array($got) && json_encode($got) === json_encode($flags($want))) {
+            $extra = (int) $gotModels[$modelId]['current_revision_id'];
+            unset($gotRevisions[$extra]);
+            foreach (['fields', 'current_revision_id', 'editor_id', 'updated_at'] as $column) {
+                $gotModels[$modelId][$column] = $model[$column] ?? $gotModels[$modelId][$column];
+            }
+        }
+    }
     $detail    = $same($wantModels, $gotModels);
     $check("$label: hyper_models keep the seed's ids, definitions, authors and dates, and the current version", $detail === '', $detail);
 
-    $detail = $same($wantModelRevisions, $byId('SELECT id, model_id, name, fields, `group`, icon, user_groups, creator_id, created_at FROM hyper_model_revisions ORDER BY id'));
+    $detail = $same($wantModelRevisions, $gotRevisions);
     $check("$label: hyper_model_revisions hold every model version of the seed", $detail === '', $detail);
 
     $gotEntries = $byId('SELECT id, model_id, current_revision_id, creator_id, editor_id, deleter_id, created_at, updated_at, deleted_at FROM hyper_entries ORDER BY id');
@@ -470,7 +497,7 @@ $check('the odd version is copied as it was, as text', ($odd[0]['fields'] ?? nul
 // The conversion steps ran, and the shapes of the old form came out as the new ones.
 $check('the schema version is the latest after a complete run', (int) $pdo->query("SELECT value FROM hyper_counters WHERE name = 'schema_version'")->fetchColumn() === App\Libraries\Upgrade\Steps\Steps::LATEST);
 $labels = $pairs('SELECT name, label_field FROM hyper_models ORDER BY id');
-$check('every model got the label field its fields suggest', ($labels['Article'] ?? null) === 'title' && ($labels['Product'] ?? null) === 'sku' && ($labels['Shapes'] ?? null) === 'title' && ($labels['Pages'] ?? null) === 'path' && ($labels['Guarded'] ?? null) === 'note', json_encode($labels));
+$check('every model got the label field its fields suggest', ($labels['Article'] ?? null) === 'title' && ($labels['Product'] ?? null) === 'sku' && ($labels['Shapes'] ?? null) === 'title' && ($labels['Pages'] ?? null) === 'hyper_title' && ($labels['Guarded'] ?? null) === 'note', json_encode($labels));
 $shapeId  = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Shapes'")->fetchColumn();
 $shapeDef = array_column(json_decode((string) $pdo->query("SELECT fields FROM hyper_models WHERE id = $shapeId")->fetchColumn(), true), null, 'id');
 $check('the old field shapes became version 2 types', array_map(fn($f) => $f['type'], $shapeDef) === ['title' => 'text', 'mail' => 'text', 'body' => 'richtext', 'snippet' => 'code', 'logo' => 'file', 'photos' => 'file', 'rating' => 'number', 'count' => 'number', 'price' => 'number', 'active' => 'boolean', 'size' => 'choice', 'tags' => 'choice', 'kind' => 'choice', 'colour' => 'color', 'starts' => 'datetime', 'secret' => 'hidden'], json_encode(array_map(fn($f) => $f['type'], $shapeDef)));
@@ -498,6 +525,13 @@ $check('a file field holds the id of its library file, or a list of ids', is_arr
 $check('a link in rich text became a media link, and a link to a missing file was kept', is_array($shapeValues) && str_contains($shapeValues['body'], '/media/' . $fileId('rich-1.png') . '/rich-1.png') && str_contains($shapeValues['body'], '/public/file-server/serve/' . bin2hex('uploads/upgrade-test/gone.png')), (string) ($shapeValues['body'] ?? ''));
 $pageValues = json_decode((string) $pdo->query("SELECT d.fields FROM hyper_entries e JOIN hyper_models m ON m.id = e.model_id JOIN sd_entry_data d ON d.id = e.sd_entry_id WHERE m.name = 'Pages' ORDER BY e.id LIMIT 1")->fetchColumn(), true);
 $check('page HTML and the project data of the page editor point at the library file', is_array($pageValues) && str_contains($pageValues['hyper_html'], '/media/' . $fileId('hero.jpg') . '/hero.jpg') && ($pageValues['hyper_page_project_data'] ?? '') !== '' && str_contains($pageValues['hyper_page_project_data'], '\/media\/' . $fileId('hero.jpg') . '\/hero.jpg') && ! str_contains($pageValues['hyper_page_project_data'], 'file-server') && is_array(json_decode($pageValues['hyper_page_project_data'], true)), json_encode($pageValues));
+// The page module was pointed at its models, and the two fields that a request is answered from are indexed.
+$pagesId  = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Pages'")->fetchColumn();
+$assetsId = (int) $pdo->query("SELECT id FROM hyper_models WHERE name = 'Assets'")->fetchColumn();
+$chosen   = $pairs("SELECT `key`, value FROM settings WHERE class = 'HyperModules'");
+$pagesDef = array_column(json_decode((string) $pdo->query("SELECT fields FROM hyper_models WHERE id = $pagesId")->fetchColumn(), true), null, 'id');
+$check('the page module is pointed at the page and the asset model', (int) ($chosen['PagingSystem_page'] ?? 0) === $pagesId && (int) ($chosen['PagingSystem_asset'] ?? 0) === $assetsId && $pagesId > 0, json_encode($chosen));
+$check('the address and the attachment of the page model are filterable', ($pagesDef['hyper_page_url']['filterable'] ?? false) === true && ($pagesDef['hyper_page_hook_id']['filterable'] ?? false) === true && ($pagesDef['hyper_page_hook_id']['type'] ?? '') === 'hook', json_encode([$pagesDef['hyper_page_url'] ?? null, $pagesDef['hyper_page_hook_id'] ?? null]));
 $versionsLeft = (int) $pdo->query("SELECT COUNT(*) FROM hyper_entry_revisions WHERE fields LIKE '%file-server%' AND fields NOT LIKE '%" . bin2hex('uploads/upgrade-test/gone.png') . "%'")->fetchColumn();
 $check('no saved version still holds a link to a file that was moved', $versionsLeft === 0, "$versionsLeft versions");
 $check('the report names the link that could not be moved and the files it copied', str_contains($text, 'gone.png') && str_contains($text, 'Files copied into the media library'), $text);
