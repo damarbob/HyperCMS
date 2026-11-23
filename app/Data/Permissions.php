@@ -8,92 +8,56 @@ use InvalidArgumentException;
 /**
  * The one place that answers whether a user may do something in the admin.
  *
- * Routes and views ask `can('entries.update', $modelId)` and never name a group. The answers follow the rules the
- * admin has today, so asking this class changes nobody's access.
+ * Routes and views ask `can('entries.update', $modelId)` and never name a group. The answer comes from the roles a user
+ * has, which are the groups Shield stores for the user, and from what each role is allowed in the database.
  *
- * | Permission                                            | Allowed for today                                          |
- * | :--                                                   | :--                                                        |
- * | `models.manage`, `settings.manage`, `users.manage`, `entries.purge` | the `superadmin` group                       |
- * | `media.manage`                                        | every group except `user`                                  |
- * | `entries.read`, `entries.history` with a model id     | a user who may open the model                              |
- * | `entries.create`, `entries.update`, `entries.delete` with a model id | `superadmin`, `admin` or `developer`, and may open the model |
- *
- * A user may open a model when its `user_groups` is empty, or when the user is in one of the groups it names.
+ * - A global ability, such as `media.manage`, is allowed when one of the user's roles has it in `hyper_role_abilities`.
+ * - An action on a model, `entries.read`, `entries.create`, `entries.update`, `entries.delete` or `entries.history`, is
+ *   allowed when one of the user's roles has that action on that model in `hyper_model_permissions`.
+ * - A superadmin may do everything, including what an admin added by hand, and no screen can change that.
  */
 class Permissions
 {
     /**
-     * Permissions that need no model.
+     * The role that may do everything.
      */
-    public const GLOBAL = ['models.manage', 'settings.manage', 'users.manage', 'media.manage', 'entries.purge'];
+    public const SUPERADMIN = 'superadmin';
 
-    /**
-     * Permissions that are about one model, and need its id.
-     */
-    public const MODEL = ['entries.read', 'entries.create', 'entries.update', 'entries.delete', 'entries.history'];
-
-    /**
-     * The groups that may write entries.
-     */
-    private const WRITERS = ['superadmin', 'admin', 'developer'];
-
-    /**
-     * Each model's groups by model id, read once per request.
-     *
-     * @var array<int, list<string>>|null
-     */
-    private ?array $groups = null;
-
-    public function __construct(private ModelStore $models)
+    public function __construct(private GrantSource $grants)
     {
     }
 
     /**
-     * @param User|null       $user       The user, or null for a visitor who is not signed in, who may do nothing.
-     * @param int|string|null $modelId    The model, for the permissions that are about one.
+     * @param User|null       $user    The user, or null for a visitor who is not signed in, who may do nothing.
+     * @param int|string|null $modelId The model, for the abilities that are about one.
      *
-     * @throws InvalidArgumentException When the permission is unknown, or needs a model id and has none. A typo must
-     *                                  fail loudly and never read as a refusal.
+     * @throws InvalidArgumentException When the ability is unknown, or needs a model id and has none. A typo must fail
+     *                                  loudly and never read as a refusal.
      */
-    public function can(?User $user, string $permission, int|string|null $modelId = null): bool
+    public function can(?User $user, string $ability, int|string|null $modelId = null): bool
     {
-        $global = in_array($permission, self::GLOBAL, true);
-        if (! $global && ! in_array($permission, self::MODEL, true)) {
-            throw new InvalidArgumentException("Unknown permission '$permission'.");
+        $about = Abilities::isModelAbility($ability);
+
+        if (! $about && ! $this->grants->known($ability)) {
+            throw new InvalidArgumentException("Unknown permission '$ability'.");
         }
-        if (! $global && ($modelId === null || $modelId === '')) {
-            throw new InvalidArgumentException("The permission '$permission' is about one model, so it needs a model id.");
+        if ($about && ($modelId === null || $modelId === '')) {
+            throw new InvalidArgumentException("The permission '$ability' is about one model, so it needs a model id.");
         }
 
         if ($user === null) {
             return false;
         }
 
-        return match ($permission) {
-            'models.manage', 'settings.manage', 'users.manage', 'entries.purge' => $user->inGroup('superadmin'),
-            'media.manage'                                                        => ! $user->inGroup('user'),
-            'entries.read', 'entries.history'                                     => $this->mayOpen($user, (int) $modelId),
-            default                                                               => $user->inGroup(...self::WRITERS) && $this->mayOpen($user, (int) $modelId),
-        };
-    }
+        $roles = array_map('strtolower', $user->getGroups() ?? []);
+        if (in_array(self::SUPERADMIN, $roles, true)) {
+            return true;
+        }
 
-    /**
-     * Whether the model lets this user in. The model's groups are the ones in its `user_groups`.
-     *
-     * An id that names no model lets a signed-in user in, so the caller's own not-found answer still applies.
-     */
-    private function mayOpen(User $user, int $modelId): bool
-    {
-        $groups = $this->groups()[$modelId] ?? [];
+        $holders = $about
+            ? $this->grants->rolesWithModelAction((int) $modelId, substr($ability, 8))
+            : $this->grants->rolesWithAbility($ability);
 
-        return $groups === [] || array_intersect($groups, $user->getGroups()) !== [];
-    }
-
-    /**
-     * @return array<int, list<string>>
-     */
-    private function groups(): array
-    {
-        return $this->groups ??= $this->models->userGroups();
+        return array_intersect($roles, $holders) !== [];
     }
 }

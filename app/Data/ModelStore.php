@@ -81,6 +81,8 @@ class ModelStore
             return $id;
         });
 
+        $this->grantFromGroups($id, $data);
+
         $this->locks()->run(NamedLock::forModel($id), function () use ($id): void {
             $this->syncAndBump($id);
         });
@@ -97,6 +99,8 @@ class ModelStore
         if ($this->db()->table('hyper_models')->where('id', $id)->countAllResults() === 0) {
             throw new LookupException("Model $id does not exist.");
         }
+
+        $this->grantFromGroups($id, $data);
 
         $this->locks()->run(NamedLock::forModel($id), function () use ($id, $data, $userId): void {
             $db  = $this->db();
@@ -189,6 +193,7 @@ class ModelStore
                     $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
                     $db->table('hyper_entries')->where('model_id', $id)->delete();
                     $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
+                    $db->table('hyper_model_permissions')->where('model_id', $id)->delete();
                     $db->table('hyper_models')->where('id', $id)->delete();
                 });
 
@@ -608,6 +613,22 @@ class ModelStore
         }
 
         return $state;
+    }
+
+    /**
+     * Give the roles of a model what its `user_groups` mean, when the data carries them. This is how a model made in the
+     * builder gets its permissions until the builder has a grid of its own.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function grantFromGroups(int $id, array $data): void
+    {
+        if (! array_key_exists('user_groups', $data)) {
+            return;
+        }
+
+        $groups = json_decode((string) $data['user_groups'], true);
+        service('grants')->setFromGroups($id, is_array($groups) ? array_values(array_filter($groups, 'is_string')) : []);
     }
 
     /**
