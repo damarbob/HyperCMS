@@ -35,7 +35,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
         $routes->get('dashboard', 'Dashboard', ['as' => 'dashboard']);
 
         // Model
-        $routes->group('model', ['filter' => 'model-user-group:model'], static function ($routes) {
+        $routes->group('model', ['filter' => 'can:entries.read,2'], static function ($routes) {
             $routes->group('(:num)', static function ($routes) {
                 $routes->get('/', 'Model::index/$1');
                 $routes->get('export', 'Model::export/$1');
@@ -59,9 +59,9 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['index', 'new', 'create', 'edit', 'update', 'delete'],
-            'filter' => 'group:superadmin',
+            'filter' => 'can:models.manage',
         ]);
-        $routes->group('models', ['filter' => 'group:superadmin'], static function ($routes) {
+        $routes->group('models', ['filter' => 'can:models.manage'], static function ($routes) {
             $routes->post('delete', 'Models::delete');
             $routes->post('check', 'Models::check');
             $routes->post('purge-deleted', 'Models::purgeDeleted');
@@ -74,21 +74,20 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'websafe' => 1,
             'placeholder' => '(:num)',
             'only' => ['show'],
-            'filter' => ['group:superadmin', 'model-user-group:model'],
+            'filter' => 'can:models.manage',
         ]);
-        // The id is the third segment (`admin/model-data/{id}/...`), which is index 2 of the filter. A restore rewrites the
-        // definition of the model, so these are for the group that manages models.
-        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
-        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => ['group:superadmin', 'model-user-group:model,2']]);
+        // A restore rewrites the definition of the model, so these are for the people who manage models.
+        $routes->post('model-data/(:num)/clear', 'ModelData::clearHistory/$1', ['filter' => 'can:models.manage']);
+        $routes->post('model-data/(:num)/versions/(:num)/restore', 'ModelData::restoreVersion/$1/$2', ['filter' => 'can:models.manage']);
 
         // The lookup of the entry pickers. The controller checks the right to read the entries of that model.
         $routes->get('picker/(:num)', 'Picker::entries/$1');
 
         // Entries
-        $routes->get('entries', 'Entries::index', ['filter' => 'group:superadmin,admin,developer']);
+        $routes->get('entries', 'Entries::index', ['filter' => 'can:entries.browse']);
 
         // File Manager
-        $routes->get('file-manager', 'FileManager', ['filter' => 'group-not:user']);
+        $routes->get('file-manager', 'FileManager', ['filter' => 'can:media.manage']);
 
         // Profile
         $routes->resource('profile', [
@@ -110,7 +109,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             'only' => ['index'],
         ]);
         $routes->group('settings', static function ($routes) {
-            $routes->get('models', 'ModelsSettings', ['filter' => 'group:superadmin']);
+            $routes->get('models', 'ModelsSettings', ['filter' => 'can:models.manage']);
             $routes->post('update', 'Settings::update');
         });
 
@@ -119,7 +118,7 @@ $routes->group('admin', ['namespace' => 'App\Controllers\Admin'], static functio
             // $routes->resource('user', ['websafe' => 1]);
 
             // File manager
-            $routes->group('file-manager', ['filter' => 'group-not:user'], static function ($routes) {
+            $routes->group('file-manager', ['filter' => 'can:media.manage'], static function ($routes) {
                 $routes->get('view-file/(:any)', 'FileManager::viewFile/$1');
                 $routes->get('list-files/(:any)', 'FileManager::listFiles/$1');
                 $routes->get('list-files', 'FileManager::listFiles');

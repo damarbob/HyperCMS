@@ -5,7 +5,7 @@ use CodeIgniter\Router\RouteCollection;
 /**
  * @var RouteCollection $routes
  */
-$routes->group('admin', ['namespace' => 'UserManagement\Controllers', 'filter' => 'group:superadmin'], static function ($routes) {
+$routes->group('admin', ['namespace' => 'UserManagement\Controllers', 'filter' => 'can:users.manage'], static function ($routes) {
     $routes->resource('users', [
         'websafe' => 1,
         'placeholder' => '(:num)',
