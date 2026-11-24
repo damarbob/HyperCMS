@@ -49,7 +49,7 @@ final class ConvertPaging implements ConversionStep
         return 'Choose the models of the page module and index its addresses';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         if (! isset($this->modules->all()['PagingSystem'])) {
             return ['changed' => 0, 'problems' => ['The page module is not active, so its models were not chosen. Choose them in its settings when it is.']];
@@ -145,7 +145,7 @@ final class ConvertPaging implements ConversionStep
     private function fillAddresses(int $modelId, bool $dryRun): int
     {
         $changed = 0;
-        $rows    = $this->db->query('SELECT id, sd_entry_id FROM hyper_entries WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL', [$modelId])->getResultArray();
+        $rows    = $this->db->query('SELECT id, sd_entry_id FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL', [$modelId])->getResultArray();
 
         foreach ($rows as $row) {
             $live = $this->engine->get((int) $row['sd_entry_id']);

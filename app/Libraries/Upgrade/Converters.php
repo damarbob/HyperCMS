@@ -55,9 +55,12 @@ final class Converters
     /**
      * Run every pending step.
      *
-     * @return list<array{number: int, name: string, changed: int, problems: list<string>}> One entry per step that ran.
+     * With a `$deadline`, the run stops at the first step that cannot finish in time, reports that step with `complete` false
+     * and leaves the version where it was. Calling it again resumes from that step's cursor.
+     *
+     * @return list<array{number: int, name: string, changed: int, problems: list<string>, complete?: bool}> One entry per step that ran.
      */
-    public function run(SchemaStore $store, bool $dryRun = false): array
+    public function run(SchemaStore $store, bool $dryRun = false, ?float $deadline = null): array
     {
         $report = [];
 
@@ -66,8 +69,14 @@ final class Converters
                 continue;
             }
 
-            $result   = $step->run($store, $dryRun);
-            $report[] = ['number' => $step->number(), 'name' => $step->name(), 'changed' => $result['changed'], 'problems' => $result['problems']];
+            $result   = $step->run($store, $dryRun, $deadline);
+            $entry    = ['number' => $step->number(), 'name' => $step->name(), 'changed' => $result['changed'], 'problems' => $result['problems']];
+            if (($result['complete'] ?? true) === false) {
+                $report[] = $entry + ['complete' => false];
+
+                return $report;
+            }
+            $report[] = $entry;
 
             if (! $dryRun) {
                 $store->setVersion($step->number());

@@ -4,6 +4,8 @@ namespace Config;
 
 use App\Filters\ApiAuthFilter;
 use App\Filters\AbilityFilter;
+use App\Filters\InstallRedirect;
+use App\Filters\UpgradeRedirect;
 use CodeIgniter\Config\Filters as BaseFilters;
 use CodeIgniter\Filters\Cors;
 use CodeIgniter\Filters\CSRF;
@@ -40,6 +42,8 @@ class Filters extends BaseFilters
         // Hyper
         'can'           => AbilityFilter::class,
         'api-auth'      => ApiAuthFilter::class,
+        'install'       => InstallRedirect::class,
+        'upgrade'       => UpgradeRedirect::class,
     ];
 
     /**
@@ -75,8 +79,12 @@ class Filters extends BaseFilters
      */
     public array $globals = [
         'before' => [
+            // While the site waits to be installed, every address leads to the install page.
+            'install',
+            // While the data of the site is behind the code, every address leads to the upgrade page.
+            'upgrade',
             // A file of the library is only read. Leaving it out keeps the session from starting, so a cache may keep the file.
-            'csrf' => ['except' => ['api/*', 'admin/access-token/*', 'media/*']],
+            'csrf' => ['except' => ['api/*', 'admin/access-token/*', 'media/*', 'hyper/tick']],
             // 'honeypot',
             // 'invalidchars',
         ],

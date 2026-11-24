@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Libraries\Install\InstallState;
 use App\Libraries\Upgrade\CounterSchemaStore;
 use App\Libraries\Upgrade\Steps\Steps;
 use CodeIgniter\CLI\BaseCommand;
@@ -39,6 +40,9 @@ class Setup extends BaseCommand
 
         // Publish assets
         $this->publishAssets();
+
+        // The site is set up, so the install page must not exist any more.
+        (new InstallState(WRITEPATH, true))->finish();
 
         // Start server
         $this->startServer();
@@ -116,25 +120,16 @@ class Setup extends BaseCommand
     {
         CLI::write("\nPublishing vendor assets...", 'yellow');
 
-        $actions = [
-            ['components/jquery', 'nodejs' => null],
-            ['stuk/jszip', 'nodejs' => null],
-            ['bpampuch/pdfmake', 'nodejs' => null],
-            ['datatables.net/datatables.net-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['datatables.net/datatables.net-buttons-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['datatables.net/datatables.net-colreorder-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['datatables.net/datatables.net-fixedheader-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['datatables.net/datatables.net-responsive-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['datatables.net/datatables.net-select-bm', 'nodejs' => null, 'with-dependencies' => null],
-            ['tinymce', 'nodejs' => null],
-        ];
+        // Every package the admin loads is listed in package.json, so that file is the one list.
+        $package = json_decode((string) file_get_contents(ROOTPATH . 'package.json'), true);
+        $names   = array_keys($package['dependencies'] ?? []);
 
-        foreach ($actions as $args) {
+        foreach ($names as $name) {
             try {
-                $this->call('hyper:vendor-publish', $args);
-                CLI::write("  ✓ Published: {$args[0]}", 'green');
+                $this->call('hyper:vendor-publish', [$name, 'nodejs' => null, 'force' => null, 'with-dependencies' => null]);
+                CLI::write("  ✓ Published: {$name}", 'green');
             } catch (Throwable $e) {
-                CLI::error("  Failed to publish {$args[0]}: " . $e->getMessage());
+                CLI::error("  Failed to publish {$name}: " . $e->getMessage());
             }
         }
 

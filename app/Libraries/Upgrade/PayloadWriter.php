@@ -33,9 +33,12 @@ final class PayloadWriter
     }
 
     /**
-     * @return array{written: int, skipped: list<array{id: int, reason: string}>}
+     * With a `$deadline`, a time from `microtime(true)`, it stops after the chunk that passes it and answers `complete` as false.
+     * Entries are found by having no StarDust id yet, so calling it again carries on where it stopped.
+     *
+     * @return array{written: int, skipped: list<array{id: int, reason: string}>, complete: bool}
      */
-    public function write(): array
+    public function write(?float $deadline = null): array
     {
         $packet  = (int) $this->engine->pdo()->query('SELECT @@max_allowed_packet')->fetchColumn();
         $budget  = max(1024 * 1024, min(Source::BATCH_BYTES, intdiv($packet, 4)));
@@ -46,15 +49,15 @@ final class PayloadWriter
         while (true) {
             $candidates = $this->db->query(
                 'SELECT e.id, e.current_revision_id AS revision_id, m.sd_model_id, LENGTH(r.fields) AS size
-                FROM hyper_entries e
-                JOIN hyper_models m ON m.id = e.model_id
-                JOIN hyper_entry_revisions r ON r.id = e.current_revision_id
+                FROM ' . $this->db->prefixTable('hyper_entries') . ' e
+                JOIN ' . $this->db->prefixTable('hyper_models') . ' m ON m.id = e.model_id
+                JOIN ' . $this->db->prefixTable('hyper_entry_revisions') . ' r ON r.id = e.current_revision_id
                 WHERE e.deleted_at IS NULL AND e.sd_entry_id IS NULL AND e.id > ?
                 ORDER BY e.id ASC LIMIT ' . self::CHUNK_ENTRIES,
                 [$lastId]
             )->getResultArray();
             if ($candidates === []) {
-                return ['written' => $written, 'skipped' => $skipped];
+                return ['written' => $written, 'skipped' => $skipped, 'complete' => true];
             }
 
             $take  = [];
@@ -69,7 +72,7 @@ final class PayloadWriter
             $lastId = (int) end($take)['id'];
 
             $texts = [];
-            foreach ($this->db->query('SELECT id, fields FROM hyper_entry_revisions WHERE id IN (' . implode(',', array_map(static fn (array $r): int => (int) $r['revision_id'], $take)) . ')')->getResultArray() as $r) {
+            foreach ($this->db->query('SELECT id, fields FROM ' . $this->db->prefixTable('hyper_entry_revisions') . ' WHERE id IN (' . implode(',', array_map(static fn (array $r): int => (int) $r['revision_id'], $take)) . ')')->getResultArray() as $r) {
                 $texts[(int) $r['id']] = $r['fields'];
             }
 
@@ -109,6 +112,10 @@ final class PayloadWriter
             $this->db->transComplete();
             if (! $this->db->transStatus()) {
                 throw new \RuntimeException('Recording the StarDust entry ids failed: ' . ($this->db->error()['message'] ?? 'unknown error'));
+            }
+
+            if ($deadline !== null && microtime(true) >= $deadline) {
+                return ['written' => $written, 'skipped' => $skipped, 'complete' => false];
             }
         }
     }
@@ -160,7 +167,7 @@ final class PayloadWriter
      */
     private function record(array $row, int $sdId): void
     {
-        $this->db->query('UPDATE hyper_entries SET sd_entry_id = ?, payload_bytes = ? WHERE id = ?', [$sdId, $row['bytes'], $row['id']]);
-        $this->db->query('UPDATE hyper_entry_revisions SET fields = NULL WHERE id = ?', [$row['revision_id']]);
+        $this->db->query('UPDATE ' . $this->db->prefixTable('hyper_entries') . ' SET sd_entry_id = ?, payload_bytes = ? WHERE id = ?', [$sdId, $row['bytes'], $row['id']]);
+        $this->db->query('UPDATE ' . $this->db->prefixTable('hyper_entry_revisions') . ' SET fields = NULL WHERE id = ?', [$row['revision_id']]);
     }
 }

@@ -53,7 +53,7 @@ class NamedLock
         $db      = $this->db ??= db_connect();
         $timeout = $this->timeoutSeconds > 0 ? $this->timeoutSeconds : (int) config('HyperEngine')->lockTimeoutSeconds;
 
-        $got = $db->query('SELECT GET_LOCK(?, ?) AS got', [$name, $timeout])->getRow();
+        $got = $db->query('SELECT GET_LOCK(?, ?) AS got', [$this->scoped($name), $timeout])->getRow();
         if ((int) ($got->got ?? 0) !== 1) {
             throw new RuntimeException("Another save of this record is still running ($name). Try again in a moment.");
         }
@@ -62,10 +62,21 @@ class NamedLock
     public function release(string $name): void
     {
         try {
-            ($this->db ??= db_connect())->query('SELECT RELEASE_LOCK(?)', [$name]);
+            ($this->db ??= db_connect())->query('SELECT RELEASE_LOCK(?)', [$this->scoped($name)]);
         } catch (Throwable) {
             // The lock is released with the connection anyway.
         }
+    }
+
+    /**
+     * MySQL scopes a lock name to the whole server, so two sites on one server, or one site with two table prefixes, must not
+     * share a name. The name carries a short code of the database and the table prefix.
+     */
+    private function scoped(string $name): string
+    {
+        $db = $this->db ??= db_connect();
+
+        return 'hc.' . substr(md5($db->getDatabase() . '|' . $db->getPrefix()), 0, 10) . '.' . $name;
     }
 
     public static function forEntry(int|string $id): string

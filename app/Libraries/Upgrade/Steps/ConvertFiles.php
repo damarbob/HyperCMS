@@ -72,7 +72,7 @@ final class ConvertFiles implements ConversionStep
         return 'Move the files into the media library and rewrite their links';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         $changed  = 0;
         $problems = [];
@@ -83,7 +83,7 @@ final class ConvertFiles implements ConversionStep
         $cursor = $store->cursor($this->number()) ?? 0;
         while (true) {
             $entries = $this->db->query(
-                'SELECT id, model_id, sd_entry_id, deleted_at FROM hyper_entries WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
+                'SELECT id, model_id, sd_entry_id, deleted_at FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
                 [$cursor]
             )->getResultArray();
             if ($entries === []) {
@@ -107,6 +107,14 @@ final class ConvertFiles implements ConversionStep
 
             if (! $dryRun) {
                 $store->setCursor($this->number(), $cursor);
+            }
+
+            if (! $dryRun && $deadline !== null && microtime(true) >= $deadline) {
+                if ($touched !== []) {
+                    $this->versions->bump(array_keys($touched));
+                }
+
+                return ['changed' => $changed, 'problems' => $problems, 'complete' => false];
             }
         }
 

@@ -13,7 +13,8 @@ class GrantTokenManagement extends Migration
 {
     public function up(): void
     {
-        $this->db->query('INSERT IGNORE INTO hyper_role_abilities (role, ability) SELECT role, ? FROM hyper_role_abilities WHERE ability = ? AND role IN (?, ?)', ['tokens.manage', 'api.access', 'admin', 'developer']);
+        $table = $this->db->prefixTable('hyper_role_abilities');
+        $this->db->query("INSERT IGNORE INTO {$table} (role, ability) SELECT role, ? FROM {$table} WHERE ability = ? AND role IN (?, ?)", ['tokens.manage', 'api.access', 'admin', 'developer']);
     }
 
     public function down(): void

@@ -190,7 +190,7 @@ class ModelStore
 
                 // Every entry of the model goes with it, the trashed ones and any left live.
                 $this->transact(function () use ($db, $id): void {
-                    $db->query('DELETE r FROM hyper_entry_revisions r JOIN hyper_entries e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
+                    $db->query('DELETE r FROM ' . $db->prefixTable('hyper_entry_revisions') . ' r JOIN ' . $db->prefixTable('hyper_entries') . ' e ON e.id = r.entry_id WHERE e.model_id = ?', [$id]);
                     $db->table('hyper_entries')->where('model_id', $id)->delete();
                     $db->table('hyper_model_revisions')->where('model_id', $id)->delete();
                     $db->table('hyper_model_permissions')->where('model_id', $id)->delete();

@@ -1,0 +1,88 @@
+<?php
+
+// The words of the install page, for a host with no shell.
+return [
+    'title'               => 'Install HyperCMS',
+    'lede'                => 'Fill in your database and your first account. This page is removed when the install is done.',
+
+    'reqTitle'            => 'What this host offers',
+    'req'                 => [
+        'php'       => 'PHP {detail}',
+        'extension' => 'PHP extension {detail}',
+        'packages'  => 'Packages in {detail}',
+        'writable'  => 'The folder {detail} can be written to',
+        'envfile'   => 'The settings file {detail} can be written',
+    ],
+    'unmet'               => 'This host is missing something HyperCMS needs. Fix the marked items, then reload this page.',
+
+    'keyTitle'            => 'Proof that the site is yours',
+    'keyLabel'            => 'Install key',
+    'keyHelp'             => 'Open the file {path} with your file manager or FTP and paste what it holds.',
+    'keyWrong'            => 'The key does not match the file. Copy it again.',
+
+    'dbTitle'             => 'Database',
+    'dbHost'              => 'Database host',
+    'dbPort'              => 'Port',
+    'dbName'              => 'Database name',
+    'dbUser'              => 'Database user',
+    'dbPassword'          => 'Database password',
+    'dbPrefix'            => 'Table prefix',
+    'dbPrefixHelp'        => 'Leave it empty unless this database is shared with other software. A short word ending in an underscore, such as site_, keeps the tables of this site apart.',
+    'databaseUnreachable' => 'The database cannot be reached. {message}',
+    'serverTooOld'        => 'This database server is too old. HyperCMS needs MySQL 8.0.13 or newer, or MariaDB 10.11 or newer.',
+    'oldLayout'           => 'This database holds a HyperCMS 0.1 install. Upgrade it from a shell with php spark hyper:upgrade, or use another database.',
+    'alreadyInstalled'    => 'This database already holds a finished HyperCMS install. Choose another database or another table prefix.',
+
+    'siteTitle'           => 'Site',
+    'baseUrl'             => 'Site address',
+    'baseUrlHelp'         => 'The address visitors type, starting with https:// when you have a certificate.',
+    'baseUrlInvalid'      => 'This is not a web address. It should start with http:// or https://.',
+
+    'adminTitle'          => 'First account',
+    'adminUsername'       => 'Username',
+    'adminEmail'          => 'Email',
+    'adminPassword'       => 'Password',
+    'adminPasswordHelp'   => 'This account can do everything. Choose a long password.',
+    'adminPasswordConfirm' => 'Password again',
+    'usernameInvalid'     => 'Use 3 to 30 letters, digits, dots, dashes or underscores.',
+    'emailInvalid'        => 'This is not an email address.',
+    'passwordMismatch'    => 'The two passwords differ.',
+
+    'tickTitle'           => 'Background work',
+    'tickLabel'           => 'How will it run?',
+    'tickHelp'            => 'HyperCMS finishes indexing and clean up in the background, which needs a call about every minute.',
+    'tickCron'            => 'My host has a cron line',
+    'tickUrl'             => 'My host fetches a web address on a schedule',
+    'tickLater'           => 'Decide later',
+
+    'submit'              => 'Save and continue',
+    'required'            => 'This is required.',
+    'portInvalid'         => 'Use a port number from 1 to 65535.',
+    'prefixInvalid'       => 'Start with a letter, then use letters, digits or underscores, up to 20 characters.',
+    'valueUnwritable'     => 'This holds a character that cannot be saved in the settings file, such as a line break or ${NAME}.',
+    'envNotWritten'       => 'The settings file could not be written. Make the project folder writable and try again.',
+
+    'readyTitle'          => 'Ready to install',
+    'readyLede'           => 'Your settings are saved. The next step makes the tables and your account, which can take a minute. Keep this page open.',
+    'readyButton'         => 'Install now',
+    'noAnswers'           => 'The answers were not found. Fill in the form again.',
+    'migrationsFailed'    => 'The tables could not be made.',
+
+    'doneTitle'           => 'HyperCMS is installed',
+    'doneLede'            => 'This page is now removed. Sign in with the account you made.',
+    'failedTitle'         => 'The install stopped',
+    'failedLede'          => 'Nothing is lost. Fix the cause below and try again. The steps that finished are skipped.',
+    'retry'               => 'Try again',
+    'startOver'           => 'Change the answers',
+    'signIn'              => 'Sign in',
+    'step'                => [
+        'migrations' => 'Made the tables',
+        'engine'     => 'Prepared the data engine',
+        'admin'      => 'Made the account {detail}',
+        'answers'    => 'Read the saved answers',
+    ],
+    'nextTitle'           => 'One more thing, the background work',
+    'nextCron'            => 'Add this line to the cron of your host, to run every minute:',
+    'nextUrl'             => 'Ask your host to fetch this address every minute. Keep it private, it is saved in the settings file:',
+    'nextLater'           => 'Until it is set up, indexing of filterable fields and clean up do not run. The hosting guide explains both ways.',
+];

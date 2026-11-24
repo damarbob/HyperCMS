@@ -30,7 +30,7 @@ final class PickLabelFields implements ConversionStep
         return 'Pick the label field of each model';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         $changed  = 0;
         $problems = [];

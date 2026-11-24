@@ -1,0 +1,88 @@
+<?php
+
+// Kata-kata halaman pemasangan, untuk hosting tanpa akses shell.
+return [
+    'title'               => 'Pasang HyperCMS',
+    'lede'                => 'Isi data database dan akun pertama Anda. Halaman ini hilang setelah pemasangan selesai.',
+
+    'reqTitle'            => 'Yang disediakan hosting ini',
+    'req'                 => [
+        'php'       => 'PHP {detail}',
+        'extension' => 'Ekstensi PHP {detail}',
+        'packages'  => 'Paket di {detail}',
+        'writable'  => 'Folder {detail} bisa ditulisi',
+        'envfile'   => 'File pengaturan {detail} bisa ditulisi',
+    ],
+    'unmet'               => 'Hosting ini belum memenuhi syarat HyperCMS. Perbaiki butir yang bertanda merah, lalu muat ulang halaman ini.',
+
+    'keyTitle'            => 'Bukti bahwa situs ini milik Anda',
+    'keyLabel'            => 'Kunci pemasangan',
+    'keyHelp'             => 'Buka file {path} lewat file manager atau FTP, lalu tempel isinya di sini.',
+    'keyWrong'            => 'Kunci tidak sama dengan isi file. Salin sekali lagi.',
+
+    'dbTitle'             => 'Database',
+    'dbHost'              => 'Host database',
+    'dbPort'              => 'Port',
+    'dbName'              => 'Nama database',
+    'dbUser'              => 'Pengguna database',
+    'dbPassword'          => 'Kata sandi database',
+    'dbPrefix'            => 'Awalan tabel',
+    'dbPrefixHelp'        => 'Kosongkan kecuali database ini dipakai bersama perangkat lunak lain. Satu kata pendek berakhiran garis bawah, misalnya situs_, menjaga tabel situs ini tetap terpisah.',
+    'databaseUnreachable' => 'Database tidak bisa dihubungi. {message}',
+    'serverTooOld'        => 'Server database ini terlalu lama. HyperCMS butuh MySQL 8.0.13 ke atas, atau MariaDB 10.11 ke atas.',
+    'oldLayout'           => 'Database ini berisi instalasi HyperCMS 0.1. Upgrade lewat shell dengan php spark hyper:upgrade, atau pakai database lain.',
+    'alreadyInstalled'    => 'Database ini sudah berisi instalasi HyperCMS yang selesai. Pilih database lain atau awalan tabel lain.',
+
+    'siteTitle'           => 'Situs',
+    'baseUrl'             => 'Alamat situs',
+    'baseUrlHelp'         => 'Alamat yang diketik pengunjung, diawali https:// jika Anda punya sertifikat.',
+    'baseUrlInvalid'      => 'Ini bukan alamat web. Alamat harus diawali http:// atau https://.',
+
+    'adminTitle'          => 'Akun pertama',
+    'adminUsername'       => 'Username',
+    'adminEmail'          => 'Email',
+    'adminPassword'       => 'Kata sandi',
+    'adminPasswordHelp'   => 'Akun ini bisa melakukan semuanya. Pilih kata sandi yang panjang.',
+    'adminPasswordConfirm' => 'Ulangi kata sandi',
+    'usernameInvalid'     => 'Pakai 3 sampai 30 huruf, angka, titik, strip, atau garis bawah.',
+    'emailInvalid'        => 'Ini bukan alamat email.',
+    'passwordMismatch'    => 'Kedua kata sandi berbeda.',
+
+    'tickTitle'           => 'Pekerjaan latar belakang',
+    'tickLabel'           => 'Bagaimana menjalankannya?',
+    'tickHelp'            => 'HyperCMS menyelesaikan indexing dan pembersihan di latar belakang, dan butuh dipanggil kira-kira tiap menit.',
+    'tickCron'            => 'Hosting saya punya cron',
+    'tickUrl'             => 'Hosting saya bisa mengakses alamat web sesuai jadwal',
+    'tickLater'           => 'Putuskan nanti',
+
+    'submit'              => 'Simpan dan lanjut',
+    'required'            => 'Wajib diisi.',
+    'portInvalid'         => 'Pakai nomor port dari 1 sampai 65535.',
+    'prefixInvalid'       => 'Mulai dengan huruf, lalu huruf, angka, atau garis bawah, paling banyak 20 karakter.',
+    'valueUnwritable'     => 'Isinya memuat karakter yang tidak bisa disimpan di file pengaturan, seperti baris baru atau ${NAME}.',
+    'envNotWritten'       => 'File pengaturan tidak bisa ditulis. Buat folder proyek bisa ditulisi, lalu coba lagi.',
+
+    'readyTitle'          => 'Siap dipasang',
+    'readyLede'           => 'Pengaturan Anda sudah tersimpan. Langkah berikutnya membuat tabel dan akun Anda, dan bisa makan waktu semenit. Biarkan halaman ini terbuka.',
+    'readyButton'         => 'Pasang sekarang',
+    'noAnswers'           => 'Jawaban tidak ditemukan. Isi formulir sekali lagi.',
+    'migrationsFailed'    => 'Tabel tidak bisa dibuat.',
+
+    'doneTitle'           => 'HyperCMS sudah terpasang',
+    'doneLede'            => 'Halaman ini sekarang dihapus. Masuk dengan akun yang Anda buat.',
+    'failedTitle'         => 'Pemasangan berhenti',
+    'failedLede'          => 'Tidak ada yang hilang. Perbaiki penyebabnya di bawah, lalu coba lagi. Langkah yang sudah selesai dilewati.',
+    'retry'               => 'Coba lagi',
+    'startOver'           => 'Ubah jawaban',
+    'signIn'              => 'Masuk',
+    'step'                => [
+        'migrations' => 'Tabel dibuat',
+        'engine'     => 'Mesin data disiapkan',
+        'admin'      => 'Akun {detail} dibuat',
+        'answers'    => 'Jawaban tersimpan dibaca',
+    ],
+    'nextTitle'           => 'Satu hal lagi, pekerjaan latar belakang',
+    'nextCron'            => 'Tambahkan baris ini ke cron hosting Anda, untuk dijalankan tiap menit:',
+    'nextUrl'             => 'Minta hosting Anda mengakses alamat ini tiap menit. Jaga kerahasiaannya, alamat ini tersimpan di file pengaturan:',
+    'nextLater'           => 'Sebelum diatur, indexing field filterable dan pembersihan tidak berjalan. Panduan hosting menjelaskan kedua caranya.',
+];

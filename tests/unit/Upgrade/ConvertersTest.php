@@ -72,7 +72,7 @@ final class ConvertersTest extends CIUnitTestCase
                 return 'step ' . $this->number;
             }
 
-            public function run(SchemaStore $store, bool $dryRun): array
+            public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
             {
                 $this->log[] = ($dryRun ? 'dry ' : 'run ') . $this->number;
                 if ($this->fails) {
@@ -154,6 +154,85 @@ final class ConvertersTest extends CIUnitTestCase
 
         $this->expectException(InvalidArgumentException::class);
         new Converters([$this->step(1, $log), $this->step(3, $log)]);
+    }
+
+    /**
+     * A step that needs two calls: the first stops at the deadline, the second finishes.
+     */
+    private function slowStep(int $number, int &$calls): ConversionStep
+    {
+        return new class ($number, $calls) implements ConversionStep {
+            public function __construct(private int $number, private int &$calls)
+            {
+            }
+
+            public function number(): int
+            {
+                return $this->number;
+            }
+
+            public function name(): string
+            {
+                return 'slow ' . $this->number;
+            }
+
+            public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
+            {
+                $this->calls++;
+                if ($deadline !== null && $this->calls === 1) {
+                    $store->setCursor($this->number, 7);
+
+                    return ['changed' => 3, 'problems' => [], 'complete' => false];
+                }
+
+                return ['changed' => 2, 'problems' => []];
+            }
+        };
+    }
+
+    public function testAStepThatRunsOutOfTimeLeavesTheVersionAndTheLaterStepsAlone(): void
+    {
+        $log    = [];
+        $calls  = 0;
+        $runner = new Converters([$this->step(1, $log), $this->slowStep(2, $calls), $this->step(3, $log)]);
+        $store  = $this->store();
+
+        $report = $runner->run($store, false, microtime(true) + 1);
+
+        $this->assertSame(['run 1'], $log, 'The step after the slow one must wait.');
+        $this->assertSame(1, $store->version(), 'The version stays at the last finished step.');
+        $this->assertSame(7, $store->cursor(2));
+        $this->assertSame([1, 2], array_column($report, 'number'));
+        $this->assertFalse($report[1]['complete']);
+        $this->assertArrayNotHasKey('complete', $report[0]);
+    }
+
+    public function testASecondCallFinishesTheStepAndRunsTheRest(): void
+    {
+        $log    = [];
+        $calls  = 0;
+        $runner = new Converters([$this->step(1, $log), $this->slowStep(2, $calls), $this->step(3, $log)]);
+        $store  = $this->store();
+
+        $runner->run($store, false, microtime(true) + 1);
+        $report = $runner->run($store, false, microtime(true) + 1);
+
+        $this->assertSame(['run 1', 'run 3'], $log);
+        $this->assertSame(3, $store->version());
+        $this->assertSame([2, 3], array_column($report, 'number'));
+        $this->assertNull($store->cursor(2), 'A finished step clears its cursor.');
+    }
+
+    public function testWithNoDeadlineEveryStepRunsToItsEnd(): void
+    {
+        $calls  = 0;
+        $runner = new Converters([$this->slowStep(1, $calls)]);
+        $store  = $this->store();
+
+        $runner->run($store);
+
+        $this->assertSame(1, $store->version());
+        $this->assertSame(1, $calls);
     }
 
     public function testNoStepsMeansNothingIsPending(): void

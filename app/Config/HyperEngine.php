@@ -6,13 +6,14 @@ use CodeIgniter\Config\BaseConfig;
 
 /**
  * Settings for the StarDust 0.3 engine that keeps the current fields of every entry.
- * Any value can be overridden in .env, for example `hyperEngine.tablePrefix = 'sd_'`.
+ * Any value can be overridden in .env, for example `hyperengine.tablePrefix = 'sd_'`.
  */
 class HyperEngine extends BaseConfig
 {
     /**
      * Prefix of StarDust's own tables, so they sit in HyperCMS's database as sd_entry_data,
-     * sd_stardust_models and so on. It is separate from CodeIgniter's DBPrefix.
+     * sd_stardust_models and so on. The site's table prefix (`database.default.DBPrefix`) goes in front of it,
+     * so a site with the prefix `blog_` has `blog_sd_entry_data`.
      */
     public string $tablePrefix = 'sd_';
 
@@ -75,6 +76,19 @@ class HyperEngine extends BaseConfig
      * Seconds one `php spark hyper:tick` run may spend when no --budget is given.
      */
     public int $tickBudgetSeconds = 50;
+
+    /**
+     * The secret that lets a scheduled URL fetch run the background work at `hyper/tick`, for a host with no cron line.
+     * At least 32 characters. Empty means the address does not exist. Set it in .env as `hyperengine.tickSecret`, and
+     * never run the cron line as well.
+     */
+    public string $tickSecret = '';
+
+    /**
+     * Seconds one request of the upgrade page works before it hands over to the next, so a host or a proxy that gives up on a
+     * slow request never sees one. The page asks for the next request by itself until the upgrade is done.
+     */
+    public float $upgradeBatchSeconds = 20;
 
     /**
      * Seconds a save waits for another save of the same entry or model before it gives up.

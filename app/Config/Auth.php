@@ -39,6 +39,11 @@ class Auth extends ShieldAuth
     {
         parent::__construct();
 
+        // While the site is being installed there is no database to ask, and each failed attempt would write a long error to the log.
+        if (\App\Libraries\Install\InstallState::current()->open()) {
+            return;
+        }
+
         try {
             if (setting('Hyper.twoFactor')) {
                 $this->actions['login'] = Email2FA::class;

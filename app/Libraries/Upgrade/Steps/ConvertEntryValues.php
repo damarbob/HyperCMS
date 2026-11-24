@@ -47,7 +47,7 @@ final class ConvertEntryValues implements ConversionStep
         return 'Convert the values of the entries';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         $cursor   = $store->cursor($this->number()) ?? 0;
         $changed  = 0;
@@ -56,7 +56,7 @@ final class ConvertEntryValues implements ConversionStep
 
         while (true) {
             $entries = $this->db->query(
-                'SELECT id, model_id, sd_entry_id, deleted_at FROM hyper_entries WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
+                'SELECT id, model_id, sd_entry_id, deleted_at FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
                 [$cursor]
             )->getResultArray();
             if ($entries === []) {
@@ -80,6 +80,14 @@ final class ConvertEntryValues implements ConversionStep
 
             if (! $dryRun) {
                 $store->setCursor($this->number(), $cursor);
+            }
+
+            if (! $dryRun && $deadline !== null && microtime(true) >= $deadline) {
+                if ($touched !== []) {
+                    $this->versions->bump(array_keys($touched));
+                }
+
+                return ['changed' => $changed, 'problems' => $problems, 'complete' => false];
             }
         }
 

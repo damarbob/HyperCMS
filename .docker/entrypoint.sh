@@ -2,6 +2,8 @@
 set -e
 
 DB_PORT="${database_default_port:-3306}"
+# The table prefix of the site, empty unless database.default.DBPrefix is set.
+DB_PREFIX="${database_default_DBPrefix:-}"
 
 echo "⏳ Waiting for MySQL at ${database_default_hostname}:${DB_PORT}…"
 until mysql \
@@ -40,10 +42,10 @@ upgrade_pending() {
   fi
 
   # Only a counted 1 from every query means finished. A failed query prints nothing, which counts as pending.
-  counters=$(db_query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'hyper_counters'")
+  counters=$(db_query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '${DB_PREFIX}hyper_counters'")
   finished=0
   if [ "$counters" = "1" ]; then
-    finished=$(db_query "SELECT COUNT(*) FROM hyper_counters WHERE name = 'upgrade_finished'")
+    finished=$(db_query "SELECT COUNT(*) FROM ${DB_PREFIX}hyper_counters WHERE name = 'upgrade_finished'")
   fi
   if [ "$finished" = "1" ]; then
     echo 0
@@ -56,7 +58,7 @@ upgrade_pending() {
 # It waits until the web container has created StarDust's tables and until no upgrade is half done, because the repair
 # pass of a tick would otherwise write the entries the upgrade is still copying.
 if [ "$HYPER_ROLE" = "tick" ]; then
-  SCHEMA_TABLE="${hyperEngine_tablePrefix:-sd_}stardust_schema_version"
+  SCHEMA_TABLE="${DB_PREFIX}${hyperengine_tablePrefix:-sd_}stardust_schema_version"
   until [ "$(db_query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '$SCHEMA_TABLE'" 2>/dev/null)" = "1" ] && [ "$(upgrade_pending 2>/dev/null)" = "0" ]
   do
     echo "   -> waiting for the web container to create $SCHEMA_TABLE and for any upgrade to finish…"

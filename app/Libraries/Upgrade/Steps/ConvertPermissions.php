@@ -31,7 +31,7 @@ final class ConvertPermissions implements ConversionStep
         return 'Turn the user groups of each model into permissions';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         $roles    = array_column($this->db->table('hyper_roles')->select('name')->get()->getResultArray(), 'name');
         $cursor   = $store->cursor($this->number()) ?? 0;

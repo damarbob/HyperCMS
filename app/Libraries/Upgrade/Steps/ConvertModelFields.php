@@ -45,7 +45,7 @@ final class ConvertModelFields implements ConversionStep
         return 'Convert the field definitions of the models';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         $rows     = $this->db->table('hyper_models')->select('id, name, fields, label_field, deleted_at')->orderBy('id')->get()->getResultArray();
         $modelIds = [];

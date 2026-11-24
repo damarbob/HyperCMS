@@ -181,6 +181,7 @@
   /* Pages without the rail, such as sign in. */
   .bare { min-height: 100vh; min-height: 100dvh; display: grid; place-items: center; padding: var(--s5) var(--s4); }
   .bare-card { width: min(100%, 400px); display: flex; flex-direction: column; gap: var(--s5); }
+  .bare-card.wide { width: min(100%, 580px); }
   .bare-card .brand { padding: 0; justify-content: center; }
   .bare-sheet { background: var(--sheet); border: 1px solid var(--line); border-radius: var(--r-sheet); box-shadow: var(--shadow-sheet); padding: var(--s6) var(--s5); display: flex; flex-direction: column; gap: var(--s5); }
   .bare-sheet h1 { font-size: var(--t-xl); font-weight: 550; }

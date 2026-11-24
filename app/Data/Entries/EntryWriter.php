@@ -204,7 +204,7 @@ class EntryWriter
 
         while (true) {
             $rows = $db->query(
-                'SELECT id, model_id, sd_entry_id FROM hyper_entries WHERE deleted_at IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
+                'SELECT id, model_id, sd_entry_id FROM ' . $this->table('hyper_entries') . ' WHERE deleted_at IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
                 [$lastId]
             )->getResultArray();
             if ($rows === []) {
@@ -223,9 +223,11 @@ class EntryWriter
 
             // The entries go first, and only those still in the trash. A restore running at the same moment
             // wins, and its entry keeps its versions because the second statement only takes versions with no entry.
-            $this->transact(function () use ($db, $ids): void {
-                $db->query("DELETE FROM hyper_entries WHERE id IN ($ids) AND deleted_at IS NOT NULL");
-                $db->query("DELETE r FROM hyper_entry_revisions r LEFT JOIN hyper_entries e ON e.id = r.entry_id WHERE r.entry_id IN ($ids) AND e.id IS NULL");
+            $entries   = $this->table('hyper_entries');
+            $revisions = $this->table('hyper_entry_revisions');
+            $this->transact(function () use ($db, $ids, $entries, $revisions): void {
+                $db->query("DELETE FROM {$entries} WHERE id IN ($ids) AND deleted_at IS NOT NULL");
+                $db->query("DELETE r FROM {$revisions} r LEFT JOIN {$entries} e ON e.id = r.entry_id WHERE r.entry_id IN ($ids) AND e.id IS NULL");
             });
 
             $this->versions()->bump(array_map(static fn (array $row): int => (int) $row['model_id'], $rows));
@@ -385,7 +387,7 @@ class EntryWriter
         $lastId = 0;
         while (true) {
             $rows = $this->db()->query(
-                'SELECT id FROM hyper_entries WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
+                'SELECT id FROM ' . $this->table('hyper_entries') . ' WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL AND id > ? ORDER BY id LIMIT 500',
                 [$modelId, $lastId]
             )->getResultArray();
             if ($rows === []) {
@@ -555,7 +557,7 @@ class EntryWriter
         return array_map(
             static fn (array $row): int => (int) $row['id'],
             $this->db()->query(
-                'SELECT id FROM hyper_entries WHERE model_id = ? AND deleted_at IS ' . ($trashed ? 'NOT ' : '') . 'NULL ORDER BY id',
+                'SELECT id FROM ' . $this->table('hyper_entries') . ' WHERE model_id = ? AND deleted_at IS ' . ($trashed ? 'NOT ' : '') . 'NULL ORDER BY id',
                 [$modelId]
             )->getResultArray()
         );
@@ -755,7 +757,7 @@ class EntryWriter
     {
         return $this->db()->query(
             'SELECT e.*, m.sd_model_id, m.deleted_at AS model_deleted_at, m.id AS found_model_id
-            FROM hyper_entries e LEFT JOIN hyper_models m ON m.id = e.model_id
+            FROM ' . $this->table('hyper_entries') . ' e LEFT JOIN ' . $this->table('hyper_models') . ' m ON m.id = e.model_id
             WHERE e.id = ?',
             [$id]
         )->getRowArray();
@@ -795,6 +797,11 @@ class EntryWriter
     protected function now(): string
     {
         return Time::now()->toDateTimeString();
+    }
+
+    protected function table(string $name): string
+    {
+        return $this->db()->prefixTable($name);
     }
 
     protected function db(): BaseConnection
