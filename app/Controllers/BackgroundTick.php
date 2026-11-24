@@ -43,7 +43,15 @@ class BackgroundTick extends BaseController
         // StarDust also holds the budget under PHP's own time limit.
         $outcome = (new TickRunner())->run(min($config->tickBudgetSeconds, self::MAX_BUDGET_SECONDS));
 
-        return $this->plain($outcome->failed() ? 500 : 200, implode("\n", [...$outcome->lines, ...$outcome->failures]) . "\n");
+        // What went wrong goes to the log. The answer only says that something did, since the address is reachable from outside.
+        foreach ($outcome->failures as $failure) {
+            log_message('error', 'Tick address. ' . $failure);
+        }
+        if ($outcome->failed()) {
+            return $this->plain(500, implode("\n", $outcome->lines) . "\nThe tick failed. The server log has the details.\n");
+        }
+
+        return $this->plain(200, implode("\n", $outcome->lines) . "\n");
     }
 
     private function plain(int $status, string $body): ResponseInterface
