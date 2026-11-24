@@ -281,17 +281,32 @@ final class Installer
     private function writeEnv(string $content): void
     {
         $path = $this->root . '/.env';
-        if (is_file($path)) {
-            @copy($path, $path . '.bak');
-        }
 
-        $temporary = $path . '.new';
-        if (file_put_contents($temporary, $content, LOCK_EX) === false || ! @rename($temporary, $path)) {
-            @unlink($temporary);
+        // The files hold the database password, so they are made readable by the owner only from the first byte.
+        $previous = umask(0o077);
 
-            throw new \RuntimeException(lang('Install.envNotWritten'));
+        try {
+            if (is_file($path)) {
+                $backup = $path . '.bak';
+                if (@copy($path, $backup)) {
+                    @chmod($backup, 0o600);
+                }
+            }
+
+            $temporary = $path . '.new';
+            if (file_put_contents($temporary, $content, LOCK_EX) === false) {
+                throw new \RuntimeException(lang('Install.envNotWritten'));
+            }
+            @chmod($temporary, 0o640);
+
+            if (! @rename($temporary, $path)) {
+                @unlink($temporary);
+
+                throw new \RuntimeException(lang('Install.envNotWritten'));
+            }
+        } finally {
+            umask($previous);
         }
-        @chmod($path, 0o640);
     }
 
     /**

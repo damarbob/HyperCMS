@@ -59,8 +59,7 @@ final class InstallState
         $path = $this->folder . self::KEY;
 
         if (! is_file($path)) {
-            file_put_contents($path, bin2hex(random_bytes(16)) . "\n", LOCK_EX);
-            @chmod($path, 0o600);
+            $this->writePrivate($path, bin2hex(random_bytes(16)) . "\n");
         }
 
         return trim((string) file_get_contents($path));
@@ -83,9 +82,22 @@ final class InstallState
      */
     public function saveAnswers(array $answers): void
     {
-        $path = $this->folder . self::ANSWER;
-        file_put_contents($path, json_encode($answers, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES), LOCK_EX);
-        @chmod($path, 0o600);
+        $this->writePrivate($this->folder . self::ANSWER, json_encode($answers, JSON_THROW_ON_ERROR | JSON_UNESCAPED_SLASHES));
+    }
+
+    /**
+     * Writes a file that only the owner may read, with that permission from the first byte and not after the write.
+     */
+    private function writePrivate(string $path, string $content): void
+    {
+        $previous = umask(0o077);
+
+        try {
+            file_put_contents($path, $content, LOCK_EX);
+            @chmod($path, 0o600);
+        } finally {
+            umask($previous);
+        }
     }
 
     /**
