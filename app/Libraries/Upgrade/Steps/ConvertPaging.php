@@ -49,7 +49,7 @@ final class ConvertPaging implements ConversionStep
         return 'Choose the models of the page module and index its addresses';
     }
 
-    public function run(SchemaStore $store, bool $dryRun): array
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array
     {
         if (! isset($this->modules->all()['PagingSystem'])) {
             return ['changed' => 0, 'problems' => ['The page module is not active, so its models were not chosen. Choose them in its settings when it is.']];

@@ -91,8 +91,11 @@ final class Source
      * @param callable(array<string, ?string>): void $callback
      * @param string                      $sizeColumn The column whose length limits a batch.
      * @param string                      $where      An extra condition on the table, written as SQL.
+     * @param float|null                  $deadline   A time from `microtime(true)`. The walk stops after the chunk that passes it.
+     *
+     * @return bool False when it stopped at the deadline, true when it reached the last row.
      */
-    public function eachRow(string $table, array $columns, callable $callback, string $sizeColumn = 'fields', string $where = '1=1', int $after = 0): void
+    public function eachRow(string $table, array $columns, callable $callback, string $sizeColumn = 'fields', string $where = '1=1', int $after = 0, ?float $deadline = null): bool
     {
         $select = 'id, ' . implode(', ', array_map(static fn (string $c): string => "`$c`", $columns));
         $lastId = $after;
@@ -100,7 +103,7 @@ final class Source
         while (true) {
             $sizes = $this->db->query("SELECT id, LENGTH(`$sizeColumn`) AS size FROM `$table` WHERE id > ? AND ($where) ORDER BY id ASC LIMIT " . self::CHUNK, [$lastId])->getResultArray();
             if ($sizes === []) {
-                return;
+                return true;
             }
 
             $ids   = [];
@@ -117,6 +120,10 @@ final class Source
                 $callback($row);
             }
             $lastId = end($ids);
+
+            if ($deadline !== null && microtime(true) >= $deadline) {
+                return false;
+            }
         }
     }
 }

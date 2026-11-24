@@ -33,9 +33,12 @@ final class PayloadWriter
     }
 
     /**
-     * @return array{written: int, skipped: list<array{id: int, reason: string}>}
+     * With a `$deadline`, a time from `microtime(true)`, it stops after the chunk that passes it and answers `complete` as false.
+     * Entries are found by having no StarDust id yet, so calling it again carries on where it stopped.
+     *
+     * @return array{written: int, skipped: list<array{id: int, reason: string}>, complete: bool}
      */
-    public function write(): array
+    public function write(?float $deadline = null): array
     {
         $packet  = (int) $this->engine->pdo()->query('SELECT @@max_allowed_packet')->fetchColumn();
         $budget  = max(1024 * 1024, min(Source::BATCH_BYTES, intdiv($packet, 4)));
@@ -54,7 +57,7 @@ final class PayloadWriter
                 [$lastId]
             )->getResultArray();
             if ($candidates === []) {
-                return ['written' => $written, 'skipped' => $skipped];
+                return ['written' => $written, 'skipped' => $skipped, 'complete' => true];
             }
 
             $take  = [];
@@ -109,6 +112,10 @@ final class PayloadWriter
             $this->db->transComplete();
             if (! $this->db->transStatus()) {
                 throw new \RuntimeException('Recording the StarDust entry ids failed: ' . ($this->db->error()['message'] ?? 'unknown error'));
+            }
+
+            if ($deadline !== null && microtime(true) >= $deadline) {
+                return ['written' => $written, 'skipped' => $skipped, 'complete' => false];
             }
         }
     }

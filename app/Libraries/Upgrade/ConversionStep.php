@@ -21,8 +21,11 @@ interface ConversionStep
     /**
      * Convert the stored data, or only report what would change when `$dryRun` is true.
      *
-     * @return array{changed: int, problems: list<string>} How many rows changed or would change, and what could not
-     *         be converted, one line each.
+     * With a `$deadline`, a time from `microtime(true)`, a step that works in chunks stops after the chunk that passes it, keeps its
+     * cursor and answers `complete` as false. Calling it again carries on from the cursor.
+     *
+     * @return array{changed: int, problems: list<string>, complete?: bool} How many rows changed or would change, and what could
+     *         not be converted, one line each. `complete` is absent or true when the step reached its end.
      */
-    public function run(SchemaStore $store, bool $dryRun): array;
+    public function run(SchemaStore $store, bool $dryRun, ?float $deadline = null): array;
 }

@@ -26,13 +26,14 @@ final class EntryCopier
     }
 
     /**
-     * Copy the versions that are not copied yet.
+     * Copy the versions that are not copied yet. With a `$deadline`, a time from `microtime(true)`, it stops after the chunk that
+     * passes it and answers `complete` as false. A version is found by not being copied, so a second call carries on.
      *
-     * @return array{count: int, odd: list<int>, repeated: list<int>} How many were added, the ids of versions
+     * @return array{count: int, odd: list<int>, repeated: list<int>, complete: bool} How many were added, the ids of versions
      *                                                              that hold a list in some other shape and were copied as they are,
      *                                                              and the ids of versions that named one field twice.
      */
-    public function copyRevisions(): array
+    public function copyRevisions(?float $deadline = null): array
     {
         $count    = 0;
         $odd      = [];
@@ -55,7 +56,7 @@ final class EntryCopier
             $bytes = 0;
         };
 
-        $this->source->eachRow(
+        $complete = $this->source->eachRow(
             'entry_data',
             ['entry_id', 'fields', 'creator_id', 'created_at'],
             function (array $row) use (&$batch, &$bytes, &$odd, &$repeated, $flush): void {
@@ -81,11 +82,13 @@ final class EntryCopier
                 }
             },
             'fields',
-            'NOT EXISTS (SELECT 1 FROM hyper_entry_revisions r WHERE r.id = entry_data.id)'
+            'NOT EXISTS (SELECT 1 FROM hyper_entry_revisions r WHERE r.id = entry_data.id)',
+            0,
+            $deadline
         );
         $flush();
 
-        return ['count' => $count, 'odd' => $odd, 'repeated' => $repeated];
+        return ['count' => $count, 'odd' => $odd, 'repeated' => $repeated, 'complete' => $complete];
     }
 
     /**
