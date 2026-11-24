@@ -131,6 +131,7 @@ The install page has a field for it. By hand, it is the setting `database.defaul
 | "The key does not match the file" | Open `writable/install.key` again and copy everything on its first line |
 | "The database cannot be reached" | Check the host name, which is often `localhost` but sometimes a name the host gives you, and the user and password |
 | "This database server is too old" | See the table at the top. Use a database that meets it, or another host |
+| The tick answers 500 and the log says "Cannot open pid file" | A folder inside `writable/`, usually `writable/stardust`, was made by another user, for example by a command run from a shell as a different account. Give the account the web server runs as ownership of `writable/` and everything in it |
 | You need to change a setting after the install | Edit `.env`. Reload the site afterwards |
 
 To see the real error on screen while you look for a problem, set `CI_ENVIRONMENT = "development"` in `.env`, and set it back to `"production"` afterwards. A site left in development shows internal details to visitors.
