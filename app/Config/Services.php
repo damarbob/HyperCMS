@@ -240,7 +240,8 @@ class Services extends BaseService
             artifactDir: $dirs['artifacts'],
             pidFileDir: $dirs['pid'],
             tickBudgetSeconds: $engine->tickBudgetSeconds,
-            tablePrefix: $engine->tablePrefix,
+            // The site's own table prefix comes first, so one setting keeps every table of the site apart from other software.
+            tablePrefix: (string) (config('Database')->{config('Database')->defaultGroup}['DBPrefix'] ?? '') . $engine->tablePrefix,
         ));
     }
 

@@ -12,7 +12,8 @@ class HyperEngine extends BaseConfig
 {
     /**
      * Prefix of StarDust's own tables, so they sit in HyperCMS's database as sd_entry_data,
-     * sd_stardust_models and so on. It is separate from CodeIgniter's DBPrefix.
+     * sd_stardust_models and so on. The site's table prefix (`database.default.DBPrefix`) goes in front of it,
+     * so a site with the prefix `blog_` has `blog_sd_entry_data`.
      */
     public string $tablePrefix = 'sd_';
 
@@ -77,13 +78,13 @@ class HyperEngine extends BaseConfig
     public int $tickBudgetSeconds = 50;
 
     /**
-    /**
      * The secret that lets a scheduled URL fetch run the background work at `hyper/tick`, for a host with no cron line.
      * At least 32 characters. Empty means the address does not exist. Set it in .env as `hyperEngine.tickSecret`, and
      * never run the cron line as well.
      */
     public string $tickSecret = '';
 
+    /**
      * Seconds a save waits for another save of the same entry or model before it gives up.
      */
     public int $lockTimeoutSeconds = 10;
