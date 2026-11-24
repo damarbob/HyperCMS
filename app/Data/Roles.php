@@ -31,11 +31,11 @@ class Roles
     public function all(): array
     {
         $people = [];
-        foreach ($this->db->query('SELECT `group`, COUNT(*) AS people FROM auth_groups_users GROUP BY `group`')->getResultArray() as $row) {
+        foreach ($this->db->query('SELECT `group`, COUNT(*) AS people FROM ' . $this->db->prefixTable('auth_groups_users') . ' GROUP BY `group`')->getResultArray() as $row) {
             $people[(string) $row['group']] = (int) $row['people'];
         }
         $abilities = [];
-        foreach ($this->db->query('SELECT role, COUNT(*) AS abilities FROM hyper_role_abilities GROUP BY role')->getResultArray() as $row) {
+        foreach ($this->db->query('SELECT role, COUNT(*) AS abilities FROM ' . $this->db->prefixTable('hyper_role_abilities') . ' GROUP BY role')->getResultArray() as $row) {
             $abilities[(string) $row['role']] = (int) $row['abilities'];
         }
 
@@ -98,8 +98,10 @@ class Roles
         $this->db->table('hyper_roles')->insert(['name' => $name, 'label' => trim($label), 'description' => trim($description) === '' ? null : trim($description), 'locked' => 0, 'created_at' => $now, 'updated_at' => $now]);
 
         if ($copyFrom !== null && $copyFrom !== '' && $copyFrom !== Permissions::SUPERADMIN && $this->find($copyFrom) !== null) {
-            $this->db->query('INSERT INTO hyper_role_abilities (role, ability) SELECT ?, ability FROM hyper_role_abilities WHERE role = ?', [$name, $copyFrom]);
-            $this->db->query('INSERT INTO hyper_model_permissions (model_id, role, action) SELECT model_id, ?, action FROM hyper_model_permissions WHERE role = ?', [$name, $copyFrom]);
+            $abilities   = $this->db->prefixTable('hyper_role_abilities');
+            $permissions = $this->db->prefixTable('hyper_model_permissions');
+            $this->db->query("INSERT INTO {$abilities} (role, ability) SELECT ?, ability FROM {$abilities} WHERE role = ?", [$name, $copyFrom]);
+            $this->db->query("INSERT INTO {$permissions} (model_id, role, action) SELECT model_id, ?, action FROM {$permissions} WHERE role = ?", [$name, $copyFrom]);
         }
         $this->db->transComplete();
         $this->grants?->forget();

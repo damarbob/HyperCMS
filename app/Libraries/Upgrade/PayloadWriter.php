@@ -46,9 +46,9 @@ final class PayloadWriter
         while (true) {
             $candidates = $this->db->query(
                 'SELECT e.id, e.current_revision_id AS revision_id, m.sd_model_id, LENGTH(r.fields) AS size
-                FROM hyper_entries e
-                JOIN hyper_models m ON m.id = e.model_id
-                JOIN hyper_entry_revisions r ON r.id = e.current_revision_id
+                FROM ' . $this->db->prefixTable('hyper_entries') . ' e
+                JOIN ' . $this->db->prefixTable('hyper_models') . ' m ON m.id = e.model_id
+                JOIN ' . $this->db->prefixTable('hyper_entry_revisions') . ' r ON r.id = e.current_revision_id
                 WHERE e.deleted_at IS NULL AND e.sd_entry_id IS NULL AND e.id > ?
                 ORDER BY e.id ASC LIMIT ' . self::CHUNK_ENTRIES,
                 [$lastId]
@@ -69,7 +69,7 @@ final class PayloadWriter
             $lastId = (int) end($take)['id'];
 
             $texts = [];
-            foreach ($this->db->query('SELECT id, fields FROM hyper_entry_revisions WHERE id IN (' . implode(',', array_map(static fn (array $r): int => (int) $r['revision_id'], $take)) . ')')->getResultArray() as $r) {
+            foreach ($this->db->query('SELECT id, fields FROM ' . $this->db->prefixTable('hyper_entry_revisions') . ' WHERE id IN (' . implode(',', array_map(static fn (array $r): int => (int) $r['revision_id'], $take)) . ')')->getResultArray() as $r) {
                 $texts[(int) $r['id']] = $r['fields'];
             }
 
@@ -160,7 +160,7 @@ final class PayloadWriter
      */
     private function record(array $row, int $sdId): void
     {
-        $this->db->query('UPDATE hyper_entries SET sd_entry_id = ?, payload_bytes = ? WHERE id = ?', [$sdId, $row['bytes'], $row['id']]);
-        $this->db->query('UPDATE hyper_entry_revisions SET fields = NULL WHERE id = ?', [$row['revision_id']]);
+        $this->db->query('UPDATE ' . $this->db->prefixTable('hyper_entries') . ' SET sd_entry_id = ?, payload_bytes = ? WHERE id = ?', [$sdId, $row['bytes'], $row['id']]);
+        $this->db->query('UPDATE ' . $this->db->prefixTable('hyper_entry_revisions') . ' SET fields = NULL WHERE id = ?', [$row['revision_id']]);
     }
 }

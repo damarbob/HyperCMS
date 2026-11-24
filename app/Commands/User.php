@@ -66,7 +66,8 @@ class User extends BaseCommand
     private function list(): int
     {
         $rows = [];
-        foreach (db_connect()->query('SELECT u.id, u.username, u.status, MAX(i.secret) AS email, GROUP_CONCAT(g.`group` ORDER BY g.`group`) AS roles FROM users u LEFT JOIN auth_identities i ON i.user_id = u.id AND i.type = "email_password" LEFT JOIN auth_groups_users g ON g.user_id = u.id WHERE u.deleted_at IS NULL GROUP BY u.id ORDER BY u.id')->getResultArray() as $row) {
+        $db = db_connect();
+        foreach ($db->query('SELECT u.id, u.username, u.status, MAX(i.secret) AS email, GROUP_CONCAT(g.`group` ORDER BY g.`group`) AS roles FROM ' . $db->prefixTable('users') . ' u LEFT JOIN ' . $db->prefixTable('auth_identities') . ' i ON i.user_id = u.id AND i.type = "email_password" LEFT JOIN ' . $db->prefixTable('auth_groups_users') . ' g ON g.user_id = u.id WHERE u.deleted_at IS NULL GROUP BY u.id ORDER BY u.id')->getResultArray() as $row) {
             $rows[] = [(string) $row['id'], (string) $row['username'], (string) $row['email'], (string) ($row['roles'] ?? ''), $row['status'] === 'banned' ? 'banned' : 'ok'];
         }
         CLI::table($rows, ['Id', 'Username', 'Email', 'Roles', 'Status']);
@@ -205,7 +206,8 @@ class User extends BaseCommand
             throw new \InvalidArgumentException('Name the user by username or email.');
         }
 
-        $row = db_connect()->query('SELECT u.id FROM users u LEFT JOIN auth_identities i ON i.user_id = u.id AND i.type = "email_password" WHERE u.deleted_at IS NULL AND (u.username = ? OR i.secret = ?) LIMIT 1', [$who, $who])->getRowArray();
+        $db  = db_connect();
+        $row = $db->query('SELECT u.id FROM ' . $db->prefixTable('users') . ' u LEFT JOIN ' . $db->prefixTable('auth_identities') . ' i ON i.user_id = u.id AND i.type = "email_password" WHERE u.deleted_at IS NULL AND (u.username = ? OR i.secret = ?) LIMIT 1', [$who, $who])->getRowArray();
         $user = $row === null ? null : auth()->getProvider()->findById((int) $row['id']);
         if ($user === null) {
             throw new \InvalidArgumentException("There is no user '$who'. See php spark hyper:user list.");

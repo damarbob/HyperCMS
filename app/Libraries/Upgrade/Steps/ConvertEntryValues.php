@@ -56,7 +56,7 @@ final class ConvertEntryValues implements ConversionStep
 
         while (true) {
             $entries = $this->db->query(
-                'SELECT id, model_id, sd_entry_id, deleted_at FROM hyper_entries WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
+                'SELECT id, model_id, sd_entry_id, deleted_at FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE id > ? ORDER BY id LIMIT ' . self::CHUNK,
                 [$cursor]
             )->getResultArray();
             if ($entries === []) {

@@ -227,7 +227,7 @@ class Upgrade extends BaseCommand
         }
 
         // The docker entrypoint starts the app and the tick only when this mark exists on an old database.
-        $db->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
+        $db->query('INSERT INTO ' . $db->prefixTable('hyper_counters') . ' (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = 1', [self::FINISHED]);
 
         CLI::newLine();
         CLI::write('The upgrade is complete. The old tables were left as they are.', 'green');

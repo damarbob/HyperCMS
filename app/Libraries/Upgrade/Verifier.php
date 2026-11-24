@@ -51,7 +51,7 @@ final class Verifier
         if ($this->library === null) {
             $this->library = [];
             if ($this->db->tableExists('hyper_files')) {
-                foreach ($this->db->query('SELECT id, path, name FROM hyper_files')->getResultArray() as $row) {
+                foreach ($this->db->query('SELECT id, path, name FROM ' . $this->db->prefixTable('hyper_files') . '')->getResultArray() as $row) {
                     $this->library[(string) $row['path']] = ['id' => (int) $row['id'], 'name' => (string) $row['name']];
                 }
             }
@@ -75,7 +75,7 @@ final class Verifier
         $models     = [];
         $mismatched = [];
 
-        $all      = $this->db->query('SELECT id, name, fields FROM hyper_models ORDER BY id')->getResultArray();
+        $all      = $this->db->query('SELECT id, name, fields FROM ' . $this->db->prefixTable('hyper_models') . ' ORDER BY id')->getResultArray();
         $modelIds = [];
         foreach ($all as $model) {
             $modelIds[(string) $model['name']] ??= (int) $model['id'];
@@ -125,8 +125,8 @@ final class Verifier
         return [
             'models'     => $models,
             'mismatched' => $mismatched,
-            'unwritten'  => (int) $this->db->query('SELECT COUNT(*) AS n FROM hyper_entries WHERE deleted_at IS NULL AND sd_entry_id IS NULL')->getRow()->n,
-            'leftBehind' => (int) $this->db->query('SELECT COUNT(*) AS n FROM entries e WHERE e.deleted_at IS NULL AND NOT EXISTS (SELECT 1 FROM hyper_entries h WHERE h.id = e.id)')->getRow()->n,
+            'unwritten'  => (int) $this->db->query('SELECT COUNT(*) AS n FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE deleted_at IS NULL AND sd_entry_id IS NULL')->getRow()->n,
+            'leftBehind' => (int) $this->db->query('SELECT COUNT(*) AS n FROM entries e WHERE e.deleted_at IS NULL AND NOT EXISTS (SELECT 1 FROM ' . $this->db->prefixTable('hyper_entries') . ' h WHERE h.id = e.id)')->getRow()->n,
         ];
     }
 
@@ -172,7 +172,7 @@ final class Verifier
         $lastId = 0;
         while (true) {
             $rows = $this->db->query(
-                'SELECT id, sd_entry_id, current_revision_id, payload_bytes FROM hyper_entries
+                'SELECT id, sd_entry_id, current_revision_id, payload_bytes FROM ' . $this->db->prefixTable('hyper_entries') . '
                 WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL AND id > ? ORDER BY id ASC LIMIT 1000',
                 [$modelId, $lastId]
             )->getResultArray();

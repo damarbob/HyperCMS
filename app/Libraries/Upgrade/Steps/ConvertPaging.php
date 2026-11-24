@@ -145,7 +145,7 @@ final class ConvertPaging implements ConversionStep
     private function fillAddresses(int $modelId, bool $dryRun): int
     {
         $changed = 0;
-        $rows    = $this->db->query('SELECT id, sd_entry_id FROM hyper_entries WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL', [$modelId])->getResultArray();
+        $rows    = $this->db->query('SELECT id, sd_entry_id FROM ' . $this->db->prefixTable('hyper_entries') . ' WHERE model_id = ? AND deleted_at IS NULL AND sd_entry_id IS NOT NULL', [$modelId])->getResultArray();
 
         foreach ($rows as $row) {
             $live = $this->engine->get((int) $row['sd_entry_id']);

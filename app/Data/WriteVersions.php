@@ -32,7 +32,7 @@ class WriteVersions
     {
         $modelIds = array_values(array_unique(array_map('intval', $modelIds)));
         if ($modelIds !== []) {
-            $this->db()->query('UPDATE hyper_models SET write_version = write_version + 1 WHERE id IN (' . implode(',', $modelIds) . ')');
+            $this->db()->query('UPDATE ' . $this->table('hyper_models') . ' SET write_version = write_version + 1 WHERE id IN (' . implode(',', $modelIds) . ')');
         }
 
         $this->bumpGlobal();
@@ -43,7 +43,7 @@ class WriteVersions
      */
     public function bumpGlobal(): void
     {
-        $this->db()->query('INSERT INTO hyper_counters (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value + 1', [self::GLOBAL]);
+        $this->db()->query('INSERT INTO ' . $this->table('hyper_counters') . ' (name, value) VALUES (?, 1) ON DUPLICATE KEY UPDATE value = value + 1', [self::GLOBAL]);
     }
 
     /**
@@ -51,7 +51,7 @@ class WriteVersions
      */
     public function global(): int
     {
-        $row = $this->db()->query('SELECT value FROM hyper_counters WHERE name = ?', [self::GLOBAL])->getRow();
+        $row = $this->db()->query('SELECT value FROM ' . $this->table('hyper_counters') . ' WHERE name = ?', [self::GLOBAL])->getRow();
 
         return (int) ($row->value ?? 0);
     }
@@ -61,9 +61,14 @@ class WriteVersions
      */
     public function forModel(int|string $modelId): int
     {
-        $row = $this->db()->query('SELECT write_version FROM hyper_models WHERE id = ?', [(int) $modelId])->getRow();
+        $row = $this->db()->query('SELECT write_version FROM ' . $this->table('hyper_models') . ' WHERE id = ?', [(int) $modelId])->getRow();
 
         return (int) ($row->write_version ?? 0);
+    }
+
+    private function table(string $name): string
+    {
+        return $this->db()->prefixTable($name);
     }
 
     private function db(): BaseConnection

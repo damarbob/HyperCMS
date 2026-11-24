@@ -668,7 +668,7 @@ final class Files
 
         $like = $this->db()->escapeLikeString($folder);
         $this->db()->query(
-            "UPDATE hyper_files SET path = CONCAT(?, SUBSTRING(path, ?)) WHERE path LIKE '{$like}/%' ESCAPE '!'",
+            'UPDATE ' . $this->db()->prefixTable('hyper_files') . " SET path = CONCAT(?, SUBSTRING(path, ?)) WHERE path LIKE '{$like}/%' ESCAPE '!'",
             [$new, strlen($folder) + 1]
         );
         $this->memo = [];

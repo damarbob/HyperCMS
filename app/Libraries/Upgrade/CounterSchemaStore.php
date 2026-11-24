@@ -54,6 +54,6 @@ final class CounterSchemaStore implements SchemaStore
 
     private function write(string $name, int $value): void
     {
-        $this->db->query('INSERT INTO hyper_counters (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
+        $this->db->query('INSERT INTO ' . $this->db->prefixTable('hyper_counters') . ' (name, value) VALUES (?, ?) ON DUPLICATE KEY UPDATE value = VALUES(value)', [$name, $value]);
     }
 }

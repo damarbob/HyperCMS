@@ -54,7 +54,7 @@ class EntryRepair
         $report = ['registered' => 0, 'rewritten' => 0, 'cleared' => 0, 'deleted' => 0, 'busy' => 0, 'failed' => []];
 
         // Models first, because an entry cannot be written to a model StarDust does not know.
-        foreach ($db->query('SELECT id FROM hyper_models WHERE sd_model_id IS NULL AND updated_at <= ? ORDER BY id', [$cutoff])->getResultArray() as $row) {
+        foreach ($db->query('SELECT id FROM ' . $db->prefixTable('hyper_models') . ' WHERE sd_model_id IS NULL AND updated_at <= ? ORDER BY id', [$cutoff])->getResultArray() as $row) {
             $id = (int) $row['id'];
 
             try {
@@ -68,7 +68,7 @@ class EntryRepair
         }
 
         $entries = $db->query(
-            'SELECT e.id FROM hyper_entries e LEFT JOIN hyper_entry_revisions r ON r.id = e.current_revision_id
+            'SELECT e.id FROM ' . $db->prefixTable('hyper_entries') . ' e LEFT JOIN ' . $db->prefixTable('hyper_entry_revisions') . ' r ON r.id = e.current_revision_id
             WHERE e.updated_at <= ?
               AND ((e.deleted_at IS NULL AND (e.sd_entry_id IS NULL OR r.fields IS NOT NULL))
                 OR (e.deleted_at IS NOT NULL AND e.sd_entry_id IS NOT NULL))
