@@ -85,6 +85,12 @@ class HyperEngine extends BaseConfig
     public string $tickSecret = '';
 
     /**
+     * Seconds one request of the upgrade page works before it hands over to the next, so a host or a proxy that gives up on a
+     * slow request never sees one. The page asks for the next request by itself until the upgrade is done.
+     */
+    public float $upgradeBatchSeconds = 20;
+
+    /**
      * Seconds a save waits for another save of the same entry or model before it gives up.
      */
     public int $lockTimeoutSeconds = 10;

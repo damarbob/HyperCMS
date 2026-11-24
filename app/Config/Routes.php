@@ -150,6 +150,12 @@ $routes->post('install', 'Install::save');
 $routes->get('install/ready', 'Install::ready');
 $routes->post('install/run', 'Install::run');
 
+// The upgrade page, for a site whose data is behind the code and that has no shell. It answers 404 once the data is current.
+$routes->get('upgrade', 'UpgradePage::index');
+$routes->post('upgrade', 'UpgradePage::key');
+$routes->post('upgrade/run', 'UpgradePage::run');
+$routes->post('upgrade/restart', 'UpgradePage::restart');
+
 // The background work for a host with no cron line. It answers 404 until a secret is set.
 $routes->match(['GET', 'POST'], 'hyper/tick', 'BackgroundTick::run');
 
