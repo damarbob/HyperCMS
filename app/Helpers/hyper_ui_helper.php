@@ -48,7 +48,9 @@ if (! function_exists('admin_theme')) {
     function admin_theme(): string
     {
         $choice = null;
-        $user   = auth()->user();
+
+        // While the site is being installed there is no database, so nobody is signed in and nothing may ask for one.
+        $user = \App\Libraries\Install\InstallState::current()->open() ? null : auth()->user();
         if ($user !== null) {
             $choice = setting()->get('Hyper.theme', 'user:' . $user->id);
         }
