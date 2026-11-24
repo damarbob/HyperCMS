@@ -68,6 +68,20 @@ When the install ends, the page shows what to set up for the background work, wi
 
 If you leave the page unused, it stays open, but it can never finish without the key file. Install soon after uploading anyway.
 
+## Upgrading a site from an earlier version
+
+Take a backup of the database first, one you know how to restore. The upgrade only adds tables and leaves the old ones as they are, but a backup is the one thing that undoes a mistake.
+
+Upload the new package over the old files and keep your `.env`. The first visit to the site, at any address, sends you to the upgrade page, because the data is behind the code. The token API answers 503 with a "come back later" text until the upgrade is done.
+
+1. **Open `writable/upgrade.key` with your file manager and paste what it holds.** Like the install page, the upgrade page is only for someone who can read the site's files.
+2. **Read what the upgrade found.** It lists the entries of each model, entries it will leave behind because they never had a saved version, and every field it cannot convert, which becomes a text field with its stored values kept. A database server that is too old is shown here too, and the start button stays locked.
+3. **Press "Start the upgrade" and keep the page open.** The work runs in requests of a few seconds each, and the page asks for the next one by itself. If the browser closes, open the page again and it carries on, since every step skips what is done.
+
+If a step fails, the page says why and offers "Try again". When it ends, it shows what was copied and converted and a link to sign in, and the upgrade page answers 404 from then on.
+
+The page checks the result by counting, and does not compare every entry with its source. A site with a shell can run `php spark hyper:upgrade --dry-run` first for the full report of what would change, and `php spark hyper:upgrade` does the same work with that comparison.
+
 ## The background work
 
 HyperCMS hands some work to StarDust to do after you save. It builds the index of a field you flag as filterable, finishes a model you deleted, and completes a save that a crash cut short. None of it runs by itself on a host, so something has to call it about once a minute. Use one of the two ways below, never both.
