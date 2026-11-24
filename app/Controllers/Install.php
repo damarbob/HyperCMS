@@ -16,6 +16,11 @@ use CodeIgniter\HTTP\ResponseInterface;
  */
 class Install extends BaseController
 {
+    /**
+     * The session entry that records the install key was typed correctly.
+     */
+    private const PROVEN = 'install_key_proven';
+
     private const FIELDS = [
         'db_host', 'db_port', 'db_name', 'db_user', 'db_password', 'db_prefix', 'base_url',
         'admin_username', 'admin_email', 'admin_password', 'admin_password_confirm', 'tick', 'key',
@@ -56,6 +61,9 @@ class Install extends BaseController
 
         $installer->configure($input);
 
+        // The key was typed correctly, and the next two pages are only for the browser that typed it.
+        session()->set(self::PROVEN, hash('sha256', $state->key()));
+
         return redirect()->to(site_url('install/ready'));
     }
 
@@ -65,7 +73,7 @@ class Install extends BaseController
     public function ready(): string|RedirectResponse|ResponseInterface
     {
         $state = $this->openState();
-        if ($state->answers() === null) {
+        if ($state->answers() === null || ! $this->proven($state)) {
             return redirect()->to(site_url('install'));
         }
 
@@ -76,7 +84,7 @@ class Install extends BaseController
     {
         $state   = $this->openState();
         $answers = $state->answers();
-        if ($answers === null) {
+        if ($answers === null || ! $this->proven($state)) {
             return redirect()->to(site_url('install'));
         }
 
@@ -89,6 +97,14 @@ class Install extends BaseController
             'tick'    => (string) ($answers['tick'] ?? 'later'),
             'spark'   => ROOTPATH . 'spark',
         ]);
+    }
+
+    /**
+     * Whether this browser typed the install key. The saved answers and the tick address must not go to anyone else.
+     */
+    private function proven(InstallState $state): bool
+    {
+        return hash_equals(hash('sha256', $state->key()), (string) session(self::PROVEN));
     }
 
     /**
