@@ -6,7 +6,7 @@ use CodeIgniter\Config\BaseConfig;
 
 /**
  * Settings for the StarDust 0.3 engine that keeps the current fields of every entry.
- * Any value can be overridden in .env, for example `hyperEngine.tablePrefix = 'sd_'`.
+ * Any value can be overridden in .env, for example `hyperengine.tablePrefix = 'sd_'`.
  */
 class HyperEngine extends BaseConfig
 {
@@ -79,7 +79,7 @@ class HyperEngine extends BaseConfig
 
     /**
      * The secret that lets a scheduled URL fetch run the background work at `hyper/tick`, for a host with no cron line.
-     * At least 32 characters. Empty means the address does not exist. Set it in .env as `hyperEngine.tickSecret`, and
+     * At least 32 characters. Empty means the address does not exist. Set it in .env as `hyperengine.tickSecret`, and
      * never run the cron line as well.
      */
     public string $tickSecret = '';

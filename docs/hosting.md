@@ -104,10 +104,10 @@ If the host has no cron but an online cron service can fetch an address for you,
 https://your-site.example/hyper/tick?key=THE-SECRET
 ```
 
-The secret is the setting `hyperEngine.tickSecret` in `.env`. The install page makes one when you choose this way and shows the full address once. To set one by hand, put a random text of at least 32 characters in `.env`.
+The secret is the setting `hyperengine.tickSecret` in `.env`. The install page makes one when you choose this way and shows the full address once. To set one by hand, put a random text of at least 32 characters in `.env`.
 
 ```ini
-hyperEngine.tickSecret = "paste-a-long-random-text-here"
+hyperengine.tickSecret = "paste-a-long-random-text-here"
 ```
 
 Until a secret of at least 32 characters is set, the address answers 404, as if it did not exist. A wrong key gets 403. A key in the address is written to the access log of your host and of any service in between, so a service that can send headers should send the key as `X-Tick-Key` instead. If you suspect the key has leaked, put a new one in `.env` and update the service. The answer is plain text, such as `Tick finished after 0.0 of 50 seconds in 1 round(s), stopped because idle.`

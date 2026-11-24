@@ -10,7 +10,7 @@ use Config\HyperEngine;
 
 /**
  * Runs one bounded pass of the background work when a scheduled URL fetch asks for it, for a host that has no cron line.
- * The address needs the secret in the `hyperEngine.tickSecret` setting, sent as `key` in the address or in the `X-Tick-Key` header.
+ * The address needs the secret in the `hyperengine.tickSecret` setting, sent as `key` in the address or in the `X-Tick-Key` header.
  * With no secret set the address answers 404. A site uses this or `php spark hyper:tick`, not both.
  */
 class BackgroundTick extends BaseController

@@ -35,9 +35,9 @@
 # media.uploadPath = '{WRITEPATH}uploads'
 
 # Data engine (StarDust 0.3). The tables of the engine carry the prefix sd_ and need no setting here.
-# HyperEngine.usersTable = 'users'
-# HyperEngine.usersIdColumn = 'id'
-# HyperEngine.usersUsernameColumn = 'username'
+# hyperengine.usersTable = 'users'
+# hyperengine.usersIdColumn = 'id'
+# hyperengine.usersUsernameColumn = 'username'
 
 
 #--------------------------------------------------------------------

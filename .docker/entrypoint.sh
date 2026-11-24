@@ -58,7 +58,7 @@ upgrade_pending() {
 # It waits until the web container has created StarDust's tables and until no upgrade is half done, because the repair
 # pass of a tick would otherwise write the entries the upgrade is still copying.
 if [ "$HYPER_ROLE" = "tick" ]; then
-  SCHEMA_TABLE="${DB_PREFIX}${hyperEngine_tablePrefix:-sd_}stardust_schema_version"
+  SCHEMA_TABLE="${DB_PREFIX}${hyperengine_tablePrefix:-sd_}stardust_schema_version"
   until [ "$(db_query "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = '$SCHEMA_TABLE'" 2>/dev/null)" = "1" ] && [ "$(upgrade_pending 2>/dev/null)" = "0" ]
   do
     echo "   -> waiting for the web container to create $SCHEMA_TABLE and for any upgrade to finish…"

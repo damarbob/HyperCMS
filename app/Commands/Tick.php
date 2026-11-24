@@ -13,7 +13,7 @@ use Config\HyperEngine;
  * It finishes model deletions and any slot, index and import work StarDust has queued. Run it from
  * one cron line every minute, or from a loop in a container. Never run it beside StarDust's own
  * daemons, only one of the two. A host with no cron line can fetch the tick address instead, see
- * the `hyperEngine.tickSecret` setting.
+ * the `hyperengine.tickSecret` setting.
  */
 class Tick extends BaseCommand
 {

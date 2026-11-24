@@ -123,7 +123,7 @@ final class Installer
             'auth.allowRegistration'     => 'false',
         ];
         if ($tickSecret !== '') {
-            $values['hyperEngine.tickSecret'] = $tickSecret;
+            $values['hyperengine.tickSecret'] = $tickSecret;
         }
 
         $this->writeEnv(EnvFile::render($values, [
