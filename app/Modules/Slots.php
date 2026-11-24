@@ -2,6 +2,7 @@
 
 namespace App\Modules;
 
+use App\Modules\Slots\DashboardPanels;
 use App\Modules\Slots\EntryFormToolbar;
 use App\Modules\Slots\ModelListNew;
 use InvalidArgumentException;
@@ -25,11 +26,17 @@ final class Slots
     public const MODEL_LIST_NEW = 'model.list.new';
 
     /**
+     * Panels on the dashboard, in its wide column or its narrow one.
+     */
+    public const DASHBOARD_PANELS = 'dashboard.panels';
+
+    /**
      * The payload class of each slot.
      */
     private const PAYLOADS = [
         self::ENTRY_FORM_TOOLBAR => EntryFormToolbar::class,
         self::MODEL_LIST_NEW     => ModelListNew::class,
+        self::DASHBOARD_PANELS   => DashboardPanels::class,
     ];
 
     /**

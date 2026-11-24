@@ -8,8 +8,9 @@ class ModelsSettings extends AdminController
 {
     public function index(): string
     {
-        $this->data['title'] = lang('Admin.settings');
+        $this->data['title']  = lang('Admin.settings');
+        $this->data['crumbs'] = [[lang('Admin.settings'), base_url('admin/settings')], [lang('Admin.models'), null]];
 
-        return render('admin/settings_models', $this->data);
+        return view('admin/settings_models', $this->data);
     }
 }

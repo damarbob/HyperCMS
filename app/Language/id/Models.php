@@ -174,4 +174,9 @@ return [
     'bAdded'              => '{name} ditambahkan.',
     'bTypeChanged'        => 'Pengaturan {name} diatur ulang untuk jenis yang baru.',
     'bOptionMany'         => 'beberapa',
+
+    // Layar pengaturan model
+    'settingsText'      => 'Hal yang berlaku untuk model secara umum.',
+    'settingsTrash'     => 'Sampah model',
+    'settingsTrashText' => 'Model yang dihapus menunggu di sampah. Mengosongkannya menghapus model-model itu beserta seluruh entrinya secara permanen.',
 ];

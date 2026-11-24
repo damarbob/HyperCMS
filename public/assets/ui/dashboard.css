@@ -1,0 +1,33 @@
+/* The dashboard. A wide table of recent work beside a narrow list of the models, which stack on a narrow screen. */
+
+@layer components {
+  .dashboard { display: grid; gap: var(--s5); grid-template-columns: minmax(0, 1.7fr) minmax(240px, 1fr); align-items: start; }
+
+  .dashboard .column { display: grid; gap: var(--s5); align-content: start; min-width: 0; }
+
+  .dashboard .panel > header { min-height: 48px; }
+
+  /* What needs a look. Present only when something does, so it is plain rows and not a banner. */
+  .attention { list-style: none; margin: 0 0 var(--s5); padding: 0; display: grid; gap: var(--s2); }
+  .attention li { display: flex; align-items: baseline; flex-wrap: wrap; gap: var(--s1) var(--s3); padding: var(--s2) var(--s4); border-radius: var(--r-lg); border: 1px solid var(--line); background: var(--sheet); }
+  .attention li > svg { flex: none; align-self: center; width: 16px; height: 16px; }
+  .attention li.warn { background: var(--warn-tint); border-color: transparent; }
+  .attention li.warn > svg { color: var(--warn); }
+  .attention li.bad { background: var(--bad-tint); border-color: transparent; }
+  .attention li.bad > svg { color: var(--bad); }
+  .attention .text { flex: 1 1 24ch; min-width: 0; overflow-wrap: anywhere; }
+  .attention .links { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s3); }
+  .attention .links a { font-weight: 500; }
+
+  .dashboard .model-list { list-style: none; margin: 0; padding: var(--s1) 0; }
+  .dashboard .model-list li { display: flex; align-items: center; gap: var(--s2); padding: var(--s1) var(--s4); min-height: 40px; }
+  .dashboard .model-list li:hover { background: var(--hover); }
+  .dashboard .model-list .name { flex: 1; min-width: 0; overflow-wrap: anywhere; font-weight: 500; text-decoration: none; color: var(--ink); }
+  .dashboard .model-list .name:hover { text-decoration: underline; }
+  .dashboard .model-list .count { font-variant-numeric: tabular-nums; }
+  .dashboard .more { padding: var(--s2) var(--s4) var(--s3); border-top: 1px solid var(--line); }
+
+  @media (max-width: 960px) {
+    .dashboard { grid-template-columns: minmax(0, 1fr); }
+  }
+}

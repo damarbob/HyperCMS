@@ -1,0 +1,10 @@
+/* The page at the home address of a site that has none of its own. The words sit low and to the left, on the canvas. */
+
+@layer components {
+  body.welcome { min-height: 100dvh; display: grid; grid-template-rows: minmax(0, 1fr); align-items: end; padding: clamp(24px, 6vw, 72px); background: var(--canvas); }
+  body.welcome main { max-width: 34rem; }
+  body.welcome .version { color: var(--ink-3); font-size: var(--t-sm); font-variant-numeric: tabular-nums; }
+  body.welcome h1 { font-size: clamp(2.4rem, 7vw, 4.5rem); font-weight: 600; letter-spacing: -0.03em; line-height: 1.02; margin: var(--s2) 0 var(--s4); overflow-wrap: anywhere; }
+  body.welcome .text { color: var(--ink-2); font-size: var(--t-lg); }
+  body.welcome .go { margin-top: var(--s5); }
+}

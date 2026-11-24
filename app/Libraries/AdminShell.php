@@ -153,8 +153,8 @@ final class AdminShell
         // Merge menu with modelsMenu
         $menu = array_merge($menu, $modelsMenu);
 
-        // Additional menu for filter (to separate from the main menu)
-        $additionalMenu = array_merge_recursive(service('hooks')->filter(hook('Backend.controller:menu:data'), []), service('modules')->menu());
+        // The items that modules add
+        $additionalMenu = service('modules')->menu();
 
         // Merge menu with additionalMenu
         $menu = array_merge_recursive($menu, $additionalMenu);

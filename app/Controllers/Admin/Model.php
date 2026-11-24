@@ -25,9 +25,6 @@ class Model extends AdminController
 
         $data = (new ModelListPage(FieldTypes::core()))->viewData($model, $this->request->getGet(), $this->perPage());
 
-        // A module may change the address of the New button, as the paging system does for its page models.
-        $data = $this->hooks->filter(hook('Backend.controller:model:index:data'), $data);
-
         // A module may point the New button at its own screen.
         $data['links']['new'] = service('slots')->fill(Slots::MODEL_LIST_NEW, new ModelListNew((int) $id, (string) $data['links']['new']))->url();
 

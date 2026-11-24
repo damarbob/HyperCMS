@@ -1,58 +1,27 @@
 <?php
-helper('form');
-
-$context = 'user:' . user_id();
+/**
+ * The settings of the models. For now the one thing that belongs here is emptying the models trash.
+ */
 ?>
-<?= $this->extend('admin/layout/page') ?>
+<?= $this->extend('admin/layout/app') ?>
 
 <?= $this->section('content') ?>
-<div class="block">
-    <h1 class="title">
-        <?= lang('Admin.settings') ?>
-    </h1>
-    <p class="subtitle">
-        <?= lang('Admin.models') ?>
-    </p>
-    <!-- Empty trash button -->
-    <div class="field">
-        <label class="label"><?= lang('Admin.emptyModelsTrash') ?></label>
-        <div class="control is-flex-grow-1">
-            <button id="buttonSettingsEmptyTrash" class="button is-danger">
-                <span class="icon">
-                    <i class="fa-solid fa-face-tired"></i>
-                </span>
-                <span>
-                    <?= lang('Admin.emptyTrash') ?>
-                </span>
-            </button>
-        </div>
-        <p class="help"><?= lang('Admin.emptyingTheModelsTrashWillPermanentlyDelete') ?></p>
+<div class="page-head">
+    <div>
+        <h1><?= esc(lang('Admin.settings')) ?></h1>
+        <p><?= esc(lang('Models.settingsText')) ?></p>
     </div>
 </div>
 
-<!-- Empty trash form -->
-<form id="formEmptyTrash" method="POST" action="<?= base_url('admin/models/purge-deleted') ?>">
-    <?= csrf_field() ?>
-</form>
-<?= $this->endSection() ?>
-
-<?= $this->section('footer') ?>
-<script type="text/javascript">
-    // CSRF
-    var csrfName = '<?= csrf_token() ?>';
-    var csrfHash = '<?= csrf_hash() ?>';
-
-    document.addEventListener('DOMContentLoaded', function() {
-        var button = document.getElementById('buttonSettingsEmptyTrash');
-        button.addEventListener('click', function(e) {
-            e.preventDefault();
-
-            window.hyper.factory.swal.confirm().then((result) => {
-                if (result.isConfirmed) {
-                    document.getElementById('formEmptyTrash').submit();
-                }
-            });
-        });
-    });
-</script>
+<section class="panel" aria-labelledby="s-trash" style="max-width: 720px">
+    <header><h2 id="s-trash"><?= esc(lang('Models.settingsTrash')) ?></h2></header>
+    <div class="body stack" style="gap: var(--s3)">
+        <p class="muted"><?= esc(lang('Models.settingsTrashText')) ?></p>
+        <?php // Without scripts the form is posted and the person lands on the list. With them the answer is a toast. ?>
+        <form method="post" action="<?= attr(base_url('admin/models/purge-deleted')) ?>" hx-post="<?= attr(base_url('admin/models/purge-deleted')) ?>" hx-swap="none" hx-confirm="<?= attr(lang('Models.confirmEmptyTrash')) ?>">
+            <?= csrf_field() ?>
+            <?= ui('button', ['label' => lang('Models.emptyTrash'), 'type' => 'submit', 'variant' => 'danger', 'icon' => 'trash']) ?>
+        </form>
+    </div>
+</section>
 <?= $this->endSection() ?>

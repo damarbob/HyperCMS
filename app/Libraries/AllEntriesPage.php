@@ -17,11 +17,12 @@ final class AllEntriesPage
     }
 
     /**
-     * @param array<string, mixed> $input The query string.
+     * @param array<string, mixed>                               $input  The query string.
+     * @param array{only?: int, except?: int}                    $editor Narrows the list to the entries one person last edited (`only`), or to the ones someone else did (`except`). Set by a page, never read from the request.
      *
      * @return array<string, mixed>
      */
-    public function build(array $input, int $defaultPerPage): array
+    public function build(array $input, int $defaultPerPage, array $editor = []): array
     {
         $models = [];
         foreach (service('modelStore')->all() as $model) {
@@ -46,6 +47,8 @@ final class AllEntriesPage
             'length'   => $per,
             'search'   => ['value' => $q],
             'model_id' => $model > 0 ? $model : null,
+            'editor_id'        => (int) ($editor['only'] ?? 0),
+            'except_editor_id' => (int) ($editor['except'] ?? 0),
             'order'    => [['column' => 0, 'dir' => $dir]],
             'columns'  => [['data' => $sort !== '' ? $sort : 'date_modified']],
         ], $hidden);

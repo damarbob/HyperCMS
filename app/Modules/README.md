@@ -93,6 +93,14 @@ changes it through the methods of that class. A slot takes only its own payload 
 | :-- | :-- | :-- |
 | `Slots::ENTRY_FORM_TOOLBAR` | `Slots\EntryFormToolbar` | `link($label, $href, $icon)` adds a button beside the save button of the entry form |
 | `Slots::MODEL_LIST_NEW` | `Slots\ModelListNew` | `pointTo($url)` sends the New button of a model's list to the module's own screen |
+| `Slots::DASHBOARD_PANELS` | `Slots\DashboardPanels` | `panel($title, $view, $data, $ability, $column, $href, $linkLabel)` adds a panel to the dashboard |
+
+A dashboard panel is a title and the name of a view of the module. Core draws the frame and the heading, and draws the view
+only when the panel is shown. The ability is checked when the panel is added, so a person who lacks it never has the view
+drawn. `$column` is `DashboardPanels::MAIN` for the wide column and `DashboardPanels::SIDE` (the default) for the narrow one,
+and a title, a view or a column that is not valid throws at once. The view draws only the inside of the panel, a list or a
+`<div class="body">`, and escapes what it prints. A view that throws is left out and logged, so the other panels and the
+dashboard still draw. Keep the work of a panel to a few reads, because the dashboard is the page everyone opens first.
 
 ```php
 public function slots(Slots $slots): void

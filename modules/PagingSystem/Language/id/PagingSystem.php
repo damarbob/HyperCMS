@@ -8,6 +8,9 @@ return [
     'editor' => 'Editor',
     'editor-x' => 'Editor {x}',
 
+    'dashboardPages' => 'Halaman',
+    'dashboardAllPages' => 'Semua halaman',
+    'dashboardNoPages' => 'Belum ada halaman yang dibuat.',
     'openWithEditor' => 'Buka dengan Editor',
 
     'blocks' => 'Blok',
