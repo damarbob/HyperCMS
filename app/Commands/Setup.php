@@ -2,6 +2,7 @@
 
 namespace App\Commands;
 
+use App\Libraries\Install\InstallState;
 use App\Libraries\Upgrade\CounterSchemaStore;
 use App\Libraries\Upgrade\Steps\Steps;
 use CodeIgniter\CLI\BaseCommand;
@@ -39,6 +40,9 @@ class Setup extends BaseCommand
 
         // Publish assets
         $this->publishAssets();
+
+        // The site is set up, so the install page must not exist any more.
+        (new InstallState(WRITEPATH, true))->finish();
 
         // Start server
         $this->startServer();

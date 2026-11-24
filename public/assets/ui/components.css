@@ -225,6 +225,9 @@
   /* ---- Code block, details list ------------------------------------------------------------------------ */
 
   .code { font: 400 var(--t-sm) / 1.7 var(--mono); background: var(--code-bg); color: var(--code-ink); border-radius: var(--r-md); padding: var(--s3) var(--s4); overflow-x: auto; margin: 0; }
+  .bare-sheet .code { white-space: pre-wrap; overflow-wrap: anywhere; }
+  .checklist { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--s2); font-size: var(--t-sm); }
+  .checklist li { display: flex; gap: var(--s3); align-items: center; }
 
   .facts { display: grid; grid-template-columns: auto 1fr; gap: 8px var(--s3); font-size: var(--t-sm); margin: 0; }
   .facts dt { color: var(--ink-3); }
