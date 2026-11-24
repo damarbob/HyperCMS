@@ -77,6 +77,13 @@ class HyperEngine extends BaseConfig
     public int $tickBudgetSeconds = 50;
 
     /**
+    /**
+     * The secret that lets a scheduled URL fetch run the background work at `hyper/tick`, for a host with no cron line.
+     * At least 32 characters. Empty means the address does not exist. Set it in .env as `hyperEngine.tickSecret`, and
+     * never run the cron line as well.
+     */
+    public string $tickSecret = '';
+
      * Seconds a save waits for another save of the same entry or model before it gives up.
      */
     public int $lockTimeoutSeconds = 10;

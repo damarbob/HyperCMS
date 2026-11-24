@@ -144,6 +144,9 @@ $routes->group('api', ['namespace' => 'App\Controllers\API\v1'], static function
     });
 });
 
+// The background work for a host with no cron line. It answers 404 until a secret is set.
+$routes->match(['GET', 'POST'], 'hyper/tick', 'BackgroundTick::run');
+
 // The routes the modules that follow the contract ask for.
 service('modules')->routes($routes);
 
